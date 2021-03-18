@@ -7,5 +7,5 @@ import com.example.demo.dtos.NewsDTO;
 public interface INewsService {
 	List<NewsDTO> findAllNewsOrderByCreatedDateDesc();
 	List<NewsDTO> findThreeNewsOrderByCreatedDateDesc();
-	NewsDTO findNewsById(Long id);
+	NewsDTO findNewsById(long id);
 }

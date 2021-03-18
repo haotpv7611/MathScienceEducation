@@ -57,7 +57,7 @@ public class NewsServiceImpl implements INewsService {
 		if (iNewsRepository.count() >= 3) {
 			newsList = iNewsRepository.findTop3ByIsDisableOrderByCreatedDateDesc(false);
 		} else {
-			newsList = iNewsRepository.findByIsDisableOrderByCreatedDateDesc(true);
+			newsList = iNewsRepository.findByIsDisableOrderByCreatedDateDesc(false);
 		}
 
 		List<NewsDTO> threeNewest = new ArrayList<>();
@@ -75,7 +75,7 @@ public class NewsServiceImpl implements INewsService {
 	}
 
 	@Override
-	public NewsDTO findNewsById(Long id) {
+	public NewsDTO findNewsById(long id) {
 
 		// 1. connect database through repository
 		// 2. find entities by Id

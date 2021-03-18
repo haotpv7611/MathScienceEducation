@@ -26,34 +26,58 @@ public class NewsDTO {
 		this.createdDate = createdDate;
 	}
 
+	/**
+	 * @return the id
+	 */
 	public long getId() {
 		return id;
 	}
 
+	/**
+	 * @param id the id to set
+	 */
 	public void setId(long id) {
 		this.id = id;
 	}
 
+	/**
+	 * @return the newsTitle
+	 */
 	public String getNewsTitle() {
 		return newsTitle;
 	}
 
+	/**
+	 * @param newsTitle the newsTitle to set
+	 */
 	public void setNewsTitle(String newsTitle) {
 		this.newsTitle = newsTitle;
 	}
 
+	/**
+	 * @return the shortDescription
+	 */
 	public String getShortDescription() {
 		return shortDescription;
 	}
 
+	/**
+	 * @param shortDescription the shortDescription to set
+	 */
 	public void setShortDescription(String shortDescription) {
 		this.shortDescription = shortDescription;
 	}
 
+	/**
+	 * @return the newsContent
+	 */
 	public String getNewsContent() {
 		return newsContent;
 	}
 
+	/**
+	 * @param newsContent the newsContent to set
+	 */
 	public void setNewsContent(String newsContent) {
 		this.newsContent = newsContent;
 	}
@@ -71,4 +95,5 @@ public class NewsDTO {
 	public void setCreatedDate(LocalDateTime createdDate) {
 		this.createdDate = createdDate;
 	}
+
 }
