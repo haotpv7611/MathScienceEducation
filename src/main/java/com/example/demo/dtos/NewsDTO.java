@@ -15,7 +15,6 @@ public class NewsDTO {
 	private LocalDateTime createdDate;
 
 	public NewsDTO() {
-		// TODO Auto-generated constructor stub
 	}
 
 	public NewsDTO(long id, String newsTitle, String shortDescription, String newsContent, LocalDateTime createdDate) {
