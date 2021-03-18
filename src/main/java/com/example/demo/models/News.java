@@ -20,12 +20,10 @@ public class News {
 
 //	@CreatedDate
 	private LocalDateTime createdDate;
-//	private Date createdDate;
 //	@CreatedBy
 	private String createdBy;
 //	@LastModifiedDate
 	private LocalDateTime modifiedDate;
-//	private Date modifiedDate;
 //	@LastModifiedBy
 	private String modifiedBy;
 
