@@ -13,11 +13,13 @@ public class ExceptionController extends ResponseEntityExceptionHandler {
 	
 	@ExceptionHandler(value = ResourceNotFoundException.class)
 	public ResponseEntity<?> notFoundException(){
+		System.out.println("run");
 		return new ResponseEntity<>("Resource Not Found!", HttpStatus.NOT_FOUND);
 	}
 	
-	@ExceptionHandler(value = IllegalArgumentException.class)
-	public ResponseEntity<?> illegalArgumentException(){
-		return new ResponseEntity<>("Illegal Id!", HttpStatus.BAD_REQUEST);
-	}
+//	@ExceptionHandler(value = IllegalArgumentException.class)
+//	public ResponseEntity<?> illegalArgumentException(){
+//		System.out.println("run");
+//		return new ResponseEntity<>("Illegal Id!", HttpStatus.BAD_REQUEST);
+//	}
 }

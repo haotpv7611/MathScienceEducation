@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dtos.NewsDTO;
-import com.example.demo.services.impls.NewsServiceImpl;
+import com.example.demo.services.INewsService;
 
 @CrossOrigin
 @RestController
@@ -20,32 +20,25 @@ import com.example.demo.services.impls.NewsServiceImpl;
 public class NewsController {
 	
 	@Autowired
-	private NewsServiceImpl newsServiceImpl;
+	private INewsService inewsService;
 	
 	@GetMapping
-	public ResponseEntity<List<NewsDTO>> findAllOrderByCreateDateDesc(){
-		List<NewsDTO> response = newsServiceImpl.findAllNewsOrderByCreatedDateDesc();
-//		if (response == null) {
-//			
-//			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-//		}
-//		
+	public ResponseEntity<List<NewsDTO>> findAllOrderByCreateDateDesc(){		
+		List<NewsDTO> response = inewsService.findAllNewsOrderByCreatedDateDesc();
+
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 	
 	@GetMapping("/3newest")
 	public ResponseEntity<List<NewsDTO>> findThreeOrderByCreateDateDesc(){
-		List<NewsDTO> response = newsServiceImpl.findThreeNewsOrderByCreatedDateDesc();
-//		if (response == null) {
-//			
-//			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-//		}
-//		
+		List<NewsDTO> response = inewsService.findThreeNewsOrderByCreatedDateDesc();
+
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 	
 	@GetMapping("/{id}")
 	public ResponseEntity<NewsDTO> findNewsById(@PathVariable Long id){
-		return ResponseEntity.status(HttpStatus.OK).body(newsServiceImpl.findNewsById(id));
+		
+		return ResponseEntity.status(HttpStatus.OK).body(inewsService.findNewsById(id));
 	}
 }

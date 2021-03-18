@@ -19,36 +19,55 @@ public class NewsServiceImpl implements INewsService {
 
 	@Autowired
 	private INewsRepository iNewsRepository;
-	
+
 	@Autowired
 	private ModelMapper modelMapper;
 
 	@Override
 	public List<NewsDTO> findAllNewsOrderByCreatedDateDesc() {
 
-		// get list Entity enable and sort descending by Created Date
+		// 1. connect database through repository
+		// 2. find all entities are not disable and sort descending by Created Date
 		List<News> newsList = iNewsRepository.findByIsDisableOrderByCreatedDateDesc(false);
+
 		List<NewsDTO> newsDTOList = new ArrayList<>();
-		// convert list Entity to list DTO
-		if (newsList != null) {
+
+		// 3. convert all entities to dtos
+		// 4. add all dtos to newsDTOList and return
+		if (!newsList.isEmpty()) {
 			for (News news : newsList) {
-				newsDTOList.add(modelMapper.map(news, NewsDTO.class));
+				NewsDTO newsDTO = modelMapper.map(news, NewsDTO.class);
+				newsDTOList.add(newsDTO);
 			}
 		}
 
-		// response DTO to user
 		return newsDTOList;
 	}
 
 	@Override
 	public List<NewsDTO> findThreeNewsOrderByCreatedDateDesc() {
-		
-		
-		List<News> newsList = iNewsRepository.findByIsDisableOrderByCreatedDateDesc(false);
+
+		List<News> newsList = null;
+
+		// 1. connect database through repository
+		// 2. count news entities
+		// 3. if have more than 3 entities, get 3 entities are not disable and sort
+		// descending by Created Date
+		// 4. else list all entities are not disable and sort descending by Created Date
+		if (iNewsRepository.count() >= 3) {
+			newsList = iNewsRepository.findTop3ByIsDisableOrderByCreatedDateDesc(false);
+		} else {
+			newsList = iNewsRepository.findByIsDisableOrderByCreatedDateDesc(true);
+		}
+
 		List<NewsDTO> threeNewest = new ArrayList<>();
-		if (newsList.size() > 0) {
-			for (int i = 0; i < 3; i++) {
-				threeNewest.add(modelMapper.map(newsList.get(i), NewsDTO.class));
+
+		// 5. convert 3 entity to dto
+		// 6. add all dto to newsDTOList and return
+		if (!newsList.isEmpty()) {
+			for (News news : newsList) {
+				NewsDTO newsDTO = modelMapper.map(news, NewsDTO.class);
+				threeNewest.add(newsDTO);
 			}
 		}
 
@@ -56,8 +75,16 @@ public class NewsServiceImpl implements INewsService {
 	}
 
 	@Override
-	public NewsDTO findNewsById(Long id){
+	public NewsDTO findNewsById(Long id) {
+
+		// 1. connect database through repository
+		// 2. find entities by Id
+		// 3. if not found throw not found exception
+		// 4. else convert entity to dto
+		// 5. return
 		News news = iNewsRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
-		return modelMapper.map(news, NewsDTO.class);
+		NewsDTO newsDTO = modelMapper.map(news, NewsDTO.class);
+
+		return newsDTO;
 	}
 }

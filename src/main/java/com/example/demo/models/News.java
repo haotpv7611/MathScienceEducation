@@ -1,6 +1,6 @@
 package com.example.demo.models;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -14,18 +14,18 @@ public class News {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
 
-	private String title;
+	private String newsTitle;
 	private String shortDescription;
 	private String newsContent;
 
 //	@CreatedDate
-//	private DateTime createdDate;
-	private Date createdDate;
+	private LocalDateTime createdDate;
+//	private Date createdDate;
 //	@CreatedBy
 	private String createdBy;
 //	@LastModifiedDate
-//	private DateTime modifiedDate;
-	private Date modifiedDate;
+	private LocalDateTime modifiedDate;
+//	private Date modifiedDate;
 //	@LastModifiedBy
 	private String modifiedBy;
 
@@ -35,15 +35,15 @@ public class News {
 	/**
 	 * @return the title
 	 */
-	public String getTitle() {
-		return title;
+	public String getNewsTitle() {
+		return newsTitle;
 	}
 
 	/**
 	 * @param title the title to set
 	 */
-	public void setTitle(String title) {
-		this.title = title;
+	public void setNewsTitle(String newsTitle) {
+		this.newsTitle = newsTitle;
 	}
 
 	/**
@@ -77,14 +77,16 @@ public class News {
 	/**
 	 * @return the createdDate
 	 */
-	public Date getCreatedDate() {
+//	public Date getCreatedDate() {
+	public LocalDateTime getCreatedDate() {
 		return createdDate;
 	}
 
 	/**
 	 * @param createdDate the createdDate to set
 	 */
-	public void setCreatedDate(Date createdDate) {
+//	public void setCreatedDate(Date createdDate) {
+	public void setCreatedDate(LocalDateTime createdDate) {
 		this.createdDate = createdDate;
 	}
 
@@ -105,14 +107,15 @@ public class News {
 	/**
 	 * @return the modifiedDate
 	 */
-	public Date getModifiedDate() {
+//	public Date getModifiedDate() {
+	public LocalDateTime getModifiedDate() {
 		return modifiedDate;
 	}
 
 	/**
 	 * @param modifiedDate the modifiedDate to set
 	 */
-	public void setModifiedDate(Date modifiedDate) {
+	public void setModifiedDate(LocalDateTime modifiedDate) {
 		this.modifiedDate = modifiedDate;
 	}
 
