@@ -11,7 +11,7 @@ public class BannerImage {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+	private long id;
 	
 	private String description;
 	private String imageUrl;
@@ -41,9 +41,10 @@ public class BannerImage {
 	public void setAccountId(long accountId) {
 		this.accountId = accountId;
 	}
-	public Long getId() {
+	public long getId() {
 		return id;
 	}
-
+	
+	
 	
 }

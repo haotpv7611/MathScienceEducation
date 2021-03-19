@@ -6,7 +6,6 @@ import java.util.List;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
 
 import com.example.demo.dtos.ExerciseDTO;
 import com.example.demo.models.Exercise;
@@ -14,7 +13,7 @@ import com.example.demo.repositories.IExerciseRepository;
 import com.example.demo.services.IExerciseService;
 
 @Service
-public class ExerciseServiceImpl implements IExerciseService{
+public class ExerciseServiceImpl implements IExerciseService {
 
 	@Autowired
 	private IExerciseRepository iExerciseRepository;
@@ -23,7 +22,7 @@ public class ExerciseServiceImpl implements IExerciseService{
 	private ModelMapper modelMapper;
 	
 	@Override
-	public List<ExerciseDTO> findByLessonIdAndIsDisableOrderByExerciseNameAsc(Long lessonId) {
+	public List<ExerciseDTO> findByLessonIdAndIsDisableOrderByExerciseNameAsc(long lessonId) {
 		List<Exercise> exerciseList = iExerciseRepository.findByLessonIdAndIsDisableOrderByExerciseNameAsc(lessonId, false);
 		List<ExerciseDTO> exerciseDTOList = new ArrayList<>();
 		
@@ -36,7 +35,7 @@ public class ExerciseServiceImpl implements IExerciseService{
 	}
 
 	@Override
-	public List<ExerciseDTO> findByProgressTestIdAndIsDisableOrderByExerciseNameAsc(Long progressTestId) {
+	public List<ExerciseDTO> findByProgressTestIdAndIsDisableOrderByExerciseNameAsc(long progressTestId) {
 		List<Exercise> exerciseList = iExerciseRepository.findByProgressTestIdAndIsDisableOrderByExerciseNameAsc(progressTestId, false);
 		List<ExerciseDTO> exerciseDTOList = new ArrayList<>();
 		if(!exerciseList.isEmpty()) {

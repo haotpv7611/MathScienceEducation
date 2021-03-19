@@ -12,15 +12,15 @@ public class Exercise {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+	private long id;
 	private int exerciseName;
 	private Date createdDate;
 	private String createdBy;
 	private Date modifiedDate;
 	private String modifiedBy;
 	
-	private Long lessonId;
-	private Long progressTestId;
+	private long lessonId;
+	private long progressTestId;
 	private boolean isProgressTest;
 	private boolean isDisable;
 	public int getExerciseName() {
@@ -53,16 +53,16 @@ public class Exercise {
 	public void setModifiedBy(String modifiedBy) {
 		this.modifiedBy = modifiedBy;
 	}
-	public Long getLessonId() {
+	public long getLessonId() {
 		return lessonId;
 	}
-	public void setLessonId(Long lessonId) {
+	public void setLessonId(long lessonId) {
 		this.lessonId = lessonId;
 	}
-	public Long getProgressTestId() {
+	public long getProgressTestId() {
 		return progressTestId;
 	}
-	public void setProgressTestId(Long progressTestId) {
+	public void setProgressTestId(long progressTestId) {
 		this.progressTestId = progressTestId;
 	}
 	public boolean isProgressTest() {
@@ -77,9 +77,11 @@ public class Exercise {
 	public void setDisable(boolean isDisable) {
 		this.isDisable = isDisable;
 	}
-	public Long getId() {
+	public long getId() {
 		return id;
 	}
+	
+	
 	
 	
 }

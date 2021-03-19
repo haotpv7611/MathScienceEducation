@@ -2,54 +2,46 @@ package com.example.demo.dtos;
 
 public class ExerciseDTO {
 
-	private Long id;
+	private long id;
 	private int exerciseName;
-	private Long lessonId;
-	private Long progressTestId;
-	
-	public ExerciseDTO() {
-		
-	}
-
-	public Long getId() {
+	private long lessonId;
+	private long progressTestId;
+	public long getId() {
 		return id;
 	}
-
-	public void setId(Long id) {
+	public void setId(long id) {
 		this.id = id;
 	}
-
 	public int getExerciseName() {
 		return exerciseName;
 	}
-
 	public void setExerciseName(int exerciseName) {
 		this.exerciseName = exerciseName;
 	}
-
-	public Long getLessonId() {
+	public long getLessonId() {
 		return lessonId;
 	}
-
-	public void setLessonId(Long lessonId) {
+	public void setLessonId(long lessonId) {
 		this.lessonId = lessonId;
 	}
-
-	public Long getProgressTestId() {
+	public long getProgressTestId() {
 		return progressTestId;
 	}
-
-	public void setProgressTestId(Long progressTestId) {
+	public void setProgressTestId(long progressTestId) {
 		this.progressTestId = progressTestId;
 	}
-
-	public ExerciseDTO(Long id, int exerciseName, Long lessonId, Long progressTestId) {
+	public ExerciseDTO(long id, int exerciseName, long lessonId, long progressTestId) {
 		super();
 		this.id = id;
 		this.exerciseName = exerciseName;
 		this.lessonId = lessonId;
 		this.progressTestId = progressTestId;
 	}
+	public ExerciseDTO() {
+		
+	}
+	
+	
 	
 	
 	

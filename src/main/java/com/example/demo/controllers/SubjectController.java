@@ -21,7 +21,7 @@ public class SubjectController {
 	ISubjectService iSubjectService;
 	
 
-	@GetMapping("/grade/{gradeId}/subject")
+	@GetMapping("/grade/{gradeId}/subjects")
 	public ResponseEntity<List<SubjectDTO>> findSubjectByGradeId(@PathVariable long gradeId){
 		
 		List<SubjectDTO> response = iSubjectService.findSubjectByGradeId(gradeId);

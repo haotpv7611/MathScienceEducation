@@ -10,10 +10,10 @@ public class Lesson {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+	private long id;
 	private int lessonName;
 	private String lessonUrl;
-	private Long unitId;
+	private long unitId;
 	private boolean isDisable;
 	public int getLessonName() {
 		return lessonName;
@@ -27,10 +27,10 @@ public class Lesson {
 	public void setLessonUrl(String lessonUrl) {
 		this.lessonUrl = lessonUrl;
 	}
-	public Long getUnitId() {
+	public long getUnitId() {
 		return unitId;
 	}
-	public void setUnitId(Long unitId) {
+	public void setUnitId(long unitId) {
 		this.unitId = unitId;
 	}
 	public boolean isDisable() {
@@ -39,9 +39,10 @@ public class Lesson {
 	public void setDisable(boolean isDisable) {
 		this.isDisable = isDisable;
 	}
-	public Long getId() {
+	public long getId() {
 		return id;
 	}
+
 	
 	
 }

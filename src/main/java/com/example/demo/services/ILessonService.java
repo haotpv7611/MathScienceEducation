@@ -6,6 +6,6 @@ import com.example.demo.dtos.LessonDTO;
 
 public interface ILessonService {
 
-	List<LessonDTO> findByUnitIdOrderByLessonNameAsc(Long unitId);
-	LessonDTO findById(Long id);
+	List<LessonDTO> findByUnitIdOrderByLessonNameAsc(long unitId);
+	LessonDTO findById(long id);
 }

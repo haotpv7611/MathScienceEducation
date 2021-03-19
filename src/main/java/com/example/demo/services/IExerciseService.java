@@ -6,7 +6,7 @@ import com.example.demo.dtos.ExerciseDTO;
 
 public interface IExerciseService {
 
-	List<ExerciseDTO> findByLessonIdAndIsDisableOrderByExerciseNameAsc(Long lessonId);
+	List<ExerciseDTO> findByLessonIdAndIsDisableOrderByExerciseNameAsc(long lessonId);
 	
-	List<ExerciseDTO> findByProgressTestIdAndIsDisableOrderByExerciseNameAsc(Long progressTestId);
+	List<ExerciseDTO> findByProgressTestIdAndIsDisableOrderByExerciseNameAsc(long progressTestId);
 }

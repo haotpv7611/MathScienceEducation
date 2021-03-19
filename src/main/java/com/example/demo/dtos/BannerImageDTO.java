@@ -2,13 +2,13 @@ package com.example.demo.dtos;
 
 public class BannerImageDTO {
 	
-	private Long id;
+	private long id;
 	private String description;
-	private Long accountId;
-	public Long getId() {
+	private long accountId;
+	public long getId() {
 		return id;
 	}
-	public void setId(Long id) {
+	public void setId(long id) {
 		this.id = id;
 	}
 	public String getDescription() {
@@ -17,12 +17,23 @@ public class BannerImageDTO {
 	public void setDescription(String description) {
 		this.description = description;
 	}
-	public Long getAccountId() {
+	public long getAccountId() {
 		return accountId;
 	}
-	public void setAccountId(Long accountId) {
+	public void setAccountId(long accountId) {
 		this.accountId = accountId;
 	}
+	public BannerImageDTO() {
+		
+	}
+	public BannerImageDTO(long id, String description, long accountId) {
+		super();
+		this.id = id;
+		this.description = description;
+		this.accountId = accountId;
+	}
+	
+	
 	
 	
 

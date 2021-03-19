@@ -20,21 +20,15 @@ public class ExerciseController  {
 	@Autowired
 	IExerciseService iExerciseService;
 	
-	@GetMapping("/lesson/{lessonId}/exercise")
-	public ResponseEntity<List<ExerciseDTO>> findByLessonIdAndIsDisableOrderByExerciseNameAsc(@PathVariable Long lessonId){
+	@GetMapping("/lesson/{lessonId}/exercises")
+	public ResponseEntity<List<ExerciseDTO>> findByLessonIdAndIsDisableOrderByExerciseNameAsc(@PathVariable long lessonId){
 		List<ExerciseDTO> response = iExerciseService.findByLessonIdAndIsDisableOrderByExerciseNameAsc(lessonId);
-		if(response.isEmpty()) {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-		}
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 	
-	@GetMapping("/progressTest/{progressTestId}/exercise")
-	public ResponseEntity<List<ExerciseDTO>> findByProgressTestIdAndIsDisableOrderByExerciseNameAsc(@PathVariable Long progressTestId){
-		List<ExerciseDTO> response = iExerciseService.findByProgressTestIdAndIsDisableOrderByExerciseNameAsc(progressTestId);
-		if(response.isEmpty()) {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-		}
+	@GetMapping("/progressTest/{progressTestId}/exercises")
+	public ResponseEntity<List<ExerciseDTO>> findByProgressTestIdAndIsDisableOrderByExerciseNameAsc(@PathVariable long progressTestId){
+		List<ExerciseDTO> response = iExerciseService.findByProgressTestIdAndIsDisableOrderByExerciseNameAsc(progressTestId); 
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 }

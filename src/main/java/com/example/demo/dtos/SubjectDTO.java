@@ -2,17 +2,24 @@ package com.example.demo.dtos;
 
 public class SubjectDTO {
 
-	private Long id;
+	private long id;
 	private String subjectName;
 	private String imageUrl;
-	private Long gradeId;
+	private long gradeId;
 	private boolean isDisable;
 	
 	public SubjectDTO() {
 		
 	}
 
-	public SubjectDTO(Long id, String subjectName, String imageUrl, Long gradeId, boolean isDisable) {
+	public SubjectDTO(long id, String subjectName, long gradeId) {
+		super();
+		this.id = id;
+		this.subjectName = subjectName;
+		this.gradeId = gradeId;
+	}
+
+	public SubjectDTO(long id, String subjectName, String imageUrl, long gradeId, boolean isDisable) {
 		super();
 		this.id = id;
 		this.subjectName = subjectName;
@@ -21,18 +28,11 @@ public class SubjectDTO {
 		this.isDisable = isDisable;
 	}
 
-	public SubjectDTO(Long id, String subjectName, Long gradeId) {
-		super();
-		this.id = id;
-		this.subjectName = subjectName;
-		this.gradeId = gradeId;
-	}
-
-	public Long getId() {
+	public long getId() {
 		return id;
 	}
 
-	public void setId(Long id) {
+	public void setId(long id) {
 		this.id = id;
 	}
 
@@ -52,11 +52,11 @@ public class SubjectDTO {
 		this.imageUrl = imageUrl;
 	}
 
-	public Long getGradeId() {
+	public long getGradeId() {
 		return gradeId;
 	}
 
-	public void setGradeId(Long gradeId) {
+	public void setGradeId(long gradeId) {
 		this.gradeId = gradeId;
 	}
 
@@ -67,6 +67,7 @@ public class SubjectDTO {
 	public void setDisable(boolean isDisable) {
 		this.isDisable = isDisable;
 	}
+
 	
 	
 	

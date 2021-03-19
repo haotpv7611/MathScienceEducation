@@ -10,7 +10,7 @@ import com.example.demo.models.Exercise;
 @Repository
 public interface IExerciseRepository extends JpaRepository<Exercise, Long> {
 
-	List<Exercise> findByLessonIdAndIsDisableOrderByExerciseNameAsc(Long lessonId, boolean isDisable);
+	List<Exercise> findByLessonIdAndIsDisableOrderByExerciseNameAsc(long lessonId, boolean isDisable);
 	
-	List<Exercise> findByProgressTestIdAndIsDisableOrderByExerciseNameAsc(Long progressTestId, boolean isDisable);
+	List<Exercise> findByProgressTestIdAndIsDisableOrderByExerciseNameAsc(long progressTestId, boolean isDisable);
 }

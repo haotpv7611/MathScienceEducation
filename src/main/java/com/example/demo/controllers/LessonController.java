@@ -20,17 +20,14 @@ public class LessonController {
 	@Autowired
 	ILessonService iLessonService;
 	
-	@GetMapping("/unit/{unitId}/lesson")
-	public ResponseEntity<List<LessonDTO>> findByUnitIdOrderByLessonNameAsc(@PathVariable Long unitId){		
+	@GetMapping("/unit/{unitId}/lessons")
+	public ResponseEntity<List<LessonDTO>> findByUnitId(@PathVariable long unitId){		
 		List<LessonDTO> response = iLessonService.findByUnitIdOrderByLessonNameAsc(unitId);
-		if(response.isEmpty()) {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-		}
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 	
 	@GetMapping("/lesson/{id}")
-	public ResponseEntity<LessonDTO> findOneById(@PathVariable Long id){
+	public ResponseEntity<LessonDTO> findOneById(@PathVariable long id){
 		LessonDTO response = iLessonService.findById(id);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}

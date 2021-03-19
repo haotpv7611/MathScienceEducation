@@ -23,7 +23,7 @@ public class LessonServiceImpl implements ILessonService {
 	ModelMapper modelMapper;
 	
 	@Override
-	public List<LessonDTO> findByUnitIdOrderByLessonNameAsc(Long unitId) {
+	public List<LessonDTO> findByUnitIdOrderByLessonNameAsc(long unitId) {
 		List<Lesson> lessonList = iLessonRepository.findByUnitIdAndIsDisableOrderByLessonNameAsc(unitId, false);
 		List<LessonDTO> lessonDTOList = new ArrayList<>();
 		
@@ -36,8 +36,7 @@ public class LessonServiceImpl implements ILessonService {
 	}
 
 	@Override
-	public LessonDTO findById(Long id) {
-		
+	public LessonDTO findById(long id) {
 		Lesson lesson = iLessonRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());			
 		return modelMapper.map(lesson, LessonDTO.class);
 	}

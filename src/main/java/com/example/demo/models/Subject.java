@@ -10,11 +10,11 @@ public class Subject {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+	private long id;
 	
 	private String subjectName;
 	private String imageUrl;
-	private Long gradeId;
+	private long gradeId;
 	private boolean isDisable;
 	public String getSubjectName() {
 		return subjectName;
@@ -28,10 +28,10 @@ public class Subject {
 	public void setImageUrl(String imageUrl) {
 		this.imageUrl = imageUrl;
 	}
-	public Long getGradeId() {
+	public long getGradeId() {
 		return gradeId;
 	}
-	public void setGradeId(Long gradeId) {
+	public void setGradeId(long gradeId) {
 		this.gradeId = gradeId;
 	}
 	public boolean isDisable() {
@@ -40,9 +40,10 @@ public class Subject {
 	public void setDisable(boolean isDisable) {
 		this.isDisable = isDisable;
 	}
-	public Long getId() {
+	public long getId() {
 		return id;
 	}
+	
 	
 	
 }
