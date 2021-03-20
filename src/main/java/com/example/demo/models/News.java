@@ -30,6 +30,10 @@ public class News {
 	private boolean isDisable;
 	private long accountId;
 
+	
+	public News() {
+	}
+	
 	/**
 	 * @return the title
 	 */
@@ -166,4 +170,13 @@ public class News {
 		return id;
 	}
 
+	@Override
+	public String toString() {
+		return "News [id=" + id + ", newsTitle=" + newsTitle + ", shortDescription=" + shortDescription
+				+ ", newsContent=" + newsContent + ", createdDate=" + createdDate + ", createdBy=" + createdBy
+				+ ", modifiedDate=" + modifiedDate + ", modifiedBy=" + modifiedBy + ", isDisable=" + isDisable
+				+ ", accountId=" + accountId + "]";
+	}
+
+	
 }

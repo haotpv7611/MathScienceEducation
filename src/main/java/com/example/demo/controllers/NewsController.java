@@ -8,6 +8,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dtos.NewsDTO;
@@ -15,28 +20,61 @@ import com.example.demo.services.INewsService;
 
 @CrossOrigin
 @RestController
+@RequestMapping("/news")
 public class NewsController {
-	
+
 	@Autowired
 	private INewsService inewsService;
-	
-	@GetMapping("/news")
-	public ResponseEntity<List<NewsDTO>> findAllOrderByCreateDateDesc(){		
-		List<NewsDTO> response = inewsService.findAllNewsOrderByCreatedDateDesc();
+
+	@GetMapping
+	public ResponseEntity<List<NewsDTO>> findAllOrderByCreateDateDesc(@RequestParam(name = "isStudent") boolean isStudent) {
+		List<NewsDTO> response = inewsService.findAllNewsOrderByCreatedDateDesc(isStudent);
 
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 	
-	@GetMapping("/news/3newest")
-	public ResponseEntity<List<NewsDTO>> findThreeOrderByCreateDateDesc(){
+	@GetMapping("/3newest")
+	public ResponseEntity<List<NewsDTO>> findThreeOrderByCreateDateDesc() {
 		List<NewsDTO> response = inewsService.findThreeNewsOrderByCreatedDateDesc();
 
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
-	
-	@GetMapping("/news/{id}")
-	public ResponseEntity<NewsDTO> findNewsById(@PathVariable long id){
-		
+
+	@GetMapping("/{id}")
+	public ResponseEntity<NewsDTO> findNewsById(@PathVariable long id) {
+
 		return ResponseEntity.status(HttpStatus.OK).body(inewsService.findNewsById(id));
 	}
+
+	@PostMapping
+	public ResponseEntity<String> createNews(@RequestBody NewsDTO newsDTO) {
+		System.out.println("start");
+		String response = inewsService.createNews(newsDTO);
+		if (response.contains("permission")) {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+		}
+		if (!response.contains("SUCCESS")) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+		}
+
+		return ResponseEntity.status(HttpStatus.CREATED).body(response);
+	}
+	
+	@PutMapping
+	public ResponseEntity<String> updateNews(@RequestBody NewsDTO newsDTO) {
+		
+		String response = inewsService.updateNews(newsDTO);
+		if (!response.contains("SUCCESS")) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+		}
+
+		return ResponseEntity.status(HttpStatus.OK).body(response);
+	}
+	
+	@PutMapping("/{id}")
+	public ResponseEntity<String> deleteNews(@PathVariable long id) {
+		inewsService.deleteNews(id);
+		return ResponseEntity.status(HttpStatus.OK).body("DELETE SUCCESS!");
+	}
+
 }
