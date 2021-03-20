@@ -18,6 +18,9 @@ import com.example.demo.services.INewsService;;
 
 @Service
 public class NewsServiceImpl implements INewsService {
+	
+	private final int TITLE_MAX_LENGTH = 100;
+	private final int SHORTDESCRIPTION_MAX_LENGTH = 150;
 
 	@Autowired
 	private INewsRepository iNewsRepository;
@@ -30,9 +33,15 @@ public class NewsServiceImpl implements INewsService {
 
 	@Override
 	public List<NewsDTO> findAllNewsOrderByCreatedDateDesc(boolean isStudent) {
+		List<News> newsList = null;
+
 		// 1. connect database through repository
 		// 2. find all entities are not disable and sort descending by Created Date
-		List<News> newsList = iNewsRepository.findByIsDisableOrderByCreatedDateDesc(false);
+		if (isStudent) {
+			newsList = iNewsRepository.findByIsDisableOrderByCreatedDateDesc(false);
+		} else {
+			newsList = iNewsRepository.findByOrderByCreatedDateDesc();
+		}
 
 		List<NewsDTO> newsDTOList = new ArrayList<>();
 
@@ -107,14 +116,13 @@ public class NewsServiceImpl implements INewsService {
 	}
 
 	@Override
-	public String createNews(NewsDTO newsDTO) {
+	public String createNews(String newsTitle, String shortDescription, String newsContent, long accountId) {
 		String error = "";
 
 		// 1. connect database through repository
 		// 2. find entity by Id
 		// 3. if not found throw not found exception
-		Account account = iAccountRepository.findById(newsDTO.getAccountId())
-				.orElseThrow(() -> new ResourceNotFoundException());
+		Account account = iAccountRepository.findById(accountId).orElseThrow(() -> new ResourceNotFoundException());
 
 		// 4. if role is not admin, return error no permission
 		if (account.getRoleId() != 1) {
@@ -122,25 +130,28 @@ public class NewsServiceImpl implements INewsService {
 			return error;
 		}
 
-		// 5. if parameter valid, create new entity and return SUCCESS
-		// 6. else return error
-		if (newsDTO.getNewsTitle() == null) {
-			error += "NewsTitle is empty!, ";
+		// 5. validate parameter
+		if (newsTitle == null || newsTitle.length() > TITLE_MAX_LENGTH) {
+			error += "NewsTitle is invalid!, ";
+		}
+		if (shortDescription.length() > SHORTDESCRIPTION_MAX_LENGTH) {
+			error += "ShortDescription is invalid!, ";
+		}
+		if (newsContent == null) {
+			error += "NewsContent is invalid!";
 		}
 
-		if (newsDTO.getNewsContent() == null) {
-			error += "NewsContent is empty!";
-		}
-
+		// 6. if parameter valid, create new entity and return SUCCESS
+		// 7. else return error
 		if (!error.isEmpty()) {
 			return error;
 		} else {
 			News news = new News();
-			news.setNewsTitle(newsDTO.getNewsTitle());
-			news.setShortDescription(newsDTO.getShortDescription());
-			news.setNewsContent(newsDTO.getNewsContent());
+			news.setNewsTitle(newsTitle);
+			news.setShortDescription(shortDescription);
+			news.setNewsContent(newsContent);
 			news.setDisable(false);
-			news.setAccountId(newsDTO.getAccountId());			
+			news.setAccountId(accountId);
 			iNewsRepository.save(news);
 
 			return "CREATE SUCCESS!";
@@ -148,31 +159,33 @@ public class NewsServiceImpl implements INewsService {
 	}
 
 	@Override
-	public String updateNews(NewsDTO newsDTO) {
+	public String updateNews(long id, String newsTitle, String shortDescription, String newsContent) {
 		String error = "";
 
 		// 1. connect database through repository
 		// 2. find entity by id
 		// 3. if not existed throw exception
-		News news = iNewsRepository.findById(newsDTO.getId()).orElseThrow(() -> new ResourceNotFoundException());
+		News news = iNewsRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
 
-		// 4. if parameter valid, update entity and return SUCCESS
-		// 5. else return error
-		if (newsDTO.getNewsTitle() == null) {
-			error += "NewsTitle is empty!, ";
-		} else {
-			news.setNewsTitle(newsDTO.getNewsTitle());
+		// 4. validate parameter
+		if (newsTitle == null || newsTitle.length() > TITLE_MAX_LENGTH) {
+			error += "NewsTitle is invalid!, ";
 		}
-
-		if (newsDTO.getNewsContent() == null) {
-			error += "NewsContent is empty!";
-		} else {
-			news.setNewsContent(newsDTO.getNewsContent());
+		if (shortDescription.length() > SHORTDESCRIPTION_MAX_LENGTH) {
+			error += "ShortDescription is invalid!, ";
 		}
+		if (newsContent == null) {
+			error += "NewsContent is invalid!";
+		} 
 
+		// 5. if parameter valid, update entity and return SUCCESS
+		// 6. else return error
 		if (!error.isEmpty()) {
 			return error;
 		} else {
+			news.setNewsTitle(newsTitle);
+			news.setShortDescription(shortDescription);
+			news.setNewsContent(newsContent);
 			iNewsRepository.save(news);
 			return "UPDATE SUCCESS!";
 		}
