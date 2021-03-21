@@ -3,61 +3,44 @@ package com.example.demo.dtos;
 public class UnitDTO{
 	private long id;
 	
-//	private int unitName;
-	private String unitName;
+	private int unitName;
 	private long subjectId;
 
 	public UnitDTO() {
 	}
 
-	public UnitDTO(long id, String unitName, long subjectId) {
+	public long getId() {
+		return id;
+	}
+
+	public void setId(long id) {
+		this.id = id;
+	}
+
+	public int getUnitName() {
+		return unitName;
+	}
+
+	public void setUnitName(int unitName) {
+		this.unitName = unitName;
+	}
+
+	public long getSubjectId() {
+		return subjectId;
+	}
+
+	public void setSubjectId(long subjectId) {
+		this.subjectId = subjectId;
+	}
+
+	public UnitDTO(long id, int unitName, long subjectId) {
 		super();
 		this.id = id;
 		this.unitName = unitName;
 		this.subjectId = subjectId;
 	}
 
-	/**
-	 * @return the id
-	 */
-	public long getId() {
-		return id;
-	}
-
-	/**
-	 * @param id the id to set
-	 */
-	public void setId(long id) {
-		this.id = id;
-	}
-
-	/**
-	 * @return the unitName
-	 */
-	public String getUnitName() {
-		return unitName;
-	}
-
-	/**
-	 * @param unitName the unitName to set
-	 */
-	public void setUnitName(String unitName) {
-		this.unitName = unitName;
-	}
-
-	/**
-	 * @return the subjectId
-	 */
-	public long getSubjectId() {
-		return subjectId;
-	}
-
-	/**
-	 * @param subjectId the subjectId to set
-	 */
-	public void setSubjectId(long subjectId) {
-		this.subjectId = subjectId;
-	}
+	
 
 //	Comparator<UnitDTO> compareByUnitName = new Comparator<UnitDTO>() {
 //		@Override

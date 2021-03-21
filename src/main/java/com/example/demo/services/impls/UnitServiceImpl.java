@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.example.demo.dtos.ProgressTestDTO;
 import com.example.demo.dtos.UnitDTO;
 import com.example.demo.dtos.UnitViewDTO;
+import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.Unit;
 import com.example.demo.repositories.IUnitRepository;
 import com.example.demo.services.IProgressTestService;
@@ -93,11 +94,34 @@ public class UnitServiceImpl implements IUnitService {
 		return unitViewDTOList;
 	}
 
-//	public Unit create(Unit unit) {
-//		return iUnitRepository.save(unit);
-//	}
-//	
-//	public List<Unit> findAll(){
-//		return unitRepository.findAll();
-//	}
+	@Override
+	public UnitDTO createUnit(UnitDTO unitDTO) {
+		if (unitDTO.getUnitName() != 0) {
+			Unit unit = modelMapper.map(unitDTO, Unit.class);
+			unit.setDisable(false);
+			return modelMapper.map(iUnitRepository.save(unit), UnitDTO.class);
+		}
+		return null;
+	}
+
+	@Override
+	public UnitDTO updateUnit(UnitDTO unitDTO) {
+Unit unit = iUnitRepository.findById(unitDTO.getId()).orElseThrow(()-> new ResourceNotFoundException());
+		
+		if (unitDTO.getUnitName() != 0) {
+			unit.setUnitName(unitDTO.getUnitName());
+		}
+		unit = iUnitRepository.save(unit);
+		return modelMapper.map(unit, UnitDTO.class);
+	}
+
+	@Override
+	public String deleteUnit(Long id) {
+		Unit unit = iUnitRepository.findById(id).orElseThrow(()->new ResourceNotFoundException());
+		unit.setDisable(true);
+		iUnitRepository.save(unit);
+		return "Delete Successed";
+	}
+
+
 }
