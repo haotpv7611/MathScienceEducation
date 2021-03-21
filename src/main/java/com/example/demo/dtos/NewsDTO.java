@@ -16,6 +16,7 @@ public class NewsDTO {
 	private String createdBy;
 	@JsonFormat(pattern = "dd-MM-yyyy HH:mm")
 	private LocalDateTime modifiedDate;
+	private String modifiedBy;
 
 	private boolean isDisable;
 	private long accountId;
@@ -162,6 +163,20 @@ public class NewsDTO {
 	 */
 	public void setAccountId(long accountId) {
 		this.accountId = accountId;
+	}
+
+	/**
+	 * @return the modifiedBy
+	 */
+	public String getModifiedBy() {
+		return modifiedBy;
+	}
+
+	/**
+	 * @param modifiedBy the modifiedBy to set
+	 */
+	public void setModifiedBy(String modifiedBy) {
+		this.modifiedBy = modifiedBy;
 	}
 
 }

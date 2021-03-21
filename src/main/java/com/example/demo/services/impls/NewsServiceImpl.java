@@ -18,7 +18,6 @@ import com.example.demo.services.INewsService;;
 
 @Service
 public class NewsServiceImpl implements INewsService {
-	
 	private final int TITLE_MAX_LENGTH = 100;
 	private final int SHORTDESCRIPTION_MAX_LENGTH = 150;
 
@@ -131,19 +130,20 @@ public class NewsServiceImpl implements INewsService {
 		}
 
 		// 5. validate parameter
-		if (newsTitle == null || newsTitle.length() > TITLE_MAX_LENGTH) {
+		if (newsTitle.isEmpty() || newsTitle.length() > TITLE_MAX_LENGTH) {
 			error += "NewsTitle is invalid!, ";
 		}
 		if (shortDescription.length() > SHORTDESCRIPTION_MAX_LENGTH) {
 			error += "ShortDescription is invalid!, ";
 		}
-		if (newsContent == null) {
+		if (newsContent.isEmpty()) {
 			error += "NewsContent is invalid!";
 		}
 
 		// 6. if parameter valid, create new entity and return SUCCESS
 		// 7. else return error
 		if (!error.isEmpty()) {
+			
 			return error;
 		} else {
 			News news = new News();
@@ -168,38 +168,46 @@ public class NewsServiceImpl implements INewsService {
 		News news = iNewsRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
 
 		// 4. validate parameter
-		if (newsTitle == null || newsTitle.length() > TITLE_MAX_LENGTH) {
+		if (newsTitle.length() > TITLE_MAX_LENGTH) {
 			error += "NewsTitle is invalid!, ";
 		}
 		if (shortDescription.length() > SHORTDESCRIPTION_MAX_LENGTH) {
-			error += "ShortDescription is invalid!, ";
+			error += "ShortDescription is invalid!";
 		}
-		if (newsContent == null) {
-			error += "NewsContent is invalid!";
-		} 
 
 		// 5. if parameter valid, update entity and return SUCCESS
 		// 6. else return error
 		if (!error.isEmpty()) {
+			
 			return error;
 		} else {
-			news.setNewsTitle(newsTitle);
+			if (!newsTitle.isEmpty()) {
+				news.setNewsTitle(newsTitle);
+			}
 			news.setShortDescription(shortDescription);
-			news.setNewsContent(newsContent);
+			if (!newsContent.isEmpty()) {
+				news.setNewsContent(newsContent);
+			}
 			iNewsRepository.save(news);
+			
 			return "UPDATE SUCCESS!";
 		}
 	}
 
 	@Override
-	public void deleteNews(long id) {
+	public String deleteNews(long id) {
 		// 1. connect database through repository
 		// 2. find entity by id
 		// 3. if not existed throw exception
 		News news = iNewsRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
 
-		// 4. update entity with isDisable = true;
+		// 4. update entity with isDisable = true
+		if (news.isDisable()) {
+			return "Id is invalid";
+		}
 		news.setDisable(true);
 		iNewsRepository.save(news);
+		
+		return "DELETE SUCCESS!";
 	}
 }
