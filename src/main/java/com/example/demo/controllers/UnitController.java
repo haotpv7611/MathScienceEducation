@@ -56,11 +56,11 @@ public class UnitController {
 		
 	}
 	
-	@PutMapping("/unit/{id}")
-	public ResponseEntity<String> deleteUnit(@PathVariable long id){
-		iUnitService.deleteUnit(id);
-		return ResponseEntity.status(HttpStatus.OK).body("DELETE SUCCESS!");
-	}
+//	@PutMapping("/unit/{id}")
+//	public ResponseEntity<String> deleteUnit(@PathVariable long id){
+//		iUnitService.deleteUnit(id);
+//		return ResponseEntity.status(HttpStatus.OK).body("DELETE SUCCESS!");
+//	}
 	
 
 
