@@ -19,6 +19,8 @@ import com.example.demo.services.IUnitService;
 @Service
 public class UnitServiceImpl implements IUnitService {
 
+	private final int DESCRIPTION = 50;
+
 	@Autowired
 	private IUnitRepository iUnitRepository;
 
@@ -62,7 +64,7 @@ public class UnitServiceImpl implements IUnitService {
 
 		List<UnitViewDTO> unitViewDTOList = new ArrayList<>();
 
-		if (!unitDTOList.isEmpty() && !progressTestDTOList.isEmpty()) {
+		if (!unitDTOList.isEmpty() ) {
 			List<UnitDTO> unitDTOListSplit = new ArrayList<>();
 
 			// 2. split list unitDTO into small lists by progresTest unitAfterId
@@ -84,7 +86,7 @@ public class UnitServiceImpl implements IUnitService {
 
 			// 5. if list unitDTO split more than progressTestDTO, set unitViewDTO with
 			// progressTestDTO is null
-			
+
 			if (!unitDTOListSplit.isEmpty()) {
 				UnitViewDTO unitViewDTO = new UnitViewDTO(unitDTOListSplit, null);
 				unitViewDTOList.add(unitViewDTO);
@@ -95,33 +97,58 @@ public class UnitServiceImpl implements IUnitService {
 	}
 
 	@Override
-	public UnitDTO createUnit(UnitDTO unitDTO) {
-		if (unitDTO.getUnitName() != 0) {
-			Unit unit = modelMapper.map(unitDTO, Unit.class);
-			unit.setDisable(false);
-			return modelMapper.map(iUnitRepository.save(unit), UnitDTO.class);
-		}
-		return null;
-	}
-
-	@Override
-	public UnitDTO updateUnit(UnitDTO unitDTO) {
-Unit unit = iUnitRepository.findById(unitDTO.getId()).orElseThrow(()-> new ResourceNotFoundException());
-		
-		if (unitDTO.getUnitName() != 0) {
-			unit.setUnitName(unitDTO.getUnitName());
-		}
-		unit = iUnitRepository.save(unit);
-		return modelMapper.map(unit, UnitDTO.class);
-	}
-
-	@Override
-	public String deleteUnit(Long id) {
-		Unit unit = iUnitRepository.findById(id).orElseThrow(()->new ResourceNotFoundException());
+	public void deleteUnit(long id) {
+		Unit unit = iUnitRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
 		unit.setDisable(true);
 		iUnitRepository.save(unit);
-		return "Delete Successed";
 	}
 
+	@Override
+	public String createUnit(long subjectId, int unitName, String description) {
+		String error = "";
+		
+		if(unitName == 0) {
+			error += "Unit Name is invalid !";
+			return error;
+		}
+		if(description.length() > DESCRIPTION) {
+			error += "Description is invalid";
+			return error;
+		}
+		if(!error.isEmpty()) {
+			return error;
+		}else {
+			Unit unit = new Unit();
+			unit.setUnitName(unitName);
+			unit.setDescription(description);
+			unit.setSubjectId(subjectId);
+			unit.setDisable(false);
+			iUnitRepository.save(unit);
+			return "CREATE SUCCESS !";
+		}
+	}
+
+	@Override
+	public String updateUnit(long id, int unitName, String description) {
+		String error="";
+		Unit unit = iUnitRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
+		if(unitName == 0) {
+			error += "Unit Name is invalid !";
+			return error;
+		}
+		if(description.length() > DESCRIPTION) {
+			error += "Description is invalid";
+			return error;
+		}
+		if(!error.isEmpty()) {
+			return error;
+		}else {			
+			unit.setUnitName(unitName);
+			unit.setDescription(description);						
+			iUnitRepository.save(unit);
+			return "UPDATE SUCCESS !";
+		}
+		
+	}
 
 }

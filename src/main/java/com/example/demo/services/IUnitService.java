@@ -8,7 +8,7 @@ import com.example.demo.dtos.UnitDTO;
 public interface IUnitService {
 	List<UnitDTO> findBySubjectIdOrderByUnitNameAsc(long subjectId);
 	List<UnitViewDTO> showUnitViewBySubjectId(long subjectId);
-	UnitDTO createUnit(UnitDTO unitDTO);
-	UnitDTO updateUnit(UnitDTO unitDTO);
-	String deleteUnit(Long id);
+	String createUnit(long subjectId, int unitName, String description);
+	String updateUnit(long id, int unitName, String description);
+	void deleteUnit(long id);
 }
