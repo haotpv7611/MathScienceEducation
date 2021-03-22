@@ -10,5 +10,5 @@ public interface INewsService {
 	NewsDTO findNewsById(long id);
 	String createNews(String newsTitle, String shortDescription, String newsContent, long accountId);
 	String updateNews(long id, String newsTitle, String shortDescription, String newsContent);
-	void deleteNews(long id);
+	String deleteNews(long id);
 }

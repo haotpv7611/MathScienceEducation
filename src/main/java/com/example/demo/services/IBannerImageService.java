@@ -2,7 +2,13 @@ package com.example.demo.services;
 
 import java.util.List;
 
-public interface IBannerImageService {
+import com.example.demo.dtos.BannerImageDTO;
 
-	List<String> findAll();
+public interface IBannerImageService {
+	List<String> showBannerImage();
+	List<BannerImageDTO> findAll();
+	BannerImageDTO findById(long id);
+	String createBannerImage(String imageUrl, String description, long accountId);
+	String updateBannerImage(long id, String imageUrl, String description);
+	String deleteBannerImage(long id);
 }

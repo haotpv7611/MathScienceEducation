@@ -50,11 +50,11 @@ public class NewsController {
 			@RequestParam String newsContent, @RequestParam long accountId) {
 		String response = inewsService.createNews(newsTitle, shortDescription, newsContent, accountId);
 		if (response.contains("permission")) {
-			
+
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
 		}
 		if (!response.contains("SUCCESS")) {
-			
+
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 		}
 
@@ -66,7 +66,7 @@ public class NewsController {
 			@RequestParam String shortDescription, @RequestParam String newsContent) {
 		String response = inewsService.updateNews(id, newsTitle, shortDescription, newsContent);
 		if (!response.contains("SUCCESS")) {
-			
+
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 		}
 
@@ -75,9 +75,13 @@ public class NewsController {
 
 	@PutMapping("/{id}")
 	public ResponseEntity<String> deleteNews(@PathVariable long id) {
-		inewsService.deleteNews(id);
-		
-		return ResponseEntity.status(HttpStatus.OK).body("DELETE SUCCESS!");
+		String response = inewsService.deleteNews(id);
+		if (!response.contains("SUCCESS")) {
+
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+		}
+
+		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 
 }
