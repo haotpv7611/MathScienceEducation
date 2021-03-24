@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
-public class NewsDTO {
+public class NewsResponseDTO {
 
 	private long id;
 	private String newsTitle;
@@ -21,17 +21,17 @@ public class NewsDTO {
 	private boolean isDisable;
 	private long accountId;
 
-	public NewsDTO() {
+	public NewsResponseDTO() {
 	}
 
-	public NewsDTO(String newsTitle, String newsContent, LocalDateTime createdDate) {
+	public NewsResponseDTO(String newsTitle, String newsContent, LocalDateTime createdDate) {
 		super();
 		this.newsTitle = newsTitle;
 		this.newsContent = newsContent;
 		this.createdDate = createdDate;
 	}
 
-	public NewsDTO(long id, String newsTitle, String shortDescription, LocalDateTime createdDate) {
+	public NewsResponseDTO(long id, String newsTitle, String shortDescription, LocalDateTime createdDate) {
 		super();
 		this.id = id;
 		this.newsTitle = newsTitle;

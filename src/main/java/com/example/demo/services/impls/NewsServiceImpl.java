@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.modelmapper.ModelMapper;
-//import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.example.demo.dtos.NewsDTO;
+import com.example.demo.dtos.NewsRequestDTO;
+import com.example.demo.dtos.NewsResponseDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.Account;
 import com.example.demo.models.News;
@@ -18,8 +18,6 @@ import com.example.demo.services.INewsService;;
 
 @Service
 public class NewsServiceImpl implements INewsService {
-	private final int TITLE_MAX_LENGTH = 100;
-	private final int SHORTDESCRIPTION_MAX_LENGTH = 150;
 
 	@Autowired
 	private INewsRepository iNewsRepository;
@@ -31,7 +29,7 @@ public class NewsServiceImpl implements INewsService {
 	private ModelMapper modelMapper;
 
 	@Override
-	public List<NewsDTO> findAllNewsOrderByCreatedDateDesc(boolean isStudent) {
+	public List<NewsResponseDTO> findAllNewsOrderByCreatedDateDesc(boolean isStudent) {
 		List<News> newsList = null;
 
 		// 1. connect database through repository
@@ -42,25 +40,25 @@ public class NewsServiceImpl implements INewsService {
 			newsList = iNewsRepository.findByOrderByCreatedDateDesc();
 		}
 
-		List<NewsDTO> newsDTOList = new ArrayList<>();
+		List<NewsResponseDTO> newsDTOList = new ArrayList<>();
 
 		// 3. convert all entities to dtos
 		// 4. add all dtos to newsDTOList
 		if (!newsList.isEmpty()) {
 			for (News news : newsList) {
-				NewsDTO newsDTO = null;
+				NewsResponseDTO newsResponseDTO = null;
 
 				// 5. set response by view and return
 				if (isStudent) {
-					newsDTO = new NewsDTO(news.getId(), news.getNewsTitle(), news.getShortDescription(),
+					newsResponseDTO = new NewsResponseDTO(news.getId(), news.getNewsTitle(), news.getShortDescription(),
 							news.getCreatedDate());
 				} else {
-					newsDTO = modelMapper.map(news, NewsDTO.class);
-					newsDTO.setShortDescription(null);
-					newsDTO.setNewsContent(null);
-					newsDTO.setAccountId(0);
+					newsResponseDTO = modelMapper.map(news, NewsResponseDTO.class);
+					newsResponseDTO.setShortDescription(null);
+					newsResponseDTO.setNewsContent(null);
+					newsResponseDTO.setAccountId(0);
 				}
-				newsDTOList.add(newsDTO);
+				newsDTOList.add(newsResponseDTO);
 			}
 		}
 
@@ -68,7 +66,7 @@ public class NewsServiceImpl implements INewsService {
 	}
 
 	@Override
-	public List<NewsDTO> findThreeNewsOrderByCreatedDateDesc() {
+	public List<NewsResponseDTO> findThreeNewsOrderByCreatedDateDesc() {
 		List<News> newsList = null;
 
 		// 1. connect database through repository
@@ -82,15 +80,15 @@ public class NewsServiceImpl implements INewsService {
 			newsList = iNewsRepository.findByIsDisableOrderByCreatedDateDesc(false);
 		}
 
-		List<NewsDTO> threeNewest = new ArrayList<>();
+		List<NewsResponseDTO> threeNewest = new ArrayList<>();
 
 		// 5. convert 3 entity to dto
 		// 6. add all dto to newsDTOList and return
 		if (!newsList.isEmpty()) {
 			for (News news : newsList) {
-				NewsDTO newsDTO = new NewsDTO(news.getId(), news.getNewsTitle(), news.getShortDescription(),
-						news.getCreatedDate());
-				threeNewest.add(newsDTO);
+				NewsResponseDTO newsResponseDTO = new NewsResponseDTO(news.getId(), news.getNewsTitle(),
+						news.getShortDescription(), news.getCreatedDate());
+				threeNewest.add(newsResponseDTO);
 			}
 		}
 
@@ -98,7 +96,7 @@ public class NewsServiceImpl implements INewsService {
 	}
 
 	@Override
-	public NewsDTO findNewsById(long id) {
+	public NewsResponseDTO findNewsById(long id) {
 		// 1. connect database through repository
 		// 2. find entity by Id
 		// 3. if not found throw not found exception
@@ -106,22 +104,27 @@ public class NewsServiceImpl implements INewsService {
 		// 5. return
 		News news = iNewsRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
 
-		NewsDTO newsDTO = null;
-		if (!news.isDisable()) {
-			newsDTO = new NewsDTO(news.getNewsTitle(), news.getNewsContent(), news.getCreatedDate());
+		if (news.isDisable()) {
+			throw new ResourceNotFoundException();
 		}
+		NewsResponseDTO newsResponseDTO = new NewsResponseDTO(news.getNewsTitle(), news.getNewsContent(),
+				news.getCreatedDate());
 
-		return newsDTO;
+		return newsResponseDTO;
 	}
 
 	@Override
-	public String createNews(String newsTitle, String shortDescription, String newsContent, long accountId) {
+	public String createNews(NewsRequestDTO newsRequestDTO) {
 		String error = "";
 
 		// 1. connect database through repository
 		// 2. find entity by Id
 		// 3. if not found throw not found exception
-		Account account = iAccountRepository.findById(accountId).orElseThrow(() -> new ResourceNotFoundException());
+		Account account = iAccountRepository.findById(newsRequestDTO.getAccountId())
+				.orElseThrow(() -> new ResourceNotFoundException());
+		if (account.isDisable()) {
+			throw new ResourceNotFoundException();
+		}
 
 		// 4. if role is not admin, return error no permission
 		if (account.getRoleId() != 1) {
@@ -129,69 +132,34 @@ public class NewsServiceImpl implements INewsService {
 			return error;
 		}
 
-		// 5. validate parameter
-		if (newsTitle.isEmpty() || newsTitle.length() > TITLE_MAX_LENGTH) {
-			error += "NewsTitle is invalid!, ";
-		}
-		if (shortDescription.length() > SHORTDESCRIPTION_MAX_LENGTH) {
-			error += "ShortDescription is invalid!, ";
-		}
-		if (newsContent.isEmpty()) {
-			error += "NewsContent is invalid!";
-		}
+		// 5. create new entity and return SUCCESS
+		News news = modelMapper.map(newsRequestDTO, News.class);
+		news.setDisable(false);
+		iNewsRepository.save(news);
 
-		// 6. if parameter valid, create new entity and return SUCCESS
-		// 7. else return error
-		if (!error.isEmpty()) {
-			
-			return error;
-		} else {
-			News news = new News();
-			news.setNewsTitle(newsTitle);
-			news.setShortDescription(shortDescription);
-			news.setNewsContent(newsContent);
-			news.setDisable(false);
-			news.setAccountId(accountId);
-			iNewsRepository.save(news);
-
-			return "CREATE SUCCESS!";
-		}
+		return "CREATE SUCCESS!";
 	}
 
 	@Override
-	public String updateNews(long id, String newsTitle, String shortDescription, String newsContent) {
-		String error = "";
+	public String updateNews(NewsRequestDTO newsRequestDTO) {
 
 		// 1. connect database through repository
 		// 2. find entity by id
 		// 3. if not existed throw exception
-		News news = iNewsRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
+		News news = iNewsRepository.findById(newsRequestDTO.getId()).orElseThrow(() -> new ResourceNotFoundException());
 
-		// 4. validate parameter
-		if (newsTitle.length() > TITLE_MAX_LENGTH) {
-			error += "NewsTitle is invalid!, ";
+		if (news.isDisable()) {
+			throw new ResourceNotFoundException();
 		}
-		if (shortDescription.length() > SHORTDESCRIPTION_MAX_LENGTH) {
-			error += "ShortDescription is invalid!";
-		}
-
 		// 5. if parameter valid, update entity and return SUCCESS
 		// 6. else return error
-		if (!error.isEmpty()) {
-			
-			return error;
-		} else {
-			if (!newsTitle.isEmpty()) {
-				news.setNewsTitle(newsTitle);
-			}
-			news.setShortDescription(shortDescription);
-			if (!newsContent.isEmpty()) {
-				news.setNewsContent(newsContent);
-			}
-			iNewsRepository.save(news);
-			
-			return "UPDATE SUCCESS!";
-		}
+
+		news.setNewsTitle(newsRequestDTO.getNewsTitle());
+		news.setShortDescription(newsRequestDTO.getShortDescription());
+		news.setNewsContent(newsRequestDTO.getNewsContent());
+		iNewsRepository.save(news);
+
+		return "UPDATE SUCCESS!";
 	}
 
 	@Override
@@ -203,11 +171,11 @@ public class NewsServiceImpl implements INewsService {
 
 		// 4. update entity with isDisable = true
 		if (news.isDisable()) {
-			return "Id is invalid";
+			throw new ResourceNotFoundException();
 		}
 		news.setDisable(true);
 		iNewsRepository.save(news);
-		
+
 		return "DELETE SUCCESS!";
 	}
 }

@@ -2,13 +2,14 @@ package com.example.demo.services;
 
 import java.util.List;
 
-import com.example.demo.dtos.NewsDTO;
+import com.example.demo.dtos.NewsRequestDTO;
+import com.example.demo.dtos.NewsResponseDTO;
 
 public interface INewsService {
-	List<NewsDTO> findAllNewsOrderByCreatedDateDesc(boolean isStudent);
-	List<NewsDTO> findThreeNewsOrderByCreatedDateDesc();
-	NewsDTO findNewsById(long id);
-	String createNews(String newsTitle, String shortDescription, String newsContent, long accountId);
-	String updateNews(long id, String newsTitle, String shortDescription, String newsContent);
+	List<NewsResponseDTO> findAllNewsOrderByCreatedDateDesc(boolean isStudent);
+	List<NewsResponseDTO> findThreeNewsOrderByCreatedDateDesc();
+	NewsResponseDTO findNewsById(long id);
+	String createNews(NewsRequestDTO newsRequestDTO);
+	String updateNews(NewsRequestDTO newsRequestDTO);
 	String deleteNews(long id);
 }
