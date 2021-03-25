@@ -7,7 +7,8 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.example.demo.dtos.SchoolDTO;
+import com.example.demo.dtos.SchoolRequestDTO;
+import com.example.demo.dtos.SchoolResponseDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.School;
 import com.example.demo.repositories.ISchoolRepository;
@@ -23,66 +24,60 @@ public class SchoolServiceImpl implements ISchoolService {
 	private ModelMapper modelMapper;
 
 	@Override
-	public SchoolDTO createSchool(SchoolDTO schoolDTO) {
+	public String createSchool(SchoolRequestDTO schoolRequestDTO) {
+		schoolRequestDTO.setSchoolName(schoolRequestDTO.getSchoolName().trim());
+		String schoolCode = generateSchoolCode(schoolRequestDTO.getSchoolName());
+		String schoolCount = generateSchoolCount(schoolCode);
+		School school = modelMapper.map(schoolRequestDTO, School.class);
+		school.setSchoolCode(schoolCode);
+		school.setSchoolCount(schoolCount);
+		school.setDisable(false);
+		iSchoolRepository.save(school);
 
-		if (schoolDTO.getSchoolName() != null && schoolDTO.getSchoolAddress() != null) {
-
-			School school = modelMapper.map(schoolDTO, School.class);
-			String schoolCode = generateSchoolCode(schoolDTO.getSchoolName());
-			school.setSchoolCode(schoolCode);
-			school.setSchoolCount(generateSchoolCount(schoolCode));
-			school.setDisable(false);
-
-			return modelMapper.map(iSchoolRepository.save(school), SchoolDTO.class);
-		}
-
-		return null;
+		return "CREATE SUCCESS!";
 	}
 
 	@Override
-	public SchoolDTO updateSchool(SchoolDTO schoolDTO) {
-
-		School school = iSchoolRepository.findById(schoolDTO.getId())
+	public String updateSchool(long id, SchoolRequestDTO schoolRequestDTO) {
+		School school = iSchoolRepository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException());
-		if (schoolDTO.getSchoolName() != null) {
-			school.setSchoolName(schoolDTO.getSchoolName());
-			String schoolCode = generateSchoolCode(schoolDTO.getSchoolName());
-			school.setSchoolCount(generateSchoolCount(schoolCode));
-			school.setSchoolCode(schoolCode);
+		if (school.isDisable()) {
+			throw new ResourceNotFoundException();
 		}
-
-		if (schoolDTO.getSchoolAddress() != null) {
-			school.setSchoolAddress(schoolDTO.getSchoolAddress());
-		}
-
+		school.setSchoolStreet(schoolRequestDTO.getSchoolStreet());
+		school.setSchoolDistrict(schoolRequestDTO.getSchoolDistrict());
 		school = iSchoolRepository.save(school);
 
-		return modelMapper.map(school, SchoolDTO.class);
+		return "UPDATE SUCCESS!";
 	}
 
 	@Override
 	public String deleteSchool(long id) {
 
 		School school = iSchoolRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
-
+		if (school.isDisable()) {
+			throw new ResourceNotFoundException();
+		}
 		school.setDisable(true);
 		iSchoolRepository.save(school);
 
 		return "Delete successed!";
-
 	}
 
 	@Override
-	public List<SchoolDTO> findAllSchool() {
+	public List<SchoolResponseDTO> findAllSchool() {
 
 		// 1. connect database through repository
 		// 2. find all entities are not disable
 		List<School> schoolList = iSchoolRepository.findAll();
-		List<SchoolDTO> schoolDTOList = new ArrayList<>();
+		List<SchoolResponseDTO> schoolDTOList = new ArrayList<>();
 
 		if (schoolList != null) {
 			for (School school : schoolList) {
-				schoolDTOList.add(modelMapper.map(school, SchoolDTO.class));
+				SchoolResponseDTO schoolResponseDTO = modelMapper.map(school, SchoolResponseDTO.class);
+				schoolResponseDTO.setSchoolAddress(school.getSchoolStreet() + ", " + school.getSchoolDistrict());
+				schoolResponseDTO.setSchoolCode(school.getSchoolCode() + school.getSchoolCount());
+				schoolDTOList.add(schoolResponseDTO);
 			}
 		}
 
@@ -90,18 +85,25 @@ public class SchoolServiceImpl implements ISchoolService {
 	}
 
 	@Override
-	public SchoolDTO findBySchoolId(long id) {
+	public SchoolResponseDTO findBySchoolId(long id) {
 		School school = iSchoolRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
-
-		return modelMapper.map(school, SchoolDTO.class);
+		if (school.isDisable()) {
+			throw new ResourceNotFoundException();
+		}
+		SchoolResponseDTO schoolResponseDTO = modelMapper.map(school, SchoolResponseDTO.class);
+		schoolResponseDTO.setSchoolAddress(school.getSchoolStreet() + ", " + school.getSchoolDistrict());
+		schoolResponseDTO.setSchoolCode(school.getSchoolCode() + school.getSchoolCount());
+		return schoolResponseDTO;
 	}
 
 	private String generateSchoolCode(String schoolName) {
-
 		String[] schoolNameArray = schoolName.split(" ");
 		String schooleCode = "";
 		for (int i = 0; i < schoolNameArray.length; i++) {
-			schooleCode += schoolNameArray[i].charAt(0);
+			char firstCharCode = schoolNameArray[i].toUpperCase().charAt(0);
+			if (!Character.isDigit(firstCharCode)) {
+				schooleCode += convertoEnglistCharacter(firstCharCode);
+			}
 		}
 
 		return schooleCode.toUpperCase();
@@ -116,5 +118,33 @@ public class SchoolServiceImpl implements ISchoolService {
 		}
 
 		return schoolCount;
+	}
+
+	private char convertoEnglistCharacter(char schoolCode) {
+		char schoolCodeConvert;
+		switch (schoolCode) {
+		case 'Ă':
+		case 'Â':
+			schoolCodeConvert = 'A';
+			break;
+		case 'Đ':
+			schoolCodeConvert = 'D';
+			break;
+		case 'Ê':
+			schoolCodeConvert = 'E';
+			break;
+		case 'Ô':
+		case 'Ơ':
+			schoolCodeConvert = 'O';
+			break;
+		case 'Ư':
+			schoolCodeConvert = 'U';
+			break;
+		default:
+			schoolCodeConvert = schoolCode;
+			break;
+		}
+
+		return schoolCodeConvert;
 	}
 }

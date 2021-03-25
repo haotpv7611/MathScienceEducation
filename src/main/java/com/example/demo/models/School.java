@@ -3,12 +3,17 @@ package com.example.demo.models;
 import java.time.LocalDateTime;
 
 import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 @Entity
-//@EntityListeners(AuditingEntityListener.class)
+@EntityListeners(AuditingEntityListener.class)
 public class School {
 
 	@Id
@@ -16,16 +21,20 @@ public class School {
 	private long id;
 
 	private String schoolName;
-	private String schoolAddress;
+	private String schoolStreet;
+	private String schoolDistrict;
 	private String schoolCode;
 	private String schoolCount;
 	private boolean isDisable;
 
-//	@CreatedDate
+	@CreatedDate
 	private LocalDateTime createdDate;
 //	@CreatedBy
-	private String createdBy;	
-	
+	private String createdBy;
+	@LastModifiedDate
+	private LocalDateTime modifiedDate;
+	private String modifiedBy;
+
 	/**
 	 * @return the schoolName
 	 */
@@ -41,17 +50,31 @@ public class School {
 	}
 
 	/**
-	 * @return the schoolAddress
+	 * @return the schoolStreet
 	 */
-	public String getSchoolAddress() {
-		return schoolAddress;
+	public String getSchoolStreet() {
+		return schoolStreet;
 	}
 
 	/**
-	 * @param schoolAddress the schoolAddress to set
+	 * @param schoolStreet the schoolStreet to set
 	 */
-	public void setSchoolAddress(String schoolAddress) {
-		this.schoolAddress = schoolAddress;
+	public void setSchoolStreet(String schoolStreet) {
+		this.schoolStreet = schoolStreet;
+	}
+
+	/**
+	 * @return the schoolDistrict
+	 */
+	public String getSchoolDistrict() {
+		return schoolDistrict;
+	}
+
+	/**
+	 * @param schoolDistrict the schoolDistrict to set
+	 */
+	public void setSchoolDistrict(String schoolDistrict) {
+		this.schoolDistrict = schoolDistrict;
 	}
 
 	/**
@@ -129,6 +152,34 @@ public class School {
 	 */
 	public long getId() {
 		return id;
+	}
+
+	/**
+	 * @return the modifiedDate
+	 */
+	public LocalDateTime getModifiedDate() {
+		return modifiedDate;
+	}
+
+	/**
+	 * @param modifiedDate the modifiedDate to set
+	 */
+	public void setModifiedDate(LocalDateTime modifiedDate) {
+		this.modifiedDate = modifiedDate;
+	}
+
+	/**
+	 * @return the modifiedBy
+	 */
+	public String getModifiedBy() {
+		return modifiedBy;
+	}
+
+	/**
+	 * @param modifiedBy the modifiedBy to set
+	 */
+	public void setModifiedBy(String modifiedBy) {
+		this.modifiedBy = modifiedBy;
 	}
 
 }
