@@ -1,11 +1,14 @@
 package com.example.demo.services.impls;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.dtos.BannerImageDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
@@ -24,6 +27,9 @@ public class BannerImageServiceImpl implements IBannerImageService {
 
 	@Autowired
 	IAccountRepository iAccountRepository;
+
+	@Autowired
+	FirebaseService firebaseService;
 
 	@Autowired
 	ModelMapper modelMapper;
@@ -59,75 +65,88 @@ public class BannerImageServiceImpl implements IBannerImageService {
 	}
 
 	@Override
-	public String createBannerImage(String imageUrl, String description, long accountId) {
+	public String createBannerImage(String description, MultipartFile file, long accountId)
+			throws SizeLimitExceededException, IOException {
+		// 1. validate parameter and return error if have
 		String error = "";
-
-		// 1. connect database through repository
-		// 2. find entity by Id
-		// 3. if not found throw not found exception
-		Account account = iAccountRepository.findById(accountId).orElseThrow(() -> new ResourceNotFoundException());
-
-		// 4. if role is not admin, return error no permission
-		if (account.getRoleId() != 1) {
-			error = "You do not have permission";
-			return error;
+		if (file.isEmpty()) {
+			error += "File is invalid!";
 		}
-
-		// 5. validate parameter
+		else if (!file.getContentType().contains("image")) {
+			error += "Not supported this file type for image!";
+		}
 		if (description.isEmpty() || description.length() > DESCRIPTION_MAX_LENGTH) {
-			error += "Description is invalid!, ";
+			error += "\nDescription is invalid!";
 		}
-		if (imageUrl.isEmpty()) {
-			error += "Image URL is invalid!";
-		}
-
-		// 6. if parameter valid, create new entity and return SUCCESS
-		// 7. else return error
 		if (!error.isEmpty()) {
 
-			return error;
-		} else {
-			BannerImage bannerImage = new BannerImage();
-			bannerImage.setDescription(description);
-			bannerImage.setImageUrl(imageUrl);
-			bannerImage.setDisable(false);
-			bannerImage.setAccountId(accountId);
-			iBannerImageRepositoy.save(bannerImage);
-
-			return "CREATE SUCCESS!";
+			return error.trim();
 		}
+
+		// 2. connect database through repository
+		// 3. find entity by Id
+		// 4. if not found throw not found exception
+		Account account = iAccountRepository.findById(accountId).orElseThrow(() -> new ResourceNotFoundException());
+		if (account.isDisable()) {
+			throw new ResourceNotFoundException();
+		}
+
+		// 5. if role is not admin, return error no permission
+		if (account.getRoleId() != 1) {
+			return "You do not have permission!";
+		}
+
+		// 6. create new entity and return SUCCESS
+		BannerImage bannerImage = new BannerImage();
+		bannerImage.setDescription(description);
+		bannerImage.setImageUrl(firebaseService.saveFile(file));
+		bannerImage.setDisable(false);
+		bannerImage.setAccountId(accountId);
+		iBannerImageRepositoy.save(bannerImage);
+
+		return "CREATE SUCCESS!";
+
 	}
 
 	@Override
-	public String updateBannerImage(long id, String imageUrl, String description) {
+	public String updateBannerImage(long id, String description, MultipartFile file)
+			throws SizeLimitExceededException, IOException {
 		String error = "";
+		if (!file.isEmpty()) {
+			if (!file.getContentType().contains("image")) {
+				error += "Not supported this file type for image!";
+			}
+		}
 
 		// 1. connect database through repository
 		// 2. find entity by id
 		// 3. if not existed throw exception
 		BannerImage bannerImage = iBannerImageRepositoy.findById(id).orElseThrow(() -> new ResourceNotFoundException());
-
+		if(bannerImage.isDisable()) {
+			throw new ResourceNotFoundException();
+		}
+		
 		// 4. validate parameter
-		if (description.length() > DESCRIPTION_MAX_LENGTH) {
-			error += "Description is invalid!";
+		if (description.isEmpty() || description.length() > DESCRIPTION_MAX_LENGTH) {
+			error += "\nDescription is invalid!";
+		}
+		if (!error.isEmpty()) {
+
+			return error.trim();
 		}
 
 		// 5. if parameter valid, update entity and return SUCCESS
 		// 6. else return error
-		if (!error.isEmpty()) {
 
-			return error;
-		} else {
-			if (!description.isEmpty()) {
-				bannerImage.setDescription(description);
-			}
-			if (!imageUrl.isEmpty()) {
-				bannerImage.setImageUrl(imageUrl);
-			}
-			iBannerImageRepositoy.save(bannerImage);
+		bannerImage.setDescription(description);
 
-			return "UPDATE SUCCESS!";
+		if (!file.isEmpty()) {
+			bannerImage.setImageUrl(firebaseService.saveFile(file));
 		}
+		iBannerImageRepositoy.save(bannerImage);
+
+		return "UPDATE SUCCESS!";
+
 	}
 
 	@Override
@@ -136,11 +155,11 @@ public class BannerImageServiceImpl implements IBannerImageService {
 		// 2. find entity by id
 		// 3. if not existed throw exception
 		BannerImage bannerImage = iBannerImageRepositoy.findById(id).orElseThrow(() -> new ResourceNotFoundException());
-
-		// 4. update entity with isDisable = true
 		if (bannerImage.isDisable()) {
-			return "Id is invalid";
+			throw new ResourceNotFoundException();
 		}
+		
+		// 4. update entity with isDisable = true
 		bannerImage.setDisable(true);
 		iBannerImageRepositoy.save(bannerImage);
 

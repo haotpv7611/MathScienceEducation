@@ -115,8 +115,6 @@ public class NewsServiceImpl implements INewsService {
 
 	@Override
 	public String createNews(NewsRequestDTO newsRequestDTO) {
-		String error = "";
-
 		// 1. connect database through repository
 		// 2. find entity by Id
 		// 3. if not found throw not found exception
@@ -128,8 +126,8 @@ public class NewsServiceImpl implements INewsService {
 
 		// 4. if role is not admin, return error no permission
 		if (account.getRoleId() != 1) {
-			error = "You do not have permission";
-			return error;
+			
+			return "You do not have permission!";
 		}
 
 		// 5. create new entity and return SUCCESS
@@ -140,27 +138,27 @@ public class NewsServiceImpl implements INewsService {
 		return "CREATE SUCCESS!";
 	}
 
-	@Override
-	public String updateNews(NewsRequestDTO newsRequestDTO) {
-
-		// 1. connect database through repository
-		// 2. find entity by id
-		// 3. if not existed throw exception
-		News news = iNewsRepository.findById(newsRequestDTO.getId()).orElseThrow(() -> new ResourceNotFoundException());
-
-		if (news.isDisable()) {
-			throw new ResourceNotFoundException();
-		}
-		// 5. if parameter valid, update entity and return SUCCESS
-		// 6. else return error
-
-		news.setNewsTitle(newsRequestDTO.getNewsTitle());
-		news.setShortDescription(newsRequestDTO.getShortDescription());
-		news.setNewsContent(newsRequestDTO.getNewsContent());
-		iNewsRepository.save(news);
-
-		return "UPDATE SUCCESS!";
-	}
+//	@Override
+//	public String updateNews(NewsRequestDTO newsRequestDTO) {
+//
+//		// 1. connect database through repository
+//		// 2. find entity by id
+//		// 3. if not existed throw exception
+//		News news = iNewsRepository.findById(newsRequestDTO.getId()).orElseThrow(() -> new ResourceNotFoundException());
+//
+//		if (news.isDisable()) {
+//			throw new ResourceNotFoundException();
+//		}
+//		// 5. if parameter valid, update entity and return SUCCESS
+//		// 6. else return error
+//
+//		news.setNewsTitle(newsRequestDTO.getNewsTitle());
+//		news.setShortDescription(newsRequestDTO.getShortDescription());
+//		news.setNewsContent(newsRequestDTO.getNewsContent());
+//		iNewsRepository.save(news);
+//
+//		return "UPDATE SUCCESS!";
+//	}
 
 	@Override
 	public String deleteNews(long id) {

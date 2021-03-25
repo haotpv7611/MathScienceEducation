@@ -72,26 +72,26 @@ public class NewsController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 
-	@PutMapping("/{id}")
-	public ResponseEntity<String> updateNews(@PathVariable long id, @Valid @RequestBody NewsRequestDTO newsRequestDTO,
-			BindingResult bindingResult) {
-		if (bindingResult.hasErrors()) {
-			String error = "";
-			for (ObjectError object : bindingResult.getAllErrors()) {
-				error += "\n" + object.getDefaultMessage();
-			}
-
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
-		}
-
-		String response = inewsService.updateNews(newsRequestDTO);
-		if (!response.contains("SUCCESS")) {
-
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-		}
-
-		return ResponseEntity.status(HttpStatus.OK).body(response);
-	}
+//	@PutMapping("/{id}")
+//	public ResponseEntity<String> updateNews(@PathVariable long id, @Valid @RequestBody NewsRequestDTO newsRequestDTO,
+//			BindingResult bindingResult) {
+//		if (bindingResult.hasErrors()) {
+//			String error = "";
+//			for (ObjectError object : bindingResult.getAllErrors()) {
+//				error += "\n" + object.getDefaultMessage();
+//			}
+//
+//			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
+//		}
+//
+//		String response = inewsService.updateNews(newsRequestDTO);
+//		if (!response.contains("SUCCESS")) {
+//
+//			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+//		}
+//
+//		return ResponseEntity.status(HttpStatus.OK).body(response);
+//	}
 
 	@PutMapping
 	public ResponseEntity<String> deleteNews(@RequestParam long id) {

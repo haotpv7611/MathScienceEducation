@@ -10,6 +10,6 @@ public interface INewsService {
 	List<NewsResponseDTO> findThreeNewsOrderByCreatedDateDesc();
 	NewsResponseDTO findNewsById(long id);
 	String createNews(NewsRequestDTO newsRequestDTO);
-	String updateNews(NewsRequestDTO newsRequestDTO);
+//	String updateNews(NewsRequestDTO newsRequestDTO);
 	String deleteNews(long id);
 }
