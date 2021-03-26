@@ -16,21 +16,25 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dtos.SchoolRequestDTO;
 import com.example.demo.dtos.SchoolResponseDTO;
 import com.example.demo.services.impls.SchoolServiceImpl;
 
-@CrossOrigin(origins = { "http://localhost:3000/", "http://major-edu-admin.herokuapp.com/",
-		"http://major-edu-student.herokuapp.com/" })
+//@CrossOrigin(origins = { "http://localhost:3000/", "http://major-edu-admin.herokuapp.com/",
+//		"http://major-edu-student.herokuapp.com/"})
+@CrossOrigin
 @RestController
+@RequestMapping("/schools")
 public class SchoolController {
 
 	@Autowired
 	private SchoolServiceImpl schoolServiceImpl;
 
-	@PostMapping("/school")
+//	@PostMapping("/school")
+	@PostMapping
 	public ResponseEntity<?> createSchool(@Valid @RequestBody SchoolRequestDTO schoolRequestDTO,
 			BindingResult bindingResult) {
 		if (bindingResult.hasErrors()) {
@@ -60,7 +64,8 @@ public class SchoolController {
 		return ResponseEntity.status(HttpStatus.OK).body(schoolServiceImpl.deleteSchool(id));
 	}
 
-	@GetMapping("/schools")
+//	@GetMapping("/schools")
+	@GetMapping
 	public ResponseEntity<List<SchoolResponseDTO>> findAllSchool() {
 
 		List<SchoolResponseDTO> response = schoolServiceImpl.findAllSchool();
