@@ -16,31 +16,6 @@ public class NewsRequestDTO {
 	private String newsContent;
 	private long accountId;
 
-	public NewsRequestDTO() {
-	}
-
-	public NewsRequestDTO(
-			@NotNull(message = "NewsTitle must be not null!") @Length(max = 100, message = "NewsTitle length must be less than 100!") String newsTitle,
-			@Length(max = 100, message = "ShortDescription length must be less than 150!") String shortDescription,
-			@NotNull(message = "NewsContent must be not null!") String newsContent, long accountId) {
-		super();
-		this.newsTitle = newsTitle;
-		this.shortDescription = shortDescription;
-		this.newsContent = newsContent;
-		this.accountId = accountId;
-	}
-
-	public NewsRequestDTO(long id,
-			@NotNull(message = "NewsTitle must be not null!") @Length(max = 100, message = "NewsTitle length must be less than 100!") String newsTitle,
-			@Length(max = 100, message = "ShortDescription length must be less than 150!") String shortDescription,
-			@NotNull(message = "NewsContent must be not null!") String newsContent) {
-		super();
-		this.id = id;
-		this.newsTitle = newsTitle;
-		this.shortDescription = shortDescription;
-		this.newsContent = newsContent;
-	}
-
 	/**
 	 * @return the id
 	 */
