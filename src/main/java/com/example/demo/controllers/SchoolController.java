@@ -16,14 +16,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dtos.SchoolRequestDTO;
 import com.example.demo.dtos.SchoolResponseDTO;
 import com.example.demo.services.impls.SchoolServiceImpl;
 
-@CrossOrigin
+@CrossOrigin(origins = { "http://localhost:3000/", "http://major-edu-admin.herokuapp.com/",
+		"http://major-edu-student.herokuapp.com/" })
 @RestController
 public class SchoolController {
 
@@ -50,7 +50,7 @@ public class SchoolController {
 	@PutMapping("/school/{id}")
 	public ResponseEntity<String> updateSchool(@PathVariable long id,
 			@Valid @RequestBody SchoolRequestDTO schoolRequestDTO, BindingResult bindingResult) {
-			
+
 		return ResponseEntity.status(HttpStatus.OK).body(schoolServiceImpl.updateSchool(id, schoolRequestDTO));
 	}
 
