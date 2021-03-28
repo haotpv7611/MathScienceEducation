@@ -4,29 +4,15 @@ import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
-public class SchoolResponseDTO {
+public class ClassResponseDTO {
 	private long id;
-	private String schoolName;
-	private String schoolAddress;
-	private String schoolCode;
-	private String schoolLevel;
+	private String className;
 	@JsonFormat(pattern = "dd-MM-yyyy HH:mm")
 	private LocalDateTime createdDate;
 	private String createdBy;
 	@JsonFormat(pattern = "dd-MM-yyyy HH:mm")
 	private LocalDateTime modifiedDate;
 	private boolean isDisable;
-	
-	public SchoolResponseDTO() {
-		// TODO Auto-generated constructor stub
-	}
-
-	public SchoolResponseDTO(String schoolName, String schoolAddress, String schoolLevel) {
-		super();
-		this.schoolName = schoolName;
-		this.schoolAddress = schoolAddress;
-		this.schoolLevel = schoolLevel;
-	}
 
 	/**
 	 * @return the id
@@ -43,50 +29,17 @@ public class SchoolResponseDTO {
 	}
 
 	/**
-	 * @return the schoolName
+	 * @return the className
 	 */
-	public String getSchoolName() {
-		return schoolName;
+	public String getClassName() {
+		return className;
 	}
 
 	/**
-	 * @param schoolName the schoolName to set
+	 * @param className the className to set
 	 */
-	public void setSchoolName(String schoolName) {
-		this.schoolName = schoolName;
-	}
-
-	/**
-	 * @return the schoolAddress
-	 */
-	public String getSchoolAddress() {
-		return schoolAddress;
-	}
-
-	/**
-	 * @param schoolAddress the schoolAddress to set
-	 */
-	public void setSchoolAddress(String schoolAddress) {
-		this.schoolAddress = schoolAddress;
-	}
-
-	public static Object builder() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	/**
-	 * @return the schoolCode
-	 */
-	public String getSchoolCode() {
-		return schoolCode;
-	}
-
-	/**
-	 * @param schoolCode the schoolCode to set
-	 */
-	public void setSchoolCode(String schoolCode) {
-		this.schoolCode = schoolCode;
+	public void setClassName(String className) {
+		this.className = className;
 	}
 
 	/**
@@ -143,20 +96,6 @@ public class SchoolResponseDTO {
 	 */
 	public void setDisable(boolean isDisable) {
 		this.isDisable = isDisable;
-	}
-
-	/**
-	 * @return the schoolLevel
-	 */
-	public String getSchoolLevel() {
-		return schoolLevel;
-	}
-
-	/**
-	 * @param schoolLevel the schoolLevel to set
-	 */
-	public void setSchoolLevel(String schoolLevel) {
-		this.schoolLevel = schoolLevel;
 	}
 
 }

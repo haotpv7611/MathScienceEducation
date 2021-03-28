@@ -14,9 +14,9 @@ public class NewsResponseDTO {
 	@JsonFormat(pattern = "dd-MM-yyyy HH:mm")
 	private LocalDateTime createdDate;
 	private String createdBy;
-	@JsonFormat(pattern = "dd-MM-yyyy HH:mm")
-	private LocalDateTime modifiedDate;
-	private String modifiedBy;
+//	@JsonFormat(pattern = "dd-MM-yyyy HH:mm")
+//	private LocalDateTime modifiedDate;
+//	private String modifiedBy;
 
 	private boolean isDisable;
 	private long accountId;
@@ -24,9 +24,10 @@ public class NewsResponseDTO {
 	public NewsResponseDTO() {
 	}
 
-	public NewsResponseDTO(String newsTitle, String newsContent, LocalDateTime createdDate) {
+	public NewsResponseDTO(String newsTitle, String shortDescription, String newsContent, LocalDateTime createdDate) {
 		super();
 		this.newsTitle = newsTitle;
+		this.shortDescription = shortDescription;
 		this.newsContent = newsContent;
 		this.createdDate = createdDate;
 	}
@@ -123,23 +124,23 @@ public class NewsResponseDTO {
 		this.createdBy = createdBy;
 	}
 
-	/**
-	 * @return the modifiedDate
-	 */
-	public LocalDateTime getModifiedDate() {
-		return modifiedDate;
-	}
-
-	/**
-	 * @param modifiedDate the modifiedDate to set
-	 */
-	public void setModifiedDate(LocalDateTime modifiedDate) {
-		this.modifiedDate = modifiedDate;
-	}
-
-	/**
-	 * @return the isDisable
-	 */
+//	/**
+//	 * @return the modifiedDate
+//	 */
+//	public LocalDateTime getModifiedDate() {
+//		return modifiedDate;
+//	}
+//
+//	/**
+//	 * @param modifiedDate the modifiedDate to set
+//	 */
+//	public void setModifiedDate(LocalDateTime modifiedDate) {
+//		this.modifiedDate = modifiedDate;
+//	}
+//
+//	/**
+//	 * @return the isDisable
+//	 */
 	public boolean isDisable() {
 		return isDisable;
 	}
@@ -165,18 +166,18 @@ public class NewsResponseDTO {
 		this.accountId = accountId;
 	}
 
-	/**
-	 * @return the modifiedBy
-	 */
-	public String getModifiedBy() {
-		return modifiedBy;
-	}
-
-	/**
-	 * @param modifiedBy the modifiedBy to set
-	 */
-	public void setModifiedBy(String modifiedBy) {
-		this.modifiedBy = modifiedBy;
-	}
+//	/**
+//	 * @return the modifiedBy
+//	 */
+//	public String getModifiedBy() {
+//		return modifiedBy;
+//	}
+//
+//	/**
+//	 * @param modifiedBy the modifiedBy to set
+//	 */
+//	public void setModifiedBy(String modifiedBy) {
+//		this.modifiedBy = modifiedBy;
+//	}
 
 }

@@ -11,6 +11,8 @@ import com.example.demo.dtos.SchoolRequestDTO;
 import com.example.demo.dtos.SchoolResponseDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.School;
+import com.example.demo.models.SchoolGrade;
+import com.example.demo.repositories.ISchoolGradeRepository;
 import com.example.demo.repositories.ISchoolRepository;
 import com.example.demo.services.ISchoolService;
 
@@ -21,7 +23,42 @@ public class SchoolServiceImpl implements ISchoolService {
 	private ISchoolRepository iSchoolRepository;
 
 	@Autowired
+	private ISchoolGradeRepository iSchoolGradeRepository;
+
+	@Autowired
 	private ModelMapper modelMapper;
+
+	@Override
+	public List<SchoolResponseDTO> findByGradeId(long gradeId) {
+		List<SchoolGrade> schoolGradeList = iSchoolGradeRepository.findByGradeIdAndIsDisable(gradeId, false);
+		List<SchoolResponseDTO> schoolResponseDTOList = new ArrayList<>();
+
+		if (!schoolGradeList.isEmpty()) {
+			for (SchoolGrade schoolGrade : schoolGradeList) {
+				SchoolResponseDTO schoolResponseDTO = (modelMapper.map(schoolGrade.getSchool(),
+						SchoolResponseDTO.class));
+				schoolResponseDTO.setSchoolAddress(null);
+				schoolResponseDTO.setSchoolLevel(null);
+				schoolResponseDTOList.add(schoolResponseDTO);
+			}
+		}
+
+		return schoolResponseDTOList;
+	}
+
+	@Override
+	public SchoolResponseDTO findSchoolById(long id) {
+		School school = iSchoolRepository.findByIdAndIsDisable(id, false);
+		if (school == null) {
+			throw new ResourceNotFoundException();
+		}
+		String schoolName = school.getSchoolName();
+		String schoolAddress = school.getSchoolStreet() + ", " + school.getSchoolDistrict() + ", HCM City";
+		String schoolLevel = school.getSchoolLevel().getDescription();
+		SchoolResponseDTO schoolResponseDTO = new SchoolResponseDTO(schoolName, schoolAddress, schoolLevel);
+
+		return schoolResponseDTO;
+	}
 
 	@Override
 	public String createSchool(SchoolRequestDTO schoolRequestDTO) {
@@ -39,8 +76,7 @@ public class SchoolServiceImpl implements ISchoolService {
 
 	@Override
 	public String updateSchool(long id, SchoolRequestDTO schoolRequestDTO) {
-		School school = iSchoolRepository.findById(id)
-				.orElseThrow(() -> new ResourceNotFoundException());
+		School school = iSchoolRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
 		if (school.isDisable()) {
 			throw new ResourceNotFoundException();
 		}
@@ -54,14 +90,14 @@ public class SchoolServiceImpl implements ISchoolService {
 	@Override
 	public String deleteSchool(long id) {
 
-		School school = iSchoolRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
-		if (school.isDisable()) {
+		School school = iSchoolRepository.findByIdAndIsDisable(id, false);
+		if (school == null) {
 			throw new ResourceNotFoundException();
 		}
 		school.setDisable(true);
 		iSchoolRepository.save(school);
 
-		return "Delete successed!";
+		return "DELETE SUCCESS!";
 	}
 
 	@Override
@@ -82,18 +118,6 @@ public class SchoolServiceImpl implements ISchoolService {
 		}
 
 		return schoolDTOList;
-	}
-
-	@Override
-	public SchoolResponseDTO findBySchoolId(long id) {
-		School school = iSchoolRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
-		if (school.isDisable()) {
-			throw new ResourceNotFoundException();
-		}
-		SchoolResponseDTO schoolResponseDTO = modelMapper.map(school, SchoolResponseDTO.class);
-		schoolResponseDTO.setSchoolAddress(school.getSchoolStreet() + ", " + school.getSchoolDistrict());
-		schoolResponseDTO.setSchoolCode(school.getSchoolCode() + school.getSchoolCount());
-		return schoolResponseDTO;
 	}
 
 	private String generateSchoolCode(String schoolName) {
@@ -147,4 +171,5 @@ public class SchoolServiceImpl implements ISchoolService {
 
 		return schoolCodeConvert;
 	}
+
 }

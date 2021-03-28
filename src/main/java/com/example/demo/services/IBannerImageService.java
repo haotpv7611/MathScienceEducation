@@ -9,17 +9,19 @@ import org.springframework.web.multipart.MultipartFile;
 import com.example.demo.dtos.BannerImageDTO;
 
 public interface IBannerImageService {
-	List<String> showBannerImage();
-
-	List<BannerImageDTO> findAll();
-
-	BannerImageDTO findById(long id);
 
 	String createBannerImage(String description, MultipartFile file, long accountId)
 			throws SizeLimitExceededException, IOException;
 
+	List<BannerImageDTO> findAll();
+
+	String disableBannerImage(long id);
+
+	BannerImageDTO findById(long id);
+
 	String updateBannerImage(long id, String description, MultipartFile file)
 			throws SizeLimitExceededException, IOException;
 
-	String deleteBannerImage(long id);
+	List<String> showBannerImage();
+
 }

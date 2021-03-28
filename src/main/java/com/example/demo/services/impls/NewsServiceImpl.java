@@ -29,6 +29,32 @@ public class NewsServiceImpl implements INewsService {
 	private ModelMapper modelMapper;
 
 	@Override
+	public String createNews(NewsRequestDTO newsRequestDTO) {
+		newsRequestDTO.setNewsTitle(newsRequestDTO.getNewsTitle().trim());
+		newsRequestDTO.setShortDescription(newsRequestDTO.getShortDescription().trim());
+		// 1. connect database through repository
+		// 2. find entity by Id
+		// 3. if not found throw not found exception
+		Account account = iAccountRepository.findByIdAndIsDisable(newsRequestDTO.getAccountId(), false);
+		if (account == null) {
+			throw new ResourceNotFoundException();
+		}
+
+		// 4. if role is not admin, return error no permission
+		if (account.getRoleId() != 1) {
+
+			return "You do not have permission!";
+		}
+
+		// 5. create new entity and return SUCCESS
+		News news = modelMapper.map(newsRequestDTO, News.class);
+		news.setDisable(false);
+		iNewsRepository.save(news);
+
+		return "CREATE SUCCESS!";
+	}
+
+	@Override
 	public List<NewsResponseDTO> findAllNewsOrderByCreatedDateDesc(boolean isStudent) {
 		List<News> newsList = null;
 
@@ -66,6 +92,38 @@ public class NewsServiceImpl implements INewsService {
 	}
 
 	@Override
+	public NewsResponseDTO findNewsById(long id) {
+		// 1. connect database through repository
+		// 2. find entity by Id
+		// 3. if not found throw not found exception
+		// 4. else convert entity to dto
+		// 5. return
+		News news = iNewsRepository.findByIdAndIsDisable(id, false);
+		if (news == null) {
+			throw new ResourceNotFoundException();
+		}
+		NewsResponseDTO newsResponseDTO = new NewsResponseDTO(news.getNewsTitle(), news.getShortDescription(),
+				news.getNewsContent(), news.getCreatedDate());
+
+		return newsResponseDTO;
+	}
+
+	@Override
+	public String deleteNews(long id) {
+		// 1. connect database through repository
+		// 2. find entity by id
+		// 3. if not existed throw exception
+		News news = iNewsRepository.findByIdAndIsDisable(id, false);
+		if (news == null) {
+			throw new ResourceNotFoundException();
+		}
+		news.setDisable(true);
+		iNewsRepository.save(news);
+
+		return "DELETE SUCCESS!";
+	}
+
+	@Override
 	public List<NewsResponseDTO> findThreeNewsOrderByCreatedDateDesc() {
 		List<News> newsList = null;
 
@@ -95,85 +153,4 @@ public class NewsServiceImpl implements INewsService {
 		return threeNewest;
 	}
 
-	@Override
-	public NewsResponseDTO findNewsById(long id) {
-		// 1. connect database through repository
-		// 2. find entity by Id
-		// 3. if not found throw not found exception
-		// 4. else convert entity to dto
-		// 5. return
-		News news = iNewsRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
-
-		if (news.isDisable()) {
-			throw new ResourceNotFoundException();
-		}
-		NewsResponseDTO newsResponseDTO = new NewsResponseDTO(news.getNewsTitle(), news.getNewsContent(),
-				news.getCreatedDate());
-
-		return newsResponseDTO;
-	}
-
-	@Override
-	public String createNews(NewsRequestDTO newsRequestDTO) {
-		// 1. connect database through repository
-		// 2. find entity by Id
-		// 3. if not found throw not found exception
-		Account account = iAccountRepository.findById(newsRequestDTO.getAccountId())
-				.orElseThrow(() -> new ResourceNotFoundException());
-		if (account.isDisable()) {
-			throw new ResourceNotFoundException();
-		}
-
-		// 4. if role is not admin, return error no permission
-		if (account.getRoleId() != 1) {
-			
-			return "You do not have permission!";
-		}
-
-		// 5. create new entity and return SUCCESS
-		News news = modelMapper.map(newsRequestDTO, News.class);
-		news.setDisable(false);
-		iNewsRepository.save(news);
-
-		return "CREATE SUCCESS!";
-	}
-
-//	@Override
-//	public String updateNews(NewsRequestDTO newsRequestDTO) {
-//
-//		// 1. connect database through repository
-//		// 2. find entity by id
-//		// 3. if not existed throw exception
-//		News news = iNewsRepository.findById(newsRequestDTO.getId()).orElseThrow(() -> new ResourceNotFoundException());
-//
-//		if (news.isDisable()) {
-//			throw new ResourceNotFoundException();
-//		}
-//		// 5. if parameter valid, update entity and return SUCCESS
-//		// 6. else return error
-//
-//		news.setNewsTitle(newsRequestDTO.getNewsTitle());
-//		news.setShortDescription(newsRequestDTO.getShortDescription());
-//		news.setNewsContent(newsRequestDTO.getNewsContent());
-//		iNewsRepository.save(news);
-//
-//		return "UPDATE SUCCESS!";
-//	}
-
-	@Override
-	public String deleteNews(long id) {
-		// 1. connect database through repository
-		// 2. find entity by id
-		// 3. if not existed throw exception
-		News news = iNewsRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
-
-		// 4. update entity with isDisable = true
-		if (news.isDisable()) {
-			throw new ResourceNotFoundException();
-		}
-		news.setDisable(true);
-		iNewsRepository.save(news);
-
-		return "DELETE SUCCESS!";
-	}
 }

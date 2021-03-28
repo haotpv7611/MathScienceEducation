@@ -1,12 +1,16 @@
 package com.example.demo.models;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -25,8 +29,6 @@ public class School {
 	private String schoolDistrict;
 	private String schoolCode;
 	private String schoolCount;
-	private boolean isDisable;
-
 	@CreatedDate
 	private LocalDateTime createdDate;
 //	@CreatedBy
@@ -34,6 +36,14 @@ public class School {
 	@LastModifiedDate
 	private LocalDateTime modifiedDate;
 	private String modifiedBy;
+	private boolean isDisable;
+
+	@OneToMany(mappedBy = "school")
+	private Set<SchoolGrade> schoolGrade;
+
+	@ManyToOne
+	@JoinColumn(name = "schoolLevelId")
+	private SchoolLevel schoolLevel;
 
 	/**
 	 * @return the schoolName
@@ -180,6 +190,34 @@ public class School {
 	 */
 	public void setModifiedBy(String modifiedBy) {
 		this.modifiedBy = modifiedBy;
+	}
+
+	/**
+	 * @return the schoolGrade
+	 */
+	public Set<SchoolGrade> getSchoolGrade() {
+		return schoolGrade;
+	}
+
+	/**
+	 * @param schoolGrade the schoolGrade to set
+	 */
+	public void setSchoolGrade(Set<SchoolGrade> schoolGrade) {
+		this.schoolGrade = schoolGrade;
+	}
+
+	/**
+	 * @return the schoolLevel
+	 */
+	public SchoolLevel getSchoolLevel() {
+		return schoolLevel;
+	}
+
+	/**
+	 * @param schoolLevel the schoolLevel to set
+	 */
+	public void setSchoolLevel(SchoolLevel schoolLevel) {
+		this.schoolLevel = schoolLevel;
 	}
 
 }

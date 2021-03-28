@@ -10,30 +10,37 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dtos.SchoolRequestDTO;
 import com.example.demo.dtos.SchoolResponseDTO;
-import com.example.demo.services.impls.SchoolServiceImpl;
+import com.example.demo.services.ISchoolService;
 
-//@CrossOrigin(origins = { "http://localhost:3000/", "http://major-edu-admin.herokuapp.com/",
-//		"http://major-edu-student.herokuapp.com/"})
 @CrossOrigin
 @RestController
-@RequestMapping("/schools")
+//@RequestMapping("/school")
 public class SchoolController {
 
 	@Autowired
-	private SchoolServiceImpl schoolServiceImpl;
+	private ISchoolService iSchoolService;
 
-//	@PostMapping("/school")
+	@GetMapping("/grade/{gradeId}/school")
+	public ResponseEntity<List<SchoolResponseDTO>> findSchoolByGradeId(@PathVariable long gradeId) {
+
+		return ResponseEntity.ok(iSchoolService.findByGradeId(gradeId));
+	}
+
+	@GetMapping("/{id}")
+	public ResponseEntity<SchoolResponseDTO> findSchoolById(@PathVariable long id) {
+
+		return ResponseEntity.ok(iSchoolService.findSchoolById(id));
+	}
+
 	@PostMapping
 	public ResponseEntity<?> createSchool(@Valid @RequestBody SchoolRequestDTO schoolRequestDTO,
 			BindingResult bindingResult) {
@@ -46,29 +53,28 @@ public class SchoolController {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
 		}
 
-		String response = schoolServiceImpl.createSchool(schoolRequestDTO);
+		String response = iSchoolService.createSchool(schoolRequestDTO);
 
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 
-	@PutMapping("/school/{id}")
+	@PutMapping("/{id}")
 	public ResponseEntity<String> updateSchool(@PathVariable long id,
 			@Valid @RequestBody SchoolRequestDTO schoolRequestDTO, BindingResult bindingResult) {
 
-		return ResponseEntity.status(HttpStatus.OK).body(schoolServiceImpl.updateSchool(id, schoolRequestDTO));
+		return ResponseEntity.status(HttpStatus.OK).body(iSchoolService.updateSchool(id, schoolRequestDTO));
 	}
 
-	@DeleteMapping("/school/{id}")
-	public ResponseEntity<String> deleteSchool(@PathVariable long id) {
+//	@DeleteMapping("/{id}")
+//	public ResponseEntity<String> deleteSchool(@PathVariable long id) {
+//
+//		return ResponseEntity.status(HttpStatus.OK).body(schoolServiceImpl.deleteSchool(id));
+//	}
 
-		return ResponseEntity.status(HttpStatus.OK).body(schoolServiceImpl.deleteSchool(id));
-	}
-
-//	@GetMapping("/schools")
-	@GetMapping
+	@GetMapping("/all")
 	public ResponseEntity<List<SchoolResponseDTO>> findAllSchool() {
 
-		List<SchoolResponseDTO> response = schoolServiceImpl.findAllSchool();
+		List<SchoolResponseDTO> response = iSchoolService.findAllSchool();
 
 		if (response == null) {
 
@@ -76,12 +82,6 @@ public class SchoolController {
 		}
 
 		return ResponseEntity.status(HttpStatus.OK).body(response);
-	}
-
-	@GetMapping("/school/{id}")
-	public ResponseEntity<SchoolResponseDTO> findById(@PathVariable long id) {
-
-		return ResponseEntity.status(HttpStatus.OK).body(schoolServiceImpl.findBySchoolId(id));
 	}
 
 }

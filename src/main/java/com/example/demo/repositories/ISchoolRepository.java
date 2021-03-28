@@ -11,4 +11,5 @@ import com.example.demo.models.School;
 public interface ISchoolRepository extends JpaRepository<School, Long> {
 	List<School> findByIsDisable(boolean isDisable);
 	Long countBySchoolCode(String schoolCode);
+	School findByIdAndIsDisable(long id, boolean isDisable);
 }

@@ -22,39 +22,15 @@ import com.example.demo.services.IBannerImageService;
 
 @CrossOrigin
 @RestController
-@RequestMapping("/bannerImages")
+@RequestMapping("/bannerImage")
 public class BannerImageController {
-	
+
 	@Autowired
 	IBannerImageService iBannerImageService;
-	
-//	@GetMapping("/bannerImages/url")
-	@GetMapping("/url")
-	public ResponseEntity<List<String>> showBannerImage(){
-		List<String> response = iBannerImageService.showBannerImage();
-		
-		return ResponseEntity.status(HttpStatus.OK).body(response);
-	}
-	
-//	@GetMapping("/bannerImages")
-	@GetMapping
-	public ResponseEntity<List<BannerImageDTO>> findAll(){
-		List<BannerImageDTO> response = iBannerImageService.findAll();
-		
-		return ResponseEntity.status(HttpStatus.OK).body(response);
-	}
 
-//	@GetMapping("/bannerImage/{id}")
-	@GetMapping("/{id}")
-	public ResponseEntity<BannerImageDTO> findBannerImageById(@PathVariable long id) {
-
-		return ResponseEntity.status(HttpStatus.OK).body(iBannerImageService.findById(id));
-	}
-	
-//	@PostMapping("/bannerImage")
 	@PostMapping
-	public ResponseEntity<String> createBannerImage(@RequestParam String description,
-			@RequestParam MultipartFile file, @RequestParam long accountId) throws SizeLimitExceededException, IOException {
+	public ResponseEntity<String> createBannerImage(@RequestParam String description, @RequestParam MultipartFile file,
+			@RequestParam long accountId) throws SizeLimitExceededException, IOException {
 		String response = iBannerImageService.createBannerImage(description, file, accountId);
 		if (response.contains("permission")) {
 
@@ -67,8 +43,26 @@ public class BannerImageController {
 
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
-	
-//	@PutMapping("/bannerImage/{id}")
+
+	@GetMapping("/all")
+	public ResponseEntity<List<BannerImageDTO>> findAll() {
+
+		return ResponseEntity.ok(iBannerImageService.findAll());
+	}
+
+	@PutMapping
+	public ResponseEntity<String> disableBannerImage(@RequestParam long id) {
+		String response = iBannerImageService.disableBannerImage(id);
+
+		return ResponseEntity.status(HttpStatus.OK).body(response);
+	}
+
+	@GetMapping("/{id}")
+	public ResponseEntity<BannerImageDTO> findBannerImageById(@PathVariable long id) {
+
+		return ResponseEntity.ok(iBannerImageService.findById(id));
+	}
+
 	@PutMapping("/{id}")
 	public ResponseEntity<String> updateBannerImage(@PathVariable long id, @RequestParam String description,
 			@RequestParam MultipartFile file) throws SizeLimitExceededException, IOException {
@@ -80,12 +74,11 @@ public class BannerImageController {
 
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
-	
-//	@PutMapping("/bannerImage")
-	@PutMapping
-	public ResponseEntity<String> deleteBannerImage(@RequestParam long id){
-		String response = iBannerImageService.deleteBannerImage(id);
-		
+
+	@GetMapping("/url")
+	public ResponseEntity<List<String>> showBannerImage() {
+		List<String> response = iBannerImageService.showBannerImage();
+
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 }

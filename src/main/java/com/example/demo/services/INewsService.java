@@ -6,10 +6,14 @@ import com.example.demo.dtos.NewsRequestDTO;
 import com.example.demo.dtos.NewsResponseDTO;
 
 public interface INewsService {
-	List<NewsResponseDTO> findAllNewsOrderByCreatedDateDesc(boolean isStudent);
-	List<NewsResponseDTO> findThreeNewsOrderByCreatedDateDesc();
-	NewsResponseDTO findNewsById(long id);
 	String createNews(NewsRequestDTO newsRequestDTO);
-//	String updateNews(NewsRequestDTO newsRequestDTO);
+
+	List<NewsResponseDTO> findAllNewsOrderByCreatedDateDesc(boolean isStudent);
+
+	NewsResponseDTO findNewsById(long id);
+
 	String deleteNews(long id);
+
+	List<NewsResponseDTO> findThreeNewsOrderByCreatedDateDesc();
+
 }

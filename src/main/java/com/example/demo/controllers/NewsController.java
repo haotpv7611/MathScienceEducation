@@ -31,26 +31,6 @@ public class NewsController {
 	@Autowired
 	private INewsService inewsService;
 
-	@GetMapping
-	public ResponseEntity<List<NewsResponseDTO>> findAllOrderByCreateDateDesc(@RequestParam boolean isStudent) {
-		List<NewsResponseDTO> response = inewsService.findAllNewsOrderByCreatedDateDesc(isStudent);
-
-		return ResponseEntity.status(HttpStatus.OK).body(response);
-	}
-
-	@GetMapping("/3newest")
-	public ResponseEntity<List<NewsResponseDTO>> findThreeOrderByCreateDateDesc() {
-		List<NewsResponseDTO> response = inewsService.findThreeNewsOrderByCreatedDateDesc();
-
-		return ResponseEntity.status(HttpStatus.OK).body(response);
-	}
-
-	@GetMapping("/{id}")
-	public ResponseEntity<NewsResponseDTO> findNewsById(@PathVariable long id) {
-
-		return ResponseEntity.status(HttpStatus.OK).body(inewsService.findNewsById(id));
-	}
-
 	@PostMapping
 	public ResponseEntity<String> createNews(@Valid @RequestBody NewsRequestDTO newsRequestDTO,
 			BindingResult bindingResult) {
@@ -72,36 +52,28 @@ public class NewsController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 
-//	@PutMapping("/{id}")
-//	public ResponseEntity<String> updateNews(@PathVariable long id, @Valid @RequestBody NewsRequestDTO newsRequestDTO,
-//			BindingResult bindingResult) {
-//		if (bindingResult.hasErrors()) {
-//			String error = "";
-//			for (ObjectError object : bindingResult.getAllErrors()) {
-//				error += "\n" + object.getDefaultMessage();
-//			}
-//
-//			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
-//		}
-//
-//		String response = inewsService.updateNews(newsRequestDTO);
-//		if (!response.contains("SUCCESS")) {
-//
-//			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-//		}
-//
-//		return ResponseEntity.status(HttpStatus.OK).body(response);
-//	}
+	@GetMapping("/all")
+	public ResponseEntity<List<NewsResponseDTO>> findAllOrderByCreateDateDesc(@RequestParam boolean isStudent) {
+
+		return ResponseEntity.ok(inewsService.findAllNewsOrderByCreatedDateDesc(isStudent));
+	}
+
+	@GetMapping("/{id}")
+	public ResponseEntity<NewsResponseDTO> findNewsById(@PathVariable long id) {
+
+		return ResponseEntity.ok(inewsService.findNewsById(id));
+	}
 
 	@PutMapping
 	public ResponseEntity<String> deleteNews(@RequestParam long id) {
-		String response = inewsService.deleteNews(id);
-		if (!response.contains("SUCCESS")) {
 
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-		}
+		return ResponseEntity.ok(inewsService.deleteNews(id));
+	}
 
-		return ResponseEntity.status(HttpStatus.OK).body(response);
+	@GetMapping("/3newest")
+	public ResponseEntity<List<NewsResponseDTO>> findThreeOrderByCreateDateDesc() {
+
+		return ResponseEntity.ok(inewsService.findThreeNewsOrderByCreatedDateDesc());
 	}
 
 }
