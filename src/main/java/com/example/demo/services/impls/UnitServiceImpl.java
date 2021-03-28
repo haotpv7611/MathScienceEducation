@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.demo.dtos.ProgressTestDTO;
 import com.example.demo.dtos.UnitDTO;
+import com.example.demo.dtos.UnitRequestDTO;
 import com.example.demo.dtos.UnitViewDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.Unit;
@@ -18,8 +19,6 @@ import com.example.demo.services.IUnitService;
 
 @Service
 public class UnitServiceImpl implements IUnitService {
-
-	private final int DESCRIPTION = 50;
 
 	@Autowired
 	private IUnitRepository iUnitRepository;
@@ -64,7 +63,7 @@ public class UnitServiceImpl implements IUnitService {
 
 		List<UnitViewDTO> unitViewDTOList = new ArrayList<>();
 
-		if (!unitDTOList.isEmpty() ) {
+		if (!unitDTOList.isEmpty()) {
 			List<UnitDTO> unitDTOListSplit = new ArrayList<>();
 
 			// 2. split list unitDTO into small lists by progresTest unitAfterId
@@ -104,51 +103,23 @@ public class UnitServiceImpl implements IUnitService {
 	}
 
 	@Override
-	public String createUnit(long subjectId, int unitName, String description) {
-		String error = "";
-		
-		if(unitName == 0) {
-			error += "Unit Name is invalid !";
-			return error;
-		}
-		if(description.length() > DESCRIPTION) {
-			error += "Description is invalid";
-			return error;
-		}
-		if(!error.isEmpty()) {
-			return error;
-		}else {
-			Unit unit = new Unit();
-			unit.setUnitName(unitName);
-			unit.setDescription(description);
-			unit.setSubjectId(subjectId);
-			unit.setDisable(false);
-			iUnitRepository.save(unit);
-			return "CREATE SUCCESS !";
-		}
+	public String createUnit(UnitRequestDTO unitRequestDTO) {
+		Unit unit = modelMapper.map(unitRequestDTO, Unit.class);
+		unit.setDisable(false);
+		iUnitRepository.save(unit);
+		return "CREATE SUCCESS!";
 	}
 
 	@Override
-	public String updateUnit(long id, int unitName, String description) {
-		String error="";
-		Unit unit = iUnitRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
-		if(unitName == 0) {
-			error += "Unit Name is invalid !";
-			return error;
+	public String updateUnit(UnitRequestDTO unitRequestDTO) {
+		Unit unit = iUnitRepository.findById(unitRequestDTO.getId()).orElseThrow(() -> new ResourceNotFoundException());
+		if (unit.isDisable()) {
+			throw new ResourceNotFoundException();
 		}
-		if(description.length() > DESCRIPTION) {
-			error += "Description is invalid";
-			return error;
-		}
-		if(!error.isEmpty()) {
-			return error;
-		}else {			
-			unit.setUnitName(unitName);
-			unit.setDescription(description);						
-			iUnitRepository.save(unit);
-			return "UPDATE SUCCESS !";
-		}
-		
+		unit.setUnitName(unitRequestDTO.getUnitName());
+		unit.setDescription(unitRequestDTO.getDescription());
+		iUnitRepository.save(unit);
+		return "UPDATE SUCCESS !";
 	}
 
 }
