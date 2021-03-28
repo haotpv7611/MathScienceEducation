@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import com.example.demo.models.Grade;
 
 @Repository
-public interface iGradeRepository extends JpaRepository<Grade, Long> {
+public interface IGradeRepository extends JpaRepository<Grade, Long> {
 	
 }

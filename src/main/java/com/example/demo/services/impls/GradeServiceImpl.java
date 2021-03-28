@@ -14,7 +14,7 @@ import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.Grade;
 import com.example.demo.models.School;
 import com.example.demo.models.SchoolGrade;
-import com.example.demo.repositories.iGradeRepository;
+import com.example.demo.repositories.IGradeRepository;
 import com.example.demo.repositories.ISchoolRepository;
 import com.example.demo.services.IGradeService;
 
@@ -22,7 +22,7 @@ import com.example.demo.services.IGradeService;
 public class GradeServiceImpl implements IGradeService{
 
 	@Autowired
-	iGradeRepository iGradeRepository;
+	IGradeRepository iGradeRepository;
 	
 	@Autowired
 	ISchoolRepository iSchoolRepository;
