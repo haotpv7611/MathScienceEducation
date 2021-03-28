@@ -12,10 +12,14 @@ import org.springframework.stereotype.Service;
 import com.example.demo.dtos.GradeDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.Grade;
+<<<<<<< Updated upstream
 import com.example.demo.models.School;
 import com.example.demo.models.SchoolGrade;
 import com.example.demo.repositories.IGradeRepository;
 import com.example.demo.repositories.ISchoolRepository;
+=======
+import com.example.demo.repositories.IGradeRepository;
+>>>>>>> Stashed changes
 import com.example.demo.services.IGradeService;
 
 @Service
@@ -23,9 +27,12 @@ public class GradeServiceImpl implements IGradeService{
 
 	@Autowired
 	IGradeRepository iGradeRepository;
+<<<<<<< Updated upstream
 	
 	@Autowired
 	ISchoolRepository iSchoolRepository;
+=======
+>>>>>>> Stashed changes
 	
 	@Autowired
 	private ModelMapper modelMapper;

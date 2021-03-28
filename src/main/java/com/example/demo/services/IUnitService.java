@@ -11,5 +11,5 @@ public interface IUnitService {
 	List<UnitViewDTO> showUnitViewBySubjectId(long subjectId);
 	String createUnit(UnitRequestDTO unitRequestDTO);
 	String updateUnit(UnitRequestDTO unitRequestDTO);
-	void deleteUnit(long id);
+	String deleteUnit(long id);
 }

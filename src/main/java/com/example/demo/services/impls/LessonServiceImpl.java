@@ -26,7 +26,6 @@ public class LessonServiceImpl implements ILessonService {
 	public List<LessonDTO> findByUnitIdOrderByLessonNameAsc(long unitId) {
 		List<Lesson> lessonList = iLessonRepository.findByUnitIdAndIsDisableOrderByLessonNameAsc(unitId, false);
 		List<LessonDTO> lessonDTOList = new ArrayList<>();
-		
 		if(!lessonList.isEmpty()) {
 			for (Lesson lesson : lessonList) {
 				lessonDTOList.add(modelMapper.map(lesson, LessonDTO.class));

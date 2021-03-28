@@ -7,6 +7,8 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -38,33 +40,51 @@ public class UnitController {
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 	
-//	@PostMapping("/unit")
-//	public ResponseEntity<UnitRequestDTO> createUnit(@Valid @RequestBody long subjectId, @RequestParam int unitName, @RequestParam String description){
-//		
-//		String response = iUnitService.createUnit(subjectId, unitName, description);
-//		
-//		if(!response.contains("SUCCESS")) {
-//			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-//		}
-//		return ResponseEntity.status(HttpStatus.CREATED).body(response);		
-//	}
-//
-//	@PutMapping("/unit")
-//	public ResponseEntity<String> updateUnit(@RequestParam long id, @RequestParam int unitName, @RequestParam String description){
-//		
-//		String response = iUnitService.updateUnit(id, unitName, description);
-//		if(!response.contains("SUCCESS")) {
-//			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-//		}
-//		return ResponseEntity.status(HttpStatus.CREATED).body(response);		
-//		
-//	}
+	@PostMapping("/unit/{id}")
+	public ResponseEntity<String> createUnit(@Valid @RequestBody UnitRequestDTO unitRequestDTO, BindingResult bindingResult){
+		
+		if(bindingResult.hasErrors()) {
+			String error = "";
+			for (ObjectError object : bindingResult.getAllErrors()) {
+				error += "/n" + object.getDefaultMessage();
+			}
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
+		}
+		String response = iUnitService.createUnit(unitRequestDTO);
+		
+		if(!response.contains("SUCCESS")) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+		}
+		return ResponseEntity.status(HttpStatus.CREATED).body(response);		
+	}
+
+	@PutMapping("/unit/{id}")
+	public ResponseEntity<String> updateUnit(@PathVariable long id, @Valid @RequestBody UnitRequestDTO unitRequestDTO, BindingResult bindingResult){
+		
+		if(bindingResult.hasErrors()) {
+			String error = "";
+			for (ObjectError object : bindingResult.getAllErrors()) {
+				error += "/n" + object.getDefaultMessage();
+			}
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
+		}
+		String response = iUnitService.updateUnit(unitRequestDTO);
+		if(!response.contains("SUCCESS")) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+		}
+		return ResponseEntity.status(HttpStatus.OK).body(response);		
+		
+	}
 	
-//	@PutMapping("/unit/{id}")
-//	public ResponseEntity<String> deleteUnit(@PathVariable long id){
-//		iUnitService.deleteUnit(id);
-//		return ResponseEntity.status(HttpStatus.OK).body("DELETE SUCCESS!");
-//	}
+	@PutMapping("/unit/delete/{id}")
+	public ResponseEntity<String> deleteUnit(@RequestParam long id){
+		String response = iUnitService.deleteUnit(id);
+		if(!response.contains("SUCCESS")) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+		}
+		return ResponseEntity.status(HttpStatus.OK).body(response);		
+		
+	}
 	
 
 

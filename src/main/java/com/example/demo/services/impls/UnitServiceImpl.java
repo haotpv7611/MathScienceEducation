@@ -7,13 +7,17 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.dtos.LessonDTO;
 import com.example.demo.dtos.ProgressTestDTO;
 import com.example.demo.dtos.UnitDTO;
 import com.example.demo.dtos.UnitRequestDTO;
 import com.example.demo.dtos.UnitViewDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
+import com.example.demo.models.Lesson;
 import com.example.demo.models.Unit;
+import com.example.demo.repositories.ILessonRepository;
 import com.example.demo.repositories.IUnitRepository;
+import com.example.demo.services.ILessonService;
 import com.example.demo.services.IProgressTestService;
 import com.example.demo.services.IUnitService;
 
@@ -23,6 +27,12 @@ public class UnitServiceImpl implements IUnitService {
 	@Autowired
 	private IUnitRepository iUnitRepository;
 
+	@Autowired
+	private ILessonRepository iLessonRepository;
+	
+	@Autowired
+	private ILessonService iLessonService;
+	
 	@Autowired
 	private ModelMapper modelMapper;
 
@@ -95,13 +105,7 @@ public class UnitServiceImpl implements IUnitService {
 		return unitViewDTOList;
 	}
 
-	@Override
-	public void deleteUnit(long id) {
-		Unit unit = iUnitRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
-		unit.setDisable(true);
-		iUnitRepository.save(unit);
-	}
-
+	
 	@Override
 	public String createUnit(UnitRequestDTO unitRequestDTO) {
 		Unit unit = modelMapper.map(unitRequestDTO, Unit.class);
@@ -120,6 +124,24 @@ public class UnitServiceImpl implements IUnitService {
 		unit.setDescription(unitRequestDTO.getDescription());
 		iUnitRepository.save(unit);
 		return "UPDATE SUCCESS !";
+	}
+
+	@Override
+	public String deleteUnit(long id) {
+		Unit unit = iUnitRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
+		unit.setDisable(true);
+		List<LessonDTO> listLessonDTOs = iLessonService.findByUnitIdOrderByLessonNameAsc(id);
+		System.out.println("Listtttttt Lesson "+ listLessonDTOs);
+//		List<Lesson> listLessons = new ArrayList<>();
+//		for (LessonDTO lessonDTO: listLessonDTOs) {
+//			listLessons.add(modelMapper.map(lessonDTO, Lesson.class));			
+//		}
+//		for (Lesson lesson : listLessons) {
+//			lesson.setDisable(true);
+//			iLessonRepository.save(lesson);
+//		}			
+		iUnitRepository.save(unit);
+		return "DELETE SUCCESS !";
 	}
 
 }
