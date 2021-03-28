@@ -3,20 +3,27 @@ package com.example.demo.dtos;
 public class GradeDTO {
 
 	private long id;
-	private int gradeName;
+	private String gradeName;
+
 	public long getId() {
 		return id;
 	}
+
 	public void setId(long id) {
 		this.id = id;
 	}
-	public int getGradeName() {
+
+	/**
+	 * @return the gradeName
+	 */
+	public String getGradeName() {
 		return gradeName;
 	}
-	public void setGradeName(int gradeName) {
-		this.gradeName = gradeName;
+
+	/**
+	 * @param gradeName the gradeName to set
+	 */
+	public void setGradeName(Integer gradeName) {
+		this.gradeName = "Grade " + gradeName;
 	}
-	
-	
-		
 }
