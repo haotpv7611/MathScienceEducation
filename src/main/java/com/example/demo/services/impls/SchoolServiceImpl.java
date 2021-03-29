@@ -13,6 +13,7 @@ import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.School;
 import com.example.demo.models.SchoolGrade;
 import com.example.demo.repositories.ISchoolGradeRepository;
+import com.example.demo.repositories.ISchoolLevelRepository;
 import com.example.demo.repositories.ISchoolRepository;
 import com.example.demo.services.ISchoolService;
 
@@ -26,25 +27,28 @@ public class SchoolServiceImpl implements ISchoolService {
 	private ISchoolGradeRepository iSchoolGradeRepository;
 
 	@Autowired
+	private ISchoolLevelRepository iSchoolLevelRepository;
+
+	@Autowired
 	private ModelMapper modelMapper;
 
-	@Override
-	public List<SchoolResponseDTO> findByGradeId(long gradeId) {
-		List<SchoolGrade> schoolGradeList = iSchoolGradeRepository.findByGradeIdAndIsDisable(gradeId, false);
-		List<SchoolResponseDTO> schoolResponseDTOList = new ArrayList<>();
-
-		if (!schoolGradeList.isEmpty()) {
-			for (SchoolGrade schoolGrade : schoolGradeList) {
-				SchoolResponseDTO schoolResponseDTO = (modelMapper.map(schoolGrade.getSchool(),
-						SchoolResponseDTO.class));
-				schoolResponseDTO.setSchoolAddress(null);
-				schoolResponseDTO.setSchoolLevel(null);
-				schoolResponseDTOList.add(schoolResponseDTO);
-			}
-		}
-
-		return schoolResponseDTOList;
-	}
+//	@Override
+//	public List<SchoolResponseDTO> findByGradeId(long gradeId) {
+//		List<SchoolGrade> schoolGradeList = iSchoolGradeRepository.findByGradeIdAndIsDisable(gradeId, false);
+//		List<SchoolResponseDTO> schoolResponseDTOList = new ArrayList<>();
+//
+//		if (!schoolGradeList.isEmpty()) {
+//			for (SchoolGrade schoolGrade : schoolGradeList) {
+//				SchoolResponseDTO schoolResponseDTO = (modelMapper.map(schoolGrade.getSchool(),
+//						SchoolResponseDTO.class));
+//				schoolResponseDTO.setSchoolAddress(null);
+//				schoolResponseDTO.setSchoolLevel(null);
+//				schoolResponseDTOList.add(schoolResponseDTO);
+//			}
+//		}
+//
+//		return schoolResponseDTOList;
+//	}
 
 	@Override
 	public SchoolResponseDTO findSchoolById(long id) {
@@ -58,6 +62,20 @@ public class SchoolServiceImpl implements ISchoolService {
 		SchoolResponseDTO schoolResponseDTO = new SchoolResponseDTO(schoolName, schoolAddress, schoolLevel);
 
 		return schoolResponseDTO;
+	}
+
+	@Override
+	public String checkSchoolExisted(String schoolName, String district, String schoolLevel) {
+		int schoolLevelId = iSchoolLevelRepository.findByDescription(schoolLevel).getId();
+
+		School school = iSchoolRepository.findBySchoolNameAndSchoolDistrictAndSchoolLevelId(schoolName, district,
+				schoolLevelId);
+
+		if (school != null) {
+			return "EXISTED!";
+		}
+
+		return "OK!";
 	}
 
 	@Override

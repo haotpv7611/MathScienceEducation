@@ -32,43 +32,43 @@ public class SchoolGrade {
 	private String modifiedBy;
 	private boolean isDisable;
 
-	@ManyToOne
-	@JoinColumn(name = "schoolId")
-	School school;
-	@ManyToOne
-	@JoinColumn(name = "gradeId")
-	Grade grade;
+//	@ManyToOne
+//	@JoinColumn(name = "schoolId")
+//	School school;
+//	@ManyToOne
+//	@JoinColumn(name = "gradeId")
+//	Grade grade;
 
 	@OneToMany(mappedBy = "schoolGrade")
 	private List<Class> classList;
 
-	/**
-	 * @return the grade
-	 */
-	public Grade getGrade() {
-		return grade;
-	}
-
-	/**
-	 * @param grade the grade to set
-	 */
-	public void setGrade(Grade grade) {
-		this.grade = grade;
-	}
-
-	/**
-	 * @return the school
-	 */
-	public School getSchool() {
-		return school;
-	}
-
-	/**
-	 * @param school the school to set
-	 */
-	public void setSchool(School school) {
-		this.school = school;
-	}
+//	/**
+//	 * @return the grade
+//	 */
+//	public Grade getGrade() {
+//		return grade;
+//	}
+//
+//	/**
+//	 * @param grade the grade to set
+//	 */
+//	public void setGrade(Grade grade) {
+//		this.grade = grade;
+//	}
+//
+//	/**
+//	 * @return the school
+//	 */
+//	public School getSchool() {
+//		return school;
+//	}
+//
+//	/**
+//	 * @param school the school to set
+//	 */
+//	public void setSchool(School school) {
+//		this.school = school;
+//	}
 
 	/**
 	 * @return the createdDate

@@ -8,4 +8,5 @@ import com.example.demo.models.SchoolLevel;
 @Repository
 public interface ISchoolLevelRepository extends JpaRepository<SchoolLevel, Integer> {
 
+	SchoolLevel findByDescription(String schoolLevel);
 }

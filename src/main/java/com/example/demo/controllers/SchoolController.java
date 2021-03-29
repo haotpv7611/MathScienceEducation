@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dtos.SchoolRequestDTO;
@@ -29,11 +30,11 @@ public class SchoolController {
 	@Autowired
 	private ISchoolService iSchoolService;
 
-	@GetMapping("/grade/{gradeId}/school")
-	public ResponseEntity<List<SchoolResponseDTO>> findSchoolByGradeId(@PathVariable long gradeId) {
-
-		return ResponseEntity.ok(iSchoolService.findByGradeId(gradeId));
-	}
+//	@GetMapping("/grade/{gradeId}/school")
+//	public ResponseEntity<List<SchoolResponseDTO>> findSchoolByGradeId(@PathVariable long gradeId) {
+//
+//		return ResponseEntity.ok(iSchoolService.findByGradeId(gradeId));
+//	}
 
 	@GetMapping("/{id}")
 	public ResponseEntity<SchoolResponseDTO> findSchoolById(@PathVariable long id) {
@@ -41,8 +42,15 @@ public class SchoolController {
 		return ResponseEntity.ok(iSchoolService.findSchoolById(id));
 	}
 
-	@PostMapping
-	public ResponseEntity<?> createSchool(@Valid @RequestBody SchoolRequestDTO schoolRequestDTO,
+	@GetMapping("/school")
+	public ResponseEntity<String> checkSchoolIsExisted(@RequestParam String schoolName,
+			@RequestParam String schoolDistrict, @RequestParam String schoolLevel) {
+		
+		return ResponseEntity.ok(iSchoolService.checkSchoolExisted(schoolName, schoolDistrict, schoolLevel));
+	}
+
+	@PostMapping("/school")
+	public ResponseEntity<String> createSchool(@Valid @RequestBody SchoolRequestDTO schoolRequestDTO,
 			BindingResult bindingResult) {
 		if (bindingResult.hasErrors()) {
 			String error = "";
@@ -58,30 +66,17 @@ public class SchoolController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 
-	@PutMapping("/{id}")
+	@PutMapping("/school/{id}")
 	public ResponseEntity<String> updateSchool(@PathVariable long id,
 			@Valid @RequestBody SchoolRequestDTO schoolRequestDTO, BindingResult bindingResult) {
 
-		return ResponseEntity.status(HttpStatus.OK).body(iSchoolService.updateSchool(id, schoolRequestDTO));
+		return ResponseEntity.ok(iSchoolService.updateSchool(id, schoolRequestDTO));
 	}
 
-//	@DeleteMapping("/{id}")
-//	public ResponseEntity<String> deleteSchool(@PathVariable long id) {
-//
-//		return ResponseEntity.status(HttpStatus.OK).body(schoolServiceImpl.deleteSchool(id));
-//	}
-
-	@GetMapping("/all")
+	@GetMapping("/school/all")
 	public ResponseEntity<List<SchoolResponseDTO>> findAllSchool() {
 
-		List<SchoolResponseDTO> response = iSchoolService.findAllSchool();
-
-		if (response == null) {
-
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-		}
-
-		return ResponseEntity.status(HttpStatus.OK).body(response);
+		return ResponseEntity.ok(iSchoolService.findAllSchool());
 	}
 
 }

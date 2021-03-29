@@ -12,7 +12,7 @@ import javax.persistence.OneToMany;
 public class SchoolLevel {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private long id;
+	private int id;
 	private String description;
 
 	@OneToMany(mappedBy = "schoolLevel")
@@ -35,7 +35,7 @@ public class SchoolLevel {
 	/**
 	 * @return the id
 	 */
-	public long getId() {
+	public int getId() {
 		return id;
 	}
 
