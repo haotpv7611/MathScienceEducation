@@ -34,18 +34,5 @@ public class LessonDTO {
 	public LessonDTO() {
 		
 	}
-	public LessonDTO(long id, int lessonName, String lessonUrl, long unitId) {
-		super();
-		this.id = id;
-		this.lessonName = lessonName;
-		this.lessonUrl = lessonUrl;
-		this.unitId = unitId;
-	}
-	
-	
-	
-	
-	
-	
 	
 }

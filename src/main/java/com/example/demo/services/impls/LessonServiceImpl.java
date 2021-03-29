@@ -25,12 +25,12 @@ public class LessonServiceImpl implements ILessonService {
 	IUnitRepository iUnitRepository;
 	@Autowired
 	ModelMapper modelMapper;
-	
+
 	@Override
 	public List<LessonDTO> findByUnitIdOrderByLessonNameAsc(long unitId) {
 		List<Lesson> lessonList = iLessonRepository.findByUnitIdAndIsDisableOrderByLessonNameAsc(unitId, false);
 		List<LessonDTO> lessonDTOList = new ArrayList<>();
-		if(!lessonList.isEmpty()) {
+		if (!lessonList.isEmpty()) {
 			for (Lesson lesson : lessonList) {
 				lessonDTOList.add(modelMapper.map(lesson, LessonDTO.class));
 			}
@@ -40,31 +40,22 @@ public class LessonServiceImpl implements ILessonService {
 
 	@Override
 	public LessonDTO findById(long id) {
-		Lesson lesson = iLessonRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());			
+		Lesson lesson = iLessonRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
 		return modelMapper.map(lesson, LessonDTO.class);
 	}
 
 	@Override
 	public String createLesson(LessonRequestDTO lessonRequestDTO) {
 		Unit unit = iUnitRepository.findByIdAndIsDisable(lessonRequestDTO.getUnitId(), false);
-		if(unit==null) {
+		if (unit == null) {
 			return "Unit is not existed !";
 		}
-		List<Lesson> listLessons = iLessonRepository.findByUnitIdAndIsDisableOrderByLessonNameAsc(lessonRequestDTO.getUnitId(), false);
+		List<Lesson> listLessons = iLessonRepository
+				.findByUnitIdAndIsDisableOrderByLessonNameAsc(lessonRequestDTO.getUnitId(), false);
 		for (Lesson lesson : listLessons) {
-			if(lessonRequestDTO.getLessonName().equals(lesson.getLessonName())) {
+			if (lessonRequestDTO.getLessonName().equals(lesson.getLessonName())) {
 				return "Lesson is existed !";
 			}
-		}
-		String error = "";
-		if(lessonRequestDTO.getLessonName().isEmpty()) {
-			error += "Lesson Name Can't Be Blank !";
-		}
-		if(lessonRequestDTO.getLessonUrl().isEmpty()) {
-			error += "Lesson URL Can't Be Blank !";
-		}
-		if(!error.isEmpty()) {
-			return error.trim();
 		}
 		Lesson lesson = modelMapper.map(lessonRequestDTO, Lesson.class);
 		lesson.setDisable(false);
@@ -75,23 +66,25 @@ public class LessonServiceImpl implements ILessonService {
 	@Override
 	public String updateLesson(LessonRequestDTO lessonRequestDTO) {
 		System.out.println("start");
-		Lesson lesson = iLessonRepository.findById(lessonRequestDTO.getId()).orElseThrow(() -> new ResourceNotFoundException());	
+		Lesson lesson = iLessonRepository.findById(lessonRequestDTO.getId())
+				.orElseThrow(() -> new ResourceNotFoundException());
 		System.out.println("end");
-		if(lesson.isDisable()) {
+		if (lesson.isDisable()) {
 			throw new ResourceNotFoundException();
 		}
-		List<Lesson> listLessons = iLessonRepository.findByUnitIdAndIsDisableOrderByLessonNameAsc(lessonRequestDTO.getUnitId(), false);
+		List<Lesson> listLessons = iLessonRepository
+				.findByUnitIdAndIsDisableOrderByLessonNameAsc(lessonRequestDTO.getUnitId(), false);
 		for (Lesson lesson1 : listLessons) {
-			if(lessonRequestDTO.getLessonName().equals(lesson1.getLessonName())) {
+			if (lessonRequestDTO.getLessonName().equals(lesson1.getLessonName())) {
 				return "Lesson is existed !";
 			}
 		}
-		
+
 		lesson.setLessonName(lessonRequestDTO.getLessonName());
 		lesson.setLessonUrl(lessonRequestDTO.getLessonUrl());
 		iLessonRepository.save(lesson);
 		return "UPDATE SUCCESS !";
-		
+
 	}
 
 	@Override
