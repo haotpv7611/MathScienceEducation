@@ -13,6 +13,7 @@ import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.School;
 import com.example.demo.models.SchoolGrade;
 import com.example.demo.repositories.ISchoolGradeRepository;
+import com.example.demo.repositories.ISchoolLevelRepository;
 import com.example.demo.repositories.ISchoolRepository;
 import com.example.demo.services.ISchoolService;
 
@@ -24,6 +25,9 @@ public class SchoolServiceImpl implements ISchoolService {
 
 	@Autowired
 	private ISchoolGradeRepository iSchoolGradeRepository;
+
+	@Autowired
+	private ISchoolLevelRepository iSchoolLevelRepository;
 
 	@Autowired
 	private ModelMapper modelMapper;
@@ -58,6 +62,20 @@ public class SchoolServiceImpl implements ISchoolService {
 		SchoolResponseDTO schoolResponseDTO = new SchoolResponseDTO(schoolName, schoolAddress, schoolLevel);
 
 		return schoolResponseDTO;
+	}
+
+	@Override
+	public String checkSchoolExisted(String schoolName, String district, String schoolLevel) {
+		int schoolLevelId = iSchoolLevelRepository.findByDescription(schoolLevel).getId();
+
+		School school = iSchoolRepository.findBySchoolNameAndSchoolDistrictAndSchoolLevelId(schoolName, district,
+				schoolLevelId);
+
+		if (school != null) {
+			return "EXISTED!";
+		}
+
+		return "OK!";
 	}
 
 	@Override

@@ -11,6 +11,8 @@ public interface ISchoolService {
 
 	SchoolResponseDTO findSchoolById(long id);
 
+	String checkSchoolExisted(String schoolName, String district, String schoolLevel);
+
 	String createSchool(SchoolRequestDTO schoolRequestDTO);
 
 	String updateSchool(long id, SchoolRequestDTO schoolRequestDTO);
