@@ -15,8 +15,9 @@ public class SchoolResponseDTO {
 	private String createdBy;
 	@JsonFormat(pattern = "dd-MM-yyyy HH:mm")
 	private LocalDateTime modifiedDate;
+	private String modifiedBy;
 	private boolean isDisable;
-	
+
 	public SchoolResponseDTO() {
 		// TODO Auto-generated constructor stub
 	}
@@ -157,6 +158,20 @@ public class SchoolResponseDTO {
 	 */
 	public void setSchoolLevel(String schoolLevel) {
 		this.schoolLevel = schoolLevel;
+	}
+
+	/**
+	 * @return the modifiedBy
+	 */
+	public String getModifiedBy() {
+		return modifiedBy;
+	}
+
+	/**
+	 * @param modifiedBy the modifiedBy to set
+	 */
+	public void setModifiedBy(String modifiedBy) {
+		this.modifiedBy = modifiedBy;
 	}
 
 }
