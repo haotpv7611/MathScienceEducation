@@ -7,6 +7,7 @@ import java.util.List;
 import org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -81,7 +82,7 @@ public class BannerImageServiceImpl implements IBannerImageService {
 	public List<BannerImageDTO> findAll() {
 		// 1. connect database through repository
 		// 2. find all entities
-		List<BannerImage> bannerImageList = iBannerImageRepositoy.findAll();
+		List<BannerImage> bannerImageList = iBannerImageRepositoy.findAll(Sort.by(Sort.Direction.ASC, "isDisable"));
 
 		List<BannerImageDTO> bannerImageDTOList = new ArrayList<>();
 

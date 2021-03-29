@@ -133,7 +133,7 @@ public class NewsServiceImpl implements INewsService {
 		// descending by Created Date
 		// 4. else list all entities are not disable and sort descending by Created Date
 		if (iNewsRepository.count() >= 3) {
-			newsList = iNewsRepository.findTop3ByIsDisableOrderByCreatedDateDesc(false);
+			newsList = iNewsRepository.findTop3ByIsDisableOrderByCreatedDateDescIsDisableAsc(false);
 		} else {
 			newsList = iNewsRepository.findByIsDisableOrderByCreatedDateDesc(false);
 		}

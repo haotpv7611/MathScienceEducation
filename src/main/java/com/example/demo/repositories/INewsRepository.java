@@ -11,6 +11,6 @@ import com.example.demo.models.News;
 public interface INewsRepository extends JpaRepository<News, Long> {	
 	List<News> findByIsDisableOrderByCreatedDateDesc(boolean isDisable);
 	List<News> findByOrderByCreatedDateDesc();
-	List<News> findTop3ByIsDisableOrderByCreatedDateDesc(boolean isDisable);
+	List<News> findTop3ByIsDisableOrderByCreatedDateDescIsDisableAsc(boolean isDisable);
 	News findByIdAndIsDisable(long id, boolean isDisable);
 }
