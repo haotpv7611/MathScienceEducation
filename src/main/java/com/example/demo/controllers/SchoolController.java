@@ -36,7 +36,7 @@ public class SchoolController {
 //		return ResponseEntity.ok(iSchoolService.findByGradeId(gradeId));
 //	}
 
-	@GetMapping("/{id}")
+	@GetMapping("/school/{id}")
 	public ResponseEntity<SchoolResponseDTO> findSchoolById(@PathVariable long id) {
 
 		return ResponseEntity.ok(iSchoolService.findSchoolById(id));
