@@ -8,5 +8,5 @@ public interface IGradeService {
 
 	List<GradeDTO> findAllGrade();
 	
-//	List<String> findLinkedGradeBySchoolId(long id);
+	List<String> findLinkedGradeBySchoolId(long id);
 }

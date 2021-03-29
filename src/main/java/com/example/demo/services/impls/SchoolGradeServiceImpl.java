@@ -28,22 +28,22 @@ public class SchoolGradeServiceImpl implements ISchoolGradeService {
 	@Autowired
 	ModelMapper modelMapper;
 
-//	@Override
-//	public String linkGradeAndSchool(long gradeId, long schoolId) {
-//		Grade grade = iGradeRepository.findById(gradeId).orElseThrow(() -> new ResourceNotFoundException());
-//		School school = iSchoolRepository.findByIdAndIsDisable(schoolId, false);
-//		if (school == null) {
-//			throw new ResourceNotFoundException();
-//		}
-//
-//		SchoolGrade schoolGrade = new SchoolGrade();
-//		schoolGrade.setGrade(grade);
-//		schoolGrade.setSchool(school);
-//		schoolGrade.setDisable(false);
-//		iSchoolGradeRepository.save(schoolGrade);
-//
-//		return "LINK SUCCESS!";
-//	}
+	@Override
+	public String linkGradeAndSchool(long gradeId, long schoolId) {
+		Grade grade = iGradeRepository.findById(gradeId).orElseThrow(() -> new ResourceNotFoundException());
+		School school = iSchoolRepository.findByIdAndIsDisable(schoolId, false);
+		if (school == null) {
+			throw new ResourceNotFoundException();
+		}
+
+		SchoolGrade schoolGrade = new SchoolGrade();
+		schoolGrade.setGrade(grade);
+		schoolGrade.setSchool(school);
+		schoolGrade.setDisable(false);
+		iSchoolGradeRepository.save(schoolGrade);
+
+		return "LINK SUCCESS!";
+	}
 
 	public String removeLinkGradeAndSchool(long gradeId, long schoolId) {
 		iGradeRepository.findById(gradeId).orElseThrow(() -> new ResourceNotFoundException());

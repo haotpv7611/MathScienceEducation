@@ -32,23 +32,23 @@ public class SchoolServiceImpl implements ISchoolService {
 	@Autowired
 	private ModelMapper modelMapper;
 
-//	@Override
-//	public List<SchoolResponseDTO> findByGradeId(long gradeId) {
-//		List<SchoolGrade> schoolGradeList = iSchoolGradeRepository.findByGradeIdAndIsDisable(gradeId, false);
-//		List<SchoolResponseDTO> schoolResponseDTOList = new ArrayList<>();
-//
-//		if (!schoolGradeList.isEmpty()) {
-//			for (SchoolGrade schoolGrade : schoolGradeList) {
-//				SchoolResponseDTO schoolResponseDTO = (modelMapper.map(schoolGrade.getSchool(),
-//						SchoolResponseDTO.class));
-//				schoolResponseDTO.setSchoolAddress(null);
-//				schoolResponseDTO.setSchoolLevel(null);
-//				schoolResponseDTOList.add(schoolResponseDTO);
-//			}
-//		}
-//
-//		return schoolResponseDTOList;
-//	}
+	@Override
+	public List<SchoolResponseDTO> findByGradeId(long gradeId) {
+		List<SchoolGrade> schoolGradeList = iSchoolGradeRepository.findByGradeIdAndIsDisable(gradeId, false);
+		List<SchoolResponseDTO> schoolResponseDTOList = new ArrayList<>();
+
+		if (!schoolGradeList.isEmpty()) {
+			for (SchoolGrade schoolGrade : schoolGradeList) {
+				SchoolResponseDTO schoolResponseDTO = (modelMapper.map(schoolGrade.getSchool(),
+						SchoolResponseDTO.class));
+				schoolResponseDTO.setSchoolAddress(null);
+				schoolResponseDTO.setSchoolLevel(null);
+				schoolResponseDTOList.add(schoolResponseDTO);
+			}
+		}
+
+		return schoolResponseDTOList;
+	}
 
 	@Override
 	public SchoolResponseDTO findSchoolById(long id) {

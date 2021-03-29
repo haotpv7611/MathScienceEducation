@@ -19,11 +19,11 @@ public class SchoolGradeController {
 	@Autowired
 	ISchoolGradeService iSchoolGradeService;
 
-//	@PostMapping
-//	public ResponseEntity<String> linkGradeAndSchool(@RequestParam long gradeId, @RequestParam long schoolId) {
-//
-//		return ResponseEntity.ok(iSchoolGradeService.linkGradeAndSchool(gradeId, schoolId));
-//	}
+	@PostMapping
+	public ResponseEntity<String> linkGradeAndSchool(@RequestParam long gradeId, @RequestParam long schoolId) {
+
+		return ResponseEntity.ok(iSchoolGradeService.linkGradeAndSchool(gradeId, schoolId));
+	}
 	
 	@PutMapping
 	public ResponseEntity<String> removeLinkGradeAndSchool(@RequestParam long gradeId, @RequestParam long schoolId) {

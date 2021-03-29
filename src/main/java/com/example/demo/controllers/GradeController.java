@@ -28,9 +28,9 @@ public class GradeController {
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 	
-//	@GetMapping("/{schoolId}")
-//	public ResponseEntity<List<String>> findLinkedGradeBySchoolId(@PathVariable long schoolId) {
-//
-//		return ResponseEntity.ok(iGradeService.findLinkedGradeBySchoolId(schoolId));
-//	}
+	@GetMapping("/{schoolId}")
+	public ResponseEntity<List<String>> findLinkedGradeBySchoolId(@PathVariable long schoolId) {
+
+		return ResponseEntity.ok(iGradeService.findLinkedGradeBySchoolId(schoolId));
+	}
 }

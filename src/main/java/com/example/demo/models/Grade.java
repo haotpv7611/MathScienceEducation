@@ -15,8 +15,8 @@ public class Grade {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
 	private int gradeName;
-//	@OneToMany(mappedBy = "grade")
-//	private Set<SchoolGrade> schoolGrade;
+	@OneToMany(mappedBy = "grade")
+	private Set<SchoolGrade> schoolGrade;
 
 	public int getGradeName() {
 		return gradeName;
@@ -29,19 +29,19 @@ public class Grade {
 	public long getId() {
 		return id;
 	}
-//
-//	/**
-//	 * @return the schoolGrade
-//	 */
-//	public Set<SchoolGrade> getSchoolGrade() {
-//		return schoolGrade;
-//	}
-//
-//	/**
-//	 * @param schoolGrade the schoolGrade to set
-//	 */
-//	public void setSchoolGrade(Set<SchoolGrade> schoolGrade) {
-//		this.schoolGrade = schoolGrade;
-//	}
+
+	/**
+	 * @return the schoolGrade
+	 */
+	public Set<SchoolGrade> getSchoolGrade() {
+		return schoolGrade;
+	}
+
+	/**
+	 * @param schoolGrade the schoolGrade to set
+	 */
+	public void setSchoolGrade(Set<SchoolGrade> schoolGrade) {
+		this.schoolGrade = schoolGrade;
+	}
 
 }

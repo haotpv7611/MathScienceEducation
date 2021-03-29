@@ -30,11 +30,11 @@ public class SchoolController {
 	@Autowired
 	private ISchoolService iSchoolService;
 
-//	@GetMapping("/grade/{gradeId}/school")
-//	public ResponseEntity<List<SchoolResponseDTO>> findSchoolByGradeId(@PathVariable long gradeId) {
-//
-//		return ResponseEntity.ok(iSchoolService.findByGradeId(gradeId));
-//	}
+	@GetMapping("/grade/{gradeId}/school")
+	public ResponseEntity<List<SchoolResponseDTO>> findSchoolByGradeId(@PathVariable long gradeId) {
+
+		return ResponseEntity.ok(iSchoolService.findByGradeId(gradeId));
+	}
 
 	@GetMapping("/school/{id}")
 	public ResponseEntity<SchoolResponseDTO> findSchoolById(@PathVariable long id) {

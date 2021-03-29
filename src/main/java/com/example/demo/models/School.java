@@ -38,8 +38,8 @@ public class School {
 	private String modifiedBy;
 	private boolean isDisable;
 
-//	@OneToMany(mappedBy = "school")
-//	private Set<SchoolGrade> schoolGrade;
+	@OneToMany(mappedBy = "school")
+	private Set<SchoolGrade> schoolGrade;
 
 	@ManyToOne
 	@JoinColumn(name = "schoolLevelId")
@@ -192,19 +192,19 @@ public class School {
 		this.modifiedBy = modifiedBy;
 	}
 
-//	/**
-//	 * @return the schoolGrade
-//	 */
-//	public Set<SchoolGrade> getSchoolGrade() {
-//		return schoolGrade;
-//	}
-//
-//	/**
-//	 * @param schoolGrade the schoolGrade to set
-//	 */
-//	public void setSchoolGrade(Set<SchoolGrade> schoolGrade) {
-//		this.schoolGrade = schoolGrade;
-//	}
+	/**
+	 * @return the schoolGrade
+	 */
+	public Set<SchoolGrade> getSchoolGrade() {
+		return schoolGrade;
+	}
+
+	/**
+	 * @param schoolGrade the schoolGrade to set
+	 */
+	public void setSchoolGrade(Set<SchoolGrade> schoolGrade) {
+		this.schoolGrade = schoolGrade;
+	}
 
 	/**
 	 * @return the schoolLevel
