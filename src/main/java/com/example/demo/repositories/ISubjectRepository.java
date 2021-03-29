@@ -11,4 +11,6 @@ import com.example.demo.models.Subject;
 public interface ISubjectRepository extends JpaRepository<Subject, Long>{
 
 	List<Subject> findByGradeIdAndIsDisable(long gradeId, boolean isDisable);
+	Subject findByIdAndIsDisable(long id, boolean isDisable);
+	
 }

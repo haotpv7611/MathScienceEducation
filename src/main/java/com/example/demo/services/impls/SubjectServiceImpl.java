@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 
 import com.example.demo.dtos.SubjectDTO;
+import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.Subject;
 import com.example.demo.repositories.ISubjectRepository;
 import com.example.demo.services.ISubjectService;
@@ -34,6 +35,15 @@ public class SubjectServiceImpl implements ISubjectService {
 		}
 		
 		return subjectDTOList;
+	}
+
+	@Override
+	public Subject findByIdAndIsDisable(long id, boolean isDisable) {
+		Subject subject = iSubjectRepository.findByIdAndIsDisable(id, false);
+		if(subject == null) {
+			throw new ResourceNotFoundException();
+		}
+		return subject;
 	}
 
 }

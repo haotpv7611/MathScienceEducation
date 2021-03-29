@@ -40,7 +40,7 @@ public class UnitController {
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 	
-	@PostMapping("/unit/{id}")
+	@PostMapping("/unit")
 	public ResponseEntity<String> createUnit(@Valid @RequestBody UnitRequestDTO unitRequestDTO, BindingResult bindingResult){
 		
 		if(bindingResult.hasErrors()) {
@@ -58,7 +58,7 @@ public class UnitController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);		
 	}
 
-	@PutMapping("/unit/{id}")
+	@PutMapping("/unit")
 	public ResponseEntity<String> updateUnit(@PathVariable long id, @Valid @RequestBody UnitRequestDTO unitRequestDTO, BindingResult bindingResult){
 		
 		if(bindingResult.hasErrors()) {
@@ -76,7 +76,7 @@ public class UnitController {
 		
 	}
 	
-	@PutMapping("/unit/delete/{id}")
+	@PutMapping("unit/delete")
 	public ResponseEntity<String> deleteUnit(@RequestParam long id){
 		String response = iUnitService.deleteUnit(id);
 		if(!response.contains("SUCCESS")) {

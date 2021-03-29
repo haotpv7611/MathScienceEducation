@@ -3,7 +3,7 @@ package com.example.demo.dtos;
 public class LessonDTO {
 
 	private long id;
-	private int lessonName;
+	private String lessonName;
 	private String lessonUrl;
 	private long unitId;
 	public long getId() {
@@ -12,10 +12,11 @@ public class LessonDTO {
 	public void setId(long id) {
 		this.id = id;
 	}
-	public int getLessonName() {
+	
+	public String getLessonName() {
 		return lessonName;
 	}
-	public void setLessonName(int lessonName) {
+	public void setLessonName(String lessonName) {
 		this.lessonName = lessonName;
 	}
 	public String getLessonUrl() {

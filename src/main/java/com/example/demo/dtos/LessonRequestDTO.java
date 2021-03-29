@@ -1,27 +1,28 @@
-package com.example.demo.models;
+package com.example.demo.dtos;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+public class LessonRequestDTO {
 
-@Entity
-public class Lesson {
-
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
 	private String lessonName;
 	private String lessonUrl;
 	private long unitId;
-	private boolean isDisable;
 	
+	
+	
+
 	public String getLessonName() {
 		return lessonName;
 	}
 	public void setLessonName(String lessonName) {
 		this.lessonName = lessonName;
 	}
+	public long getId() {
+		return id;
+	}
+	public void setId(long id) {
+		this.id = id;
+	}
+	
 	public String getLessonUrl() {
 		return lessonUrl;
 	}
@@ -34,16 +35,6 @@ public class Lesson {
 	public void setUnitId(long unitId) {
 		this.unitId = unitId;
 	}
-	public boolean isDisable() {
-		return isDisable;
-	}
-	public void setDisable(boolean isDisable) {
-		this.isDisable = isDisable;
-	}
-	public long getId() {
-		return id;
-	}
-
 	
 	
 }
