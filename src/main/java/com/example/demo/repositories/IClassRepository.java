@@ -5,9 +5,10 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.example.demo.models.Class;
+import com.example.demo.models.Classes;
 
 @Repository
-public interface IClassRepository extends JpaRepository<Class, Long> {
-	List<Class> findBySchoolGradeIdAndIsDisable(long schooGradeId, boolean isDisable);
+public interface IClassRepository extends JpaRepository<Classes, Long> {
+	List<Classes> findBySchoolGradeIdAndIsDisableOrderByClassNameAsc(long schoolGradeId, boolean isDisable);
+
 }
