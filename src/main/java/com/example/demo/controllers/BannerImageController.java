@@ -3,21 +3,27 @@ package com.example.demo.controllers;
 import java.io.IOException;
 import java.util.List;
 
+import javax.validation.Valid;
+
 import org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.dtos.BannerImageDTO;
+import com.example.demo.dtos.ListIdAndStatusDTO;
 import com.example.demo.services.IBannerImageService;
 
 import org.slf4j.Logger;
@@ -56,10 +62,23 @@ public class BannerImageController {
 	}
 
 	@PutMapping
-	public ResponseEntity<String> disableBannerImage(@RequestParam List<Long> ids) {
-		String response = iBannerImageService.disableBannerImage(ids);
+	public ResponseEntity<String> changeStatusBannerImage(@Valid @RequestBody ListIdAndStatusDTO listIdAndStatusDTO,
+			BindingResult bindingResult) {
+		if (bindingResult.hasErrors()) {
+			String error = "";
+			for (ObjectError object : bindingResult.getAllErrors()) {
+				error += "\n" + object.getDefaultMessage();
+			}
 
-		return ResponseEntity.status(HttpStatus.OK).body(response);
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
+		}
+		String status = listIdAndStatusDTO.getStatus();
+		if (!status.equals("ACTIVE") || !status.equals("INACTIVE") || !status.equals("DELETED")) {
+
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("STATUS INVALID!");
+		}
+
+		return ResponseEntity.ok(iBannerImageService.changeStatusBannerImage(listIdAndStatusDTO));
 	}
 
 	@GetMapping("/{id}")

@@ -9,7 +9,9 @@ import com.example.demo.models.BannerImage;
 
 @Repository
 public interface IBannerImageRepository extends JpaRepository<BannerImage, Long> {
-	List<BannerImage> findByIsDisable(boolean isDisable);
+	List<BannerImage> findByStatusNotOrderByStatusAsc(String status);
 
-	BannerImage findByIdAndIsDisable(long id, boolean isDisable);
+	List<BannerImage> findByStatus(String status);
+
+	BannerImage findByIdAndStatusNot(long id, String status);
 }

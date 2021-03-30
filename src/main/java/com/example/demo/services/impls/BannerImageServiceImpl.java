@@ -9,12 +9,12 @@ import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.dtos.BannerImageDTO;
+import com.example.demo.dtos.ListIdAndStatusDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.Account;
 import com.example.demo.models.BannerImage;
@@ -74,7 +74,7 @@ public class BannerImageServiceImpl implements IBannerImageService {
 		BannerImage bannerImage = new BannerImage();
 		bannerImage.setDescription(description.trim());
 		bannerImage.setImageUrl(firebaseService.saveFile(file));
-		bannerImage.setDisable(false);
+		bannerImage.setStatus("ACTIVE");
 		bannerImage.setAccountId(accountId);
 		iBannerImageRepositoy.save(bannerImage);
 
@@ -86,7 +86,7 @@ public class BannerImageServiceImpl implements IBannerImageService {
 	public List<BannerImageDTO> findAll() {
 		// 1. connect database through repository
 		// 2. find all entities
-		List<BannerImage> bannerImageList = iBannerImageRepositoy.findAll(Sort.by(Sort.Direction.ASC, "isDisable"));
+		List<BannerImage> bannerImageList = iBannerImageRepositoy.findByStatusNotOrderByStatusAsc("DELETED");
 
 		List<BannerImageDTO> bannerImageDTOList = new ArrayList<>();
 
@@ -105,24 +105,27 @@ public class BannerImageServiceImpl implements IBannerImageService {
 
 	@Override
 	@Transactional
-	public String disableBannerImage(List<Long> ids) {
+	public String changeStatusBannerImage(ListIdAndStatusDTO listIdAndStatusDTO) {
+		List<Long> ids = listIdAndStatusDTO.getIds();
+		String status = listIdAndStatusDTO.getStatus();
+		
 		// 1. connect database through repository
 		// 2. find entity by id
 		// 3. if not existed throw exception
 		for (Long id : ids) {
-			
-			BannerImage bannerImage = iBannerImageRepositoy.findByIdAndIsDisable(id, false);
+
+			BannerImage bannerImage = iBannerImageRepositoy.findByIdAndStatusNot(id, "DELETED");
 			if (bannerImage == null) {
 				throw new ResourceNotFoundException();
 			}
-			
+
 			// 4. update entity with isDisable = true
-			logger.info("Delete Image id: " + id);
-			bannerImage.setDisable(true);
+			logger.info("Change status Image id: " + id);
+			bannerImage.setStatus(status);
 			iBannerImageRepositoy.save(bannerImage);
 		}
 
-		return "DELETE SUCCESS!";
+		return "CHANGE SUCCESS!";
 	}
 
 	@Override
@@ -132,12 +135,12 @@ public class BannerImageServiceImpl implements IBannerImageService {
 		// 3. if not found throw not found exception
 		// 4. else convert entity to dto
 		// 5. return
-		BannerImage bannerImage = iBannerImageRepositoy.findById(id).orElseThrow(() -> new ResourceNotFoundException());
-
-		BannerImageDTO bannerImageDTO = null;
-		if (!bannerImage.isDisable()) {
-			bannerImageDTO = new BannerImageDTO(bannerImage.getDescription(), bannerImage.getImageUrl());
+		BannerImage bannerImage = iBannerImageRepositoy.findByIdAndStatusNot(id, "DELETED");
+		if (bannerImage == null) {
+			throw new ResourceNotFoundException();
 		}
+
+		BannerImageDTO bannerImageDTO = new BannerImageDTO(bannerImage.getDescription(), bannerImage.getImageUrl());
 
 		return bannerImageDTO;
 	}
@@ -155,7 +158,7 @@ public class BannerImageServiceImpl implements IBannerImageService {
 		// 1. connect database through repository
 		// 2. find entity by id
 		// 3. if not existed throw exception
-		BannerImage bannerImage = iBannerImageRepositoy.findByIdAndIsDisable(id, false);
+		BannerImage bannerImage = iBannerImageRepositoy.findByIdAndStatusNot(id, "DELETED");
 		if (bannerImage == null) {
 			throw new ResourceNotFoundException();
 		}
@@ -185,7 +188,7 @@ public class BannerImageServiceImpl implements IBannerImageService {
 
 	@Override
 	public List<String> showBannerImage() {
-		List<BannerImage> listBannerImages = iBannerImageRepositoy.findByIsDisable(false);
+		List<BannerImage> listBannerImages = iBannerImageRepositoy.findByStatus("ACTIVE");
 		List<String> listUrls = new ArrayList<>();
 
 		if (!listBannerImages.isEmpty()) {
@@ -193,6 +196,7 @@ public class BannerImageServiceImpl implements IBannerImageService {
 				listUrls.add(bannerImage.getImageUrl());
 			}
 		}
+
 		return listUrls;
 	}
 

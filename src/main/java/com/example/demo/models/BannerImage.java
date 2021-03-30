@@ -29,7 +29,7 @@ public class BannerImage {
 	private LocalDateTime modifiedDate;
 //	@LastModifiedBy
 	private String modifiedBy;
-	private boolean isDisable;
+	private String status;
 	private long accountId;
 
 	public String getDescription() {
@@ -48,12 +48,18 @@ public class BannerImage {
 		this.imageUrl = imageUrl;
 	}
 
-	public boolean isDisable() {
-		return isDisable;
+	/**
+	 * @return the status
+	 */
+	public String getStatus() {
+		return status;
 	}
 
-	public void setDisable(boolean isDisable) {
-		this.isDisable = isDisable;
+	/**
+	 * @param status the status to set
+	 */
+	public void setStatus(String status) {
+		this.status = status;
 	}
 
 	public long getAccountId() {

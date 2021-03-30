@@ -7,6 +7,7 @@ import org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.dtos.BannerImageDTO;
+import com.example.demo.dtos.ListIdAndStatusDTO;
 
 public interface IBannerImageService {
 
@@ -15,7 +16,7 @@ public interface IBannerImageService {
 
 	List<BannerImageDTO> findAll();
 
-	String disableBannerImage(List<Long> ids);
+	String changeStatusBannerImage(ListIdAndStatusDTO listIdAndStatusDTO);
 
 	BannerImageDTO findById(long id);
 

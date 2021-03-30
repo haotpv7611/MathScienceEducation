@@ -18,7 +18,7 @@ public class BannerImageDTO {
 	private String modifiedBy;
 
 	private long accountId;
-	private boolean isDisable;
+	private String isDisable;
 
 	public long getId() {
 		return id;
@@ -117,14 +117,14 @@ public class BannerImageDTO {
 	/**
 	 * @return the isDisable
 	 */
-	public boolean isDisable() {
+	public String getIsDisable() {
 		return isDisable;
 	}
 
 	/**
 	 * @param isDisable the isDisable to set
 	 */
-	public void setDisable(boolean isDisable) {
+	public void setIsDisable(String isDisable) {
 		this.isDisable = isDisable;
 	}
 
