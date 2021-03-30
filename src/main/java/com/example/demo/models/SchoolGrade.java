@@ -42,7 +42,7 @@ public class SchoolGrade {
 	Grade grade;
 
 	@OneToMany(mappedBy = "schoolGrade")
-	private List<Class> classList;
+	private List<Classes> classList;
 
 	/**
 	 * @return the grade
@@ -152,14 +152,14 @@ public class SchoolGrade {
 	/**
 	 * @return the classList
 	 */
-	public List<Class> getClassList() {
+	public List<Classes> getClassList() {
 		return classList;
 	}
 
 	/**
 	 * @param classList the classList to set
 	 */
-	public void setClassList(List<Class> classList) {
+	public void setClassList(List<Classes> classList) {
 		this.classList = classList;
 	}
 
