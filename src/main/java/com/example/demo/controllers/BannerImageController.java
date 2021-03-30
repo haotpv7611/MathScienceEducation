@@ -20,10 +20,14 @@ import org.springframework.web.multipart.MultipartFile;
 import com.example.demo.dtos.BannerImageDTO;
 import com.example.demo.services.IBannerImageService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @CrossOrigin
 @RestController
 @RequestMapping("/bannerImage")
 public class BannerImageController {
+	Logger logger = LoggerFactory.getLogger(BannerImageController.class);
 
 	@Autowired
 	IBannerImageService iBannerImageService;
@@ -31,7 +35,7 @@ public class BannerImageController {
 	@PostMapping
 	public ResponseEntity<String> createBannerImage(@RequestParam String description, @RequestParam MultipartFile file,
 			@RequestParam long accountId) throws SizeLimitExceededException, IOException {
-		System.err.println("START");
+
 		String response = iBannerImageService.createBannerImage(description, file, accountId);
 		System.err.println("end");
 		if (response.contains("permission")) {
@@ -39,7 +43,7 @@ public class BannerImageController {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
 		}
 		if (!response.contains("SUCCESS")) {
-			
+
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 		}
 
