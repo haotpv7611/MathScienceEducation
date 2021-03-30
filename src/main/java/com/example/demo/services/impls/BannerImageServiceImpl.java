@@ -6,9 +6,12 @@ import java.util.List;
 
 import org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.dtos.BannerImageDTO;
@@ -21,6 +24,7 @@ import com.example.demo.services.IBannerImageService;
 
 @Service
 public class BannerImageServiceImpl implements IBannerImageService {
+	private final static Logger logger = LoggerFactory.getLogger(BannerImageServiceImpl.class);
 	private final int DESCRIPTION_MAX_LENGTH = 150;
 
 	@Autowired
@@ -100,18 +104,23 @@ public class BannerImageServiceImpl implements IBannerImageService {
 	}
 
 	@Override
-	public String disableBannerImage(long id) {
+	@Transactional
+	public String disableBannerImage(List<Long> ids) {
 		// 1. connect database through repository
 		// 2. find entity by id
 		// 3. if not existed throw exception
-		BannerImage bannerImage = iBannerImageRepositoy.findByIdAndIsDisable(id, false);
-		if (bannerImage == null) {
-			throw new ResourceNotFoundException();
+		for (Long id : ids) {
+			
+			BannerImage bannerImage = iBannerImageRepositoy.findByIdAndIsDisable(id, false);
+			if (bannerImage == null) {
+				throw new ResourceNotFoundException();
+			}
+			
+			// 4. update entity with isDisable = true
+			logger.info("Delete Image id: " + id);
+			bannerImage.setDisable(true);
+			iBannerImageRepositoy.save(bannerImage);
 		}
-
-		// 4. update entity with isDisable = true
-		bannerImage.setDisable(true);
-		iBannerImageRepositoy.save(bannerImage);
 
 		return "DELETE SUCCESS!";
 	}

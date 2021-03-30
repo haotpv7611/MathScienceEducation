@@ -56,8 +56,8 @@ public class BannerImageController {
 	}
 
 	@PutMapping
-	public ResponseEntity<String> disableBannerImage(@RequestParam long id) {
-		String response = iBannerImageService.disableBannerImage(id);
+	public ResponseEntity<String> disableBannerImage(@RequestParam List<Long> ids) {
+		String response = iBannerImageService.disableBannerImage(ids);
 
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}

@@ -15,7 +15,7 @@ public interface IBannerImageService {
 
 	List<BannerImageDTO> findAll();
 
-	String disableBannerImage(long id);
+	String disableBannerImage(List<Long> ids);
 
 	BannerImageDTO findById(long id);
 

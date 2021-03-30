@@ -19,10 +19,8 @@ public class BannerImage {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
-
 	private String description;
 	private String imageUrl;
-
 	@CreatedDate
 	private LocalDateTime createdDate;
 //	@CreatedBy
@@ -31,7 +29,6 @@ public class BannerImage {
 	private LocalDateTime modifiedDate;
 //	@LastModifiedBy
 	private String modifiedBy;
-
 	private boolean isDisable;
 	private long accountId;
 
