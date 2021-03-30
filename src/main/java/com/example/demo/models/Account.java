@@ -1,5 +1,6 @@
 package com.example.demo.models;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 import javax.persistence.Entity;
@@ -15,7 +16,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
-//@EntityListeners(AuditingEntityListener.class)
+@EntityListeners(AuditingEntityListener.class)
 public class Account {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,22 +24,35 @@ public class Account {
 
 	private String username;
 	private String password;
-	
+
 	private String firstName;
 	private String lastName;
 	private int roleId;
-	
-//	@CreatedDate
-	private Date createDate;
+
+	@CreatedDate
+	private LocalDateTime createdDate;
 //	@CreatedBy
-	private String createBy;
-//	@LastModifiedDate
-	private Date modifiedDate;
+	private String createdBy;
+	@LastModifiedDate
+	private LocalDateTime modifiedDate;
 //	@LastModifiedBy
 	private String modifiedBy;
-	
 	private boolean isDisable;
-	
+
+	public Account() {
+		
+	}
+
+	public Account(String username, String password, String firstName, String lastName, int roleId, boolean isDisable) {
+		super();
+		this.username = username;
+		this.password = password;
+		this.firstName = firstName;
+		this.lastName = lastName;
+		this.roleId = roleId;
+		this.isDisable = isDisable;
+	}
+
 	public String getUsername() {
 		return username;
 	}
@@ -102,42 +116,42 @@ public class Account {
 	/**
 	 * @return the createDate
 	 */
-	public Date getCreateDate() {
-		return createDate;
+	public LocalDateTime getCreatedDate() {
+		return createdDate;
 	}
 
 	/**
 	 * @param createDate the createDate to set
 	 */
-	public void setCreateDate(Date createDate) {
-		this.createDate = createDate;
+	public void setCreateDate(LocalDateTime createdDate) {
+		this.createdDate = createdDate;
 	}
 
 	/**
 	 * @return the createBy
 	 */
 	public String getCreateBy() {
-		return createBy;
+		return createdBy;
 	}
 
 	/**
 	 * @param createBy the createBy to set
 	 */
-	public void setCreateBy(String createBy) {
-		this.createBy = createBy;
+	public void setCreatedBy(String createdBy) {
+		this.createdBy = createdBy;
 	}
 
 	/**
 	 * @return the modifiedDate
 	 */
-	public Date getModifiedDate() {
+	public LocalDateTime getModifiedDate() {
 		return modifiedDate;
 	}
 
 	/**
 	 * @param modifiedDate the modifiedDate to set
 	 */
-	public void setModifiedDate(Date modifiedDate) {
+	public void setModifiedDate(LocalDateTime modifiedDate) {
 		this.modifiedDate = modifiedDate;
 	}
 
@@ -183,5 +197,4 @@ public class Account {
 		this.username = username;
 	}
 
-	
 }
