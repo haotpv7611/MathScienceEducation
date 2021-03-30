@@ -1,6 +1,7 @@
 package com.example.demo.models;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
@@ -9,6 +10,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -16,7 +18,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
 @EntityListeners(AuditingEntityListener.class)
-public class Class {
+public class Classes {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
@@ -33,6 +35,21 @@ public class Class {
 	@ManyToOne
 	@JoinColumn(name = "schoolGradeId")
 	private SchoolGrade schoolGrade;
+
+	@OneToMany(mappedBy = "classes")
+	private List<StudentProfile> studentProfileList;
+	
+	public Classes() {
+		// TODO Auto-generated constructor stub
+	}
+	
+	
+	public Classes(String className, boolean isDisable, SchoolGrade schoolGrade) {
+		super();
+		this.className = className;
+		this.isDisable = isDisable;
+		this.schoolGrade = schoolGrade;
+	}
 
 	/**
 	 * @return the className
@@ -137,6 +154,20 @@ public class Class {
 	 */
 	public long getId() {
 		return id;
+	}
+
+	/**
+	 * @return the studentProfileList
+	 */
+	public List<StudentProfile> getStudentProfileList() {
+		return studentProfileList;
+	}
+
+	/**
+	 * @param studentProfileList the studentProfileList to set
+	 */
+	public void setStudentProfileList(List<StudentProfile> studentProfileList) {
+		this.studentProfileList = studentProfileList;
 	}
 
 }

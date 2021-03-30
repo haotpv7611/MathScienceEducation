@@ -31,13 +31,15 @@ public class BannerImageController {
 	@PostMapping
 	public ResponseEntity<String> createBannerImage(@RequestParam String description, @RequestParam MultipartFile file,
 			@RequestParam long accountId) throws SizeLimitExceededException, IOException {
+		System.err.println("START");
 		String response = iBannerImageService.createBannerImage(description, file, accountId);
+		System.err.println("end");
 		if (response.contains("permission")) {
 
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
 		}
 		if (!response.contains("SUCCESS")) {
-
+			
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 		}
 
