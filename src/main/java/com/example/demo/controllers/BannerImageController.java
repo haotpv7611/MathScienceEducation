@@ -37,7 +37,6 @@ public class BannerImageController {
 			@RequestParam long accountId) throws SizeLimitExceededException, IOException {
 
 		String response = iBannerImageService.createBannerImage(description, file, accountId);
-		System.err.println("end");
 		if (response.contains("permission")) {
 
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
