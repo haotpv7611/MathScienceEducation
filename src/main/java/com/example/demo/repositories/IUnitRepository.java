@@ -11,4 +11,5 @@ import com.example.demo.models.Unit;
 public interface IUnitRepository extends JpaRepository<Unit, Long>{	
 	
 	List<Unit> findBySubjectIdAndIsDisableOrderByUnitNameAsc(Long subjectId, boolean isDisable);
+	Unit findByIdAndIsDisable(long id, boolean isDisable);
 }

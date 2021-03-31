@@ -1,12 +1,21 @@
 package com.example.demo.dtos;
 
+import javax.validation.constraints.NotNull;
+
+import org.hibernate.validator.constraints.Length;
+
 public class SubjectDTO {
 
 	private long id;
+	@NotNull (message = "Subject Name Must Be Not Null !")
+	@Length(max = 20, message = "Subject Name lenght must be less than 20 !")
 	private String subjectName;
+	@NotNull (message = "Subject Image Must Be Not Null !")
 	private String imageUrl;
 	private long gradeId;
 	private boolean isDisable;
+	@Length(message = "Description lenght must be less than 50 !")
+	private String description;
 	
 	public SubjectDTO() {
 		

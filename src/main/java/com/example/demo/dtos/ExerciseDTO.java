@@ -1,21 +1,40 @@
 package com.example.demo.dtos;
 
+import javax.validation.constraints.NotNull;
+
+import org.hibernate.validator.constraints.Length;
+
 public class ExerciseDTO {
 
+	
+	
 	private long id;
-	private int exerciseName;
+	@NotNull(message = "Exercise Name must be not null !")
+	@Length(max = 20, message = "Exercise Name lenght must be less than 20 !")
+	private String exerciseName;
 	private long lessonId;
 	private long progressTestId;
+	@Length(max = 20, message = "Description lenght must be less than 50 !")
+	private String description;
+	
+	
+	public String getDescription() {
+		return description;
+	}
+	public void setDescription(String description) {
+		this.description = description;
+	}
 	public long getId() {
 		return id;
 	}
 	public void setId(long id) {
 		this.id = id;
 	}
-	public int getExerciseName() {
+	
+	public String getExerciseName() {
 		return exerciseName;
 	}
-	public void setExerciseName(int exerciseName) {
+	public void setExerciseName(String exerciseName) {
 		this.exerciseName = exerciseName;
 	}
 	public long getLessonId() {
@@ -30,13 +49,7 @@ public class ExerciseDTO {
 	public void setProgressTestId(long progressTestId) {
 		this.progressTestId = progressTestId;
 	}
-	public ExerciseDTO(long id, int exerciseName, long lessonId, long progressTestId) {
-		super();
-		this.id = id;
-		this.exerciseName = exerciseName;
-		this.lessonId = lessonId;
-		this.progressTestId = progressTestId;
-	}
+	
 	public ExerciseDTO() {
 		
 	}

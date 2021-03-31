@@ -1,11 +1,29 @@
 package com.example.demo.dtos;
 
-public class LessonDTO {
+import javax.validation.constraints.NotNull;
+
+import org.hibernate.validator.constraints.Length;
+
+public class LessonRequestDTO {
 
 	private long id;
+	
+	@NotNull(message = "Lesson Name Must Be Not Null !")
+	@Length(max = 20, message = "Lesson Name length must be less than 20!")
 	private String lessonName;
+	@NotNull(message = "Lesson URL Must Be Not Null !")
 	private String lessonUrl;
 	private long unitId;
+	
+	
+	
+
+	public String getLessonName() {
+		return lessonName;
+	}
+	public void setLessonName(String lessonName) {
+		this.lessonName = lessonName;
+	}
 	public long getId() {
 		return id;
 	}
@@ -13,12 +31,6 @@ public class LessonDTO {
 		this.id = id;
 	}
 	
-	public String getLessonName() {
-		return lessonName;
-	}
-	public void setLessonName(String lessonName) {
-		this.lessonName = lessonName;
-	}
 	public String getLessonUrl() {
 		return lessonUrl;
 	}
@@ -31,8 +43,6 @@ public class LessonDTO {
 	public void setUnitId(long unitId) {
 		this.unitId = unitId;
 	}
-	public LessonDTO() {
-		
-	}
+	
 	
 }

@@ -1,38 +1,61 @@
 package com.example.demo.models;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 public class Exercise {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
-	private int exerciseName;
-	private Date createdDate;
+	private String exerciseName;
+	@CreatedDate
+	private LocalDateTime createdDate;
+//	@CreatedBy
 	private String createdBy;
-	private Date modifiedDate;
+	@LastModifiedDate
+	private LocalDateTime modifiedDate;
+//	@LastModifiedBy
 	private String modifiedBy;
 	
 	private long lessonId;
 	private long progressTestId;
 	private boolean isProgressTest;
 	private boolean isDisable;
-	public int getExerciseName() {
+	private String description;
+	
+	
+	
+	public String getDescription() {
+		return description;
+	}
+	public void setDescription(String description) {
+		this.description = description;
+	}
+	
+	
+	public String getExerciseName() {
 		return exerciseName;
 	}
-	public void setExerciseName(int exerciseName) {
+	public void setExerciseName(String exerciseName) {
 		this.exerciseName = exerciseName;
 	}
-	public Date getCreatedDate() {
+	public LocalDateTime getCreatedDate() {
 		return createdDate;
 	}
-	public void setCreatedDate(Date createdDate) {
+	public void setCreatedDate(LocalDateTime createdDate) {
 		this.createdDate = createdDate;
 	}
 	public String getCreatedBy() {
@@ -41,10 +64,10 @@ public class Exercise {
 	public void setCreatedBy(String createdBy) {
 		this.createdBy = createdBy;
 	}
-	public Date getModifiedDate() {
+	public LocalDateTime getModifiedDate() {
 		return modifiedDate;
 	}
-	public void setModifiedDate(Date modifiedDate) {
+	public void setModifiedDate(LocalDateTime modifiedDate) {
 		this.modifiedDate = modifiedDate;
 	}
 	public String getModifiedBy() {

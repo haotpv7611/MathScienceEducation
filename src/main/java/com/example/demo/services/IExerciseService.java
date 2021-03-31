@@ -9,4 +9,8 @@ public interface IExerciseService {
 	List<ExerciseDTO> findByLessonIdAndIsDisableOrderByExerciseNameAsc(long lessonId);
 	
 	List<ExerciseDTO> findByProgressTestIdAndIsDisableOrderByExerciseNameAsc(long progressTestId);
+	
+	String createExercise(ExerciseDTO exerciseDTO);
+	String updateExercise(ExerciseDTO exerciseDTO);
+	String deleteExercise(long id);
 }

@@ -12,8 +12,13 @@ import com.example.demo.dtos.UnitDTO;
 import com.example.demo.dtos.UnitRequestDTO;
 import com.example.demo.dtos.UnitViewDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
+import com.example.demo.models.Lesson;
+import com.example.demo.models.Subject;
 import com.example.demo.models.Unit;
+import com.example.demo.repositories.ILessonRepository;
+import com.example.demo.repositories.ISubjectRepository;
 import com.example.demo.repositories.IUnitRepository;
+import com.example.demo.services.ILessonService;
 import com.example.demo.services.IProgressTestService;
 import com.example.demo.services.IUnitService;
 
@@ -22,6 +27,13 @@ public class UnitServiceImpl implements IUnitService {
 
 	@Autowired
 	private IUnitRepository iUnitRepository;
+	@Autowired
+	private ILessonRepository iLessonRepository;
+
+	@Autowired
+	ILessonService iLessonService;
+	@Autowired
+	private ISubjectRepository iSubjectRepository;
 
 	@Autowired
 	private ModelMapper modelMapper;
@@ -96,14 +108,18 @@ public class UnitServiceImpl implements IUnitService {
 	}
 
 	@Override
-	public void deleteUnit(long id) {
-		Unit unit = iUnitRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
-		unit.setDisable(true);
-		iUnitRepository.save(unit);
-	}
-
-	@Override
 	public String createUnit(UnitRequestDTO unitRequestDTO) {
+		Subject subject = iSubjectRepository.findByIdAndIsDisable(unitRequestDTO.getSubjectId(), false);
+		if (subject == null) {
+			return "Subject is not existed";
+		}
+		List<Unit> listUnits = iUnitRepository
+				.findBySubjectIdAndIsDisableOrderByUnitNameAsc(unitRequestDTO.getSubjectId(), false);
+		for (Unit unit : listUnits) {
+			if (unitRequestDTO.getUnitName() == unit.getUnitName()) {
+				return "Unit is existed !";
+			}
+		}
 		Unit unit = modelMapper.map(unitRequestDTO, Unit.class);
 		unit.setDisable(false);
 		iUnitRepository.save(unit);
@@ -116,10 +132,41 @@ public class UnitServiceImpl implements IUnitService {
 		if (unit.isDisable()) {
 			throw new ResourceNotFoundException();
 		}
+		List<Unit> listUnits = iUnitRepository
+				.findBySubjectIdAndIsDisableOrderByUnitNameAsc(unitRequestDTO.getSubjectId(), false);
+		for (Unit unit1 : listUnits) {
+			if (unitRequestDTO.getUnitName() == unit1.getUnitName()) {
+				return "Unit is existed !";
+			}
+		}
 		unit.setUnitName(unitRequestDTO.getUnitName());
 		unit.setDescription(unitRequestDTO.getDescription());
 		iUnitRepository.save(unit);
 		return "UPDATE SUCCESS !";
+	}
+
+	@Override
+	public String deleteUnit(long id) {
+		Unit unit = iUnitRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
+		if (unit.isDisable()) {
+			throw new ResourceNotFoundException();
+		}
+		unit.setDisable(true);
+		List<Lesson> listLesson = iLessonRepository.findByUnitIdAndIsDisableOrderByLessonNameAsc(id, false);
+		for (Lesson lesson : listLesson) {
+			iLessonService.deleteLesson(lesson.getId());
+		}
+		iUnitRepository.save(unit);
+		return "DELETE SUCCESS !";
+	}
+
+	@Override
+	public Unit findByUnitIdAndIsDisable(long id) {
+		Unit unit = iUnitRepository.findByIdAndIsDisable(id, false);
+		if (unit == null) {
+			throw new ResourceNotFoundException();
+		}
+		return unit;
 	}
 
 }
