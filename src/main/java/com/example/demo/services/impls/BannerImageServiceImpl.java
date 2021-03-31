@@ -108,7 +108,7 @@ public class BannerImageServiceImpl implements IBannerImageService {
 	public String changeStatusBannerImage(ListIdAndStatusDTO listIdAndStatusDTO) {
 		List<Long> ids = listIdAndStatusDTO.getIds();
 		String status = listIdAndStatusDTO.getStatus();
-		
+
 		// 1. connect database through repository
 		// 2. find entity by id
 		// 3. if not existed throw exception
@@ -149,7 +149,8 @@ public class BannerImageServiceImpl implements IBannerImageService {
 	public String updateBannerImage(long id, String description, MultipartFile file)
 			throws SizeLimitExceededException, IOException {
 		String error = "";
-		if (!file.isEmpty()) {
+
+		if (file != null) {
 			if (!file.getContentType().contains("image")) {
 				error += "Not supported this file type for image!";
 			}
@@ -164,8 +165,12 @@ public class BannerImageServiceImpl implements IBannerImageService {
 		}
 
 		// 4. validate parameter
-		if (description.isEmpty() || description.length() > DESCRIPTION_MAX_LENGTH) {
+		if (description == null) {
 			error += "\nDescription is invalid!";
+		} else {
+			if (description.length() > DESCRIPTION_MAX_LENGTH) {
+				error += "\nDescription is invalid!";
+			}
 		}
 		if (!error.isEmpty()) {
 
@@ -177,7 +182,7 @@ public class BannerImageServiceImpl implements IBannerImageService {
 
 		bannerImage.setDescription(description.trim());
 
-		if (!file.isEmpty()) {
+		if (file != null) {
 			bannerImage.setImageUrl(firebaseService.saveFile(file));
 		}
 		iBannerImageRepositoy.save(bannerImage);
