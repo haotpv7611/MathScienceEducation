@@ -18,6 +18,7 @@ import com.example.demo.models.Unit;
 import com.example.demo.repositories.ILessonRepository;
 import com.example.demo.repositories.ISubjectRepository;
 import com.example.demo.repositories.IUnitRepository;
+import com.example.demo.services.ILessonService;
 import com.example.demo.services.IProgressTestService;
 import com.example.demo.services.IUnitService;
 
@@ -29,6 +30,8 @@ public class UnitServiceImpl implements IUnitService {
 	@Autowired
 	private ILessonRepository iLessonRepository;
 
+	@Autowired
+	ILessonService iLessonService;
 	@Autowired
 	private ISubjectRepository iSubjectRepository;
 
@@ -151,8 +154,7 @@ public class UnitServiceImpl implements IUnitService {
 		unit.setDisable(true);
 		List<Lesson> listLesson = iLessonRepository.findByUnitIdAndIsDisableOrderByLessonNameAsc(id, false);
 		for (Lesson lesson : listLesson) {
-			lesson.setDisable(true);
-			iLessonRepository.save(lesson);
+			iLessonService.deleteLesson(lesson.getId());
 		}
 		iUnitRepository.save(unit);
 		return "DELETE SUCCESS !";

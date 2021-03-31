@@ -10,10 +10,13 @@ import org.springframework.stereotype.Service;
 import com.example.demo.dtos.LessonDTO;
 import com.example.demo.dtos.LessonRequestDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
+import com.example.demo.models.Exercise;
 import com.example.demo.models.Lesson;
 import com.example.demo.models.Unit;
+import com.example.demo.repositories.IExerciseRepository;
 import com.example.demo.repositories.ILessonRepository;
 import com.example.demo.repositories.IUnitRepository;
+import com.example.demo.services.IExerciseService;
 import com.example.demo.services.ILessonService;
 
 @Service
@@ -25,6 +28,10 @@ public class LessonServiceImpl implements ILessonService {
 	IUnitRepository iUnitRepository;
 	@Autowired
 	ModelMapper modelMapper;
+	@Autowired 
+	IExerciseRepository iExerciseRepository;
+	@Autowired 
+	IExerciseService iExerciseService;
 
 	@Override
 	public List<LessonDTO> findByUnitIdOrderByLessonNameAsc(long unitId) {
@@ -65,10 +72,9 @@ public class LessonServiceImpl implements ILessonService {
 
 	@Override
 	public String updateLesson(LessonRequestDTO lessonRequestDTO) {
-		System.out.println("start");
+		
 		Lesson lesson = iLessonRepository.findById(lessonRequestDTO.getId())
 				.orElseThrow(() -> new ResourceNotFoundException());
-		System.out.println("end");
 		if (lesson.isDisable()) {
 			throw new ResourceNotFoundException();
 		}
@@ -89,8 +95,18 @@ public class LessonServiceImpl implements ILessonService {
 
 	@Override
 	public String deleteLesson(long id) {
-		// TODO Auto-generated method stub
-		return null;
+		Lesson lesson = iLessonRepository.findById(id)
+				.orElseThrow(() -> new ResourceNotFoundException());
+		if (lesson.isDisable()) {
+			throw new ResourceNotFoundException();
+		}
+		List<Exercise> exercises = iExerciseRepository.findByLessonIdOrderByExerciseNameAsc(id);
+		for (Exercise exercise : exercises) {
+			iExerciseService.deleteExercise(exercise.getId());
+		}
+		lesson.setDisable(true);
+		iLessonRepository.save(lesson);
+		return "DELETE SUCCESS !";
 	}
 
 }
