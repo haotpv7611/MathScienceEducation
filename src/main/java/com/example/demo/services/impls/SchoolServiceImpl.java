@@ -141,7 +141,7 @@ public class SchoolServiceImpl implements ISchoolService {
 				SchoolResponseDTO schoolResponseDTO = modelMapper.map(school, SchoolResponseDTO.class);
 				schoolResponseDTO.setSchoolAddress(school.getSchoolStreet() + ", " + school.getSchoolDistrict());
 				String schoolCount = String.valueOf(school.getSchoolCount());
-				if (school.getSchoolCount() == 0) {
+				if (school.getSchoolCount() == 1) {
 					schoolCount = "";
 				}
 				schoolResponseDTO.setSchoolCode(school.getSchoolCode() + schoolCount);
@@ -167,11 +167,16 @@ public class SchoolServiceImpl implements ISchoolService {
 
 	private int generateSchoolCount(String schoolCode) {
 
+		// connect db, find school by code with count max
 		School school = iSchoolRepository.findFirstBySchoolCodeOrderBySchoolCountDesc(schoolCode);
-
-		int schoolCount = school.getSchoolCount() + 1;
-		System.out.println(schoolCount);
-		return schoolCount;
+		
+		//if not have school with code, return count = 1, else count max += 1
+		int schoolCount = 0;
+		if (school != null) {
+			schoolCount = school.getSchoolCount();
+		}
+		
+		return (schoolCount + 1);
 	}
 
 	private char convertoEnglistCharacter(char schoolCode) {

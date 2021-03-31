@@ -31,8 +31,7 @@ public class NewsServiceImpl implements INewsService {
 
 	@Override
 	public String createNews(NewsRequestDTO newsRequestDTO) {
-		newsRequestDTO.setNewsTitle(newsRequestDTO.getNewsTitle().trim());
-		newsRequestDTO.setShortDescription(newsRequestDTO.getShortDescription().trim());
+		
 		// 1. connect database through repository
 		// 2. find entity by Id
 		// 3. if not found throw not found exception
