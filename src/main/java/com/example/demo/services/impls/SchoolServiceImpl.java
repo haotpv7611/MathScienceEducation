@@ -73,10 +73,10 @@ public class SchoolServiceImpl implements ISchoolService {
 				district, schoolLevelId);
 
 		if (!schoolList.isEmpty()) {
-			return "EXISTED!";
+			return "EXISTED";
 		}
 
-		return "OK!";
+		return "OK";
 	}
 
 	@Override
