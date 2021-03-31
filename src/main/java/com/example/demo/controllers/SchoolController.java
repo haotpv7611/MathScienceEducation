@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.dtos.IdAndStatusDTO;
 import com.example.demo.dtos.SchoolRequestDTO;
 import com.example.demo.dtos.SchoolResponseDTO;
 import com.example.demo.services.ISchoolService;
@@ -33,7 +34,7 @@ public class SchoolController {
 	@GetMapping("/grade/{gradeId}/school")
 	public ResponseEntity<List<SchoolResponseDTO>> findSchoolByGradeId(@PathVariable long gradeId) {
 
-		return ResponseEntity.ok(iSchoolService.findByGradeId(gradeId));
+		return ResponseEntity.ok(iSchoolService.findSchoolLinkedByGradeId(gradeId));
 	}
 
 	@GetMapping("/school/{id}")
@@ -77,6 +78,25 @@ public class SchoolController {
 	public ResponseEntity<List<SchoolResponseDTO>> findAllSchool() {
 
 		return ResponseEntity.ok(iSchoolService.findAllSchool());
+	}
+	
+	@PutMapping("/school/changeStatus")
+	public ResponseEntity<String> changeStatusSchool(@Valid @RequestBody IdAndStatusDTO idAndStatusDTO,
+			BindingResult bindingResult) {
+		if (bindingResult.hasErrors()) {
+			String error = "";
+			for (ObjectError object : bindingResult.getAllErrors()) {
+				error += "\n" + object.getDefaultMessage();
+			}
+
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
+		}
+		String status = idAndStatusDTO.getStatus();
+		if (!status.equals("ACTIVE") && !status.equals("INACTIVE") && !status.equals("DELETED")) {
+
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("STATUS INVALID!");
+		}
+		return ResponseEntity.ok(iSchoolService.changeStatusSchool(idAndStatusDTO));
 	}
 
 }

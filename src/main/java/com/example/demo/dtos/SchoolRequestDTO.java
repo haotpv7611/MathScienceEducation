@@ -16,6 +16,9 @@ public class SchoolRequestDTO {
 	@NotNull(message = "SchoolDistrict must be not null!")
 	@Length(max = 20, message = "SchoolDistrict length must be less than 20!")
 	private String schoolDistrict;
+	@NotNull(message = "SchoolLevel must be not null!")
+	@Length(max = 20, message = "SchoolLevel length must be less than 20!")
+	private String schoolLevel;
 
 	/**
 	 * @return the id
@@ -71,6 +74,20 @@ public class SchoolRequestDTO {
 	 */
 	public void setSchoolDistrict(String schoolDistrict) {
 		this.schoolDistrict = schoolDistrict;
+	}
+
+	/**
+	 * @return the schoolLevel
+	 */
+	public String getSchoolLevel() {
+		return schoolLevel;
+	}
+
+	/**
+	 * @param schoolLevel the schoolLevel to set
+	 */
+	public void setSchoolLevel(String schoolLevel) {
+		this.schoolLevel = schoolLevel;
 	}
 
 }

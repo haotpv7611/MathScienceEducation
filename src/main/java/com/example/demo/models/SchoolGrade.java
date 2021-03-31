@@ -32,7 +32,7 @@ public class SchoolGrade {
 	private LocalDateTime modifiedDate;
 //	@LastModifiedBy
 	private String modifiedBy;
-	private boolean isDisable;
+	private String status;
 
 	@ManyToOne
 	@JoinColumn(name = "schoolId")
@@ -129,17 +129,17 @@ public class SchoolGrade {
 	}
 
 	/**
-	 * @return the isDisable
+	 * @return the status
 	 */
-	public boolean isDisable() {
-		return isDisable;
+	public String getStatus() {
+		return status;
 	}
 
 	/**
-	 * @param isDisable the isDisable to set
+	 * @param status the status to set
 	 */
-	public void setDisable(boolean isDisable) {
-		this.isDisable = isDisable;
+	public void setStatus(String status) {
+		this.status = status;
 	}
 
 	/**

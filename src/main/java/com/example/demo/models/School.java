@@ -28,7 +28,7 @@ public class School {
 	private String schoolStreet;
 	private String schoolDistrict;
 	private String schoolCode;
-	private String schoolCount;
+	private int schoolCount;
 	@CreatedDate
 	private LocalDateTime createdDate;
 //	@CreatedBy
@@ -36,7 +36,7 @@ public class School {
 	@LastModifiedDate
 	private LocalDateTime modifiedDate;
 	private String modifiedBy;
-	private boolean isDisable;
+	private String status;
 
 	@OneToMany(mappedBy = "school")
 	private Set<SchoolGrade> schoolGrade;
@@ -104,29 +104,29 @@ public class School {
 	/**
 	 * @return the schoolCount
 	 */
-	public String getSchoolCount() {
+	public int getSchoolCount() {
 		return schoolCount;
 	}
 
 	/**
 	 * @param schoolCount the schoolCount to set
 	 */
-	public void setSchoolCount(String schoolCount) {
+	public void setSchoolCount(int schoolCount) {
 		this.schoolCount = schoolCount;
 	}
 
 	/**
-	 * @return the isDisable
+	 * @return the status
 	 */
-	public boolean isDisable() {
-		return isDisable;
+	public String getStatus() {
+		return status;
 	}
 
 	/**
-	 * @param isDisable the isDisable to set
+	 * @param status the status to set
 	 */
-	public void setDisable(boolean isDisable) {
-		this.isDisable = isDisable;
+	public void setStatus(String status) {
+		this.status = status;
 	}
 
 	/**

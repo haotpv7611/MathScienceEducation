@@ -2,12 +2,13 @@ package com.example.demo.services;
 
 import java.util.List;
 
+import com.example.demo.dtos.IdAndStatusDTO;
 import com.example.demo.dtos.SchoolRequestDTO;
 import com.example.demo.dtos.SchoolResponseDTO;
 
 public interface ISchoolService {
 
-	List<SchoolResponseDTO> findByGradeId(long gradeId);
+	List<SchoolResponseDTO> findSchoolLinkedByGradeId(long gradeId);
 
 	SchoolResponseDTO findSchoolById(long id);
 
@@ -17,7 +18,7 @@ public interface ISchoolService {
 
 	String updateSchool(long id, SchoolRequestDTO schoolRequestDTO);
 
-	String deleteSchool(long id);
+	String changeStatusSchool(IdAndStatusDTO idAndStatusDTO);
 
 	List<SchoolResponseDTO> findAllSchool();
 

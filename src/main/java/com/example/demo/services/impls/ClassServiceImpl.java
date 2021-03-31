@@ -30,7 +30,7 @@ public class ClassServiceImpl implements IClassService{
 
 	@Override
 	public List<ClassResponseDTO> findBySchoolGradeId(long gradeId, long schoolId) {		
-		SchoolGrade schoolGrade = iSchoolGradeRepository.findByGradeIdAndSchoolIdAndIsDisable(gradeId, schoolId, false);
+		SchoolGrade schoolGrade = iSchoolGradeRepository.findByGradeIdAndSchoolIdAndStatusNot(gradeId, schoolId, "DELETED");
 		if (schoolGrade == null) {
 			throw new ResourceNotFoundException();
 		}
