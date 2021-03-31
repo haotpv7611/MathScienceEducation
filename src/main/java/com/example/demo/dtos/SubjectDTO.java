@@ -17,6 +17,16 @@ public class SubjectDTO {
 	@Length(message = "Description lenght must be less than 50 !")
 	private String description;
 	
+	
+	
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
 	public SubjectDTO() {
 		
 	}
