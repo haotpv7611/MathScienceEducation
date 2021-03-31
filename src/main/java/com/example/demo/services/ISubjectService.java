@@ -18,4 +18,5 @@ public interface ISubjectService {
 	String updateSubject(long id, String subjectName, MultipartFile multipartFile, String description, long gradeId)
 			throws SizeLimitExceededException, IOException;
 	String deleteSubject(long id);
+	SubjectDTO findById(long id);
 }

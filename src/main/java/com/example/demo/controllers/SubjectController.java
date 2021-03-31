@@ -33,6 +33,12 @@ public class SubjectController {
 
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
+	
+	@GetMapping("/subject/{id}")
+	public ResponseEntity<SubjectDTO> findById(@PathVariable long id){
+		SubjectDTO response = iSubjectService.findById(id);
+		return ResponseEntity.status(HttpStatus.CREATED).body(response);
+	}
 
 	@PostMapping("subject")
 	public ResponseEntity<String> createSubject(@RequestParam String subjectName,

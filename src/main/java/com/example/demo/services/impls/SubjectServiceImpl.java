@@ -126,7 +126,6 @@ public class SubjectServiceImpl implements ISubjectService {
 		if (subject == null) {
 			throw new ResourceNotFoundException();
 		}
-
 		// validate
 		if (subjectName == null && subjectName.length() > SUBJECTNAME_MAX_LENGTH) {
 			error += "Subject Name is invalid !";
@@ -140,12 +139,15 @@ public class SubjectServiceImpl implements ISubjectService {
 			error += "Description is invalid !";
 		}
 		// find subjectName is existed in grade or not
-		List<Subject> listSubjects = iSubjectRepository.findByGradeIdAndIsDisable(gradeId, false);
-		for (Subject subject1 : listSubjects) {
-			if (subjectName.equalsIgnoreCase(subject1.getSubjectName())) {
-				return "\n Subject is existed !";
+		if (!subject.getSubjectName().equals(subjectName)) {
+			List<Subject> listSubjects = iSubjectRepository.findByGradeIdAndIsDisable(gradeId, false);
+			for (Subject subject1 : listSubjects) {
+				if (subjectName.equalsIgnoreCase(subject1.getSubjectName())) {
+					return "\n Subject is existed !";
+				}
 			}
 		}
+
 		if (!error.isEmpty()) {
 			return error.trim();
 		}
@@ -157,6 +159,13 @@ public class SubjectServiceImpl implements ISubjectService {
 		iSubjectRepository.save(subject);
 
 		return "UPDATE SUCCESS !";
+	}
+
+	@Override
+	public SubjectDTO findById(long id) {
+		Subject subject = iSubjectRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
+		SubjectDTO subjectDTO = modelMapper.map(subject, SubjectDTO.class);
+		return subjectDTO;
 	}
 
 }
