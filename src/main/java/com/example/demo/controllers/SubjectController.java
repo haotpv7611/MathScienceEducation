@@ -46,8 +46,8 @@ public class SubjectController {
 	}
 
 	@PutMapping("subject/{id}")
-	public ResponseEntity<String> updateSubject(@PathVariable long id, @RequestParam(required = true) String subjectName,
-			@RequestParam MultipartFile multipartFile, @RequestParam(required = true) String description, @RequestParam long gradeId)
+	public ResponseEntity<String> updateSubject(@PathVariable long id, @RequestParam(required = false) String subjectName,
+			@RequestParam MultipartFile multipartFile, @RequestParam(required = false) String description, @RequestParam long gradeId)
 			throws SizeLimitExceededException, IOException {
 		String response = iSubjectService.updateSubject(id, subjectName, multipartFile, description, gradeId);
 		if (!response.contains("SUCCESS")) {
