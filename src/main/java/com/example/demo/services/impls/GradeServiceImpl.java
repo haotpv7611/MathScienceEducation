@@ -46,7 +46,7 @@ public class GradeServiceImpl implements IGradeService{
 	
 	@Override
 	public List<String> findLinkedGradeBySchoolId(long id) {
-		School school = iSchoolRepository.findByIdAndIsDisable(id, false);
+		School school = iSchoolRepository.findByIdAndStatusNot(id, "DELETED");
 		if (school == null) {
 			throw new ResourceNotFoundException();
 		}

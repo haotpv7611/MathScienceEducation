@@ -9,7 +9,7 @@ import com.example.demo.models.SchoolGrade;
 
 @Repository
 public interface ISchoolGradeRepository extends JpaRepository<SchoolGrade, Long> {
-	List<SchoolGrade> findByGradeIdAndIsDisable(long gradeId, boolean isDisable);
+	List<SchoolGrade> findByGradeIdAndStatusNot(long gradeId, String status);
 
-	SchoolGrade findByGradeIdAndSchoolIdAndIsDisable(long gradeId, long schoolId, boolean isDisable);
+	SchoolGrade findByGradeIdAndSchoolIdAndStatusNot(long gradeId, long schoolId, String status);
 }

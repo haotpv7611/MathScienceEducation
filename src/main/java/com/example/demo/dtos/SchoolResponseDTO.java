@@ -16,10 +16,10 @@ public class SchoolResponseDTO {
 	@JsonFormat(pattern = "dd-MM-yyyy HH:mm")
 	private LocalDateTime modifiedDate;
 	private String modifiedBy;
-	private boolean isDisable;
+	private String status;
 
 	public SchoolResponseDTO() {
-		// TODO Auto-generated constructor stub
+
 	}
 
 	public SchoolResponseDTO(String schoolName, String schoolAddress, String schoolLevel) {
@@ -133,17 +133,17 @@ public class SchoolResponseDTO {
 	}
 
 	/**
-	 * @return the isDisable
+	 * @return the status
 	 */
-	public boolean isDisable() {
-		return isDisable;
+	public String getStatus() {
+		return status;
 	}
 
 	/**
-	 * @param isDisable the isDisable to set
+	 * @param status the status to set
 	 */
-	public void setDisable(boolean isDisable) {
-		this.isDisable = isDisable;
+	public void setStatus(String status) {
+		this.status = status;
 	}
 
 	/**

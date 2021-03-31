@@ -25,9 +25,9 @@ public class SchoolGradeController {
 		return ResponseEntity.ok(iSchoolGradeService.linkGradeAndSchool(gradeId, schoolId));
 	}
 	
-	@PutMapping
-	public ResponseEntity<String> removeLinkGradeAndSchool(@RequestParam long gradeId, @RequestParam long schoolId) {
-
-		return ResponseEntity.ok(iSchoolGradeService.removeLinkGradeAndSchool(gradeId, schoolId));
-	}
+//	@PutMapping
+//	public ResponseEntity<String> removeLinkGradeAndSchool(@RequestParam long gradeId, @RequestParam long schoolId) {
+//
+//		return ResponseEntity.ok(iSchoolGradeService.removeLinkGradeAndSchool(gradeId, schoolId));
+//	}
 }
