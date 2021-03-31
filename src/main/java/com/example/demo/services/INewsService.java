@@ -12,7 +12,7 @@ public interface INewsService {
 
 	NewsResponseDTO findNewsById(long id);
 
-	String deleteNews(long id);
+	String deleteNews(List<Long> ids);
 
 	List<NewsResponseDTO> findThreeNewsOrderByCreatedDateDesc();
 

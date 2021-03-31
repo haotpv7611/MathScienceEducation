@@ -73,7 +73,7 @@ public class BannerImageController {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
 		}
 		String status = listIdAndStatusDTO.getStatus();
-		if (!status.equals("ACTIVE") || !status.equals("INACTIVE") || !status.equals("DELETED")) {
+		if (!status.equals("ACTIVE") && !status.equals("INACTIVE") && !status.equals("DELETED")) {
 
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("STATUS INVALID!");
 		}
@@ -88,8 +88,8 @@ public class BannerImageController {
 	}
 
 	@PutMapping("/{id}")
-	public ResponseEntity<String> updateBannerImage(@PathVariable long id, @RequestParam String description,
-			@RequestParam MultipartFile file) throws SizeLimitExceededException, IOException {
+	public ResponseEntity<String> updateBannerImage(@PathVariable long id, @RequestParam(required = false) String description,
+			@RequestParam(required = false) MultipartFile file) throws SizeLimitExceededException, IOException {
 		String response = iBannerImageService.updateBannerImage(id, description, file);
 		if (!response.contains("SUCCESS")) {
 

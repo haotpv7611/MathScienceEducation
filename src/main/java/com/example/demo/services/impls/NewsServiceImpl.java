@@ -6,6 +6,7 @@ import java.util.List;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.dtos.NewsRequestDTO;
 import com.example.demo.dtos.NewsResponseDTO;
@@ -60,11 +61,8 @@ public class NewsServiceImpl implements INewsService {
 
 		// 1. connect database through repository
 		// 2. find all entities are not disable and sort descending by Created Date
-		if (isStudent) {
-			newsList = iNewsRepository.findByIsDisableOrderByCreatedDateDesc(false);
-		} else {
-			newsList = iNewsRepository.findByOrderByCreatedDateDesc();
-		}
+
+		newsList = iNewsRepository.findByIsDisableOrderByCreatedDateDesc(false);
 
 		List<NewsResponseDTO> newsDTOList = new ArrayList<>();
 
@@ -109,16 +107,19 @@ public class NewsServiceImpl implements INewsService {
 	}
 
 	@Override
-	public String deleteNews(long id) {
+	@Transactional
+	public String deleteNews(List<Long> ids) {
 		// 1. connect database through repository
 		// 2. find entity by id
 		// 3. if not existed throw exception
-		News news = iNewsRepository.findByIdAndIsDisable(id, false);
-		if (news == null) {
-			throw new ResourceNotFoundException();
+		for (Long id : ids) {
+			News news = iNewsRepository.findByIdAndIsDisable(id, false);
+			if (news == null) {
+				throw new ResourceNotFoundException();
+			}
+			news.setDisable(true);
+			iNewsRepository.save(news);
 		}
-		news.setDisable(true);
-		iNewsRepository.save(news);
 
 		return "DELETE SUCCESS!";
 	}

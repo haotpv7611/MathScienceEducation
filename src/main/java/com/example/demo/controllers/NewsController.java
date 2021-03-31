@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.dtos.ListIdAndStatusDTO;
 import com.example.demo.dtos.NewsRequestDTO;
 import com.example.demo.dtos.NewsResponseDTO;
 import com.example.demo.services.INewsService;
@@ -65,9 +66,9 @@ public class NewsController {
 	}
 
 	@PutMapping
-	public ResponseEntity<String> deleteNews(@RequestParam long id) {
+	public ResponseEntity<String> deleteNews(@RequestBody List<Long> ids) {
 
-		return ResponseEntity.ok(inewsService.deleteNews(id));
+		return ResponseEntity.ok(inewsService.deleteNews(ids));
 	}
 
 	@GetMapping("/3newest")
