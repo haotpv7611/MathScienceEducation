@@ -60,7 +60,7 @@ public class LessonServiceImpl implements ILessonService {
 		List<Lesson> listLessons = iLessonRepository
 				.findByUnitIdAndIsDisableOrderByLessonNameAsc(lessonRequestDTO.getUnitId(), false);
 		for (Lesson lesson : listLessons) {
-			if (lessonRequestDTO.getLessonName().equals(lesson.getLessonName())) {
+			if (lessonRequestDTO.getLessonName().equalsIgnoreCase(lesson.getLessonName())) {
 				return "Lesson is existed !";
 			}
 		}
@@ -81,7 +81,7 @@ public class LessonServiceImpl implements ILessonService {
 		List<Lesson> listLessons = iLessonRepository
 				.findByUnitIdAndIsDisableOrderByLessonNameAsc(lessonRequestDTO.getUnitId(), false);
 		for (Lesson lesson1 : listLessons) {
-			if (lessonRequestDTO.getLessonName().equals(lesson1.getLessonName())) {
+			if (lessonRequestDTO.getLessonName().equalsIgnoreCase(lesson1.getLessonName())) {
 				return "Lesson is existed !";
 			}
 		}

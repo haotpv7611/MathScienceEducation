@@ -97,7 +97,7 @@ public class SubjectServiceImpl implements ISubjectService {
 		// find subjectName is existed in grade or not
 		List<Subject> listSubjects = iSubjectRepository.findByGradeIdAndIsDisable(gradeId, false);
 		for (Subject subject : listSubjects) {
-			if (subject.getSubjectName().equals(subjectName)) {
+			if (subject.getSubjectName().equalsIgnoreCase(subjectName)) {
 				return "\n Subject is existed !";
 			}
 		}
@@ -142,7 +142,7 @@ public class SubjectServiceImpl implements ISubjectService {
 		// find subjectName is existed in grade or not
 		List<Subject> listSubjects = iSubjectRepository.findByGradeIdAndIsDisable(gradeId, false);
 		for (Subject subject1 : listSubjects) {
-			if (subjectName.equals(subject1.getSubjectName())) {
+			if (subjectName.equalsIgnoreCase(subject1.getSubjectName())) {
 				return "\n Subject is existed !";
 			}
 		}
