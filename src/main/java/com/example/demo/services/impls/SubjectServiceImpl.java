@@ -128,10 +128,10 @@ public class SubjectServiceImpl implements ISubjectService {
 		}
 
 		// validate
-		if (subjectName.isEmpty() && subjectName.length() > SUBJECTNAME_MAX_LENGTH) {
+		if (subjectName == null && subjectName.length() > SUBJECTNAME_MAX_LENGTH) {
 			error += "Subject Name is invalid !";
 		}
-		if (multipartFile.isEmpty()) {
+		if (multipartFile == null) {
 			error += "\n File is invalid !";
 		} else if (!multipartFile.getContentType().contains("image")) {
 			error += "\n Not supported this file type for image!";
