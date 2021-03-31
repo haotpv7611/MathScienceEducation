@@ -69,11 +69,11 @@ public class SubjectServiceImpl implements ISubjectService {
 		}
 		subject.setDisable(true);
 		List<Unit> listUnits = iUnitRepository.findBySubjectIdAndIsDisableOrderByUnitNameAsc(id, false);
-		if(!listUnits.isEmpty()) {
+		if (!listUnits.isEmpty()) {
 			for (Unit unit : listUnits) {
 				iUnitService.deleteUnit(unit.getId());
 			}
-		}		
+		}
 		iSubjectRepository.save(subject);
 		return "DELETE SUCCESS !";
 	}
@@ -97,7 +97,7 @@ public class SubjectServiceImpl implements ISubjectService {
 		// find subjectName is existed in grade or not
 		List<Subject> listSubjects = iSubjectRepository.findByGradeIdAndIsDisable(gradeId, false);
 		for (Subject subject : listSubjects) {
-			if (subject.getSubjectName().contains(subjectName)) {
+			if (subject.getSubjectName().equals(subjectName)) {
 				return "\n Subject is existed !";
 			}
 		}
@@ -142,7 +142,7 @@ public class SubjectServiceImpl implements ISubjectService {
 		// find subjectName is existed in grade or not
 		List<Subject> listSubjects = iSubjectRepository.findByGradeIdAndIsDisable(gradeId, false);
 		for (Subject subject1 : listSubjects) {
-			if (subjectName.contains(subject1.getSubjectName())) {
+			if (subjectName.equals(subject1.getSubjectName())) {
 				return "\n Subject is existed !";
 			}
 		}
