@@ -9,16 +9,15 @@ import com.example.demo.models.School;
 
 @Repository
 public interface ISchoolRepository extends JpaRepository<School, Long> {
-	List<School> findByStatus(String status);
 
 	Long countBySchoolCode(String schoolCode);
 
 	School findByIdAndStatusNot(long id, String status);
 
-	List<School> findBySchoolNameAndSchoolDistrictAndSchoolLevelId(String schoolName, String District, int schoolLevelId);
-	
-	List<School> findByStatusNot(String status);
-	
-	
+	List<School> findBySchoolNameAndSchoolDistrictAndSchoolLevelIdAndStatusNot(String schoolName, String District,
+			int schoolLevelId, String status);
+
+	List<School> findByStatusNotOrderByStatusAsc(String status);
+
 	School findFirstBySchoolCodeOrderBySchoolCountDesc(String schoolCode);
 }

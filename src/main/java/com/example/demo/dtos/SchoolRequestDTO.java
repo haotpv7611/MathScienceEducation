@@ -6,7 +6,6 @@ import org.hibernate.validator.constraints.Length;
 
 public class SchoolRequestDTO {
 
-	private long id;
 	@NotNull(message = "SchoolName must be not null!")
 	@Length(max = 50, message = "SchoolName length must be less than 50!")
 	private String schoolName;
@@ -19,20 +18,6 @@ public class SchoolRequestDTO {
 	@NotNull(message = "SchoolLevel must be not null!")
 	@Length(max = 20, message = "SchoolLevel length must be less than 20!")
 	private String schoolLevel;
-
-	/**
-	 * @return the id
-	 */
-	public long getId() {
-		return id;
-	}
-
-	/**
-	 * @param id the id to set
-	 */
-	public void setId(long id) {
-		this.id = id;
-	}
 
 	/**
 	 * @return the schoolName

@@ -31,8 +31,7 @@ public class NewsServiceImpl implements INewsService {
 
 	@Override
 	public String createNews(NewsRequestDTO newsRequestDTO) {
-		newsRequestDTO.setNewsTitle(newsRequestDTO.getNewsTitle().trim());
-		newsRequestDTO.setShortDescription(newsRequestDTO.getShortDescription().trim());
+		
 		// 1. connect database through repository
 		// 2. find entity by Id
 		// 3. if not found throw not found exception
@@ -134,7 +133,7 @@ public class NewsServiceImpl implements INewsService {
 		// descending by Created Date
 		// 4. else list all entities are not disable and sort descending by Created Date
 		if (iNewsRepository.count() >= 3) {
-			newsList = iNewsRepository.findTop3ByIsDisableOrderByCreatedDateDescIsDisableAsc(false);
+			newsList = iNewsRepository.findTop3ByIsDisableOrderByCreatedDateDesc(false);
 		} else {
 			newsList = iNewsRepository.findByIsDisableOrderByCreatedDateDesc(false);
 		}

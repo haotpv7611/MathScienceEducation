@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.demo.dtos.ListIdAndStatusDTO;
 import com.example.demo.dtos.NewsRequestDTO;
 import com.example.demo.dtos.NewsResponseDTO;
 import com.example.demo.services.INewsService;

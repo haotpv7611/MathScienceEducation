@@ -12,8 +12,6 @@ import com.example.demo.dtos.SchoolRequestDTO;
 import com.example.demo.dtos.SchoolResponseDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.School;
-import com.example.demo.models.SchoolGrade;
-import com.example.demo.repositories.ISchoolGradeRepository;
 import com.example.demo.repositories.ISchoolLevelRepository;
 import com.example.demo.repositories.ISchoolRepository;
 import com.example.demo.services.ISchoolService;
@@ -25,31 +23,10 @@ public class SchoolServiceImpl implements ISchoolService {
 	private ISchoolRepository iSchoolRepository;
 
 	@Autowired
-	private ISchoolGradeRepository iSchoolGradeRepository;
-
-	@Autowired
 	private ISchoolLevelRepository iSchoolLevelRepository;
 
 	@Autowired
 	private ModelMapper modelMapper;
-
-	@Override
-	public List<SchoolResponseDTO> findSchoolLinkedByGradeId(long gradeId) {
-		List<SchoolGrade> schoolGradeList = iSchoolGradeRepository.findByGradeIdAndStatusNot(gradeId, "DELETED");
-		List<SchoolResponseDTO> schoolResponseDTOList = new ArrayList<>();
-
-		if (!schoolGradeList.isEmpty()) {
-			for (SchoolGrade schoolGrade : schoolGradeList) {
-				SchoolResponseDTO schoolResponseDTO = (modelMapper.map(schoolGrade.getSchool(),
-						SchoolResponseDTO.class));
-				schoolResponseDTO.setSchoolAddress(null);
-				schoolResponseDTO.setSchoolLevel(null);
-				schoolResponseDTOList.add(schoolResponseDTO);
-			}
-		}
-
-		return schoolResponseDTOList;
-	}
 
 	@Override
 	public SchoolResponseDTO findSchoolById(long id) {
@@ -66,13 +43,16 @@ public class SchoolServiceImpl implements ISchoolService {
 	}
 
 	@Override
-	public String checkSchoolExisted(String schoolName, String district, String schoolLevel) {
+	public String checkSchoolExisted(SchoolRequestDTO schoolRequestDTO) {
+		String schoolLevel = schoolRequestDTO.getSchoolLevel();
+		String schoolName = schoolRequestDTO.getSchoolName();
+		String district = schoolRequestDTO.getSchoolDistrict();
+
 		int schoolLevelId = iSchoolLevelRepository.findByDescription(schoolLevel).getId();
-
-		List<School> schoolList = iSchoolRepository.findBySchoolNameAndSchoolDistrictAndSchoolLevelId(schoolName,
-				district, schoolLevelId);
-
+		List<School> schoolList = iSchoolRepository.findBySchoolNameAndSchoolDistrictAndSchoolLevelIdAndStatusNot(schoolName,
+				district, schoolLevelId, "DELETED");
 		if (!schoolList.isEmpty()) {
+
 			return "EXISTED";
 		}
 
@@ -81,10 +61,6 @@ public class SchoolServiceImpl implements ISchoolService {
 
 	@Override
 	public String createSchool(SchoolRequestDTO schoolRequestDTO) {
-		schoolRequestDTO.setSchoolName(schoolRequestDTO.getSchoolName().trim());
-		schoolRequestDTO.setSchoolStreet(schoolRequestDTO.getSchoolStreet().trim());
-		schoolRequestDTO.setSchoolDistrict(schoolRequestDTO.getSchoolDistrict().trim());
-		schoolRequestDTO.setSchoolName(schoolRequestDTO.getSchoolName().trim());
 
 		String schoolCode = generateSchoolCode(schoolRequestDTO.getSchoolName());
 		int schoolCount = generateSchoolCount(schoolCode);
@@ -133,7 +109,7 @@ public class SchoolServiceImpl implements ISchoolService {
 
 		// 1. connect database through repository
 		// 2. find all entities are not disable
-		List<School> schoolList = iSchoolRepository.findByStatusNot("DELETED");
+		List<School> schoolList = iSchoolRepository.findByStatusNotOrderByStatusAsc("DELETED");
 		List<SchoolResponseDTO> schoolDTOList = new ArrayList<>();
 
 		if (schoolList != null) {
@@ -141,7 +117,7 @@ public class SchoolServiceImpl implements ISchoolService {
 				SchoolResponseDTO schoolResponseDTO = modelMapper.map(school, SchoolResponseDTO.class);
 				schoolResponseDTO.setSchoolAddress(school.getSchoolStreet() + ", " + school.getSchoolDistrict());
 				String schoolCount = String.valueOf(school.getSchoolCount());
-				if (school.getSchoolCount() == 0) {
+				if (school.getSchoolCount() == 1) {
 					schoolCount = "";
 				}
 				schoolResponseDTO.setSchoolCode(school.getSchoolCode() + schoolCount);
@@ -167,11 +143,16 @@ public class SchoolServiceImpl implements ISchoolService {
 
 	private int generateSchoolCount(String schoolCode) {
 
+		// connect db, find school by code with count max
 		School school = iSchoolRepository.findFirstBySchoolCodeOrderBySchoolCountDesc(schoolCode);
 
-		int schoolCount = school.getSchoolCount() + 1;
-		System.out.println(schoolCount);
-		return schoolCount;
+		// if not have school with code, return count = 1, else count max += 1
+		int schoolCount = 0;
+		if (school != null) {
+			schoolCount = school.getSchoolCount();
+		}
+
+		return (schoolCount + 1);
 	}
 
 	private char convertoEnglistCharacter(char schoolCode) {

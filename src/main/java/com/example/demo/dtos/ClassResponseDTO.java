@@ -12,7 +12,7 @@ public class ClassResponseDTO {
 	private String createdBy;
 	@JsonFormat(pattern = "dd-MM-yyyy HH:mm")
 	private LocalDateTime modifiedDate;
-	private boolean isDisable;
+	private String status;
 
 	/**
 	 * @return the id
@@ -85,17 +85,17 @@ public class ClassResponseDTO {
 	}
 
 	/**
-	 * @return the isDisable
+	 * @return the status
 	 */
-	public boolean isDisable() {
-		return isDisable;
+	public String getStatus() {
+		return status;
 	}
 
 	/**
-	 * @param isDisable the isDisable to set
+	 * @param status the status to set
 	 */
-	public void setDisable(boolean isDisable) {
-		this.isDisable = isDisable;
+	public void setStatus(String status) {
+		this.status = status;
 	}
 
 }

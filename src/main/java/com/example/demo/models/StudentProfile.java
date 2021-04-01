@@ -9,6 +9,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -33,24 +34,27 @@ public class StudentProfile {
 	@LastModifiedDate
 	private Date modifiedDate;
 	private String modifiedBy;
-	private long accountId;
+
+	@OneToOne
+	@JoinColumn(name = "accountId")
+	private Account account;
 
 	@ManyToOne
-	@JoinColumn(name = "classesId")
+	@JoinColumn(name = "classId")
 	private Classes classes;
 
 	public StudentProfile() {
-		// TODO Auto-generated constructor stub
+
 	}
 
-	public StudentProfile(String dOB, String gender, String parentName, String parentPhone, long accountId,
+	public StudentProfile(String dOB, String gender, String parentName, String parentPhone, Account account,
 			Classes classes) {
 		super();
 		DOB = dOB;
 		this.gender = gender;
 		this.parentName = parentName;
 		this.parentPhone = parentPhone;
-		this.accountId = accountId;
+		this.account = account;
 		this.classes = classes;
 	}
 
@@ -167,17 +171,17 @@ public class StudentProfile {
 	}
 
 	/**
-	 * @return the accountId
+	 * @return the account
 	 */
-	public long getAccountId() {
-		return accountId;
+	public Account getAccount() {
+		return account;
 	}
 
 	/**
-	 * @param accountId the accountId to set
+	 * @param account the account to set
 	 */
-	public void setAccountId(long accountId) {
-		this.accountId = accountId;
+	public void setAccount(Account account) {
+		this.account = account;
 	}
 
 	/**

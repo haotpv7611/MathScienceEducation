@@ -1,12 +1,15 @@
 package com.example.demo.services.impls;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
+import com.example.demo.dtos.ListIdAndStatusDTO;
+import com.example.demo.dtos.SchoolGradeDTO;
+import com.example.demo.dtos.SchoolResponseDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.Grade;
 import com.example.demo.models.School;
@@ -30,10 +33,30 @@ public class SchoolGradeServiceImpl implements ISchoolGradeService {
 
 	@Autowired
 	ModelMapper modelMapper;
+	
+	@Override
+	public List<SchoolResponseDTO> findSchoolLinkedByGradeId(long gradeId) {
+		List<SchoolGrade> schoolGradeList = iSchoolGradeRepository.findByGradeIdAndStatusNotOrderByStatusAsc(gradeId, "DELETED");
+		List<SchoolResponseDTO> schoolResponseDTOList = new ArrayList<>();
+
+		if (!schoolGradeList.isEmpty()) {
+			for (SchoolGrade schoolGrade : schoolGradeList) {
+				SchoolResponseDTO schoolResponseDTO = (modelMapper.map(schoolGrade.getSchool(),
+						SchoolResponseDTO.class));
+				schoolResponseDTO.setSchoolAddress(null);
+				schoolResponseDTO.setSchoolLevel(null);
+				schoolResponseDTOList.add(schoolResponseDTO);
+			}
+		}
+
+		return schoolResponseDTOList;
+	}
 
 	// validate linked
 	@Override
-	public String linkGradeAndSchool(long gradeId, long schoolId) {
+	public String linkGradeAndSchool(SchoolGradeDTO schoolGradeDTO) {
+		long gradeId = schoolGradeDTO.getGradeId();
+		long schoolId = schoolGradeDTO.getSchoolId();
 		Grade grade = iGradeRepository.findById(gradeId).orElseThrow(() -> new ResourceNotFoundException());
 		School school = iSchoolRepository.findByIdAndStatusNot(schoolId, "DELETED");
 		if (school == null) {
@@ -49,26 +72,28 @@ public class SchoolGradeServiceImpl implements ISchoolGradeService {
 		return "LINK SUCCESS!";
 	}
 
-	// validate before remove
-	// add function active
-//	@Override
-//	@Transactional
-//	public String changeStatusGradeAndSchool(long gradeId, List<Long> schoolIds, String status) {
-//		iGradeRepository.findById(gradeId).orElseThrow(() -> new ResourceNotFoundException());
-//		for (Long schoolId : schoolIds) {
-//			School school = iSchoolRepository.findByIdAndStatusNot(schoolId, "DELETED");
-//			if (school == null) {
-//				throw new ResourceNotFoundException();
-//			}
-//		}
-//
-//		SchoolGrade schoolGrade = iSchoolGradeRepository.findByGradeIdAndSchoolIdAndIsDisable(gradeId, schoolId, false);
-//		if (schoolGrade == null) {
-//			throw new ResourceNotFoundException();
-//		}
-//		schoolGrade.setDisable(true);
-//		iSchoolGradeRepository.save(schoolGrade);
-//
-//		return "REMOVE LINK SUCCESS!";
-//	}
+//	 validate before remove
+//	 add function active
+	@Override
+	public String changeStatusGradeAndSchool(ListIdAndStatusDTO listIdAndStatusDTO) {
+		long gradeId = listIdAndStatusDTO.getIds().get(0);
+		long schoolId = listIdAndStatusDTO.getIds().get(1);
+		iGradeRepository.findById(gradeId).orElseThrow(() -> new ResourceNotFoundException());
+
+		School school = iSchoolRepository.findByIdAndStatusNot(schoolId, "DELETED");
+		if (school == null) {
+			throw new ResourceNotFoundException();
+		}
+
+		SchoolGrade schoolGrade = iSchoolGradeRepository.findByGradeIdAndSchoolIdAndStatusNot(gradeId, schoolId,
+				"DELETED");
+		if (schoolGrade == null) {
+			throw new ResourceNotFoundException();
+		}
+		String status = listIdAndStatusDTO.getStatus();
+		schoolGrade.setStatus(status);
+		iSchoolGradeRepository.save(schoolGrade);
+
+		return "REMOVE LINK SUCCESS!";
+	}
 }

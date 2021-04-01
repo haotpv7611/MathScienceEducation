@@ -8,6 +8,7 @@ import javax.persistence.EntityListeners;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToOne;
 
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
@@ -39,8 +40,11 @@ public class Account {
 	private String modifiedBy;
 	private boolean isDisable;
 
+	@OneToOne(mappedBy = "account")
+	private StudentProfile studentProfile;
+
 	public Account() {
-		
+
 	}
 
 	public Account(String username, String password, String firstName, String lastName, int roleId, boolean isDisable) {
@@ -195,6 +199,34 @@ public class Account {
 	 */
 	public void setUsername(String username) {
 		this.username = username;
+	}
+
+	/**
+	 * @return the studentProfile
+	 */
+	public StudentProfile getStudentProfile() {
+		return studentProfile;
+	}
+
+	/**
+	 * @param studentProfile the studentProfile to set
+	 */
+	public void setStudentProfile(StudentProfile studentProfile) {
+		this.studentProfile = studentProfile;
+	}
+
+	/**
+	 * @return the createdBy
+	 */
+	public String getCreatedBy() {
+		return createdBy;
+	}
+
+	/**
+	 * @param createdDate the createdDate to set
+	 */
+	public void setCreatedDate(LocalDateTime createdDate) {
+		this.createdDate = createdDate;
 	}
 
 }
