@@ -9,6 +9,9 @@ import com.example.demo.models.Classes;
 
 @Repository
 public interface IClassRepository extends JpaRepository<Classes, Long> {
-	List<Classes> findBySchoolGradeIdAndIsDisableOrderByClassNameAsc(long schoolGradeId, boolean isDisable);
-
+	List<Classes> findBySchoolGradeIdAndStatusNotOrderByStatusAscClassNameAsc(long schoolGradeId, String status);
+	
+	Classes findByIdAndStatusNot(long id, String status);
+	
+	
 }

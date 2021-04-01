@@ -30,7 +30,7 @@ public class Classes {
 	@LastModifiedDate
 	private LocalDateTime modifiedDate;
 	private String modifiedBy;
-	private boolean isDisable;
+	private String status;
 
 	@ManyToOne
 	@JoinColumn(name = "schoolGradeId")
@@ -38,17 +38,8 @@ public class Classes {
 
 	@OneToMany(mappedBy = "classes")
 	private List<StudentProfile> studentProfileList;
-	
+
 	public Classes() {
-		// TODO Auto-generated constructor stub
-	}
-	
-	
-	public Classes(String className, boolean isDisable, SchoolGrade schoolGrade) {
-		super();
-		this.className = className;
-		this.isDisable = isDisable;
-		this.schoolGrade = schoolGrade;
 	}
 
 	/**
@@ -122,17 +113,17 @@ public class Classes {
 	}
 
 	/**
-	 * @return the isDisable
+	 * @return the status
 	 */
-	public boolean isDisable() {
-		return isDisable;
+	public String getStatus() {
+		return status;
 	}
 
 	/**
-	 * @param isDisable the isDisable to set
+	 * @param status the status to set
 	 */
-	public void setDisable(boolean isDisable) {
-		this.isDisable = isDisable;
+	public void setStatus(String status) {
+		this.status = status;
 	}
 
 	/**

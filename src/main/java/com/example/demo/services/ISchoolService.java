@@ -8,11 +8,9 @@ import com.example.demo.dtos.SchoolResponseDTO;
 
 public interface ISchoolService {
 
-	List<SchoolResponseDTO> findSchoolLinkedByGradeId(long gradeId);
-
 	SchoolResponseDTO findSchoolById(long id);
 
-	String checkSchoolExisted(String schoolName, String district, String schoolLevel);
+	String checkSchoolExisted(SchoolRequestDTO schoolRequestDTO);
 
 	String createSchool(SchoolRequestDTO schoolRequestDTO);
 

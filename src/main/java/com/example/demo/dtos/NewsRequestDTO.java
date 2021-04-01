@@ -6,7 +6,6 @@ import org.hibernate.validator.constraints.Length;
 
 public class NewsRequestDTO {
 
-	private long id;
 	@NotNull(message = "NewsTitle must be not null!")
 	@Length(max = 100, message = "NewsTitle length must be less than 100!")
 	private String newsTitle;
@@ -15,20 +14,6 @@ public class NewsRequestDTO {
 	@NotNull(message = "NewsContent must be not null!")
 	private String newsContent;
 	private long accountId;
-
-	/**
-	 * @return the id
-	 */
-	public long getId() {
-		return id;
-	}
-
-	/**
-	 * @param id the id to set
-	 */
-	public void setId(long id) {
-		this.id = id;
-	}
 
 	/**
 	 * @return the newsTitle

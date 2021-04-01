@@ -2,8 +2,14 @@ package com.example.demo.services;
 
 import java.util.List;
 
-public interface ISchoolGradeService {
-	String linkGradeAndSchool(long gradeId, long schoolId);
+import com.example.demo.dtos.ListIdAndStatusDTO;
+import com.example.demo.dtos.SchoolGradeDTO;
+import com.example.demo.dtos.SchoolResponseDTO;
 
-//	String changeStatusGradeAndSchool(long gradeId, List<Long> schoolIds);
+public interface ISchoolGradeService {
+	String linkGradeAndSchool(SchoolGradeDTO schoolGradeDTO);
+
+	String changeStatusGradeAndSchool(ListIdAndStatusDTO listIdAndStatusDTO);
+
+	List<SchoolResponseDTO> findSchoolLinkedByGradeId(long gradeId);
 }

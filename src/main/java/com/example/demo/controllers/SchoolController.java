@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dtos.IdAndStatusDTO;
@@ -25,32 +25,34 @@ import com.example.demo.services.ISchoolService;
 
 @CrossOrigin
 @RestController
-//@RequestMapping("/school")
+@RequestMapping("/school")
 public class SchoolController {
 
 	@Autowired
 	private ISchoolService iSchoolService;
 
-	@GetMapping("/grade/{gradeId}/school")
-	public ResponseEntity<List<SchoolResponseDTO>> findSchoolByGradeId(@PathVariable long gradeId) {
-
-		return ResponseEntity.ok(iSchoolService.findSchoolLinkedByGradeId(gradeId));
-	}
-
-	@GetMapping("/school/{id}")
+	@GetMapping("/{id}")
 	public ResponseEntity<SchoolResponseDTO> findSchoolById(@PathVariable long id) {
 
 		return ResponseEntity.ok(iSchoolService.findSchoolById(id));
 	}
 
-	@GetMapping("/school")
-	public ResponseEntity<String> checkSchoolIsExisted(@RequestParam String schoolName,
-			@RequestParam String schoolDistrict, @RequestParam String schoolLevel) {
-		
-		return ResponseEntity.ok(iSchoolService.checkSchoolExisted(schoolName, schoolDistrict, schoolLevel));
+	@GetMapping
+	public ResponseEntity<String> checkSchoolIsExisted(@Valid @RequestBody SchoolRequestDTO schoolRequestDTO,
+			BindingResult bindingResult) {
+		if (bindingResult.hasErrors()) {
+			String error = "";
+			for (ObjectError object : bindingResult.getAllErrors()) {
+				error += "\n" + object.getDefaultMessage();
+			}
+
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
+		}
+
+		return ResponseEntity.ok(iSchoolService.checkSchoolExisted(schoolRequestDTO));
 	}
 
-	@PostMapping("/school")
+	@PostMapping
 	public ResponseEntity<String> createSchool(@Valid @RequestBody SchoolRequestDTO schoolRequestDTO,
 			BindingResult bindingResult) {
 		if (bindingResult.hasErrors()) {
@@ -67,20 +69,20 @@ public class SchoolController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 
-	@PutMapping("/school/{id}")
+	@PutMapping("/{id}")
 	public ResponseEntity<String> updateSchool(@PathVariable long id,
 			@Valid @RequestBody SchoolRequestDTO schoolRequestDTO, BindingResult bindingResult) {
 
 		return ResponseEntity.ok(iSchoolService.updateSchool(id, schoolRequestDTO));
 	}
 
-	@GetMapping("/school/all")
+	@GetMapping("/all")
 	public ResponseEntity<List<SchoolResponseDTO>> findAllSchool() {
 
 		return ResponseEntity.ok(iSchoolService.findAllSchool());
 	}
-	
-	@PutMapping("/school/changeStatus")
+
+	@PutMapping("/changeStatus")
 	public ResponseEntity<String> changeStatusSchool(@Valid @RequestBody IdAndStatusDTO idAndStatusDTO,
 			BindingResult bindingResult) {
 		if (bindingResult.hasErrors()) {
@@ -96,6 +98,7 @@ public class SchoolController {
 
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("STATUS INVALID!");
 		}
+
 		return ResponseEntity.ok(iSchoolService.changeStatusSchool(idAndStatusDTO));
 	}
 
