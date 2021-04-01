@@ -35,9 +35,11 @@ public class SchoolServiceImpl implements ISchoolService {
 			throw new ResourceNotFoundException();
 		}
 		String schoolName = school.getSchoolName();
-		String schoolAddress = school.getSchoolStreet() + ", " + school.getSchoolDistrict() + ", HCM City";
+		String schoolStreet = school.getSchoolStreet();
+		String schoolDistrict = school.getSchoolDistrict();
 		String schoolLevel = school.getSchoolLevel().getDescription();
-		SchoolResponseDTO schoolResponseDTO = new SchoolResponseDTO(schoolName, schoolAddress, schoolLevel);
+		SchoolResponseDTO schoolResponseDTO = new SchoolResponseDTO(schoolName, schoolStreet, schoolDistrict,
+				schoolLevel);
 
 		return schoolResponseDTO;
 	}
@@ -49,8 +51,8 @@ public class SchoolServiceImpl implements ISchoolService {
 		String district = schoolRequestDTO.getSchoolDistrict();
 
 		int schoolLevelId = iSchoolLevelRepository.findByDescription(schoolLevel).getId();
-		List<School> schoolList = iSchoolRepository.findBySchoolNameAndSchoolDistrictAndSchoolLevelIdAndStatusNot(schoolName,
-				district, schoolLevelId, "DELETED");
+		List<School> schoolList = iSchoolRepository.findBySchoolNameAndSchoolDistrictAndSchoolLevelIdAndStatusNot(
+				schoolName, district, schoolLevelId, "DELETED");
 		if (!schoolList.isEmpty()) {
 
 			return "EXISTED";
@@ -114,8 +116,7 @@ public class SchoolServiceImpl implements ISchoolService {
 
 		if (schoolList != null) {
 			for (School school : schoolList) {
-				SchoolResponseDTO schoolResponseDTO = modelMapper.map(school, SchoolResponseDTO.class);
-				schoolResponseDTO.setSchoolAddress(school.getSchoolStreet() + ", " + school.getSchoolDistrict());
+				SchoolResponseDTO schoolResponseDTO = modelMapper.map(school, SchoolResponseDTO.class);				
 				String schoolCount = String.valueOf(school.getSchoolCount());
 				if (school.getSchoolCount() == 1) {
 					schoolCount = "";

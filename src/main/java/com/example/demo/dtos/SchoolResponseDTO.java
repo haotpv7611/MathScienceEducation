@@ -7,7 +7,8 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 public class SchoolResponseDTO {
 	private long id;
 	private String schoolName;
-	private String schoolAddress;
+	private String schoolStreet;
+	private String schoolDistrict;
 	private String schoolCode;
 	private String schoolLevel;
 	@JsonFormat(pattern = "dd-MM-yyyy HH:mm")
@@ -22,10 +23,11 @@ public class SchoolResponseDTO {
 
 	}
 
-	public SchoolResponseDTO(String schoolName, String schoolAddress, String schoolLevel) {
+	public SchoolResponseDTO(String schoolName, String schoolStreet, String schoolDistrict, String schoolLevel) {
 		super();
 		this.schoolName = schoolName;
-		this.schoolAddress = schoolAddress;
+		this.schoolStreet = schoolStreet;
+		this.schoolDistrict = schoolDistrict;
 		this.schoolLevel = schoolLevel;
 	}
 
@@ -58,17 +60,31 @@ public class SchoolResponseDTO {
 	}
 
 	/**
-	 * @return the schoolAddress
+	 * @return the schoolStreet
 	 */
-	public String getSchoolAddress() {
-		return schoolAddress;
+	public String getSchoolStreet() {
+		return schoolStreet;
 	}
 
 	/**
-	 * @param schoolAddress the schoolAddress to set
+	 * @param schoolStreet the schoolStreet to set
 	 */
-	public void setSchoolAddress(String schoolAddress) {
-		this.schoolAddress = schoolAddress;
+	public void setSchoolStreet(String schoolStreet) {
+		this.schoolStreet = schoolStreet;
+	}
+
+	/**
+	 * @return the schoolDistrict
+	 */
+	public String getSchoolDistrict() {
+		return schoolDistrict;
+	}
+
+	/**
+	 * @param schoolDistrict the schoolDistrict to set
+	 */
+	public void setSchoolDistrict(String schoolDistrict) {
+		this.schoolDistrict = schoolDistrict;
 	}
 
 	public static Object builder() {

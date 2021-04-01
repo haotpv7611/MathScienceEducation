@@ -43,7 +43,8 @@ public class SchoolGradeServiceImpl implements ISchoolGradeService {
 			for (SchoolGrade schoolGrade : schoolGradeList) {
 				SchoolResponseDTO schoolResponseDTO = (modelMapper.map(schoolGrade.getSchool(),
 						SchoolResponseDTO.class));
-				schoolResponseDTO.setSchoolAddress(null);
+				schoolResponseDTO.setSchoolStreet(null);
+				schoolResponseDTO.setSchoolDistrict(null);
 				schoolResponseDTO.setSchoolLevel(null);
 				schoolResponseDTOList.add(schoolResponseDTO);
 			}
