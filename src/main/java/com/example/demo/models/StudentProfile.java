@@ -34,13 +34,14 @@ public class StudentProfile {
 	@LastModifiedDate
 	private Date modifiedDate;
 	private String modifiedBy;
+	private String status;
 
 	@OneToOne
 	@JoinColumn(name = "accountId")
 	private Account account;
 
 	@ManyToOne
-	@JoinColumn(name = "classId")
+	@JoinColumn(name = "classesId")
 	private Classes classes;
 
 	public StudentProfile() {
@@ -203,6 +204,20 @@ public class StudentProfile {
 	 */
 	public void setGender(String gender) {
 		this.gender = gender;
+	}
+
+	/**
+	 * @return the status
+	 */
+	public String getStatus() {
+		return status;
+	}
+
+	/**
+	 * @param status the status to set
+	 */
+	public void setStatus(String status) {
+		this.status = status;
 	}
 
 }

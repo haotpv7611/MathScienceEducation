@@ -77,6 +77,6 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 	}
 
 	private void addStudentProfile(Classes classes, List<StudentProfile> studentProfileList) {
-		studentProfileList.addAll(iStudentProfileRepository.findByClassIdAndStatusNot(classes.getId(), DELETE_STATUS));
+		studentProfileList.addAll(iStudentProfileRepository.findByClassesIdAndStatusNot(classes.getId(), DELETE_STATUS));
 	}
 }
