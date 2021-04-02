@@ -19,4 +19,5 @@ public interface ISubjectService {
 			throws SizeLimitExceededException, IOException;
 	String deleteSubject(long id);
 	SubjectDTO findById(long id);
+	
 }

@@ -12,10 +12,13 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.dtos.SubjectDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
+import com.example.demo.models.ProgressTest;
 import com.example.demo.models.Subject;
 import com.example.demo.models.Unit;
+import com.example.demo.repositories.IProgressTestRepository;
 import com.example.demo.repositories.ISubjectRepository;
 import com.example.demo.repositories.IUnitRepository;
+import com.example.demo.services.IProgressTestService;
 import com.example.demo.services.ISubjectService;
 import com.example.demo.services.IUnitService;
 
@@ -33,6 +36,10 @@ public class SubjectServiceImpl implements ISubjectService {
 	@Autowired
 	IUnitService iUnitService;
 
+	@Autowired
+	IProgressTestRepository iProgressTestRepository;
+	@Autowired
+	IProgressTestService iProgressTestService;
 	@Autowired
 	ModelMapper modelMapper;
 	@Autowired
@@ -74,6 +81,12 @@ public class SubjectServiceImpl implements ISubjectService {
 				iUnitService.deleteUnit(unit.getId());
 			}
 		}
+		List<ProgressTest> progresssTestList = iProgressTestRepository.findBySubjectId(id);
+		if (!progresssTestList.isEmpty()) {
+			for (ProgressTest progressTest : progresssTestList) {
+				iProgressTestService.deleteProgressTest(progressTest.getId());
+			}
+		}
 		iSubjectRepository.save(subject);
 		return "DELETE SUCCESS !";
 	}
@@ -83,7 +96,7 @@ public class SubjectServiceImpl implements ISubjectService {
 			throws SizeLimitExceededException, IOException {
 		// validate
 		String error = "";
-		if (subjectName.isEmpty() && subjectName.length() > SUBJECTNAME_MAX_LENGTH) {
+		if (subjectName.isEmpty() || subjectName.length() > SUBJECTNAME_MAX_LENGTH) {
 			error += "Subject Name is invalid !";
 		}
 		if (multipartFile.isEmpty()) {
@@ -127,13 +140,15 @@ public class SubjectServiceImpl implements ISubjectService {
 			throw new ResourceNotFoundException();
 		}
 		// validate
-		if (subjectName == null && subjectName.length() > SUBJECTNAME_MAX_LENGTH) {
-			error += "Subject Name is invalid !";
+		if (subjectName != null) {
+			if (subjectName.length() > SUBJECTNAME_MAX_LENGTH) {
+				error += "Subject Name is invalid !";
+			}
 		}
-		if (multipartFile == null) {
-			error += "\n File is invalid !";
-		} else if (!multipartFile.getContentType().contains("image")) {
-			error += "\n Not supported this file type for image!";
+		if (multipartFile != null) {
+			if (!multipartFile.getContentType().contains("image")) {
+				error += "\n Not supported this file type for image!";
+			}
 		}
 		if (description.length() > DESCRIPTION_MAX_LENGTH) {
 			error += "Description is invalid !";
