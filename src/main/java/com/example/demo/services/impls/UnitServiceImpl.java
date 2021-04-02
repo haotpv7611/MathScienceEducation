@@ -13,13 +13,16 @@ import com.example.demo.dtos.UnitRequestDTO;
 import com.example.demo.dtos.UnitViewDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.Lesson;
+import com.example.demo.models.Question;
 import com.example.demo.models.Subject;
 import com.example.demo.models.Unit;
 import com.example.demo.repositories.ILessonRepository;
+import com.example.demo.repositories.IQuestionRepository;
 import com.example.demo.repositories.ISubjectRepository;
 import com.example.demo.repositories.IUnitRepository;
 import com.example.demo.services.ILessonService;
 import com.example.demo.services.IProgressTestService;
+import com.example.demo.services.IQuestionService;
 import com.example.demo.services.IUnitService;
 
 @Service
@@ -31,7 +34,11 @@ public class UnitServiceImpl implements IUnitService {
 	private ILessonRepository iLessonRepository;
 
 	@Autowired
+	IQuestionRepository iQuestionRepository;
+	@Autowired
 	ILessonService iLessonService;
+	@Autowired
+	IQuestionService iQuestionService;
 	@Autowired
 	private ISubjectRepository iSubjectRepository;
 
@@ -153,9 +160,19 @@ public class UnitServiceImpl implements IUnitService {
 		}
 		unit.setDisable(true);
 		List<Lesson> listLesson = iLessonRepository.findByUnitIdAndIsDisableOrderByLessonNameAsc(id, false);
-		for (Lesson lesson : listLesson) {
-			iLessonService.deleteLesson(lesson.getId());
+		if (!listLesson.isEmpty()) {
+			for (Lesson lesson : listLesson) {
+				iLessonService.deleteLesson(lesson.getId());
+			}
 		}
+
+		List<Question> questionLists = iQuestionRepository.findByUnitIdAndIsDisable(id, false);
+		if (!questionLists.isEmpty()) {
+			for (Question question : questionLists) {
+				iQuestionService.deleteQuestion(question.getId());
+			}
+		}
+
 		iUnitRepository.save(unit);
 		return "DELETE SUCCESS !";
 	}

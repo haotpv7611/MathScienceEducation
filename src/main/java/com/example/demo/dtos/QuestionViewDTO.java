@@ -4,10 +4,20 @@ import java.util.List;
 
 public class QuestionViewDTO {
 	private long id;
+	private String questionTitle;
 	private String questionText;
 	private String questionImageUrl;
 	private String questionAudioUrl;
 	private float score;
+
+	
+	public String getQuestionTitle() {
+		return questionTitle;
+	}
+
+	public void setQuestionTitle(String questionTitle) {
+		this.questionTitle = questionTitle;
+	}
 
 	private List<OptionQuestionDTO> option;
 

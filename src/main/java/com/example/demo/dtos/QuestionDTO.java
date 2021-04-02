@@ -1,11 +1,21 @@
 package com.example.demo.dtos;
 
+import javax.validation.constraints.NotNull;
+
+import org.hibernate.validator.constraints.Length;
+
 public class QuestionDTO {
 
 	private long id;
+	@NotNull(message = "Question Title must be not null !")
+	@Length(max = 50, message = "Question Title length must be less than 50 !")
+	private String questionTitle;
+	@NotNull(message = "Question Text must be not null !")
+	@Length(max = 250, message = "Question Text length must be less than 250 !")
 	private String questionText;
 	private String questionImageUrl;
 	private String questionAudioUrl;
+	@NotNull(message = "Score must be not null !")
 	private float score;
 	private long unitId;
 	private long questionTypeId;
@@ -13,17 +23,19 @@ public class QuestionDTO {
 	public QuestionDTO() {
 	}
 
-	public QuestionDTO(long id, String questionText, String questionImageUrl, String questionAudioUrl, float score,
-			long unitId, long questionTypeId) {
-		super();
-		this.id = id;
-		this.questionText = questionText;
-		this.questionImageUrl = questionImageUrl;
-		this.questionAudioUrl = questionAudioUrl;
-		this.score = score;
-		this.unitId = unitId;
-		this.questionTypeId = questionTypeId;
+	
+
+	public String getQuestionTitle() {
+		return questionTitle;
 	}
+
+
+
+	public void setQuestionTitle(String questionTitle) {
+		this.questionTitle = questionTitle;
+	}
+
+
 
 	/**
 	 * @return the id

@@ -102,9 +102,12 @@ public class LessonServiceImpl implements ILessonService {
 			throw new ResourceNotFoundException();
 		}
 		List<Exercise> exercises = iExerciseRepository.findByLessonIdOrderByExerciseNameAsc(id);
-		for (Exercise exercise : exercises) {
-			iExerciseService.deleteExercise(exercise.getId());
+		if (!exercises.isEmpty()) {
+			for (Exercise exercise : exercises) {
+				iExerciseService.deleteExercise(exercise.getId());
+			}
 		}
+
 		lesson.setDisable(true);
 		iLessonRepository.save(lesson);
 		return "DELETE SUCCESS !";
