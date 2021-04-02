@@ -14,5 +14,5 @@ public interface ISchoolGradeService {
 
 	List<SchoolResponseDTO> findSchoolLinkedByGradeId(long gradeId);
 	
-	List<GradeDTO> findGradeLinkedBySchoolId(long schoolId);
+//	List<GradeDTO> findGradeLinkedBySchoolId(long schoolId);
 }
