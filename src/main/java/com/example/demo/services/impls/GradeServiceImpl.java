@@ -46,23 +46,23 @@ public class GradeServiceImpl implements IGradeService{
 		return gradeDTOList;
 	}
 	
-	@Override
-	public List<String> findLinkedGradeBySchoolId(long id) {
-		School school = iSchoolRepository.findByIdAndStatusNot(id, "DELETED");
-		if (school == null) {
-			throw new ResourceNotFoundException();
-		}
-		
-		List<String> linkedGradeList = new ArrayList<>();
-		Set<SchoolGrade> schoolGradeList = school.getSchoolGrade();
-		if (!schoolGradeList.isEmpty()) {
-			for (SchoolGrade schoolGrade : schoolGradeList) {
-				linkedGradeList.add("Grade " + schoolGrade.getGrade().getGradeName());
-			}
-		}
-
-		return linkedGradeList;
-	}
+//	@Override
+//	public List<String> findLinkedGradeBySchoolId(long id) {
+//		School school = iSchoolRepository.findByIdAndStatusNot(id, "DELETED");
+//		if (school == null) {
+//			throw new ResourceNotFoundException();
+//		}
+//		
+//		List<String> linkedGradeList = new ArrayList<>();
+//		Set<SchoolGrade> schoolGradeList = school.getSchoolGrade();
+//		if (!schoolGradeList.isEmpty()) {
+//			for (SchoolGrade schoolGrade : schoolGradeList) {
+//				linkedGradeList.add("Grade " + schoolGrade.getGrade().getGradeName());
+//			}
+//		}
+//
+//		return linkedGradeList;
+//	}
 
 	public void testMany(long gradeId){
 //		Grade grade = iGradeRepository.findById(gradeId).orElseThrow(() -> new ResourceNotFoundException());
