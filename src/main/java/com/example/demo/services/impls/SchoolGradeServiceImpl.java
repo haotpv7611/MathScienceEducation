@@ -101,19 +101,19 @@ public class SchoolGradeServiceImpl implements ISchoolGradeService {
 		return "CHANGE SUCCESS!";
 	}
 
-//	@Override
-//	public List<GradeDTO> findGradeLinkedBySchoolId(long schoolId) {
-//		List<SchoolGrade> schoolGradeList = iSchoolGradeRepository.findByGradeIdAndStatusNotOrderByStatusAsc(schoolId,
-//				"DELETED");
-//		List<GradeDTO> gradeDTOList = new ArrayList<>();
-//
-//		if (!gradeDTOList.isEmpty()) {
-//			for (SchoolGrade schoolGrade : schoolGradeList) {
-//				GradeDTO gradeDTO = (modelMapper.map(schoolGrade.getGrade(), GradeDTO.class));
-//				gradeDTOList.add(gradeDTO);
-//			}
-//		}
-//
-//		return gradeDTOList;
-//	}
+	@Override
+	public List<GradeDTO> findGradeLinkedBySchoolId(long schoolId) {
+		List<SchoolGrade> schoolGradeList = iSchoolGradeRepository.findByGradeIdAndStatusNotOrderByStatusAsc(schoolId,
+				"DELETED");
+		List<GradeDTO> gradeDTOList = new ArrayList<>();
+
+		if (!gradeDTOList.isEmpty()) {
+			for (SchoolGrade schoolGrade : schoolGradeList) {
+				GradeDTO gradeDTO = (modelMapper.map(schoolGrade.getGrade(), GradeDTO.class));
+				gradeDTOList.add(gradeDTO);
+			}
+		}
+
+		return gradeDTOList;
+	}
 }
