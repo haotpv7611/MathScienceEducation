@@ -37,7 +37,7 @@ public class SchoolController {
 		return ResponseEntity.ok(iSchoolService.findSchoolById(id));
 	}
 
-	@GetMapping
+	@PostMapping("/check")
 	public ResponseEntity<String> checkSchoolIsExisted(@Valid @RequestBody SchoolRequestDTO schoolRequestDTO,
 			BindingResult bindingResult) {
 		if (bindingResult.hasErrors()) {
