@@ -8,8 +8,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.dtos.ProgressTestDTO;
+import com.example.demo.exceptions.ResourceNotFoundException;
+import com.example.demo.models.Exercise;
 import com.example.demo.models.ProgressTest;
+import com.example.demo.models.Subject;
+import com.example.demo.repositories.IExerciseRepository;
 import com.example.demo.repositories.IProgressTestRepository;
+import com.example.demo.repositories.ISubjectRepository;
+import com.example.demo.services.IExerciseService;
 import com.example.demo.services.IProgressTestService;
 
 @Service
@@ -19,7 +25,16 @@ public class ProgressTestServiceImpl implements IProgressTestService {
 	private IProgressTestRepository iProgressTestRepository;
 
 	@Autowired
+	private ISubjectRepository iSubjectRepository;
+
+	@Autowired
 	private ModelMapper modelMapper;
+
+	@Autowired
+	private IExerciseService iExerciseService;
+
+	@Autowired
+	private IExerciseRepository iExerciseRepository;
 
 	@Override
 	public List<ProgressTestDTO> findBySubjectId(long subjectId) {
@@ -38,7 +53,87 @@ public class ProgressTestServiceImpl implements IProgressTestService {
 				progressTestDTOList.add(progressTestDTO);
 			}
 		}
-		
+
 		return progressTestDTOList;
+	}
+
+	@Override
+	public List<ProgressTestDTO> findBySubjectIdAndIsDisable(long subjectId) {
+		List<ProgressTest> progressTestLists = iProgressTestRepository.findBySubjectId(subjectId);
+		List<ProgressTestDTO> progressTestDTOLists = new ArrayList<>();
+		if (!progressTestLists.isEmpty()) {
+			for (ProgressTest progressTest : progressTestLists) {
+				ProgressTestDTO progressTestDTO = modelMapper.map(progressTest, ProgressTestDTO.class);
+				progressTestDTOLists.add(progressTestDTO);
+			}
+		}
+		return progressTestDTOLists;
+	}
+
+	@Override
+	public String createProgressTest(ProgressTestDTO progressTestDTO) {
+		Subject subject = iSubjectRepository.findByIdAndIsDisable(progressTestDTO.getSubjectId(), false);
+		if (subject == null) {
+			return "Subject is not existed";
+		}
+		List<ProgressTestDTO> listProgressTestLists = findBySubjectIdAndIsDisable(progressTestDTO.getSubjectId());
+		for (ProgressTestDTO progressTestDTO2 : listProgressTestLists) {
+			if (progressTestDTO.getProgressTestName().equalsIgnoreCase(progressTestDTO2.getProgressTestName())) {
+				return "Progress Tesst Name is existed !";
+			}
+		}
+		ProgressTest progressTest = modelMapper.map(progressTestDTO, ProgressTest.class);
+		progressTest.setDisable(false);
+		iProgressTestRepository.save(progressTest);
+		return "CREATE SUCCESSS !";
+	}
+
+	@Override
+	public String updateProgressTest(ProgressTestDTO progressTestDTO) {
+		ProgressTest progressTest = iProgressTestRepository.findById(progressTestDTO.getId())
+				.orElseThrow(() -> new ResourceNotFoundException());
+		if (progressTest.isDisable()) {
+			throw new ResourceNotFoundException();
+		}
+		if (!progressTest.getProgressTestName().equalsIgnoreCase(progressTestDTO.getProgressTestName())) {
+			List<ProgressTestDTO> listProgressTestLists = findBySubjectIdAndIsDisable(progressTestDTO.getSubjectId());
+			for (ProgressTestDTO progressTestDTO2 : listProgressTestLists) {
+				if (progressTestDTO.getProgressTestName().equalsIgnoreCase(progressTestDTO2.getProgressTestName())) {
+					return "Progress Tesst Name is existed !";
+				}
+			}
+		}
+		progressTest.setProgressTestName(progressTestDTO.getProgressTestName());
+		progressTest.setDescription(progressTestDTO.getDescription());
+		progressTest.setUnitAfterId(progressTestDTO.getUnitAfterId());
+		iProgressTestRepository.save(progressTest);
+		return "UPDATE SUCCESS !";
+	}
+
+	@Override
+	public String deleteProgressTest(long id) {
+		ProgressTest progressTest = iProgressTestRepository.findById(id)
+				.orElseThrow(() -> new ResourceNotFoundException());
+		if (progressTest.isDisable()) {
+			throw new ResourceNotFoundException();
+		}
+		List<Exercise> exerciseList = iExerciseRepository.findByProgressTestIdOrderByExerciseNameAsc(id);
+		for (Exercise exercise : exerciseList) {
+			iExerciseService.deleteExercise(exercise.getId());
+		}
+		progressTest.setDisable(true);
+		iProgressTestRepository.save(progressTest);
+		return "DELETE SUCCESS !";
+	}
+
+	@Override
+	public ProgressTestDTO findById(long id) {
+		ProgressTest progressTest = iProgressTestRepository.findById(id)
+				.orElseThrow(() -> new ResourceNotFoundException());
+		if (progressTest.isDisable()) {
+			throw new ResourceNotFoundException();
+		}
+		ProgressTestDTO progressTestDTO = modelMapper.map(progressTest, ProgressTestDTO.class);
+		return progressTestDTO;
 	}
 }

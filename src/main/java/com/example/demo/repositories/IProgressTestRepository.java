@@ -10,5 +10,6 @@ import com.example.demo.models.ProgressTest;
 @Repository
 public interface IProgressTestRepository extends JpaRepository<ProgressTest, Long> {	
 	List<ProgressTest> findBySubjectIdAndIsDisable(long subjectId, boolean isDisable);
-//	List<Long> findAllUnitAfterIdBySubjectId(long subjectId);
+
+	List<ProgressTest> findBySubjectId(long subjectId);
 }

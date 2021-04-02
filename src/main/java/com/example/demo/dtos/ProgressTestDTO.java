@@ -1,10 +1,28 @@
 package com.example.demo.dtos;
 
+import javax.validation.constraints.NotNull;
+
+import org.hibernate.validator.constraints.Length;
+
 public class ProgressTestDTO {
 	private long id;
+	@NotNull(message = "Progress Test Name must be not null !")
+	@Length(max =  20, message = "Progress Test Name lenght must be less than 20 !")
 	private String progressTestName;
 	private long unitAfterId;
 	private long subjectId;
+	@Length(max = 50, message = "Description lenght must be less than 50 !")
+	private String description;
+	
+	
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
 
 	public ProgressTestDTO() {
 	}

@@ -66,7 +66,7 @@ public class UnitController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);		
 	}
 
-	@PutMapping("/unit")
+	@PutMapping("/unit/{id}")
 	public ResponseEntity<String> updateUnit(@PathVariable long id, @Valid @RequestBody UnitRequestDTO unitRequestDTO, BindingResult bindingResult){
 		
 		if(bindingResult.hasErrors()) {
@@ -87,10 +87,10 @@ public class UnitController {
 	@PutMapping("unit/delete")
 	public ResponseEntity<String> deleteUnit(@RequestParam long id){
 		String response = iUnitService.deleteUnit(id);
-		if(!response.contains("SUCCESS")) {
+		if (!response.contains("SUCCESS")) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 		}
-		return ResponseEntity.status(HttpStatus.OK).body(response);		
+		return ResponseEntity.status(HttpStatus.OK).body(response);
 		
 	}
 	

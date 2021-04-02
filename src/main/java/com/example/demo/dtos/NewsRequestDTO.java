@@ -10,7 +10,7 @@ public class NewsRequestDTO {
 	@NotNull(message = "NewsTitle must be not null!")
 	@Length(max = 100, message = "NewsTitle length must be less than 100!")
 	private String newsTitle;
-	@Length(max = 100, message = "ShortDescription length must be less than 150!")
+	@Length(max = 40, message = "ShortDescription length must be less than 40!")
 	private String shortDescription;
 	@NotNull(message = "NewsContent must be not null!")
 	private String newsContent;
