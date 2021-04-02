@@ -134,18 +134,32 @@ public class UnitServiceImpl implements IUnitService {
 	}
 
 	@Override
-	public String updateUnit(UnitRequestDTO unitRequestDTO) {
-		Unit unit = iUnitRepository.findById(unitRequestDTO.getId()).orElseThrow(() -> new ResourceNotFoundException());
-		if (unit.isDisable()) {
+	public String updateUnit(long id, UnitRequestDTO unitRequestDTO) {
+		int unitName = unitRequestDTO.getUnitName();
+		Unit unit = iUnitRepository.findByIdAndIsDisable(id, false);
+		System.out.println(unit);
+
+		if (unit == null) {
 			throw new ResourceNotFoundException();
 		}
-		List<Unit> listUnits = iUnitRepository
-				.findBySubjectIdAndIsDisableOrderByUnitNameAsc(unitRequestDTO.getSubjectId(), false);
-		for (Unit unit1 : listUnits) {
-			if (unitRequestDTO.getUnitName() == unit1.getUnitName()) {
-				return "Unit is existed !";
+
+//		Unit unit = iUnitRepository.findById(unitRequestDTO.getId()).orElseThrow(() -> new ResourceNotFoundException());
+//		if (unit.isDisable()) {
+//			throw new ResourceNotFoundException();
+//		}
+
+		if (unit.getUnitName() != unitName) {
+			if (iUnitRepository.findBySubjectIdAndUnitNameAndIsDisable(unit.getSubjectId(), unitName, false) != null) {
+				return "EXISTED";
 			}
 		}
+//		List<Unit> listUnits = iUnitRepository
+//				.findBySubjectIdAndIsDisableOrderByUnitNameAsc(unitRequestDTO.getSubjectId(), false);
+//		for (Unit unit1 : listUnits) {
+//			if (unitRequestDTO.getUnitName() == unit1.getUnitName()) {
+//				return "Unit is existed !";
+//			}
+//		}
 		unit.setUnitName(unitRequestDTO.getUnitName());
 		unit.setDescription(unitRequestDTO.getDescription());
 		iUnitRepository.save(unit);

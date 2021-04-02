@@ -12,6 +12,6 @@ public interface IUnitService {
 	Unit findByUnitIdAndIsDisable(long id);
 	List<UnitViewDTO> showUnitViewBySubjectId(long subjectId);
 	String createUnit(UnitRequestDTO unitRequestDTO);
-	String updateUnit(UnitRequestDTO unitRequestDTO);
+	String updateUnit(long id, UnitRequestDTO unitRequestDTO);
 	String deleteUnit(long id);
 }
