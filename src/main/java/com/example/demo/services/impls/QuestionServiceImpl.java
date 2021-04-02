@@ -34,8 +34,8 @@ public class QuestionServiceImpl implements IQuestionService {
 
 	@Autowired
 	private FirebaseService firebaseService;
-	
-	@Autowired 
+
+	@Autowired
 	private ModelMapper modelMapper;
 //	@Autowired
 //	private IQuestionService iQuestionService;
@@ -183,12 +183,17 @@ public class QuestionServiceImpl implements IQuestionService {
 			MultipartFile multipartAudio, float score, long unitId) throws SizeLimitExceededException, IOException {
 		String error = "";
 		Question question = iQuestionRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
-		if (questionTitle.isEmpty() || questionTitle.length() > QUESTION_TITLE) {
-			error += "\n Question Title is invalid !";
+		if (questionTitle != null) {
+			if (questionTitle.length() > QUESTION_TITLE) {
+				error += "\n Question Title is invalid !";
+			}
 		}
-		if (questionText.isEmpty() || questionText.length() > QUESTION_TEXT) {
-			error += "\n Question Text is invalid !";
+		if (questionText != null) {
+			if(questionText.length() > QUESTION_TEXT) {
+				error += "\n Question Text is invalid !";
+			}			
 		}
+		
 		if (multipartImage.getContentType().contains("image")) {
 			error += "\n Not supported this file type for image!";
 		}
@@ -216,7 +221,7 @@ public class QuestionServiceImpl implements IQuestionService {
 		List<Question> questionLists = iQuestionRepository.findByUnitIdAndIsDisable(unitId, isDisable);
 		List<QuestionDTO> questionDTOLists = new ArrayList<>();
 		for (Question question : questionLists) {
-			QuestionDTO questionDTO = modelMapper.map(question, QuestionDTO.class );
+			QuestionDTO questionDTO = modelMapper.map(question, QuestionDTO.class);
 			questionDTOLists.add(questionDTO);
 		}
 		return questionDTOLists;

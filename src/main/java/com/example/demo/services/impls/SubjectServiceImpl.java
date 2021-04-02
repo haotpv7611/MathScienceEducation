@@ -82,7 +82,7 @@ public class SubjectServiceImpl implements ISubjectService {
 			}
 		}
 		List<ProgressTest> progresssTestList = iProgressTestRepository.findBySubjectId(id);
-		if(!progresssTestList.isEmpty()) {
+		if (!progresssTestList.isEmpty()) {
 			for (ProgressTest progressTest : progresssTestList) {
 				iProgressTestService.deleteProgressTest(progressTest.getId());
 			}
@@ -140,13 +140,15 @@ public class SubjectServiceImpl implements ISubjectService {
 			throw new ResourceNotFoundException();
 		}
 		// validate
-		if (subjectName == null || subjectName.length() > SUBJECTNAME_MAX_LENGTH) {
-			error += "Subject Name is invalid !";
+		if (subjectName != null) {
+			if (subjectName.length() > SUBJECTNAME_MAX_LENGTH) {
+				error += "Subject Name is invalid !";
+			}
 		}
-		if (multipartFile == null) {
-			error += "\n File is invalid !";
-		} else if (!multipartFile.getContentType().contains("image")) {
-			error += "\n Not supported this file type for image!";
+		if (multipartFile != null) {
+			if (!multipartFile.getContentType().contains("image")) {
+				error += "\n Not supported this file type for image!";
+			}
 		}
 		if (description.length() > DESCRIPTION_MAX_LENGTH) {
 			error += "Description is invalid !";
