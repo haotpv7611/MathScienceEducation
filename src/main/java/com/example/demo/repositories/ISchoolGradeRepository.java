@@ -17,5 +17,5 @@ public interface ISchoolGradeRepository extends JpaRepository<SchoolGrade, Long>
 
 	SchoolGrade findByGradeIdAndSchoolIdAndStatusNot(long gradeId, long schoolId, String status);
 	
-	List<SchoolGrade> findBySchoolIdAndStatusNotOrderByGradeNameAsc(long schoolId, String status);
+	List<SchoolGrade> findBySchoolIdAndStatusNot(long schoolId, String status);
 }

@@ -58,9 +58,11 @@ public class ImportStudentService {
 
 	public void importStudent(MultipartFile file, long gradeId, long schoolId) throws IOException, ParseException {
 		SchoolGrade schoolGrade = iSchoolGradeRepository.findByGradeIdAndSchoolIdAndStatusNot(gradeId, schoolId, "DELETED");
+		
 		if (schoolGrade == null) {
 			throw new ResourceNotFoundException();
 		}
+		System.out.println("SGId: " + schoolGrade.getId());
 		Workbook workbook = new XSSFWorkbook(file.getInputStream());
 		int numberOfSheets = workbook.getNumberOfSheets();
 
@@ -78,7 +80,7 @@ public class ImportStudentService {
 			String className = workbook.getSheetName(0);
 
 			List<Row> rowList = readData(file, gradeId, schoolId, sheet);
-			for (int j = 1; j < 2; j++) {
+			for (int j = 1; j < 3; j++) {
 				String firstName = rowList.get(j).getCell(2).getStringCellValue();
 				String lastName = rowList.get(j).getCell(3).getStringCellValue();
 
@@ -89,9 +91,9 @@ public class ImportStudentService {
 				String parentName = rowList.get(j).getCell(6).getStringCellValue();
 				String parentPhone = rowList.get(j).getCell(7).getStringCellValue();
 				List<Classes> classList = schoolGrade.getClassList();
+				System.out.println("class size: " + classList.size());
 				int countStudent = 0;
 				for (Classes class1 : classList) {
-					System.out.println("94: " + classList.size());
 					if (class1.getStudentProfileList() != null)
 						countStudent += class1.getStudentProfileList().size();
 //					else
@@ -100,6 +102,8 @@ public class ImportStudentService {
 				}
 				System.out.println("96: " + countStudent);
 				Classes classes = new Classes();
+				classes.setClassName(className);
+				classes.setStatus("ACTIVE");
 				iClassRepository.save(classes);
 				
 				String gradeName = String.format("%02d", schoolGrade.getGrade().getGradeName());
@@ -107,14 +111,15 @@ public class ImportStudentService {
 				String totalStudent = String.format("%03d", (countStudent + 1)).substring(0, 3);
 				System.out.println(totalStudent);
 				String username = schoolCode + gradeName + totalStudent;
-				Account account = new Account(username, "123456", firstName, lastName, 3, false);
+				Account account = new Account(username, "123456", firstName, lastName, 3, "ACTIVE");
 				Account newAccount = iAccountRepository.save(account);
-				System.out.println("103: " + newAccount.getId());
+				
 				System.out.println("104: " + account.getId());
 
-//				StudentProfile studentProfile = new StudentProfile(DOB, gender, parentName, parentPhone,
-//						newAccount.getId(), classes);
-//				iStudentProfileRepository.save(studentProfile);
+				StudentProfile studentProfile = new StudentProfile(DOB, gender, parentName, parentPhone,
+						newAccount, classes);
+				studentProfile.setStatus("ACTIVE");
+				iStudentProfileRepository.save(studentProfile);
 
 			}
 
@@ -134,7 +139,7 @@ public class ImportStudentService {
 //
 //		for (int i = 0; i < numberOfSheets; i++) {
 //			Sheet sheet = workbook.getSheetAt(i);
-		System.out.println("127: " + sheet.getSheetName());
+		System.out.println("SheetName: " + sheet.getSheetName());
 		List<Row> rowList = new ArrayList<>();
 		int rowNumber = sheet.getPhysicalNumberOfRows();
 
@@ -142,7 +147,7 @@ public class ImportStudentService {
 			Row row = sheet.getRow(i);
 			rowList.add(row);
 		}
-		System.out.println(rowList.size());
+		System.out.println("rowsize" + rowList.size());
 		return rowList;
 	}
 
