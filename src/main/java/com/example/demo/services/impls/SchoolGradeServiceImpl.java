@@ -7,6 +7,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.dtos.GradeDTO;
 import com.example.demo.dtos.ListIdAndStatusDTO;
 import com.example.demo.dtos.SchoolGradeDTO;
 import com.example.demo.dtos.SchoolResponseDTO;
@@ -33,10 +34,11 @@ public class SchoolGradeServiceImpl implements ISchoolGradeService {
 
 	@Autowired
 	ModelMapper modelMapper;
-	
+
 	@Override
 	public List<SchoolResponseDTO> findSchoolLinkedByGradeId(long gradeId) {
-		List<SchoolGrade> schoolGradeList = iSchoolGradeRepository.findByGradeIdAndStatusNotOrderByStatusAsc(gradeId, "DELETED");
+		List<SchoolGrade> schoolGradeList = iSchoolGradeRepository.findByGradeIdAndStatusNotOrderByStatusAsc(gradeId,
+				"DELETED");
 		List<SchoolResponseDTO> schoolResponseDTOList = new ArrayList<>();
 
 		if (!schoolGradeList.isEmpty()) {
@@ -96,6 +98,22 @@ public class SchoolGradeServiceImpl implements ISchoolGradeService {
 		schoolGrade.setStatus(status);
 		iSchoolGradeRepository.save(schoolGrade);
 
-		return "REMOVE LINK SUCCESS!";
+		return "CHANGE SUCCESS!";
+	}
+
+	@Override
+	public List<GradeDTO> findGradeLinkedBySchoolId(long schoolId) {
+		List<SchoolGrade> schoolGradeList = iSchoolGradeRepository.findByGradeIdAndStatusNotOrderByStatusAsc(schoolId,
+				"DELETED");
+		List<GradeDTO> gradeDTOList = new ArrayList<>();
+
+		if (!gradeDTOList.isEmpty()) {
+			for (SchoolGrade schoolGrade : schoolGradeList) {
+				GradeDTO gradeDTO = (modelMapper.map(schoolGrade.getGrade(), GradeDTO.class));
+				gradeDTOList.add(gradeDTO);
+			}
+		}
+
+		return gradeDTOList;
 	}
 }

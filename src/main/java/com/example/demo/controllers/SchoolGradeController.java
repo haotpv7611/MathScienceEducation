@@ -41,4 +41,10 @@ public class SchoolGradeController {
 
 		return ResponseEntity.ok(iSchoolGradeService.changeStatusGradeAndSchool(listIdAndStatusDTO));
 	}
+	
+	@GetMapping("/grade/{schoolId}")
+	public ResponseEntity<List<SchoolResponseDTO>> findGradeBySchoolId(@PathVariable long schoolId) {
+
+		return ResponseEntity.ok(iSchoolGradeService.findSchoolLinkedByGradeId(schoolId));
+	}
 }
