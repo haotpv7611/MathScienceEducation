@@ -107,7 +107,7 @@ public class SchoolGradeServiceImpl implements ISchoolGradeService {
 
 	@Override
 	public List<GradeDTO> findGradeLinkedBySchoolId(long schoolId) {
-		List<SchoolGrade> schoolGradeList = iSchoolGradeRepository.findBySchoolIdAndStatusNot(schoolId,
+		List<SchoolGrade> schoolGradeList = iSchoolGradeRepository.findBySchoolIdAndStatusNotOrderByGradeNameAsc(schoolId,
 				"DELETED");
 		List<GradeDTO> gradeDTOList = new ArrayList<>();
 
