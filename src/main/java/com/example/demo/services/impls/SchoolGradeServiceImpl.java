@@ -66,8 +66,12 @@ public class SchoolGradeServiceImpl implements ISchoolGradeService {
 		if (school == null) {
 			throw new ResourceNotFoundException();
 		}
-
-		SchoolGrade schoolGrade = new SchoolGrade();
+		
+		SchoolGrade schoolGrade = iSchoolGradeRepository.findByGradeIdAndSchoolIdAndStatusNot(gradeId, schoolId, "DELETED");
+		if (schoolGrade != null) {
+			return "EXISTED!";
+		}
+		schoolGrade = new SchoolGrade();
 		schoolGrade.setGrade(grade);
 		schoolGrade.setSchool(school);
 		schoolGrade.setStatus("ACTIVE");

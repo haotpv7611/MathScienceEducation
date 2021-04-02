@@ -3,6 +3,7 @@ package com.example.demo.controllers;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,8 +34,13 @@ public class SchoolGradeController {
 
 	@PostMapping("/schoolGrade")
 	public ResponseEntity<String> linkGradeAndSchool(@RequestBody SchoolGradeDTO schoolGradeDTO) {
-
-		return ResponseEntity.ok(iSchoolGradeService.linkGradeAndSchool(schoolGradeDTO));
+		String response = iSchoolGradeService.linkGradeAndSchool(schoolGradeDTO);
+		if (response.equals("EXISTED!")) {
+			
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+		}
+		
+		return ResponseEntity.ok(response);
 	}
 	
 	@PutMapping("/schoolGrade")

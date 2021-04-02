@@ -29,7 +29,7 @@ public class ClassController {
 	@Autowired
 	private IClassService iClassService;
 
-	@GetMapping
+	@PostMapping
 	public ResponseEntity<List<ClassResponseDTO>> findBySchoolGradeId(@RequestBody SchoolGradeDTO schoolGradeDTO) {
 
 		return ResponseEntity.ok(iClassService.findBySchoolGradeId(schoolGradeDTO));
