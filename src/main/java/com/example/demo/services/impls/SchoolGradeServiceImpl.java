@@ -107,7 +107,7 @@ public class SchoolGradeServiceImpl implements ISchoolGradeService {
 				"DELETED");
 		List<GradeDTO> gradeDTOList = new ArrayList<>();
 
-		if (!gradeDTOList.isEmpty()) {
+		if (!schoolGradeList.isEmpty()) {
 			for (SchoolGrade schoolGrade : schoolGradeList) {
 				GradeDTO gradeDTO = (modelMapper.map(schoolGrade.getGrade(), GradeDTO.class));
 				gradeDTOList.add(gradeDTO);
