@@ -1,6 +1,8 @@
 package com.example.demo.services.impls;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.modelmapper.ModelMapper;
@@ -107,7 +109,7 @@ public class SchoolGradeServiceImpl implements ISchoolGradeService {
 
 	@Override
 	public List<GradeDTO> findGradeLinkedBySchoolId(long schoolId) {
-		List<SchoolGrade> schoolGradeList = iSchoolGradeRepository.findBySchoolIdAndStatusNotOrderByGradeNameAsc(schoolId,
+		List<SchoolGrade> schoolGradeList = iSchoolGradeRepository.findBySchoolIdAndStatusNot(schoolId,
 				"DELETED");
 		List<GradeDTO> gradeDTOList = new ArrayList<>();
 
@@ -117,7 +119,9 @@ public class SchoolGradeServiceImpl implements ISchoolGradeService {
 				gradeDTOList.add(gradeDTO);
 			}
 		}
-
+		
+		Collections.sort(gradeDTOList);
+		
 		return gradeDTOList;
 	}
 }

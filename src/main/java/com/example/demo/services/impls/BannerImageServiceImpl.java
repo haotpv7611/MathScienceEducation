@@ -57,7 +57,7 @@ public class BannerImageServiceImpl implements IBannerImageService {
 		// 2. connect database through repository
 		// 3. find entity by Id
 		// 4. if not found throw not found exception
-		Account account = iAccountRepository.findByIdAndIsDisable(accountId, false);
+		Account account = iAccountRepository.findByIdAndStatusNot(accountId, "DELETED");
 		if (account == null) {
 			throw new ResourceNotFoundException();
 		}

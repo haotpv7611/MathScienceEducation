@@ -1,6 +1,8 @@
 package com.example.demo.dtos;
 
-public class GradeDTO {
+import java.util.Comparator;
+
+public class GradeDTO implements Comparable<GradeDTO> {
 
 	private long id;
 	private int gradeName;
@@ -25,6 +27,16 @@ public class GradeDTO {
 	 */
 	public void setGradeName(int gradeName) {
 		this.gradeName = gradeName;
+	}
+
+	@Override
+	public int compareTo(GradeDTO o) {
+		if (gradeName == o.gradeName)
+			return 0;
+		else if (gradeName > o.gradeName)
+			return 1;
+		else
+			return -1;
 	}
 
 }

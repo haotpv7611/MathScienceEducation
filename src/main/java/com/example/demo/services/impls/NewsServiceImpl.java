@@ -35,7 +35,7 @@ public class NewsServiceImpl implements INewsService {
 		// 1. connect database through repository
 		// 2. find entity by Id
 		// 3. if not found throw not found exception
-		Account account = iAccountRepository.findByIdAndIsDisable(newsRequestDTO.getAccountId(), false);
+		Account account = iAccountRepository.findByIdAndStatusNot(newsRequestDTO.getAccountId(), "DELETED");
 		if (account == null) {
 			throw new ResourceNotFoundException();
 		}

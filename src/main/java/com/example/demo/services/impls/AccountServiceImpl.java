@@ -1,27 +1,26 @@
 package com.example.demo.services.impls;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.example.demo.dtos.ClassResponseDTO;
+import com.example.demo.models.Account;
+import com.example.demo.repositories.IAccountRepository;
+import com.example.demo.services.IAccountService;
 import com.example.demo.services.IClassService;
 
 @Service
-public class AccountServiceImpl {
+public class AccountServiceImpl implements IAccountService{
 
 	@Autowired
-	IClassService iClassService;
+	private IClassService iClassService;
+	
+	@Autowired
+	private IAccountRepository iAccountRepository;
 
 	public void readData(MultipartFile file, long gradeId, long schoolId) throws IOException {
 		Workbook workbook = new XSSFWorkbook(file.getInputStream());
@@ -76,5 +75,23 @@ public class AccountServiceImpl {
 		
 		
 
+	}
+
+	@Override
+	public String createAccount(String username, String password, String firstName, String lastName) {
+		Account checkUsername = iAccountRepository.findByUsernameAndStatusNot(username, "DELETED");
+		if (checkUsername != null) {
+			
+			return "EXISTED";
+		}		
+		Account account = new Account();
+		account.setUsername(username);
+		account.setPassword(password);
+		account.setFirstName(firstName);
+		account.setLastName(lastName);
+		account.setRoleId(3);
+		account.setStatus("ACTIVE");
+		iAccountRepository.save(account);
+		return null;
 	}
 }
