@@ -6,9 +6,11 @@ import java.util.List;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.dtos.ClassRequestDTO;
 import com.example.demo.dtos.ClassResponseDTO;
+import com.example.demo.dtos.ListIdAndStatusDTO;
 import com.example.demo.dtos.SchoolGradeDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.Classes;
@@ -58,7 +60,16 @@ public class ClassServiceImpl implements IClassService{
 		if (schoolGrade == null) {
 			throw new ResourceNotFoundException();
 		}
+		List<Classes> classList = schoolGrade.getClassList();
+		
 		String className = classRequestDTO.getClassName();
+		for (Classes classes : classList) {
+			if (!classes.getStatus().equals("DELETE") && classes.getClassName().equalsIgnoreCase(className)) {
+				return "EXISTED";
+			}
+			
+		}		
+		
 		Classes classes = new Classes();
 		classes.setSchoolGrade(schoolGrade);
 		classes.setClassName(className);
@@ -70,8 +81,26 @@ public class ClassServiceImpl implements IClassService{
 
 
 	@Override
-	public String deleteClass(long id) {
-		// TODO Auto-generated method stub
-		return null;
+	@Transactional
+	public String changeStatusClass(ListIdAndStatusDTO listIdAndStatusDTO) {
+		List<Long> ids = listIdAndStatusDTO.getIds();
+		String status = listIdAndStatusDTO.getStatus();
+
+		// 1. connect database through repository
+		// 2. find entity by id
+		// 3. if not existed throw exception
+		for (Long id : ids) {
+			Classes classes = iClassRepository.findByIdAndStatusNot(id, "DELETED");
+			if (classes == null) {
+				throw new ResourceNotFoundException();
+			}
+
+			// 4. update entity with isDisable = true
+			classes.setStatus(status);
+			iClassRepository.save(classes);
+		}
+
+		return "CHANGE SUCCESS!";
 	}
+	
 }
