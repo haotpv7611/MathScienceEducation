@@ -33,9 +33,7 @@ public class UnitController {
 	@GetMapping("subject/{subjectId}/units")
 	public ResponseEntity<List<UnitDTO>> findBySubjectIdOrderByUnitNameAsc(@PathVariable long subjectId){
 		List<UnitDTO> response = iUnitService.findBySubjectIdOrderByUnitNameAsc(subjectId);
-		if(response.isEmpty()) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-		}
+		
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 	
