@@ -28,9 +28,9 @@ public class LessonServiceImpl implements ILessonService {
 	IUnitRepository iUnitRepository;
 	@Autowired
 	ModelMapper modelMapper;
-	@Autowired 
+	@Autowired
 	IExerciseRepository iExerciseRepository;
-	@Autowired 
+	@Autowired
 	IExerciseService iExerciseService;
 
 	@Override
@@ -72,17 +72,19 @@ public class LessonServiceImpl implements ILessonService {
 
 	@Override
 	public String updateLesson(LessonRequestDTO lessonRequestDTO) {
-		
+
 		Lesson lesson = iLessonRepository.findById(lessonRequestDTO.getId())
 				.orElseThrow(() -> new ResourceNotFoundException());
 		if (lesson.isDisable()) {
 			throw new ResourceNotFoundException();
 		}
-		List<Lesson> listLessons = iLessonRepository
-				.findByUnitIdAndIsDisableOrderByLessonNameAsc(lessonRequestDTO.getUnitId(), false);
-		for (Lesson lesson1 : listLessons) {
-			if (lessonRequestDTO.getLessonName().equalsIgnoreCase(lesson1.getLessonName())) {
-				return "Lesson is existed !";
+		if (!lesson.getLessonName().equalsIgnoreCase(lessonRequestDTO.getLessonName())) {
+			List<Lesson> listLessons = iLessonRepository
+					.findByUnitIdAndIsDisableOrderByLessonNameAsc(lessonRequestDTO.getUnitId(), false);
+			for (Lesson lesson1 : listLessons) {
+				if (lessonRequestDTO.getLessonName().equalsIgnoreCase(lesson1.getLessonName())) {
+					return "Lesson is existed !";
+				}
 			}
 		}
 
@@ -95,8 +97,7 @@ public class LessonServiceImpl implements ILessonService {
 
 	@Override
 	public String deleteLesson(long id) {
-		Lesson lesson = iLessonRepository.findById(id)
-				.orElseThrow(() -> new ResourceNotFoundException());
+		Lesson lesson = iLessonRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
 		if (lesson.isDisable()) {
 			throw new ResourceNotFoundException();
 		}

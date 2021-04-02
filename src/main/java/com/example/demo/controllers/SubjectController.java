@@ -33,6 +33,12 @@ public class SubjectController {
 
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
+	
+	@GetMapping("/subject/{id}")
+	public ResponseEntity<SubjectDTO> findById(@PathVariable long id){
+		SubjectDTO response = iSubjectService.findById(id);
+		return ResponseEntity.status(HttpStatus.CREATED).body(response);
+	}
 
 	@PostMapping("subject")
 	public ResponseEntity<String> createSubject(@RequestParam String subjectName,
@@ -47,7 +53,7 @@ public class SubjectController {
 
 	@PutMapping("subject/{id}")
 	public ResponseEntity<String> updateSubject(@PathVariable long id, @RequestParam(required = false) String subjectName,
-			@RequestParam MultipartFile multipartFile, @RequestParam(required = false) String description, @RequestParam long gradeId)
+			@RequestParam (required = false) MultipartFile multipartFile, @RequestParam(required = false) String description, @RequestParam long gradeId)
 			throws SizeLimitExceededException, IOException {
 		String response = iSubjectService.updateSubject(id, subjectName, multipartFile, description, gradeId);
 		if (!response.contains("SUCCESS")) {
