@@ -8,22 +8,30 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.demo.dtos.ListIdAndStatusDTO;
+import com.example.demo.dtos.ClassResponseDTO;
+import com.example.demo.dtos.SchoolGradeDTO;
 import com.example.demo.dtos.StudentRequestDTO;
 import com.example.demo.dtos.StudentResponseDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.Classes;
+import com.example.demo.models.School;
 import com.example.demo.models.SchoolGrade;
 import com.example.demo.models.StudentProfile;
 import com.example.demo.repositories.IClassRepository;
 import com.example.demo.repositories.ISchoolGradeRepository;
+import com.example.demo.repositories.ISchoolRepository;
 import com.example.demo.repositories.IStudentProfileRepository;
+import com.example.demo.services.IClassService;
 import com.example.demo.services.IStudentProfileService;
 
 @Service
 public class StudentProfileServiceImpl implements IStudentProfileService {
 
 	private final String DELETE_STATUS = "DELETED";
+
+	@Autowired
+	ISchoolRepository iSchoolRepository;
+
 	@Autowired
 	ISchoolGradeRepository iSchoolGradeRepository;
 
@@ -34,49 +42,79 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 	IStudentProfileRepository iStudentProfileRepository;
 
 	@Autowired
+	IClassService iClassService;
+
+	@Autowired
 	ModelMapper modelMapper;
 
 	@Override
-	public List<StudentResponseDTO> findStudentByListId(ListIdAndStatusDTO listIdAndStatusDTO) {
-		long schoolId = listIdAndStatusDTO.getIds().get(0);
-		long gradeId = listIdAndStatusDTO.getIds().get(1);
-		long classId = listIdAndStatusDTO.getIds().get(2);
+	public List<StudentResponseDTO> findStudentByListId(List<Long> ids) {
+		long schoolId = ids.get(0);
+		long gradeId = ids.get(1);
+		long classId = ids.get(2);
 
-		List<StudentProfile> studentProfileList = new ArrayList<>();
-		List<Classes> classesList = new ArrayList<>();
+		List<StudentResponseDTO> studentResponseDTOList = new ArrayList<>();
 
-		if (gradeId == 0 && classId == 0) {
-			List<SchoolGrade> schoolGradeList = iSchoolGradeRepository.findBySchoolIdAndStatusNot(schoolId,
-					DELETE_STATUS);
-			if (!schoolGradeList.isEmpty()) {
-				for (SchoolGrade schoolGrade : schoolGradeList) {
-					addClasses(schoolGrade, classesList);
-					if (!classesList.isEmpty()) {
-						for (Classes classes : classesList) {
-							addStudentProfile(classes, studentProfileList);
+		//find if have classesId
+		if (classId != 0) {
+			studentResponseDTOList.addAll(findStudentByClassedId(classId));
+		}
+
+		if (schoolId != 0) {
+			// check school existed
+			School school = iSchoolRepository.findByIdAndStatusNot(schoolId, DELETE_STATUS);
+			if (school == null) {
+				throw new ResourceNotFoundException();
+			}
+			
+			SchoolGradeDTO schoolGradeDTO = new SchoolGradeDTO(schoolId, gradeId);
+			List<ClassResponseDTO> classResponseDTOList = new ArrayList<>();
+			
+			// find if only have schoolId
+			if (gradeId == 0 && classId == 0) {
+				//get all grade linked
+				List<SchoolGrade> schoolGradeList = iSchoolGradeRepository.findBySchoolIdAndStatusNot(schoolId,
+						DELETE_STATUS);
+				if (!schoolGradeList.isEmpty()) {
+					for (SchoolGrade schoolGrade : schoolGradeList) {
+						schoolGradeDTO = modelMapper.map(schoolGrade, SchoolGradeDTO.class);
+						//get all class
+						classResponseDTOList.addAll(iClassService.findBySchoolGradeId(schoolGradeDTO));
+						if (!classResponseDTOList.isEmpty()) {
+							for (ClassResponseDTO classResponseDTO : classResponseDTOList) {
+								//get all student
+								studentResponseDTOList.addAll(findStudentByClassedId(classResponseDTO.getId()));
+							}
 						}
 					}
-				}
 
+				}
 			}
-		} else if (classId == 0) {
-			SchoolGrade schoolGrade = iSchoolGradeRepository.findByGradeIdAndSchoolIdAndStatusNot(gradeId, schoolId,
-					"DELETED");
-			if (schoolGrade != null) {
-				addClasses(schoolGrade, classesList);
-				if (!classesList.isEmpty()) {
-					for (Classes classes : classesList) {
-						addStudentProfile(classes, studentProfileList);
+			// find if have schoolId and grade Id
+			if (gradeId != 0 && classId == 0) {
+				//get all class with schoolGradeId
+				classResponseDTOList = iClassService.findBySchoolGradeId(schoolGradeDTO);
+				if (!classResponseDTOList.isEmpty()) {
+					for (ClassResponseDTO classResponseDTO : classResponseDTOList) {
+						//get all student
+						studentResponseDTOList.addAll(findStudentByClassedId(classResponseDTO.getId()));
 					}
 				}
 			}
-		} else {
-			Classes classes = iClassRepository.findByIdAndStatusNot(classId, DELETE_STATUS);
-			if (classes != null) {
-				addStudentProfile(classes, studentProfileList);
-			}
+
+		}
+
+		return studentResponseDTOList;
+	}
+
+	public List<StudentResponseDTO> findStudentByClassedId(long classesId) {
+		Classes classes = iClassRepository.findByIdAndStatusNot(classesId, DELETE_STATUS);
+		if (classes == null) {
+			throw new ResourceNotFoundException();
 		}
 		List<StudentResponseDTO> studentResponseDTOList = new ArrayList<>();
+		List<StudentProfile> studentProfileList = iStudentProfileRepository.findByClassesIdAndStatusNot(classesId,
+				DELETE_STATUS);
 		for (StudentProfile studentProfile : studentProfileList) {
 			StudentResponseDTO studentResponseDTO = modelMapper.map(studentProfile, StudentResponseDTO.class);
 			studentResponseDTOList.add(studentResponseDTO);
@@ -101,7 +139,6 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 		int gradeName = schoolGrade.getGrade().getGradeName();
 		long schoolGradeId = schoolGrade.getId();
 		List<Classes> classesList = schoolGrade.getClassList();
-		
 
 		if (accountId != 0) {
 

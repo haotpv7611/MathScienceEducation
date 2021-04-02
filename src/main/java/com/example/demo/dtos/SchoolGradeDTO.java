@@ -4,6 +4,15 @@ public class SchoolGradeDTO {
 	private long schoolId;
 	private long gradeId;
 
+	public SchoolGradeDTO() {
+	}
+
+	public SchoolGradeDTO(long schoolId, long gradeId) {
+		super();
+		this.schoolId = schoolId;
+		this.gradeId = gradeId;
+	}
+
 	/**
 	 * @return the schoolId
 	 */
