@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.example.demo.dtos.ClassRequestDTO;
 import com.example.demo.dtos.ClassResponseDTO;
+import com.example.demo.dtos.ListIdAndStatusDTO;
 import com.example.demo.dtos.SchoolGradeDTO;
 
 public interface IClassService {
@@ -11,5 +12,5 @@ public interface IClassService {
 
 	String createClass(ClassRequestDTO classRequestDTO);
 
-	String deleteClass(long id);
+	String changeStatusClass(ListIdAndStatusDTO listIdAndStatusDTO);
 }
