@@ -14,10 +14,12 @@ import com.example.demo.dtos.StudentRequestDTO;
 import com.example.demo.dtos.StudentResponseDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.Classes;
+import com.example.demo.models.Grade;
 import com.example.demo.models.School;
 import com.example.demo.models.SchoolGrade;
 import com.example.demo.models.StudentProfile;
 import com.example.demo.repositories.IClassRepository;
+import com.example.demo.repositories.IGradeRepository;
 import com.example.demo.repositories.ISchoolGradeRepository;
 import com.example.demo.repositories.ISchoolRepository;
 import com.example.demo.repositories.IStudentProfileRepository;
@@ -31,6 +33,8 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 
 	@Autowired
 	ISchoolRepository iSchoolRepository;
+	@Autowired
+	IGradeRepository iGradeRepository;
 
 	@Autowired
 	ISchoolGradeRepository iSchoolGradeRepository;
@@ -132,23 +136,37 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 	@Override
 	@Transactional
 	public String createStudenProfile(StudentRequestDTO studentRequestDTO) {
+
 		long classId = studentRequestDTO.getClassId();
 		Classes classes = iClassRepository.findByIdAndStatusNot(classId, DELETE_STATUS);
 		if (classes == null) {
 			throw new ResourceNotFoundException();
 		}
+		// create account before
 
-		long accountId = studentRequestDTO.getAccountId();
-
-		SchoolGrade schoolGrade = classes.getSchoolGrade();
-		String schoolCode = schoolGrade.getSchool().getSchoolCode() + schoolGrade.getSchool().getSchoolCount();
-		int gradeName = schoolGrade.getGrade().getGradeName();
-		long schoolGradeId = schoolGrade.getId();
-		List<Classes> classesList = schoolGrade.getClassList();
-
-		if (accountId != 0) {
-
+		long schoolId = studentRequestDTO.getSchoolId();
+		School school = iSchoolRepository.findByIdAndStatusNot(classId, DELETE_STATUS);
+		if (school == null) {
+			throw new ResourceNotFoundException();
 		}
+
+		long gradeId = studentRequestDTO.getGradeId();
+		Grade grade = iGradeRepository.findById(gradeId).orElseThrow(() -> new ResourceNotFoundException());
+
+		String schoolCode = school.getSchoolCode() + school.getSchoolCount();
+		int gradeName = grade.getGradeName();
+
+		SchoolGrade schoolGrade = iSchoolGradeRepository.findByGradeIdAndSchoolIdAndStatusNot(gradeId, schoolId,
+				DELETE_STATUS);
+		List<StudentProfile> studentProfileList = new ArrayList<>();
+		List<Classes> classesList = schoolGrade.getClassList();
+		for (Classes classes2 : classesList) {
+			
+		}
+
+//		if (accountId != 0) {
+//
+//		}
 
 		StudentProfile studentProfile = modelMapper.map(studentRequestDTO, StudentProfile.class);
 
