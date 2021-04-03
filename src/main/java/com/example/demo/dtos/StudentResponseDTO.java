@@ -2,12 +2,14 @@ package com.example.demo.dtos;
 
 public class StudentResponseDTO {
 	private long id;
-	private String studentName;
+	private String username;
+	private String firstName;
+	private String lastName;
 	private String schoolName;
 	private String gender;
 	private int gradeName;
 	private String className;
-	private String username;
+	
 	private String status;
 
 	/**
@@ -25,17 +27,31 @@ public class StudentResponseDTO {
 	}
 
 	/**
-	 * @return the studentName
+	 * @return the firstName
 	 */
-	public String getStudentName() {
-		return studentName;
+	public String getFirstName() {
+		return firstName;
 	}
 
 	/**
-	 * @param studentName the studentName to set
+	 * @param firstName the firstName to set
 	 */
-	public void setStudentName(String studentName) {
-		this.studentName = studentName;
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
+
+	/**
+	 * @return the lastName
+	 */
+	public String getLastName() {
+		return lastName;
+	}
+
+	/**
+	 * @param lastName the lastName to set
+	 */
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
 	}
 
 	/**

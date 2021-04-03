@@ -13,6 +13,7 @@ import com.example.demo.dtos.SchoolGradeDTO;
 import com.example.demo.dtos.StudentRequestDTO;
 import com.example.demo.dtos.StudentResponseDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
+import com.example.demo.models.Account;
 import com.example.demo.models.Classes;
 import com.example.demo.models.Grade;
 import com.example.demo.models.School;
@@ -59,17 +60,14 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 
 		List<StudentResponseDTO> studentResponseDTOList = new ArrayList<>();
 
-		// find if have classesId
-		if (classId != 0) {
-			studentResponseDTOList.addAll(findStudentByClassedId(classId));
-		}
-
 		if (schoolId != 0) {
 			// check school existed
 			School school = iSchoolRepository.findByIdAndStatusNot(schoolId, DELETE_STATUS);
 			if (school == null) {
 				throw new ResourceNotFoundException();
 			}
+			// if existed: get schoolName
+			String schoolName = school.getSchoolName();
 
 			SchoolGradeDTO schoolGradeDTO = null;
 			List<ClassResponseDTO> classResponseDTOList = new ArrayList<>();
@@ -79,36 +77,47 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				// get all grade linked
 				List<SchoolGrade> schoolGradeList = iSchoolGradeRepository.findBySchoolIdAndStatusNot(schoolId,
 						DELETE_STATUS);
-				System.out.println("schoolGrade size: " + schoolGradeList.size());
 				if (!schoolGradeList.isEmpty()) {
 					for (SchoolGrade schoolGrade : schoolGradeList) {
-						System.out.println("schoolGrade: " + schoolGrade.getId());
 						schoolGradeDTO = modelMapper.map(schoolGrade, SchoolGradeDTO.class);
+
 						// get all class
 						classResponseDTOList.addAll(iClassService.findBySchoolGradeId(schoolGradeDTO));
-						System.out.println("class size: " + classResponseDTOList.size());
 					}
 					if (!classResponseDTOList.isEmpty()) {
 						for (ClassResponseDTO classResponseDTO : classResponseDTOList) {
-							// get all student
-							System.out.println("class: " + classResponseDTO.getId());
-							studentResponseDTOList.addAll(findStudentByClassedId(classResponseDTO.getId()));
-							System.out.println("student size: " + studentResponseDTOList.size());
+							// get all student in class
+							Classes classes = modelMapper.map(classResponseDTO, Classes.class);
+							Grade grade = classes.getSchoolGrade().getGrade();
+
+							int gradeName = grade.getGradeName();
+							studentResponseDTOList
+									.addAll(findStudentByClassedId(classResponseDTO.getId(), schoolName, gradeName));
 						}
 					}
 
 				}
 			}
 			// find if have schoolId and grade Id
-			if (gradeId != 0 && classId == 0) {
-				schoolGradeDTO = new SchoolGradeDTO(schoolId, gradeId);
-				// get all class with schoolGradeId
-				classResponseDTOList = iClassService.findBySchoolGradeId(schoolGradeDTO);
-				if (!classResponseDTOList.isEmpty()) {
-					for (ClassResponseDTO classResponseDTO : classResponseDTOList) {
-						// get all student
-						studentResponseDTOList.addAll(findStudentByClassedId(classResponseDTO.getId()));
+			if (gradeId != 0) {
+				Grade grade = iGradeRepository.findById(gradeId).orElseThrow(() -> new ResourceNotFoundException());
+				int gradeName = grade.getGradeName();
+				if (classId == 0) {
+					schoolGradeDTO = new SchoolGradeDTO(schoolId, gradeId);
+
+					// get all class with schoolGradeId
+					classResponseDTOList = iClassService.findBySchoolGradeId(schoolGradeDTO);
+					if (!classResponseDTOList.isEmpty()) {
+						for (ClassResponseDTO classResponseDTO : classResponseDTOList) {
+							// get all student
+							studentResponseDTOList
+									.addAll(findStudentByClassedId(classResponseDTO.getId(), schoolName, gradeName));
+						}
 					}
+				}
+//				 find if have classesId
+				if (classId != 0) {
+					studentResponseDTOList.addAll(findStudentByClassedId(classId, schoolName, gradeName));
 				}
 			}
 
@@ -117,16 +126,22 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 		return studentResponseDTOList;
 	}
 
-	public List<StudentResponseDTO> findStudentByClassedId(long classesId) {
+	public List<StudentResponseDTO> findStudentByClassedId(long classesId, String schoolName, int gradeName) {
 		Classes classes = iClassRepository.findByIdAndStatusNot(classesId, DELETE_STATUS);
 		if (classes == null) {
 			throw new ResourceNotFoundException();
 		}
+		String className = classes.getClassName();
 		List<StudentResponseDTO> studentResponseDTOList = new ArrayList<>();
 		List<StudentProfile> studentProfileList = iStudentProfileRepository.findByClassesIdAndStatusNot(classesId,
 				DELETE_STATUS);
 		for (StudentProfile studentProfile : studentProfileList) {
-			StudentResponseDTO studentResponseDTO = modelMapper.map(studentProfile, StudentResponseDTO.class);
+			Account account = studentProfile.getAccount();
+			StudentResponseDTO studentResponseDTO = modelMapper.map(account, StudentResponseDTO.class);
+			studentResponseDTO.setSchoolName(schoolName);
+			studentResponseDTO.setGradeName(gradeName);
+			studentResponseDTO.setClassName(className);
+			studentResponseDTO.setGender(studentProfile.getGender());
 			studentResponseDTOList.add(studentResponseDTO);
 		}
 
@@ -160,9 +175,9 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				DELETE_STATUS);
 		List<StudentProfile> studentProfileList = new ArrayList<>();
 		List<Classes> classesList = schoolGrade.getClassList();
-		for (Classes classes2 : classesList) {
-			
-		}
+//		for (Classes classes2 : classesList) {
+//			StudentProfile studentProfile = 
+//		}
 
 //		if (accountId != 0) {
 //
@@ -173,15 +188,15 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 		return null;
 	}
 
-	private void addClasses(SchoolGrade schoolGrade, List<Classes> classesList) {
-		classesList.addAll(iClassRepository
-				.findBySchoolGradeIdAndStatusNotOrderByStatusAscClassNameAsc(schoolGrade.getId(), DELETE_STATUS));
-	}
+//	private void addClasses(SchoolGrade schoolGrade, List<Classes> classesList) {
+//		classesList.addAll(iClassRepository
+//				.findBySchoolGradeIdAndStatusNotOrderByStatusAscClassNameAsc(schoolGrade.getId(), DELETE_STATUS));
+//	}
 
-	private void addStudentProfile(Classes classes, List<StudentProfile> studentProfileList) {
-		studentProfileList
-				.addAll(iStudentProfileRepository.findByClassesIdAndStatusNot(classes.getId(), DELETE_STATUS));
-	}
+//	private void addStudentProfile(Classes classes, List<StudentProfile> studentProfileList) {
+//		studentProfileList
+//				.addAll(iStudentProfileRepository.findByClassesIdAndStatusNot(classes.getId(), DELETE_STATUS));
+//	}
 
 	private String generateUsername(String schoolCode, int gradeName, int studentCount) {
 		String username = schoolCode + String.format("%02d", gradeName) + String.format("%03d", studentCount);
