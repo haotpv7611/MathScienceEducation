@@ -74,6 +74,9 @@ public class SubjectServiceImpl implements ISubjectService {
 		if (subject == null) {
 			throw new ResourceNotFoundException();
 		}
+		if (subject.isDisable()) {
+			throw new ResourceNotFoundException();
+		}
 		subject.setDisable(true);
 		List<Unit> listUnits = iUnitRepository.findBySubjectIdAndIsDisableOrderByUnitNameAsc(id, false);
 		if (!listUnits.isEmpty()) {
@@ -143,6 +146,13 @@ public class SubjectServiceImpl implements ISubjectService {
 		if (subjectName != null) {
 			if (subjectName.length() > SUBJECTNAME_MAX_LENGTH) {
 				error += "Subject Name is invalid !";
+			} else if (!subject.getSubjectName().equals(subjectName)) {
+				List<Subject> listSubjects = iSubjectRepository.findByGradeIdAndIsDisable(gradeId, false);
+				for (Subject subject1 : listSubjects) {
+					if (subjectName.equalsIgnoreCase(subject1.getSubjectName())) {
+						return "\n Subject is existed !";
+					}
+				}
 			}
 		}
 		if (multipartFile != null) {
@@ -150,26 +160,28 @@ public class SubjectServiceImpl implements ISubjectService {
 				error += "\n Not supported this file type for image!";
 			}
 		}
-		if (description.length() > DESCRIPTION_MAX_LENGTH) {
-			error += "Description is invalid !";
-		}
-		// find subjectName is existed in grade or not
-		if (!subject.getSubjectName().equals(subjectName)) {
-			List<Subject> listSubjects = iSubjectRepository.findByGradeIdAndIsDisable(gradeId, false);
-			for (Subject subject1 : listSubjects) {
-				if (subjectName.equalsIgnoreCase(subject1.getSubjectName())) {
-					return "\n Subject is existed !";
-				}
+		if (description != null) {
+			if (description.length() > DESCRIPTION_MAX_LENGTH) {
+				error += "Description is invalid !";
 			}
 		}
+
+		// find subjectName is existed in grade or not
 
 		if (!error.isEmpty()) {
 			return error.trim();
 		}
 
-		subject.setSubjectName(subjectName);
-		subject.setImageUrl(firebaseService.saveFile(multipartFile));
-		subject.setDescription(description);
+		if (subjectName != null) {
+			subject.setSubjectName(subjectName);
+		}
+
+		if (multipartFile != null) {
+			subject.setImageUrl(firebaseService.saveFile(multipartFile));
+		}
+		if (description != null) {
+			subject.setDescription(description);
+		}
 
 		iSubjectRepository.save(subject);
 
