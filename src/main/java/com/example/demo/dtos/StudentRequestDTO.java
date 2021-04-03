@@ -2,15 +2,59 @@ package com.example.demo.dtos;
 
 import java.time.LocalDate;
 
+import javax.validation.constraints.NotNull;
+
+import org.hibernate.validator.constraints.Length;
+
 public class StudentRequestDTO {
+	private long schoolId;
+	private long gradeId;
 	private long accountId;
 	private long classId;
+	@NotNull(message = "FirstName must be not null!")
+	@Length(max = 30, message = "FirstName length must be less than 30!")
 	private String firtName;
+	@NotNull(message = "LastName must be not null!")
+	@Length(max = 50, message = "LastName length must be less than 50!")
 	private String lastName;
 	private LocalDate DoB;
+	@NotNull(message = "Gender must be not null!")
+	@Length(max = 10, message = "Gender length must be less than 10!")
 	private String gender;
+	@NotNull(message = "ParentName must be not null!")
+	@Length(max = 50, message = "ParentName length must be less than 50!")
 	private String parentName;
+	@NotNull(message = "ParentPhone must be not null!")
+	@Length(max = 50, message = "ParentPhone length must be less than 50!")
 	private String parentPhone;
+
+	/**
+	 * @return the schoolId
+	 */
+	public long getSchoolId() {
+		return schoolId;
+	}
+
+	/**
+	 * @param schoolId the schoolId to set
+	 */
+	public void setSchoolId(long schoolId) {
+		this.schoolId = schoolId;
+	}
+
+	/**
+	 * @return the gradeId
+	 */
+	public long getGradeId() {
+		return gradeId;
+	}
+
+	/**
+	 * @param gradeId the gradeId to set
+	 */
+	public void setGradeId(long gradeId) {
+		this.gradeId = gradeId;
+	}
 
 	/**
 	 * @return the accountId

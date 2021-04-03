@@ -55,7 +55,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 
 		List<StudentResponseDTO> studentResponseDTOList = new ArrayList<>();
 
-		//find if have classesId
+		// find if have classesId
 		if (classId != 0) {
 			studentResponseDTOList.addAll(findStudentByClassedId(classId));
 		}
@@ -66,25 +66,30 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 			if (school == null) {
 				throw new ResourceNotFoundException();
 			}
-			
-			SchoolGradeDTO schoolGradeDTO = new SchoolGradeDTO(schoolId, gradeId);
+
+			SchoolGradeDTO schoolGradeDTO = null;
 			List<ClassResponseDTO> classResponseDTOList = new ArrayList<>();
-			
+
 			// find if only have schoolId
 			if (gradeId == 0 && classId == 0) {
-				//get all grade linked
+				// get all grade linked
 				List<SchoolGrade> schoolGradeList = iSchoolGradeRepository.findBySchoolIdAndStatusNot(schoolId,
 						DELETE_STATUS);
+				System.out.println("schoolGrade size: " + schoolGradeList.size());
 				if (!schoolGradeList.isEmpty()) {
 					for (SchoolGrade schoolGrade : schoolGradeList) {
+						System.out.println("schoolGrade: " + schoolGrade.getId());
 						schoolGradeDTO = modelMapper.map(schoolGrade, SchoolGradeDTO.class);
-						//get all class
+						// get all class
 						classResponseDTOList.addAll(iClassService.findBySchoolGradeId(schoolGradeDTO));
-						if (!classResponseDTOList.isEmpty()) {
-							for (ClassResponseDTO classResponseDTO : classResponseDTOList) {
-								//get all student
-								studentResponseDTOList.addAll(findStudentByClassedId(classResponseDTO.getId()));
-							}
+						System.out.println("class size: " + classResponseDTOList.size());
+					}
+					if (!classResponseDTOList.isEmpty()) {
+						for (ClassResponseDTO classResponseDTO : classResponseDTOList) {
+							// get all student
+							System.out.println("class: " + classResponseDTO.getId());
+							studentResponseDTOList.addAll(findStudentByClassedId(classResponseDTO.getId()));
+							System.out.println("student size: " + studentResponseDTOList.size());
 						}
 					}
 
@@ -92,11 +97,12 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 			}
 			// find if have schoolId and grade Id
 			if (gradeId != 0 && classId == 0) {
-				//get all class with schoolGradeId
+				schoolGradeDTO = new SchoolGradeDTO(schoolId, gradeId);
+				// get all class with schoolGradeId
 				classResponseDTOList = iClassService.findBySchoolGradeId(schoolGradeDTO);
 				if (!classResponseDTOList.isEmpty()) {
 					for (ClassResponseDTO classResponseDTO : classResponseDTOList) {
-						//get all student
+						// get all student
 						studentResponseDTOList.addAll(findStudentByClassedId(classResponseDTO.getId()));
 					}
 				}
