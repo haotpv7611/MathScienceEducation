@@ -9,7 +9,6 @@ import org.hibernate.validator.constraints.Length;
 public class StudentRequestDTO {
 	private long schoolId;
 	private long gradeId;
-	private long accountId;
 	private long classId;
 	@NotNull(message = "FirstName must be not null!")
 	@Length(max = 30, message = "FirstName length must be less than 30!")
@@ -54,20 +53,6 @@ public class StudentRequestDTO {
 	 */
 	public void setGradeId(long gradeId) {
 		this.gradeId = gradeId;
-	}
-
-	/**
-	 * @return the accountId
-	 */
-	public long getAccountId() {
-		return accountId;
-	}
-
-	/**
-	 * @param accountId the accountId to set
-	 */
-	public void setAccountId(long accountId) {
-		this.accountId = accountId;
 	}
 
 	/**
