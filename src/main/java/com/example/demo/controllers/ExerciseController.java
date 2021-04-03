@@ -60,7 +60,7 @@ public class ExerciseController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 
-	@PutMapping("/exercise")
+	@PutMapping("/exercise/{id}")
 	public ResponseEntity<String> updateExercise(@PathVariable long id, @Valid @RequestBody ExerciseDTO exerciseDTO,
 			BindingResult bindingResult) {
 		if (bindingResult.hasErrors()) {

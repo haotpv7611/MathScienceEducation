@@ -62,7 +62,7 @@ public class ExerciseServiceImpl implements IExerciseService {
 				}
 			}
 			Exercise exercise = modelMapper.map(exerciseDTO, Exercise.class);
-			exercise.setProgressTestId(0);
+			exercise.setProgressTestId(6);
 			exercise.setProgressTest(false);
 			exercise.setDisable(false);
 			iExerciseRepository.save(exercise);

@@ -5,7 +5,32 @@ import java.util.List;
 public class QuestionViewDTO {
 	private long id;
 	private String questionTitle;
-	private String questionText;
+	private String description;
+	public QuestionViewDTO(long id, String questionTitle, String description, String questionImageUrl,
+			String questionAudioUrl, float score, List<OptionQuestionDTO> option) {
+		super();
+		this.id = id;
+		this.questionTitle = questionTitle;
+		this.description = description;
+		this.questionImageUrl = questionImageUrl;
+		this.questionAudioUrl = questionAudioUrl;
+		this.score = score;
+		this.option = option;
+	}
+
+	
+	public QuestionViewDTO(long id, String questionTitle, String description, String questionImageUrl,
+			String questionAudioUrl, float score) {
+		super();
+		this.id = id;
+		this.questionTitle = questionTitle;
+		this.description = description;
+		this.questionImageUrl = questionImageUrl;
+		this.questionAudioUrl = questionAudioUrl;
+		this.score = score;
+	}
+
+
 	private String questionImageUrl;
 	private String questionAudioUrl;
 	private float score;
@@ -24,16 +49,7 @@ public class QuestionViewDTO {
 	public QuestionViewDTO() {
 	}
 
-	public QuestionViewDTO(long id, String questionText, String questionImageUrl, String questionAudioUrl, float score,
-			List<OptionQuestionDTO> option) {
-		super();
-		this.id = id;
-		this.questionText = questionText;
-		this.questionImageUrl = questionImageUrl;
-		this.questionAudioUrl = questionAudioUrl;
-		this.score = score;
-		this.option = option;
-	}
+	
 
 	/**
 	 * @return the id
@@ -52,22 +68,21 @@ public class QuestionViewDTO {
 	/**
 	 * @return the questionText
 	 */
-	public String getQuestionText() {
-		return questionText;
-	}
-
-	/**
-	 * @param questionText the questionText to set
-	 */
-	public void setQuestionText(String questionText) {
-		this.questionText = questionText;
-	}
+	
 
 	/**
 	 * @return the questionImageUrl
 	 */
 	public String getQuestionImageUrl() {
 		return questionImageUrl;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
 	}
 
 	/**
