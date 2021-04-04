@@ -10,9 +10,8 @@ public class QuestionDTO {
 	@NotNull(message = "Question Title must be not null !")
 	@Length(max = 50, message = "Question Title length must be less than 50 !")
 	private String questionTitle;
-	@NotNull(message = "Question Text must be not null !")
-	@Length(max = 250, message = "Question Text length must be less than 250 !")
-	private String questionText;
+	@Length(max = 50, message = "Description length must be less than 50 !")
+	private String description;
 	private String questionImageUrl;
 	private String questionAudioUrl;
 	@NotNull(message = "Score must be not null !")
@@ -54,16 +53,7 @@ public class QuestionDTO {
 	/**
 	 * @return the questionText
 	 */
-	public String getQuestionText() {
-		return questionText;
-	}
 
-	/**
-	 * @param questionText the questionText to set
-	 */
-	public void setQuestionText(String questionText) {
-		this.questionText = questionText;
-	}
 
 	/**
 	 * @return the questionImageUrl
@@ -71,6 +61,18 @@ public class QuestionDTO {
 	public String getQuestionImageUrl() {
 		return questionImageUrl;
 	}
+
+	public String getDescription() {
+		return description;
+	}
+
+
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+
 
 	/**
 	 * @param questionImageUrl the questionImageUrl to set

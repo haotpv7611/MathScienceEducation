@@ -14,7 +14,7 @@ public class ExerciseDTO {
 	private String exerciseName;
 	private long lessonId;
 	private long progressTestId;
-	@Length(max = 20, message = "Description lenght must be less than 50 !")
+	@Length(max = 50, message = "Description lenght must be less than 50 !")
 	private String description;
 	
 	

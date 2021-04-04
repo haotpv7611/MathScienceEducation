@@ -21,7 +21,7 @@ public class Question {
 	private long id;
 
 	private String questionTitle;
-	private String questionText;
+	private String description;
 	private String questionImageUrl;
 	private String questionAudioUrl;
 	private float score;
@@ -46,11 +46,12 @@ public class Question {
 	public void setQuestionTitle(String questionTitle) {
 		this.questionTitle = questionTitle;
 	}
-	public String getQuestionText() {
-		return questionText;
+	
+	public String getDescription() {
+		return description;
 	}
-	public void setQuestionText(String questionText) {
-		this.questionText = questionText;
+	public void setDescription(String description) {
+		this.description = description;
 	}
 	public String getQuestionImageUrl() {
 		return questionImageUrl;
@@ -115,7 +116,28 @@ public class Question {
 	public long getId() {
 		return id;
 	}
+	public Question(long id, String questionTitle, String description, String questionImageUrl, String questionAudioUrl,
+			float score, long questionTypeId, LocalDateTime createdDate, String createdBy, LocalDateTime modifiedDate,
+			String modifiedBy, boolean isDisable, long unitId) {
+		super();
+		this.id = id;
+		this.questionTitle = questionTitle;
+		this.description = description;
+		this.questionImageUrl = questionImageUrl;
+		this.questionAudioUrl = questionAudioUrl;
+		this.score = score;
+		this.questionTypeId = questionTypeId;
+		this.createdDate = createdDate;
+		this.createdBy = createdBy;
+		this.modifiedDate = modifiedDate;
+		this.modifiedBy = modifiedBy;
+		this.isDisable = isDisable;
+		this.unitId = unitId;
+	}
+	public Question() {
+		
+	}
 	
 	
-
+   
 }

@@ -37,9 +37,7 @@ public class QuestionServiceImpl implements IQuestionService {
 
 	@Autowired
 	private ModelMapper modelMapper;
-//	@Autowired
-//	private IQuestionService iQuestionService;
-//	
+
 	@Autowired
 	private IOptionQuestionService iOptionsService;
 
@@ -109,9 +107,9 @@ public class QuestionServiceImpl implements IQuestionService {
 				for (Question question : questionList) {
 					List<OptionQuestionDTO> optionsList = iOptionsService.findByQuestionId(question.getId());
 					if (!optionsList.isEmpty()) {
-						QuestionViewDTO questionViewDTO = new QuestionViewDTO(question.getId(),
-								question.getQuestionText(), question.getQuestionImageUrl(),
-								question.getQuestionAudioUrl(), question.getScore(), optionsList);
+						QuestionViewDTO questionViewDTO = new QuestionViewDTO(question.getId(),question.getQuestionTitle(),
+								question.getDescription(), question.getQuestionImageUrl(),
+								question.getQuestionAudioUrl(), question.getScore(),optionsList);
 						questionViewDTOList.add(questionViewDTO);
 					}
 				}
@@ -128,14 +126,14 @@ public class QuestionServiceImpl implements IQuestionService {
 	}
 
 	@Override
-	public String createQuestion(String questionTitle, String questionText, MultipartFile multipartImage,
+	public String createQuestion(String questionTitle, String description, MultipartFile multipartImage,
 			MultipartFile multipartAudio, float score, long questionTypeId, long unitId)
 			throws SizeLimitExceededException, IOException {
 		String error = "";
 		if (questionTitle.isEmpty() || questionTitle.length() > QUESTION_TITLE) {
 			error += "\n Question Title is invalid !";
 		}
-		if (questionText.isEmpty() || questionText.length() > QUESTION_TEXT) {
+		if (description.length() > QUESTION_TEXT) {
 			error += "\n Question Text is invalid !";
 		}
 		if (multipartImage.getContentType().contains("image")) {
@@ -144,16 +142,14 @@ public class QuestionServiceImpl implements IQuestionService {
 		if (multipartAudio.getContentType().contains("image")) {
 			error += "\n Not supported this file type for image!";
 		}
-		if (score == 0) {
-			error += "\n Score is invalid !";
-		}
+		
 		if (!error.isEmpty()) {
 			return error.trim();
 		}
 		if (questionTypeId == 1) {
 			Question question = new Question();
 			question.setQuestionTitle(questionTitle);
-			question.setQuestionText(questionText);
+			question.setDescription(description);
 			question.setQuestionImageUrl(firebaseService.saveFile(multipartImage));
 			question.setQuestionAudioUrl(firebaseService.saveFile(multipartAudio));
 			question.setScore(score);
@@ -165,7 +161,7 @@ public class QuestionServiceImpl implements IQuestionService {
 		if (questionTypeId != 1) {
 			Question question = new Question();
 			question.setQuestionTitle(questionTitle);
-			question.setQuestionText(questionText);
+			question.setDescription(description);
 			question.setQuestionImageUrl(firebaseService.saveFile(multipartImage));
 			question.setQuestionAudioUrl(firebaseService.saveFile(multipartAudio));
 			question.setScore(score);
@@ -179,7 +175,7 @@ public class QuestionServiceImpl implements IQuestionService {
 	}
 
 	@Override
-	public String updateQuestion(long id, String questionTitle, String questionText, MultipartFile multipartImage,
+	public String updateQuestion(long id, String questionTitle, String description, MultipartFile multipartImage,
 			MultipartFile multipartAudio, float score, long unitId) throws SizeLimitExceededException, IOException {
 		String error = "";
 		Question question = iQuestionRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
@@ -188,28 +184,37 @@ public class QuestionServiceImpl implements IQuestionService {
 				error += "\n Question Title is invalid !";
 			}
 		}
-		if (questionText != null) {
-			if(questionText.length() > QUESTION_TEXT) {
+		if (description != null) {
+			if (description.length() > QUESTION_TEXT) {
 				error += "\n Question Text is invalid !";
-			}			
+			}
+		}
+		if (multipartImage != null) {
+			if (multipartImage.getContentType().contains("image")) {
+				error += "\n Not supported this file type for image!";
+			}
+		}
+		if (multipartAudio != null) {
+			if (multipartAudio.getContentType().contains("image")) {
+				error += "\n Not supported this file type for image!";
+			}
 		}
 		
-		if (multipartImage.getContentType().contains("image")) {
-			error += "\n Not supported this file type for image!";
-		}
-		if (multipartAudio.getContentType().contains("image")) {
-			error += "\n Not supported this file type for image!";
-		}
-		if (score == 0) {
-			error += "\n Score is invalid !";
-		}
 		if (!error.isEmpty()) {
 			return error.trim();
 		}
-		question.setQuestionTitle(questionTitle);
-		question.setQuestionText(questionText);
-		question.setQuestionImageUrl(firebaseService.saveFile(multipartImage));
-		question.setQuestionAudioUrl(firebaseService.saveFile(multipartAudio));
+		if(questionTitle != null) {
+			question.setQuestionTitle(questionTitle);
+		}
+		if(description != null) {
+			question.setDescription(description);
+		}
+		if(multipartImage != null) {
+			question.setQuestionImageUrl(firebaseService.saveFile(multipartImage));
+		}
+		if(multipartAudio != null) {
+			question.setQuestionAudioUrl(firebaseService.saveFile(multipartAudio));
+		}		
 		question.setScore(score);
 		question.setUnitId(unitId);
 		iQuestionRepository.save(question);
