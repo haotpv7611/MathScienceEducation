@@ -1,6 +1,9 @@
 package com.example.demo.services.impls;
 
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.modelmapper.ModelMapper;
@@ -19,6 +22,7 @@ import com.example.demo.models.Grade;
 import com.example.demo.models.School;
 import com.example.demo.models.SchoolGrade;
 import com.example.demo.models.StudentProfile;
+import com.example.demo.repositories.IAccountRepository;
 import com.example.demo.repositories.IClassRepository;
 import com.example.demo.repositories.IGradeRepository;
 import com.example.demo.repositories.ISchoolGradeRepository;
@@ -45,6 +49,9 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 
 	@Autowired
 	IStudentProfileRepository iStudentProfileRepository;
+
+	@Autowired
+	IAccountRepository iAccountRepository;
 
 	@Autowired
 	IClassService iClassService;
@@ -175,15 +182,37 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				DELETE_STATUS);
 		List<StudentProfile> studentProfileList = new ArrayList<>();
 		List<Classes> classesList = schoolGrade.getClassList();
-//		for (Classes classes2 : classesList) {
-//			StudentProfile studentProfile = 
-//		}
+
+		for (Classes classes2 : classesList) {
+			StudentProfile studentProfile = null;
+			if (!classes2.getClassName().equalsIgnoreCase("PENDING")
+					&& !classes.getClassName().equalsIgnoreCase("DELETED")) {
+				studentProfile = iStudentProfileRepository
+						.findFirstByClassesIdAndStatusLikeOrderByStudentCountDesc(classes2.getId(), "ACTIVE");
+			}
+			studentProfileList.add(studentProfile);
+		}
+		StudentProfile studentProfile = Collections.max(studentProfileList,
+				Comparator.comparing(s -> s.getStudentCount()));
+		long studentCount = studentProfile.getStudentCount() + 1;
+		Account account = new Account();
+		account.setFirstName(studentRequestDTO.getFirtName());
+		account.setLastName(studentRequestDTO.getLastName());
+		String username = generateUsername(schoolCode, gradeName, studentCount);
+		account.setUsername(username);
+		account.setPassword(username);
+		account.setRoleId(3);
+		iAccountRepository.save(account);
+		
+		
+//		studentProfile = new StudentProfile(studentRequestDTO.getDoB().parse("dd/MM/yyyy", ), studentRequestDTO.getGender(),
+//				studentRequestDTO.getParentName(), studentRequestDTO.getParentPhone(), account, classes);
 
 //		if (accountId != 0) {
 //
 //		}
 
-		StudentProfile studentProfile = modelMapper.map(studentRequestDTO, StudentProfile.class);
+		studentProfile = modelMapper.map(studentRequestDTO, StudentProfile.class);
 
 		return null;
 	}
@@ -198,7 +227,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 //				.addAll(iStudentProfileRepository.findByClassesIdAndStatusNot(classes.getId(), DELETE_STATUS));
 //	}
 
-	private String generateUsername(String schoolCode, int gradeName, int studentCount) {
+	private String generateUsername(String schoolCode, int gradeName, long studentCount) {
 		String username = schoolCode + String.format("%02d", gradeName) + String.format("%03d", studentCount);
 		return username;
 	}
