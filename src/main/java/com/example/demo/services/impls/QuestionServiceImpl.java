@@ -171,12 +171,12 @@ public class QuestionServiceImpl implements IQuestionService {
 		}
 
 		if (imageFile != null) {
-			if (imageFile.getContentType().contains("image")) {
+			if (!imageFile.getContentType().contains("image")) {
 				error += "\nNot supported this file type for image!";
 			}
 		}
 		if (audioFile != null) {
-			if (audioFile.getContentType().contains("audio")) {
+			if (!audioFile.getContentType().contains("audio")) {
 				error += "\nNot supported this file type for audio!";
 			}
 		}
