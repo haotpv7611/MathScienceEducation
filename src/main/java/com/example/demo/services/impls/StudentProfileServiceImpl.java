@@ -1,6 +1,5 @@
 package com.example.demo.services.impls;
 
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -193,13 +192,15 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 			}
 			studentProfileList.add(studentProfile);
 		}
-		StudentProfile studentProfile = Collections.max(studentProfileList,
-				Comparator.comparing(s -> s.getStudentCount()));
+		StudentProfile studentProfile = null;
+		if (!studentProfileList.isEmpty()) {
+			studentProfile = Collections.max(studentProfileList, Comparator.comparing(s -> s.getStudentCount()));
+		}
 		long studentCount = 1;
 		if (studentProfile != null) {
 			studentCount = studentProfile.getStudentCount() + 1;
 		}
-		
+
 		Account account = new Account();
 		account.setFirstName(studentRequestDTO.getFirtName());
 		account.setLastName(studentRequestDTO.getLastName());
@@ -207,10 +208,9 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 		account.setUsername(username);
 		account.setPassword(username);
 		account.setRoleId(3);
-		
+
 		iAccountRepository.save(account);
-		
-		
+
 		studentProfile = new StudentProfile(studentRequestDTO.getDoB(), studentRequestDTO.getGender(),
 				studentRequestDTO.getParentName(), studentRequestDTO.getParentPhone(), account, classes);
 		studentProfile.setStudentCount(studentCount);
@@ -223,16 +223,6 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 
 		return "CREATE SUCCESS !";
 	}
-
-//	private void addClasses(SchoolGrade schoolGrade, List<Classes> classesList) {
-//		classesList.addAll(iClassRepository
-//				.findBySchoolGradeIdAndStatusNotOrderByStatusAscClassNameAsc(schoolGrade.getId(), DELETE_STATUS));
-//	}
-
-//	private void addStudentProfile(Classes classes, List<StudentProfile> studentProfileList) {
-//		studentProfileList
-//				.addAll(iStudentProfileRepository.findByClassesIdAndStatusNot(classes.getId(), DELETE_STATUS));
-//	}
 
 	private String generateUsername(String schoolCode, int gradeName, long studentCount) {
 		String username = schoolCode + String.format("%02d", gradeName) + String.format("%03d", studentCount);
