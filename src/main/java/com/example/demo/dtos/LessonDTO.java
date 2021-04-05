@@ -31,8 +31,8 @@ public class LessonDTO {
 	public void setUnitId(long unitId) {
 		this.unitId = unitId;
 	}
-	public LessonDTO() {
-		
-	}
+//	public LessonDTO() {
+//		
+//	}
 	
 }

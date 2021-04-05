@@ -10,7 +10,7 @@ public interface ILessonService {
 	List<LessonDTO> findByUnitIdOrderByLessonNameAsc(long unitId);
 	LessonDTO findById(long id);
 	String createLesson(LessonRequestDTO lessonRequestDTO);
-	String updateLesson(LessonRequestDTO lessonRequestDTO);
+	String updateLesson(long id, LessonRequestDTO lessonRequestDTO);
 	String deleteLesson(long id);
 	
 }

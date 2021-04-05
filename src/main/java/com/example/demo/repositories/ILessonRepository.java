@@ -10,4 +10,6 @@ import com.example.demo.models.Lesson;
 @Repository
 public interface ILessonRepository extends JpaRepository<Lesson, Long> {
 	List<Lesson> findByUnitIdAndIsDisableOrderByLessonNameAsc (long unitId, boolean isDisable);
+	
+	Lesson findByIdAndIsDisable(long id, boolean isDisable);
 }

@@ -8,6 +8,7 @@ import org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.dtos.SubjectDTO;
@@ -69,15 +70,13 @@ public class SubjectServiceImpl implements ISubjectService {
 	}
 
 	@Override
+	@Transactional
 	public String deleteSubject(long id) {
 		Subject subject = iSubjectRepository.findByIdAndIsDisable(id, false);
 		if (subject == null) {
 			throw new ResourceNotFoundException();
 		}
-		if (subject.isDisable()) {
-			throw new ResourceNotFoundException();
-		}
-		subject.setDisable(true);
+		
 		List<Unit> listUnits = iUnitRepository.findBySubjectIdAndIsDisableOrderByUnitNameAsc(id, false);
 		if (!listUnits.isEmpty()) {
 			for (Unit unit : listUnits) {
@@ -90,6 +89,8 @@ public class SubjectServiceImpl implements ISubjectService {
 				iProgressTestService.deleteProgressTest(progressTest.getId());
 			}
 		}
+		
+		subject.setDisable(true);
 		iSubjectRepository.save(subject);
 		return "DELETE SUCCESS !";
 	}

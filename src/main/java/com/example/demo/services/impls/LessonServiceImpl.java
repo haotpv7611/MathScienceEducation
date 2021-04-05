@@ -6,6 +6,7 @@ import java.util.List;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.dtos.LessonDTO;
 import com.example.demo.dtos.LessonRequestDTO;
@@ -71,9 +72,9 @@ public class LessonServiceImpl implements ILessonService {
 	}
 
 	@Override
-	public String updateLesson(LessonRequestDTO lessonRequestDTO) {
+	public String updateLesson(long id, LessonRequestDTO lessonRequestDTO) {
 
-		Lesson lesson = iLessonRepository.findById(lessonRequestDTO.getId())
+		Lesson lesson = iLessonRepository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException());
 		if (lesson.isDisable()) {
 			throw new ResourceNotFoundException();
@@ -96,9 +97,10 @@ public class LessonServiceImpl implements ILessonService {
 	}
 
 	@Override
+	@Transactional
 	public String deleteLesson(long id) {
-		Lesson lesson = iLessonRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
-		if (lesson.isDisable()) {
+		Lesson lesson = iLessonRepository.findByIdAndIsDisable(id, false);
+		if (lesson == null) {
 			throw new ResourceNotFoundException();
 		}
 		List<Exercise> exercises = iExerciseRepository.findByLessonIdOrderByExerciseNameAsc(id);
@@ -107,6 +109,8 @@ public class LessonServiceImpl implements ILessonService {
 				iExerciseService.deleteExercise(exercise.getId());
 			}
 		}
+		
+		//thieu delete game
 
 		lesson.setDisable(true);
 		iLessonRepository.save(lesson);

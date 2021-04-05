@@ -1,23 +1,24 @@
 package com.example.demo.dtos;
 
+import javax.validation.constraints.NotNull;
+
+import org.hibernate.validator.constraints.Length;
+
 public class OptionQuestionDTO {
 
 	private long id;
+	@NotNull(message = "optionText must be not null!")
+	@Length(max = 30, message = "optionText length must be less than 30!")
 	private String optionText;
-	private String optionImageUrl;
-	private String optionAudioUrl;
 	private boolean isCorrect;
-	
+
 	public OptionQuestionDTO() {
 	}
 
-	public OptionQuestionDTO(long id, String optionText, String optionImageUrl, String optionAudioUrl,
-			boolean isCorrect) {
+	public OptionQuestionDTO(long id, String optionText, boolean isCorrect) {
 		super();
 		this.id = id;
 		this.optionText = optionText;
-		this.optionImageUrl = optionImageUrl;
-		this.optionAudioUrl = optionAudioUrl;
 		this.isCorrect = isCorrect;
 	}
 
@@ -47,34 +48,6 @@ public class OptionQuestionDTO {
 	 */
 	public void setOptionText(String optionText) {
 		this.optionText = optionText;
-	}
-
-	/**
-	 * @return the optionImageUrl
-	 */
-	public String getOptionImageUrl() {
-		return optionImageUrl;
-	}
-
-	/**
-	 * @param optionImageUrl the optionImageUrl to set
-	 */
-	public void setOptionImageUrl(String optionImageUrl) {
-		this.optionImageUrl = optionImageUrl;
-	}
-
-	/**
-	 * @return the optionAudioUrl
-	 */
-	public String getOptionAudioUrl() {
-		return optionAudioUrl;
-	}
-
-	/**
-	 * @param optionAudioUrl the optionAudioUrl to set
-	 */
-	public void setOptionAudioUrl(String optionAudioUrl) {
-		this.optionAudioUrl = optionAudioUrl;
 	}
 
 	/**

@@ -6,7 +6,7 @@ import org.hibernate.validator.constraints.Length;
 
 public class LessonRequestDTO {
 
-	private long id;
+//	private long id;
 	
 	@NotNull(message = "Lesson Name Must Be Not Null !")
 	@Length(max = 20, message = "Lesson Name length must be less than 20!")
@@ -24,12 +24,12 @@ public class LessonRequestDTO {
 	public void setLessonName(String lessonName) {
 		this.lessonName = lessonName;
 	}
-	public long getId() {
-		return id;
-	}
-	public void setId(long id) {
-		this.id = id;
-	}
+//	public long getId() {
+//		return id;
+//	}
+//	public void setId(long id) {
+//		this.id = id;
+//	}
 	
 	public String getLessonUrl() {
 		return lessonUrl;

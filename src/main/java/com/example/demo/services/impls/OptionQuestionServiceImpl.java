@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.demo.dtos.OptionQuestionDTO;
 import com.example.demo.models.OptionQuestion;
+import com.example.demo.models.Question;
 import com.example.demo.repositories.IOptionQuestionRepository;
 import com.example.demo.services.IOptionQuestionService;
 
@@ -40,5 +41,15 @@ public class OptionQuestionServiceImpl implements IOptionQuestionService {
 		}
 
 		return optionDTOList;
+	}
+	
+	@Override
+	public void createOptionQuestion(long questionId, String optionText, boolean isCorrect) {
+		OptionQuestion optionQuestion = new OptionQuestion();
+		optionQuestion.setDisable(false);
+		optionQuestion.setQuestionId(questionId);
+		optionQuestion.setCorrect(isCorrect);
+		optionQuestion.setOptionText(optionText);
+		iOptionsRepository.save(optionQuestion);
 	}
 }

@@ -29,7 +29,7 @@ public class LessonController {
 	ILessonService iLessonService;
 	
 	@GetMapping("/unit/{unitId}/lessons")
-	public ResponseEntity<List<LessonDTO>> findByUnitId(@PathVariable long unitId){		
+	public ResponseEntity<List<LessonDTO>> findLessonByUnitId(@PathVariable long unitId){		
 		List<LessonDTO> response = iLessonService.findByUnitIdOrderByLessonNameAsc(unitId);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
@@ -50,9 +50,9 @@ public class LessonController {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
 		}
 		String response = iLessonService.createLesson(lessonRequestDTO);
-		if(!response.contains("SUCCESS")) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-		}
+//		if(!response.contains("SUCCESS")) {
+//			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+//		}
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);	
 	}
 	
@@ -65,11 +65,13 @@ public class LessonController {
 			}
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
 		}
-		String response = iLessonService.updateLesson(lessonRequestDTO);
-		if(!response.contains("SUCCESS")) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-		}
+		String response = iLessonService.updateLesson(id, lessonRequestDTO);
+//		if(!response.contains("SUCCESS")) {
+//			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+//		}
 		return ResponseEntity.status(HttpStatus.OK).body(response);		
 		
 	}
+	
+	//thiếu delete lesson
 }

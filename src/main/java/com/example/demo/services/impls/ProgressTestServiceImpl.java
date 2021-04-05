@@ -6,6 +6,7 @@ import java.util.List;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.dtos.ProgressTestDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
@@ -111,13 +112,14 @@ public class ProgressTestServiceImpl implements IProgressTestService {
 	}
 
 	@Override
+	@Transactional
 	public String deleteProgressTest(long id) {
-		ProgressTest progressTest = iProgressTestRepository.findById(id)
-				.orElseThrow(() -> new ResourceNotFoundException());
-		if (progressTest.isDisable()) {
+		ProgressTest progressTest = iProgressTestRepository.findByIdAndIsDisable(id, false);
+				
+		if (progressTest == null) {
 			throw new ResourceNotFoundException();
 		}
-		List<Exercise> exerciseList = iExerciseRepository.findByProgressTestIdOrderByExerciseNameAsc(id);
+		List<Exercise> exerciseList = iExerciseRepository.findByProgressTestIdAndIsDisableOrderByExerciseNameAsc(id, false);
 		for (Exercise exercise : exerciseList) {
 			iExerciseService.deleteExercise(exercise.getId());
 		}

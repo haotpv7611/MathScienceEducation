@@ -1,7 +1,5 @@
 package com.example.demo.dtos;
 
-import java.util.Comparator;
-
 public class GradeDTO implements Comparable<GradeDTO> {
 
 	private long id;

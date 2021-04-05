@@ -38,7 +38,7 @@ public class UnitController {
 	}
 
 	@GetMapping("subject/{subjectId}/unitView")
-	public ResponseEntity<List<UnitViewDTO>> showSubjectViewBySubjectId(@PathVariable long subjectId) {
+	public ResponseEntity<List<UnitViewDTO>> showUnitViewBySubjectId(@PathVariable long subjectId) {
 		List<UnitViewDTO> response = iUnitService.showUnitViewBySubjectId(subjectId);
 		if (response.isEmpty()) {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
@@ -59,9 +59,9 @@ public class UnitController {
 		}
 		String response = iUnitService.createUnit(unitRequestDTO);
 
-		if (!response.contains("SUCCESS")) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-		}
+//		if (!response.contains("SUCCESS")) {
+//			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+//		}
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 

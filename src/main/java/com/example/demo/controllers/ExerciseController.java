@@ -54,9 +54,9 @@ public class ExerciseController {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
 		}
 		String response = iExerciseService.createExercise(exerciseDTO);
-		if (!response.contains("SUCCESS")) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-		}
+//		if (!response.contains("SUCCESS")) {
+//			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+//		}
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 
@@ -71,18 +71,18 @@ public class ExerciseController {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
 		}
 		String response = iExerciseService.updateExercise(exerciseDTO);
-		if (!response.contains("SUCCESS")) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-		}
+//		if (!response.contains("SUCCESS")) {
+//			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+//		}
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 	
 	@PutMapping("/exercise/delete")
 	public ResponseEntity<String> deleteExercise(@RequestParam long id){
 		String response = iExerciseService.deleteExercise(id);
-		if (!response.contains("SUCCESS")) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-		}
+//		if (!response.contains("SUCCESS")) {
+//			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+//		}
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 }

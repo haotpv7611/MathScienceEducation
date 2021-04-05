@@ -6,6 +6,7 @@ import java.util.List;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.dtos.ProgressTestDTO;
 import com.example.demo.dtos.UnitDTO;
@@ -118,14 +119,18 @@ public class UnitServiceImpl implements IUnitService {
 	public String createUnit(UnitRequestDTO unitRequestDTO) {
 		Subject subject = iSubjectRepository.findByIdAndIsDisable(unitRequestDTO.getSubjectId(), false);
 		if (subject == null) {
-			return "Subject is not existed";
+			throw new ResourceNotFoundException();
 		}
-		List<Unit> listUnits = iUnitRepository
-				.findBySubjectIdAndIsDisableOrderByUnitNameAsc(unitRequestDTO.getSubjectId(), false);
-		for (Unit unit : listUnits) {
-			if (unitRequestDTO.getUnitName() == unit.getUnitName()) {
-				return "Unit is existed !";
-			}
+//		List<Unit> listUnits = iUnitRepository
+//				.findBySubjectIdAndIsDisableOrderByUnitNameAsc(unitRequestDTO.getSubjectId(), false);
+//		for (Unit unit : listUnits) {
+//			if (unitRequestDTO.getUnitName() == unit.getUnitName()) {
+//				return "Unit is existed !";
+//			}
+//		}
+		
+		if (iUnitRepository.findBySubjectIdAndUnitNameAndIsDisable(unitRequestDTO.getSubjectId(), unitRequestDTO.getUnitName(), false) != null) {
+			return "EXISTED";
 		}
 		Unit unit = modelMapper.map(unitRequestDTO, Unit.class);
 		unit.setDisable(false);
@@ -167,12 +172,13 @@ public class UnitServiceImpl implements IUnitService {
 	}
 
 	@Override
+	@Transactional
 	public String deleteUnit(long id) {
-		Unit unit = iUnitRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
-		if (unit.isDisable()) {
+		Unit unit = iUnitRepository.findByIdAndIsDisable(id, false);
+		if (unit == null) {
 			throw new ResourceNotFoundException();
 		}
-		unit.setDisable(true);
+		
 		List<Lesson> listLesson = iLessonRepository.findByUnitIdAndIsDisableOrderByLessonNameAsc(id, false);
 		if (!listLesson.isEmpty()) {
 			for (Lesson lesson : listLesson) {
@@ -187,17 +193,18 @@ public class UnitServiceImpl implements IUnitService {
 			}
 		}
 
+		unit.setDisable(true);
 		iUnitRepository.save(unit);
 		return "DELETE SUCCESS !";
 	}
 
-	@Override
-	public Unit findByUnitIdAndIsDisable(long id) {
-		Unit unit = iUnitRepository.findByIdAndIsDisable(id, false);
-		if (unit == null) {
-			throw new ResourceNotFoundException();
-		}
-		return unit;
-	}
+//	@Override
+//	public Unit findById(long id) {
+//		Unit unit = iUnitRepository.findByIdAndIsDisable(id, false);
+//		if (unit == null) {
+//			throw new ResourceNotFoundException();
+//		}
+//		return unit;
+//	}
 
 }

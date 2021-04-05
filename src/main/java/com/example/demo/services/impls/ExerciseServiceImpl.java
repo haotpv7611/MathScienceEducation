@@ -71,7 +71,7 @@ public class ExerciseServiceImpl implements IExerciseService {
 		if (exerciseDTO.getProgressTestId() != 0) {
 			// check exercise name in progress test is existed or not
 			List<Exercise> listExercises = iExerciseRepository
-					.findByProgressTestIdOrderByExerciseNameAsc(exerciseDTO.getProgressTestId());
+					.findByProgressTestIdAndIsDisableOrderByExerciseNameAsc(exerciseDTO.getProgressTestId(), false);
 			for (Exercise exercise : listExercises) {
 				if (exerciseDTO.getExerciseName().equals(exercise.getExerciseName())) {
 					return "Exercise is existed !";
@@ -115,7 +115,7 @@ public class ExerciseServiceImpl implements IExerciseService {
 			// check exercise name in progress test is existed or not
 			if (!exercise.getExerciseName().equalsIgnoreCase(exerciseDTO.getExerciseName())) {
 				List<Exercise> listExercises = iExerciseRepository
-						.findByProgressTestIdOrderByExerciseNameAsc(exerciseDTO.getProgressTestId());
+						.findByProgressTestIdAndIsDisableOrderByExerciseNameAsc(exerciseDTO.getProgressTestId(), false);
 				for (Exercise exercise1 : listExercises) {
 					if (exerciseDTO.getExerciseName().equals(exercise1.getExerciseName())) {
 						return "Exercise is existed !";
@@ -133,10 +133,12 @@ public class ExerciseServiceImpl implements IExerciseService {
 
 	@Override
 	public String deleteExercise(long id) {
-		Exercise exercise = iExerciseRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
-		if (exercise.isDisable()) {
+		Exercise exercise = iExerciseRepository.findByIdAndIsDisable(id, false);
+		if (exercise == null) {
 			throw new ResourceNotFoundException();
 		}
+		
+		//????
 		if (exercise.getLessonId() != 0) {
 			exercise.setDisable(true);
 		}

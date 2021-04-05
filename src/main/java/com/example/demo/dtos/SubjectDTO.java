@@ -13,7 +13,7 @@ public class SubjectDTO {
 	@NotNull (message = "Subject Image Must Be Not Null !")
 	private String imageUrl;
 	private long gradeId;
-	private boolean isDisable;
+//	private boolean isDisable;
 	@Length(message = "Description lenght must be less than 50 !")
 	private String description;
 	
@@ -38,13 +38,13 @@ public class SubjectDTO {
 		this.gradeId = gradeId;
 	}
 
-	public SubjectDTO(long id, String subjectName, String imageUrl, long gradeId, boolean isDisable) {
+	public SubjectDTO(long id, String subjectName, String imageUrl, long gradeId) {
 		super();
 		this.id = id;
 		this.subjectName = subjectName;
 		this.imageUrl = imageUrl;
 		this.gradeId = gradeId;
-		this.isDisable = isDisable;
+//		this.isDisable = isDisable;
 	}
 
 	public long getId() {
@@ -79,13 +79,13 @@ public class SubjectDTO {
 		this.gradeId = gradeId;
 	}
 
-	public boolean isDisable() {
-		return isDisable;
-	}
-
-	public void setDisable(boolean isDisable) {
-		this.isDisable = isDisable;
-	}
+//	public boolean isDisable() {
+//		return isDisable;
+//	}
+//
+//	public void setDisable(boolean isDisable) {
+//		this.isDisable = isDisable;
+//	}
 
 	
 	
