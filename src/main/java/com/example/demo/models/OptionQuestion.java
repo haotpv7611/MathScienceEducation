@@ -2,7 +2,6 @@ package com.example.demo.models;
 
 import java.time.LocalDateTime;
 
-
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
 import javax.persistence.GeneratedValue;
@@ -24,6 +23,8 @@ public class OptionQuestion {
 	private long id;
 
 	private String optionText;
+	private String optionImageUrl;
+	private String optionInputType;
 	private boolean isCorrect;
 	private long questionId;
 
@@ -104,4 +105,60 @@ public class OptionQuestion {
 	public long getId() {
 		return id;
 	}
+
+	/**
+	 * @return the optionImageUrl
+	 */
+	public String getOptionImageUrl() {
+		return optionImageUrl;
+	}
+
+	/**
+	 * @param optionImageUrl the optionImageUrl to set
+	 */
+	public void setOptionImageUrl(String optionImageUrl) {
+		this.optionImageUrl = optionImageUrl;
+	}
+
+	/**
+	 * @return the optionInputType
+	 */
+	public String getOptionInputType() {
+		return optionInputType;
+	}
+
+	/**
+	 * @param optionInputType the optionInputType to set
+	 */
+	public void setOptionInputType(String optionInputType) {
+		this.optionInputType = optionInputType;
+	}
+
+	public OptionQuestion() {
+		// TODO Auto-generated constructor stub
+	}
+
+	public OptionQuestion(String optionText, boolean isCorrect, long questionId, boolean isDisable) {
+		super();
+		this.optionText = optionText;
+		this.isCorrect = isCorrect;
+		this.questionId = questionId;
+		this.isDisable = isDisable;
+	}
+
+	public OptionQuestion(String optionText, String optionInputType, long questionId, boolean isDisable) {
+		super();
+		this.optionText = optionText;
+		this.optionInputType = optionInputType;
+		this.questionId = questionId;
+		this.isDisable = isDisable;
+	}
+
+	public OptionQuestion(String optionText, long questionId, boolean isDisable) {
+		super();
+		this.optionText = optionText;
+		this.questionId = questionId;
+		this.isDisable = isDisable;
+	}
+
 }

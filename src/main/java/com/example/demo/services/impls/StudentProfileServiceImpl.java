@@ -208,6 +208,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 		account.setUsername(username);
 		account.setPassword(username);
 		account.setRoleId(3);
+		account.setStatus("ACTIVE");
 
 		iAccountRepository.save(account);
 

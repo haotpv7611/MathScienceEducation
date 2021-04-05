@@ -10,6 +10,8 @@ public class OptionQuestionDTO {
 	@NotNull(message = "optionText must be not null!")
 	@Length(max = 30, message = "optionText length must be less than 30!")
 	private String optionText;
+	private String optionImageUrl;
+	private String optionInputType;
 	private boolean isCorrect;
 
 	public OptionQuestionDTO() {
@@ -63,4 +65,33 @@ public class OptionQuestionDTO {
 	public void setCorrect(boolean isCorrect) {
 		this.isCorrect = isCorrect;
 	}
+
+	/**
+	 * @return the optionImageUrl
+	 */
+	public String getOptionImageUrl() {
+		return optionImageUrl;
+	}
+
+	/**
+	 * @param optionImageUrl the optionImageUrl to set
+	 */
+	public void setOptionImageUrl(String optionImageUrl) {
+		this.optionImageUrl = optionImageUrl;
+	}
+
+	/**
+	 * @return the optionInputType
+	 */
+	public String getOptionInputType() {
+		return optionInputType;
+	}
+
+	/**
+	 * @param optionInputType the optionInputType to set
+	 */
+	public void setOptionInputType(String optionInputType) {
+		this.optionInputType = optionInputType;
+	}
+
 }

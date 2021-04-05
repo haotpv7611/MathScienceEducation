@@ -158,12 +158,13 @@ public class Question {
 		this.unitId = unitId;
 	}
 
-	public Question(String questionTitle, String description, float score, long unitId) {
+	public Question(String questionTitle, String description, float score, long unitId, boolean isDisable) {
 		super();
 		this.questionTitle = questionTitle;
 		this.description = description;
 		this.score = score;
 		this.unitId = unitId;
+		this.isDisable = isDisable;
 	}
 
 	public Question() {

@@ -3,14 +3,10 @@ package com.example.demo.controllers;
 import java.io.IOException;
 import java.util.List;
 
-import javax.validation.Valid;
-
 import org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,9 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.example.demo.dtos.OptionQuestionDTO;
 import com.example.demo.dtos.QuestionDTO;
-import com.example.demo.dtos.QuestionRequestDTO;
 import com.example.demo.services.IQuestionService;
 
 @CrossOrigin
@@ -44,32 +38,43 @@ public class QuestionController {
 //		return ResponseEntity.status(HttpStatus.OK).body(response);
 //	}
 
-	@PostMapping("/question")
-	public ResponseEntity<String> createQuestion(
-			@RequestParam(required = false) MultipartFile imageFile,
+	@PostMapping("/question/exercise")
+	public ResponseEntity<String> createExerciseQuestion(@RequestParam(required = false) MultipartFile imageFile,
 			@RequestParam(required = false) MultipartFile audioFile, @RequestParam String questionTitle,
 			@RequestParam(required = false) String description, @RequestParam float score,
+			@RequestParam String questionType, @RequestParam long unitId, @RequestParam List<String> optionTextList,
+			@RequestParam List<Boolean> isCorrectList) throws SizeLimitExceededException, IOException {
+		String respone = iQuestionService.createExerciseQuestion(imageFile, audioFile, questionTitle, description,
+				score, questionType, unitId, optionTextList, isCorrectList);
+
+		if (!respone.contains("SUCCESS")) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(respone);
+		}
+		return ResponseEntity.status(HttpStatus.CREATED).body(respone);
+	}
+
+	@PostMapping("/question/game/fillInBlank")
+	public ResponseEntity<String> createGameFillInBlankQuestion(@RequestParam(required = false) MultipartFile imageFile,
+			@RequestParam(required = false) MultipartFile audioFile, @RequestParam String questionTitle,
+			@RequestParam(required = false) String description, @RequestParam float score,
+			@RequestParam String questionType, @RequestParam long unitId, @RequestParam List<String> optionTextList,
+			@RequestParam List<String> optionInputTypeList) throws SizeLimitExceededException, IOException {
+		String respone = iQuestionService.createGameFillInBlankQuestion(imageFile, audioFile, questionTitle,
+				description, score, questionType, unitId, optionTextList, optionInputTypeList);
+
+		if (!respone.contains("SUCCESS")) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(respone);
+		}
+		return ResponseEntity.status(HttpStatus.CREATED).body(respone);
+	}
+
+	@PostMapping("/question/game/others")
+	public ResponseEntity<String> createGameSwappingMatchingChoosingQuestion(@RequestParam String questionTitle,
+			@RequestParam(required = false) String description, @RequestParam float score,
 			@RequestParam String questionType, @RequestParam long unitId,
-//			@RequestParam List<OptionQuestionDTO> optionQuestionList
-			@RequestParam List<String> optionTextList, @RequestParam List<Boolean> isCorrectList
-//			@Valid QuestionRequestDTO questionRequestDTO, BindingResult bindingResult
-			)
+			@RequestParam List<MultipartFile> imageFileList, @RequestParam List<String> optionTextList)
 			throws SizeLimitExceededException, IOException {
-		System.out.println("Start");
-//		String respone = iQuestionService.createQuestion(imageFile, audioFile, questionTitle, description, score,
-//				questionType, unitId, optionQuestionList);
-		String respone = iQuestionService.createQuestion(imageFile, audioFile, questionTitle, description, score,
-				questionType, unitId, optionTextList, isCorrectList);
-//		if (bindingResult.hasErrors()) {
-//			String error = "";
-//			for (ObjectError object : bindingResult.getAllErrors()) {
-//				error += "\n" + object.getDefaultMessage();
-//			}
-//
-//			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
-//		}
-//		String respone = iQuestionService.createQuestion(questionRequestDTO);
-		System.out.println("End");
+		String respone = iQuestionService.createGameSwappingMatchingChoosingQuestion(questionTitle, description, score, questionType, unitId, imageFileList, optionTextList);
 		if (!respone.contains("SUCCESS")) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(respone);
 		}
