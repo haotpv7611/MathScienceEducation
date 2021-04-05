@@ -1,6 +1,7 @@
 package com.example.demo.models;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Set;
 
 import javax.persistence.Entity;
@@ -11,6 +12,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -44,6 +47,17 @@ public class School {
 	@ManyToOne
 	@JoinColumn(name = "schoolLevelId")
 	private SchoolLevel schoolLevel;
+	
+	@PrePersist
+	public void onCreate() {
+	    this.createdDate = LocalDateTime.now(ZoneId.of("UTC"));
+	    this.modifiedDate = LocalDateTime.now(ZoneId.of("UTC"));
+	}
+
+	@PreUpdate
+	public void onUpdate() {
+	    this.modifiedDate = LocalDateTime.now(ZoneId.of("UTC"));
+	}
 
 	/**
 	 * @return the schoolName
