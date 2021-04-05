@@ -45,6 +45,6 @@ public class StudentProfileController {
 
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
 		}
-		return ResponseEntity.status(HttpStatus.CREATED).body(null);
+		return ResponseEntity.status(HttpStatus.CREATED).body(iStudentProfileService.createStudenProfile(studentRequestDTO));
 	}
 }

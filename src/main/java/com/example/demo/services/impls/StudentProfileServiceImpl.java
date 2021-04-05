@@ -95,6 +95,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 						for (ClassResponseDTO classResponseDTO : classResponseDTOList) {
 							// get all student in class
 							Classes classes = modelMapper.map(classResponseDTO, Classes.class);
+							System.out.println(classes.getClassName() + classes.getId());
 							Grade grade = classes.getSchoolGrade().getGrade();
 
 							int gradeName = grade.getGradeName();
@@ -167,7 +168,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 		// create account before
 
 		long schoolId = studentRequestDTO.getSchoolId();
-		School school = iSchoolRepository.findByIdAndStatusNot(classId, DELETE_STATUS);
+		School school = iSchoolRepository.findByIdAndStatusNot(schoolId, DELETE_STATUS);
 		if (school == null) {
 			throw new ResourceNotFoundException();
 		}
@@ -194,7 +195,11 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 		}
 		StudentProfile studentProfile = Collections.max(studentProfileList,
 				Comparator.comparing(s -> s.getStudentCount()));
-		long studentCount = studentProfile.getStudentCount() + 1;
+		long studentCount = 1;
+		if (studentProfile != null) {
+			studentCount = studentProfile.getStudentCount() + 1;
+		}
+		
 		Account account = new Account();
 		account.setFirstName(studentRequestDTO.getFirtName());
 		account.setLastName(studentRequestDTO.getLastName());
@@ -202,19 +207,21 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 		account.setUsername(username);
 		account.setPassword(username);
 		account.setRoleId(3);
+		
 		iAccountRepository.save(account);
 		
 		
-//		studentProfile = new StudentProfile(studentRequestDTO.getDoB().parse("dd/MM/yyyy", ), studentRequestDTO.getGender(),
-//				studentRequestDTO.getParentName(), studentRequestDTO.getParentPhone(), account, classes);
-
+		studentProfile = new StudentProfile(studentRequestDTO.getDoB(), studentRequestDTO.getGender(),
+				studentRequestDTO.getParentName(), studentRequestDTO.getParentPhone(), account, classes);
+		studentProfile.setStudentCount(studentCount);
+		studentProfile.setStatus("ACTIVE");
 //		if (accountId != 0) {
 //
 //		}
 
-		studentProfile = modelMapper.map(studentRequestDTO, StudentProfile.class);
+		iStudentProfileRepository.save(studentProfile);
 
-		return null;
+		return "CREATE SUCCESS !";
 	}
 
 //	private void addClasses(SchoolGrade schoolGrade, List<Classes> classesList) {

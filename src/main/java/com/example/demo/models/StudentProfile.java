@@ -35,7 +35,7 @@ public class StudentProfile {
 	private Date modifiedDate;
 	private String modifiedBy;
 	private String status;
-	private int studentCount;
+	private long studentCount;
 
 	@OneToOne
 	@JoinColumn(name = "accountId")
@@ -224,14 +224,14 @@ public class StudentProfile {
 	/**
 	 * @return the studentCount
 	 */
-	public int getStudentCount() {
+	public long getStudentCount() {
 		return studentCount;
 	}
 
 	/**
 	 * @param studentCount the studentCount to set
 	 */
-	public void setStudentCount(int studentCount) {
+	public void setStudentCount(long studentCount) {
 		this.studentCount = studentCount;
 	}
 }

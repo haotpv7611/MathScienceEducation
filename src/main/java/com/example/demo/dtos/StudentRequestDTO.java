@@ -16,7 +16,7 @@ public class StudentRequestDTO {
 	@NotNull(message = "LastName must be not null!")
 	@Length(max = 50, message = "LastName length must be less than 50!")
 	private String lastName;
-	private LocalDate DoB;
+	private String DoB;
 	@NotNull(message = "Gender must be not null!")
 	@Length(max = 10, message = "Gender length must be less than 10!")
 	private String gender;
@@ -100,14 +100,14 @@ public class StudentRequestDTO {
 	/**
 	 * @return the doB
 	 */
-	public LocalDate getDoB() {
+	public String getDoB() {
 		return DoB;
 	}
 
 	/**
 	 * @param doB the doB to set
 	 */
-	public void setDoB(LocalDate doB) {
+	public void setDoB(String doB) {
 		DoB = doB;
 	}
 
