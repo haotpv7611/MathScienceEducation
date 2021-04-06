@@ -146,7 +146,7 @@ public class SubjectServiceImpl implements ISubjectService {
 		}
 		iGradeRepository.findById(gradeId).orElseThrow(() -> new ResourceNotFoundException());
 		String error = validateRequiredString(subjectName, SUBJECTNAME_MAX_LENGTH, "\nSubjectName is invalid!");
-		error += validateFile(file, "image", "\nFile is invalid!", "\nNot supported this file type for image!");
+		error += validateFile(file, "image", "\nNot supported this file type for image!");
 		error += validateString(description, DESCRIPTION_MAX_LENGTH, "\nDescription is invalid!");
 		if (!error.isEmpty()) {
 			return error.trim();
@@ -196,11 +196,11 @@ public class SubjectServiceImpl implements ISubjectService {
 		return error;
 	}
 
-	private String validateFile(MultipartFile file, String contentType, String errorMessage, String errorMessage2) {
+	private String validateFile(MultipartFile file, String contentType, String errorMessage) {
 		String error = "";
 		if (file != null) {
 			if (!file.getContentType().contains(contentType)) {
-				error += errorMessage2;
+				error += errorMessage;
 			}
 		}
 

@@ -20,11 +20,11 @@ import com.example.demo.services.IOptionQuestionService;
 public class OptionQuestionServiceImpl implements IOptionQuestionService {
 
 	@Autowired
-	private IOptionQuestionRepository iOptionsRepository;
+	private IOptionQuestionRepository iOptionQuestionRepository;
 
 	@Autowired
 	private ModelMapper modelMapper;
-	
+
 	@Autowired
 	FirebaseService firebaseService;
 
@@ -33,7 +33,7 @@ public class OptionQuestionServiceImpl implements IOptionQuestionService {
 
 		// 1. connect database through repository
 		// 2. find all entities are not disable and have questionId = ?
-		List<OptionQuestion> optionList = iOptionsRepository.findByQuestionIdAndIsDisable(questionId, false);
+		List<OptionQuestion> optionList = iOptionQuestionRepository.findByQuestionIdAndIsDisableFalse(questionId);
 
 		List<OptionQuestionDTO> optionDTOList = new ArrayList<>();
 
@@ -52,35 +52,59 @@ public class OptionQuestionServiceImpl implements IOptionQuestionService {
 	@Override
 	public void createExerciseOptionQuestion(long questionId, String optionText, boolean isCorrect) {
 		OptionQuestion optionQuestion = new OptionQuestion(optionText, isCorrect, questionId, false);
-		iOptionsRepository.save(optionQuestion);
+		iOptionQuestionRepository.save(optionQuestion);
 	}
 
 	@Override
 	public void createGameFillInBlankOptionQuestion(long questionId, String optionText, String optionInputType) {
 		OptionQuestion optionQuestion = new OptionQuestion(optionText, optionInputType, questionId, false);
-		iOptionsRepository.save(optionQuestion);
-
+		iOptionQuestionRepository.save(optionQuestion);
 	}
 
 	@Override
 	public void createGameSwappingMatchingChoosingOptionQuestion(long questionId, String optionText,
 			MultipartFile imageFile) throws SizeLimitExceededException, IOException {
-
 		OptionQuestion optionQuestion = new OptionQuestion(optionText, questionId, false);
 		if (imageFile != null) {
 			optionQuestion.setOptionImageUrl(firebaseService.saveFile(imageFile));
 		}
-
-		iOptionsRepository.save(optionQuestion);
-
+		iOptionQuestionRepository.save(optionQuestion);
 	}
+
+	@Override
+	public void updateExerciseOptionQuestion(long id, String optionText, boolean isCorrect) {
+		OptionQuestion optionQuestion = iOptionQuestionRepository.findByIdAndIsDisableFalse(id);		
+		optionQuestion.setOptionText(optionText);
+		optionQuestion.setCorrect(isCorrect);
+		iOptionQuestionRepository.save(optionQuestion);
+	}
+
+	@Override
+	public void updateGameFillInBlankOptionQuestion(long id, String optionText, String optionInputType) {
+		OptionQuestion optionQuestion = iOptionQuestionRepository.findByIdAndIsDisableFalse(id);		
+		optionQuestion.setOptionText(optionText);
+		optionQuestion.setOptionInputType(optionInputType);
+		iOptionQuestionRepository.save(optionQuestion);
+	}
+
+	@Override
+	public void updateGameSwappingMatchingChoosingOptionQuestion(long id, String optionText, MultipartFile imageFile)
+			throws SizeLimitExceededException, IOException {
+		OptionQuestion optionQuestion = iOptionQuestionRepository.findByIdAndIsDisableFalse(id);		
+		optionQuestion.setOptionText(optionText);
+		if (imageFile != null) {
+			optionQuestion.setOptionImageUrl(firebaseService.saveFile(imageFile));
+		}
+		iOptionQuestionRepository.save(optionQuestion);
+	}
+
 	@Override
 	public void deleteOptionQuestion(long id) {
-		OptionQuestion optionQuestion = iOptionsRepository.findByIdAndIsDisableFalse(id);
+		OptionQuestion optionQuestion = iOptionQuestionRepository.findByIdAndIsDisableFalse(id);
 		if (optionQuestion == null) {
 			throw new ResourceNotFoundException();
 		}
-		optionQuestion.setDisable(true);		
-		iOptionsRepository.save(optionQuestion);
+		optionQuestion.setDisable(true);
+		iOptionQuestionRepository.save(optionQuestion);
 	}
 }

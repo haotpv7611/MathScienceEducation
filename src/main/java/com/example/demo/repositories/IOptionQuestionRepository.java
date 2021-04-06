@@ -10,7 +10,7 @@ import com.example.demo.models.OptionQuestion;
 @Repository
 public interface IOptionQuestionRepository extends JpaRepository<OptionQuestion, Long> {
 	
-	List<OptionQuestion> findByQuestionIdAndIsDisable(long questionId, boolean isDisable);
+	List<OptionQuestion> findByQuestionIdAndIsDisableFalse(long questionId);
 	
 	OptionQuestion findByIdAndIsDisableFalse(long id);
 }

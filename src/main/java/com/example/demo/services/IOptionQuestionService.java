@@ -17,6 +17,13 @@ public interface IOptionQuestionService {
 
 	void createGameSwappingMatchingChoosingOptionQuestion(long questionId, String optionText, MultipartFile imageFile)
 			throws SizeLimitExceededException, IOException;
-	
+
+	void updateExerciseOptionQuestion(long id, String optionText, boolean isCorrect);
+
+	void updateGameFillInBlankOptionQuestion(long id, String optionText, String optionInputType);
+
+	void updateGameSwappingMatchingChoosingOptionQuestion(long id, String optionText, MultipartFile imageFile)
+			throws SizeLimitExceededException, IOException;
+
 	void deleteOptionQuestion(long id);
 }

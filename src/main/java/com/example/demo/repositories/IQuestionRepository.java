@@ -19,6 +19,6 @@ public interface IQuestionRepository extends JpaRepository<Question, Long> {
 
 	List<Question> findByUnitIdAndQuestionTypeIdNotAndIsDisable(long unitId, int questionTypeId, boolean isDisable);
 
-	Question findByIdAndIsDisable(long id, boolean isDisable);
+	Question findByIdAndIsDisableFalse(long id);
 
 }

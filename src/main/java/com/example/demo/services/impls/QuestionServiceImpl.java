@@ -66,16 +66,21 @@ public class QuestionServiceImpl implements IQuestionService {
 	@Autowired
 	private IOptionQuestionRepository iOptionQuestionRepository;
 
+	// done
 	@Override
 	public Object findQuestionById(long id, String questionType) {
+		// validate data input
 		Question question = iQuestionRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
-
-		List<OptionQuestion> optionQuestionList = iOptionQuestionRepository.findByQuestionIdAndIsDisable(id, false);
-		Object object = null;
-		
 		if (!questionType.equalsIgnoreCase(question.getQuestionType().getDescription())) {
 			throw new ResourceNotFoundException();
 		}
+
+		// get all active option by questionId = ?
+		List<OptionQuestion> optionQuestionList = iOptionQuestionRepository.findByQuestionIdAndIsDisableFalse(id);
+		Object object = null;
+
+		// convert list option to ExerciseDTO
+		// add question, list optionDTO to questionDTO and return
 		if (questionType.equals("EXERCISE")) {
 			List<Object> optionQuestionExerciseDTOList = new ArrayList<>();
 			if (!optionQuestionList.isEmpty()) {
@@ -90,7 +95,9 @@ public class QuestionServiceImpl implements IQuestionService {
 			questionOptionResponseDTO.setOptionQuestionDTOList(optionQuestionExerciseDTOList);
 			object = questionOptionResponseDTO;
 		}
-		
+
+		// convert list option to GameFillDTO
+		// add question, list optionDTO to questionDTO and return
 		if (questionType.equals("FILL")) {
 			List<Object> optionQuestionFillDTOList = new ArrayList<>();
 			if (!optionQuestionList.isEmpty()) {
@@ -105,22 +112,9 @@ public class QuestionServiceImpl implements IQuestionService {
 			questionExerciseResponseDTO.setOptionQuestionDTOList(optionQuestionFillDTOList);
 			object = questionExerciseResponseDTO;
 		}
-		
-		if (questionType.equals("FILL")) {
-			List<Object> optionQuestionFillDTOList = new ArrayList<>();
-			if (!optionQuestionList.isEmpty()) {
-				for (OptionQuestion optionQuestion : optionQuestionList) {
-					OptionQuestionFillDTO optionQuestionFillDTO = modelMapper.map(optionQuestion,
-							OptionQuestionFillDTO.class);
-					optionQuestionFillDTOList.add(optionQuestionFillDTO);
-				}
-			}
-			QuestionOptionResponseDTO questionExerciseResponseDTO = modelMapper.map(question,
-					QuestionOptionResponseDTO.class);
-			questionExerciseResponseDTO.setOptionQuestionDTOList(optionQuestionFillDTOList);
-			object = questionExerciseResponseDTO;
-		}
-		
+
+		// convert list option to GameOtherDTO
+		// add question, list optionDTO to questionDTO and return
 		if (questionType.equals("MATCH") || questionType.equals("CHOOSE") || questionType.equals("SWAP")) {
 			List<Object> optionQuestionGameDTOList = new ArrayList<>();
 			if (!optionQuestionList.isEmpty()) {
@@ -138,25 +132,6 @@ public class QuestionServiceImpl implements IQuestionService {
 
 		return object;
 	}
-
-//	public QuestionExerciseResponseDTO findFillInBlankQuestionById(long id) {
-//		Question question = iQuestionRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
-//
-//		List<OptionQuestion> optionQuestionList = iOptionQuestionRepository.findByQuestionIdAndIsDisable(id, false);
-//		List<OptionQuestionExerciseDTO> optionQuestionExerciseDTOList = new ArrayList<>();
-//		if (!optionQuestionList.isEmpty()) {
-//			for (OptionQuestion optionQuestion : optionQuestionList) {
-//				OptionQuestionExerciseDTO optionQuestionExerciseDTO = modelMapper.map(optionQuestion,
-//						OptionQuestionExerciseDTO.class);
-//				optionQuestionExerciseDTOList.add(optionQuestionExerciseDTO);
-//			}
-//		}
-//		QuestionExerciseResponseDTO questionExerciseResponseDTO = modelMapper.map(question,
-//				QuestionExerciseResponseDTO.class);
-//		questionExerciseResponseDTO.setOptionQuestionExerciseDTOList(optionQuestionExerciseDTOList);
-//
-//		return questionExerciseResponseDTO;
-//	}
 
 //	@Override
 //	public List<QuestionDTO> findByExerciseId (Long exerciseId) {
@@ -228,20 +203,24 @@ public class QuestionServiceImpl implements IQuestionService {
 		}
 	}
 
+	// done
 	@Override
 	@Transactional
 	public String deleteQuestion(List<Long> ids) {
 		for (long id : ids) {
-			Question question = iQuestionRepository.findByIdAndIsDisable(id, false);
+			// validate data input
+			Question question = iQuestionRepository.findByIdAndIsDisableFalse(id);
 			if (question == null) {
 				throw new ResourceNotFoundException();
 			}
 
-			List<OptionQuestion> optionQuestions = iOptionQuestionRepository.findByQuestionIdAndIsDisable(id, false);
+			// first: delete all active option by questionId
+			List<OptionQuestion> optionQuestions = iOptionQuestionRepository.findByQuestionIdAndIsDisableFalse(id);
 			for (OptionQuestion optionQuestion : optionQuestions) {
 				iOptionsService.deleteOptionQuestion(optionQuestion.getId());
 			}
 
+			// last: delete question and return
 			question.setDisable(true);
 			iQuestionRepository.save(question);
 		}
@@ -249,117 +228,113 @@ public class QuestionServiceImpl implements IQuestionService {
 		return "DELETE SUCCESS !";
 	}
 
+	// done
 	@Override
 	@Transactional
 	public String createExerciseQuestion(MultipartFile imageFile, MultipartFile audioFile, String questionTitle,
 			String description, float score, String questionType, long unitId, List<String> optionTextList,
 			List<Boolean> isCorrectList) throws SizeLimitExceededException, IOException {
-
-		String error = validateQuestionInput(questionTitle, description, score);
-		if (imageFile != null) {
-			if (!imageFile.getContentType().contains("image")) {
-				error += "\nNot supported this file type for image!";
-			}
-		}
-		if (audioFile != null) {
-			if (!audioFile.getContentType().contains("audio")) {
-				error += "\nNot supported this file type for audio!";
-			}
-		}
+		// validate question data input
 		if (!questionType.equalsIgnoreCase(OPTION_TYPE_EXERCISE)) {
 			throw new ResourceNotFoundException();
 		}
+		Unit unit = iUnitRepository.findByIdAndIsDisableFalse(unitId);
+		if (unit == null) {
+			throw new ResourceNotFoundException();
+		}
+		String error = validateQuestionInput(questionTitle, description, score);
+		error += validateFile(imageFile, "image", "\nNot supported this file type for image!");
+		error += validateFile(audioFile, "audio", "\nNot supported this file type for audio!");
 
+		// validate option data input
 		String optionError = validateExerciseOptionInput(optionTextList);
 		error += optionError;
 		if (!error.isEmpty()) {
 			return error.trim();
 		}
 
+		// first: create question
 		int questionTypeId = 1;
-		Unit unit = iUnitRepository.findByIdAndIsDisableFalse(unitId);
-		if (unit == null) {
-			throw new ResourceNotFoundException();
-		}
-
 		long questionId = createQuestion(imageFile, audioFile, questionTitle, description, score, unitId,
 				questionTypeId);
 
+		// last: create list option and return
 		for (int i = 0; i < optionTextList.size(); i++) {
 			iOptionsService.createExerciseOptionQuestion(questionId, optionTextList.get(i), isCorrectList.get(i));
 		}
 
-		return "CREATE SUCCESS !";
+		return "CREATE SUCCESS!";
 	}
 
+	// done
 	@Override
 	@Transactional
 	public String createGameFillInBlankQuestion(MultipartFile imageFile, MultipartFile audioFile, String questionTitle,
 			String description, float score, String questionType, long unitId, List<String> optionTextList,
 			List<String> optionInputTypeList) throws SizeLimitExceededException, IOException {
-
-		String error = validateQuestionInput(questionTitle, description, score);
-		if (imageFile != null) {
-			if (!imageFile.getContentType().contains("image")) {
-				error += "\nNot supported this file type for image!";
-			}
-		}
-		if (audioFile != null) {
-			if (!audioFile.getContentType().contains("audio")) {
-				error += "\nNot supported this file type for audio!";
-			}
+		// validate question data input
+		Unit unit = iUnitRepository.findByIdAndIsDisableFalse(unitId);
+		if (unit == null) {
+			throw new ResourceNotFoundException();
 		}
 		if (!questionType.equalsIgnoreCase(OPTION_TYPE_FILL_IN_BLANK)) {
 			throw new ResourceNotFoundException();
 		}
+		String error = validateQuestionInput(questionTitle, description, score);
+		error += validateFile(imageFile, "image", "\nNot supported this file type for image!");
+		error += validateFile(audioFile, "audio", "\nNot supported this file type for audio!");
 
+		// validate option data input
 		String optionError = validateGameFillInBlankOptionInput(optionTextList, optionInputTypeList);
 		error += optionError;
 		if (!error.isEmpty()) {
 			return error.trim();
 		}
 
+		// first: create question
 		int questionTypeId = 2;
-		Unit unit = iUnitRepository.findByIdAndIsDisableFalse(unitId);
-		if (unit == null) {
-			throw new ResourceNotFoundException();
-		}
-
 		long questionId = createQuestion(imageFile, audioFile, questionTitle, description, score, unitId,
 				questionTypeId);
+
+		// last: create list option and return
 		for (int i = 0; i < optionTextList.size(); i++) {
 			iOptionsService.createGameFillInBlankOptionQuestion(questionId, optionTextList.get(i),
 					optionInputTypeList.get(i));
 		}
 
-		return "CREATE SUCCESS !";
+		return "CREATE SUCCESS!";
 	}
 
+	// done
 	@Override
 	@Transactional
 	public String createGameSwappingMatchingChoosingQuestion(String questionTitle, String description, float score,
 			String questionType, long unitId, List<MultipartFile> imageFileList, List<String> optionTextList)
 			throws SizeLimitExceededException, IOException {
-		String error = validateQuestionInput(questionTitle, description, score);
+		// validate question data input
+		Unit unit = iUnitRepository.findByIdAndIsDisableFalse(unitId);
+		if (unit == null) {
+			throw new ResourceNotFoundException();
+		}
 		List<String> questionTypeList = new ArrayList<>();
 		questionTypeList.addAll(Arrays.asList("MATCH", "SWAP", "CHOOSE"));
 		if (questionTypeList.contains(questionType) == false) {
 			throw new ResourceNotFoundException();
 		}
+		String error = validateQuestionInput(questionTitle, description, score);
 
+		// validate option data input
 		String optionError = validateSwappingMatchingChoosingOptionInput(imageFileList, optionTextList);
 		error += optionError;
 		if (!error.isEmpty()) {
 			return error.trim();
 		}
 
+		// first: create question
 		int questionTypeId = questionTypeList.indexOf(questionType) + 3;
-		Unit unit = iUnitRepository.findByIdAndIsDisableFalse(unitId);
-		if (unit == null) {
-			throw new ResourceNotFoundException();
-		}
-
 		long questionId = createQuestion(null, null, questionTitle, description, score, unitId, questionTypeId);
+
+		// last: create list option and return
 		for (int i = 0; i < optionTextList.size(); i++) {
 			iOptionsService.createGameSwappingMatchingChoosingOptionQuestion(questionId, optionTextList.get(i),
 					imageFileList.get(i));
@@ -368,68 +343,144 @@ public class QuestionServiceImpl implements IQuestionService {
 		return "CREATE SUCCESS !";
 	}
 
+	// done
 	@Override
-	public String updateQuestion(long id, String questionTitle, String description, MultipartFile multipartImage,
-			MultipartFile multipartAudio, float score, long unitId) throws SizeLimitExceededException, IOException {
-		String error = "";
-		Question question = iQuestionRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
-		if (questionTitle != null) {
-			if (questionTitle.length() > QUESTION_TITLE_LENGTH) {
-				error += "\n Question Title is invalid !";
-			}
+	@Transactional
+	public String updateExerciseQuestion(long id, MultipartFile imageFile, MultipartFile audioFile,
+			String questionTitle, String description, float score, List<Long> optionIdList, List<String> optionTextList,
+			List<Boolean> isCorrectList) throws SizeLimitExceededException, IOException {
+		// validate question data input
+		Question question = iQuestionRepository.findByIdAndIsDisableFalse(id);
+		if (question == null) {
+			throw new ResourceNotFoundException();
 		}
-		if (description != null) {
-			if (description.length() > DESCRIPTION_LENGTH) {
-				error += "\n Question Text is invalid !";
-			}
-		}
-		if (multipartImage != null) {
-			if (multipartImage.getContentType().contains("image")) {
-				error += "\n Not supported this file type for image!";
-			}
-		}
-		if (multipartAudio != null) {
-			if (multipartAudio.getContentType().contains("image")) {
-				error += "\n Not supported this file type for image!";
-			}
-		}
+		String error = validateQuestionInput(questionTitle, description, score);
+		error += validateFile(imageFile, "image", "\nNot supported this file type for image!");
+		error += validateFile(audioFile, "audio", "\nNot supported this file type for audio!");
 
+		// validate option data input
+		for (long optionId : optionIdList) {
+			OptionQuestion optionQuestion = iOptionQuestionRepository.findByIdAndIsDisableFalse(optionId);
+			if (optionQuestion == null) {
+				throw new ResourceNotFoundException();
+			}
+		}
+		String optionError = validateExerciseOptionInput(optionTextList);
+		error += optionError;
 		if (!error.isEmpty()) {
 			return error.trim();
 		}
-		if (questionTitle != null) {
-			question.setQuestionTitle(questionTitle);
+
+		// first: update question
+		updateQuestion(id, imageFile, audioFile, questionTitle, description, score);
+
+		// last: update list option and return
+		for (int i = 0; i < optionIdList.size(); i++) {
+			iOptionsService.updateExerciseOptionQuestion(optionIdList.get(i), optionTextList.get(i),
+					isCorrectList.get(i));
 		}
-		if (description != null) {
-			question.setDescription(description);
-		}
-		if (multipartImage != null) {
-			question.setQuestionImageUrl(firebaseService.saveFile(multipartImage));
-		}
-		if (multipartAudio != null) {
-			question.setQuestionAudioUrl(firebaseService.saveFile(multipartAudio));
-		}
-		question.setScore(score);
-		question.setUnitId(unitId);
-		iQuestionRepository.save(question);
-		return "UPDATE SUCCESS !";
+
+		return "UPDATE SUCCESS!";
 	}
 
+	// done
+	@Override
+	@Transactional
+	public String updateGameFillInBlankQuestion(long id, MultipartFile imageFile, MultipartFile audioFile,
+			String questionTitle, String description, float score, List<Long> optionIdList, List<String> optionTextList,
+			List<String> optionInputTypeList) throws SizeLimitExceededException, IOException {
+		// validate question data input
+		Question question = iQuestionRepository.findByIdAndIsDisableFalse(id);
+		if (question == null) {
+			throw new ResourceNotFoundException();
+		}
+		String error = validateQuestionInput(questionTitle, description, score);
+		error += validateFile(imageFile, "image", "\nNot supported this file type for image!");
+		error += validateFile(audioFile, "audio", "\nNot supported this file type for audio!");
+
+		// validate option data input
+		for (long optionId : optionIdList) {
+			OptionQuestion optionQuestion = iOptionQuestionRepository.findByIdAndIsDisableFalse(optionId);
+			if (optionQuestion == null) {
+				throw new ResourceNotFoundException();
+			}
+		}
+		String optionError = validateGameFillInBlankOptionInput(optionTextList, optionInputTypeList);
+		error += optionError;
+		if (!error.isEmpty()) {
+			return error.trim();
+		}
+
+		// first: update question
+		updateQuestion(id, imageFile, audioFile, questionTitle, description, score);
+
+		// last: update list option and return
+		for (int i = 0; i < optionIdList.size(); i++) {
+			iOptionsService.updateGameFillInBlankOptionQuestion(optionIdList.get(i), optionTextList.get(i),
+					optionInputTypeList.get(i));
+		}
+
+		return "UPDATE SUCCESS!";
+	}
+
+	// done
+	@Override
+	@Transactional
+	public String updateGameSwappingMatchingChoosingQuestion(long id, String questionTitle, String description,
+			float score, List<Long> optionIdList, List<MultipartFile> imageFileList, List<String> optionTextList)
+			throws SizeLimitExceededException, IOException {
+		// validate question data input
+		Question question = iQuestionRepository.findByIdAndIsDisableFalse(id);
+		if (question == null) {
+			throw new ResourceNotFoundException();
+		}
+		String error = validateQuestionInput(questionTitle, description, score);
+
+		// validate option data input		
+		for (long optionId : optionIdList) {
+			OptionQuestion optionQuestion = iOptionQuestionRepository.findByIdAndIsDisableFalse(optionId);
+			if (optionQuestion == null) {
+				throw new ResourceNotFoundException();
+			}
+		}
+		String optionError = validateSwappingMatchingChoosingOptionInput(imageFileList, optionTextList);
+		error += optionError;
+		if (!error.isEmpty()) {
+			return error.trim();
+		}
+
+		// first: update question
+		updateQuestion(id, null, null, questionTitle, description, score);
+
+		// last: update list option and return
+		for (int i = 0; i < optionIdList.size(); i++) {
+			iOptionsService.updateGameSwappingMatchingChoosingOptionQuestion(optionIdList.get(i), optionTextList.get(i),
+					imageFileList.get(i));
+		}
+
+		return "UPDATE SUCCESS!";
+	}
+
+	// done
 	@Override
 	public List<QuestionResponseDTO> findAllByUnitId(long unitId, boolean isExercise) {
+		// validate data input
 		Unit unit = iUnitRepository.findByIdAndIsDisableFalse(unitId);
 		if (unit == null) {
 			throw new ResourceNotFoundException();
 		}
 
+		// find all active question by unitId = ? and is exerciseQuestion or is
+		// gameQuestion
 		List<Question> questionList = null;
-		List<QuestionResponseDTO> questionDTOList = new ArrayList<>();
 		if (isExercise) {
 			questionList = iQuestionRepository.findByUnitIdAndQuestionTypeIdAndIsDisable(unitId, 1, false);
 		} else {
 			questionList = iQuestionRepository.findByUnitIdAndQuestionTypeIdNotAndIsDisable(unitId, 1, false);
 		}
 
+		// convert to DTO and return
+		List<QuestionResponseDTO> questionDTOList = new ArrayList<>();
 		for (Question question : questionList) {
 			QuestionResponseDTO questionResponseDTO = modelMapper.map(question, QuestionResponseDTO.class);
 			questionResponseDTO.setQuestionType(question.getQuestionType().getDescription());
@@ -440,14 +491,8 @@ public class QuestionServiceImpl implements IQuestionService {
 	}
 
 	private String validateQuestionInput(String questionTitle, String description, float score) {
-		String error = "";
-
-		error += checkNullAndLength(questionTitle, QUESTION_TITLE_LENGTH, "\nQuestion Title is invalid!");
-		if (!description.isEmpty()) {
-			if (description.length() > DESCRIPTION_LENGTH) {
-				error += "\nDescription is invalid!";
-			}
-		}
+		String error = validateRequiredString(questionTitle, QUESTION_TITLE_LENGTH, "\nQuestion Title is invalid!");
+		error += validateString(description, DESCRIPTION_LENGTH, "\nDescription is invalid!");
 
 		if (score <= 0) {
 			error += "\nScore is invalid!";
@@ -459,7 +504,7 @@ public class QuestionServiceImpl implements IQuestionService {
 	private String validateExerciseOptionInput(List<String> optionTextList) {
 		String optionError = "";
 		for (String optionText : optionTextList) {
-			optionError += checkNullAndLength(optionText, OPTION_TEXT_LENGTH, "\nOptionText is invalid!");
+			optionError = validateRequiredString(optionText, OPTION_TEXT_LENGTH, "\nOptionText is invalid!");
 			if (!optionError.isEmpty()) {
 				break;
 			}
@@ -471,8 +516,8 @@ public class QuestionServiceImpl implements IQuestionService {
 	private String validateGameFillInBlankOptionInput(List<String> optionTextList, List<String> optionInputTypeList) {
 		String optionError = "";
 		for (int i = 0; i < optionTextList.size(); i++) {
-			optionError += checkNullAndLength(optionTextList.get(i), OPTION_TEXT_LENGTH, "\nOptionText is invalid!");
-			optionError += checkNullAndLength(optionInputTypeList.get(i), OPTION_INPUT_TYPE_LENGTH,
+			optionError = validateRequiredString(optionTextList.get(i), OPTION_TEXT_LENGTH, "\nOptionText is invalid!");
+			optionError += validateRequiredString(optionInputTypeList.get(i), OPTION_INPUT_TYPE_LENGTH,
 					"\nOptionInputType is invalid!");
 			if (!optionError.isEmpty()) {
 				break;
@@ -486,14 +531,9 @@ public class QuestionServiceImpl implements IQuestionService {
 			List<String> optionTextList) {
 		String optionError = "";
 		for (int i = 0; i < optionTextList.size(); i++) {
-			optionError += checkNullAndLength(optionTextList.get(i), OPTION_TEXT_LENGTH, "\nOptionText is invalid!");
-			if (imageFileList.get(i) == null) {
-				optionError += "\nImageFile is invalid!";
-			} else {
-				if (!imageFileList.get(i).getContentType().contains("image")) {
-					optionError += "\nNot supported this file type for image!";
-				}
-			}
+			optionError = validateRequiredString(optionTextList.get(i), OPTION_TEXT_LENGTH, "\nOptionText is invalid!");
+			optionError += validateRequiredFile(imageFileList.get(i), "image", "\nImageFile is invalid!",
+					"\nNot supported this file type for image!");
 			if (!optionError.isEmpty()) {
 				break;
 			}
@@ -505,7 +545,8 @@ public class QuestionServiceImpl implements IQuestionService {
 	private long createQuestion(MultipartFile imageFile, MultipartFile audioFile, String questionTitle,
 			String description, float score, long unitId, int questionTypeId)
 			throws SizeLimitExceededException, IOException {
-
+		QuestionType questionType = iQuestionTypeRepository.findById(questionTypeId)
+				.orElseThrow(() -> new ResourceNotFoundException());
 		Question question = new Question(questionTitle, description, score, unitId, false);
 		if (imageFile != null) {
 			question.setQuestionImageUrl(firebaseService.saveFile(imageFile));
@@ -513,25 +554,75 @@ public class QuestionServiceImpl implements IQuestionService {
 		if (audioFile != null) {
 			question.setQuestionAudioUrl(firebaseService.saveFile(audioFile));
 		}
-		QuestionType questionType = iQuestionTypeRepository.findById(questionTypeId)
-				.orElseThrow(() -> new ResourceNotFoundException());
 		question.setQuestionType(questionType);
 		iQuestionRepository.save(question);
 
 		return question.getId();
 	}
 
-	private String checkNullAndLength(String property, int length, String errorMessage) {
+	private void updateQuestion(long id, MultipartFile imageFile, MultipartFile audioFile, String questionTitle,
+			String description, float score) throws SizeLimitExceededException, IOException {
+		Question question = iQuestionRepository.findByIdAndIsDisableFalse(id);
+		question.setQuestionTitle(questionTitle);
+		question.setDescription(description);
+		question.setScore(score);
+		if (imageFile != null) {
+			question.setQuestionImageUrl(firebaseService.saveFile(imageFile));
+		}
+		if (audioFile != null) {
+			question.setQuestionAudioUrl(firebaseService.saveFile(audioFile));
+		}
+		iQuestionRepository.save(question);
+	}
+
+	private String validateString(String property, int length, String errorMessage) {
 		String error = "";
-		if (property == null) {
-			error += "\nOptionText is invalid!";
-		} else {
-			if (property.length() > OPTION_TEXT_LENGTH) {
-				error += "\nOptionText is invalid!";
+		if (property != null) {
+			if (property.length() > length) {
+				error = errorMessage;
 			}
 		}
 
 		return error;
 	}
 
+	private String validateRequiredString(String property, int length, String errorMessage) {
+		String error = "";
+		if (property == null) {
+			error = errorMessage;
+		} else {
+			if (property.isEmpty() || property.length() > length) {
+				error = errorMessage;
+			}
+		}
+
+		return error;
+	}
+
+	private String validateFile(MultipartFile file, String contentType, String errorMessage) {
+		String error = "";
+		if (file != null) {
+			if (!file.getContentType().contains(contentType)) {
+				error += errorMessage;
+			}
+		}
+
+		return error;
+	}
+
+	private String validateRequiredFile(MultipartFile file, String contentType, String errorMessage,
+			String errorMessage2) {
+		String error = "";
+		if (file == null) {
+			error = errorMessage;
+		} else {
+			if (file.isEmpty()) {
+				error = errorMessage;
+			} else if (!file.getContentType().contains(contentType)) {
+				error += errorMessage2;
+			}
+		}
+
+		return error;
+	}
 }

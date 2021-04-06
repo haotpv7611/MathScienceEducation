@@ -36,14 +36,14 @@ public class OptionQuestionExerciseDTO {
 	/**
 	 * @return the isCorrect
 	 */
-	public boolean getIsCorrect() {
+	public boolean isCorrect() {
 		return isCorrect;
 	}
 
 	/**
 	 * @param isCorrect the isCorrect to set
 	 */
-	public void setIsCorrect(boolean isCorrect) {
+	public void setCorrect(boolean isCorrect) {
 		this.isCorrect = isCorrect;
 	}
 

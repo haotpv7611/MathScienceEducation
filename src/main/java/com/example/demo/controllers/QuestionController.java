@@ -83,18 +83,52 @@ public class QuestionController {
 	}
 
 	@PutMapping("/question/{id}/exercise")
-	public ResponseEntity<String> updateQuestion(@PathVariable long id,
-			@RequestParam(required = false) String questionTitle, @RequestParam(required = false) String description,
-			@RequestParam(required = false) MultipartFile multipartImage,
-			@RequestParam(required = false) MultipartFile multipartAudio, @RequestParam(required = false) float score,
-			@RequestParam(required = false) long unitId) throws SizeLimitExceededException, IOException {
+	public ResponseEntity<String> updateExerciseQuestion(@PathVariable long id,
+			@RequestParam(required = false) MultipartFile imageFile,
+			@RequestParam(required = false) MultipartFile audioFile, @RequestParam String questionTitle,
+			@RequestParam(required = false) String description, @RequestParam float score,
+			@RequestParam List<Long> optionIdList, @RequestParam List<String> optionTextList,
+			@RequestParam List<Boolean> isCorrectList) throws SizeLimitExceededException, IOException {
 
-		String response = iQuestionService.updateQuestion(id, questionTitle, description, multipartImage,
-				multipartAudio, score, unitId);
+		String response = iQuestionService.updateExerciseQuestion(id, imageFile, audioFile, questionTitle, description,
+				score, optionIdList, optionTextList, isCorrectList);
 		if (!response.contains("SUCCESS")) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 		}
-		return ResponseEntity.status(HttpStatus.OK).body(response);
+		
+		return ResponseEntity.ok(response);
+	}
+
+	@PutMapping("/question/{id}/game/fillInBlank")
+	public ResponseEntity<String> updateGameFillInBlankQuestion(@PathVariable long id,
+			@RequestParam(required = false) MultipartFile imageFile,
+			@RequestParam(required = false) MultipartFile audioFile, @RequestParam String questionTitle,
+			@RequestParam(required = false) String description, @RequestParam float score,
+			@RequestParam List<Long> optionIdList, @RequestParam List<String> optionTextList,
+			@RequestParam List<String> optionInputTypeList) throws SizeLimitExceededException, IOException {
+
+		String response = iQuestionService.updateGameFillInBlankQuestion(id, imageFile, audioFile, questionTitle,
+				description, score, optionIdList, optionTextList, optionInputTypeList);
+		if (!response.contains("SUCCESS")) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+		}
+		
+		return ResponseEntity.ok(response);
+	}
+	
+	@PutMapping("/question/{id}/game/others")
+	public ResponseEntity<String> updateGameSwappingMatchingChoosingQuestion(@PathVariable long id,
+			@RequestParam String questionTitle,
+			@RequestParam(required = false) String description, @RequestParam float score,
+			@RequestParam List<Long> optionIdList, @RequestParam List<String> optionTextList,
+			@RequestParam List<MultipartFile> imageFileList) throws SizeLimitExceededException, IOException {
+
+		String response = iQuestionService.updateGameSwappingMatchingChoosingQuestion(id, questionTitle, description, score, optionIdList, imageFileList, optionTextList);
+		if (!response.contains("SUCCESS")) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+		}
+		
+		return ResponseEntity.ok(response);
 	}
 
 	@PutMapping("/question/delete")
