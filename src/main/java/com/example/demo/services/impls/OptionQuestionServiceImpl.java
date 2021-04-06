@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.dtos.OptionQuestionDTO;
+import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.OptionQuestion;
 import com.example.demo.repositories.IOptionQuestionRepository;
 import com.example.demo.services.IOptionQuestionService;
@@ -72,5 +73,14 @@ public class OptionQuestionServiceImpl implements IOptionQuestionService {
 
 		iOptionsRepository.save(optionQuestion);
 
+	}
+	@Override
+	public void deleteOptionQuestion(long id) {
+		OptionQuestion optionQuestion = iOptionsRepository.findByIdAndIsDisableFalse(id);
+		if (optionQuestion == null) {
+			throw new ResourceNotFoundException();
+		}
+		optionQuestion.setDisable(true);		
+		iOptionsRepository.save(optionQuestion);
 	}
 }

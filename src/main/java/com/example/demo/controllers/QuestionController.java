@@ -82,7 +82,7 @@ public class QuestionController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(respone);
 	}
 
-	@PutMapping("/question/{id}")
+	@PutMapping("/question/{id}/exercise")
 	public ResponseEntity<String> updateQuestion(@PathVariable long id,
 			@RequestParam(required = false) String questionTitle, @RequestParam(required = false) String description,
 			@RequestParam(required = false) MultipartFile multipartImage,
@@ -97,19 +97,26 @@ public class QuestionController {
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 
-	@PutMapping("/question/delete/{id}")
-	public ResponseEntity<String> deleteQuestion(@PathVariable long id) {
-		String response = iQuestionService.deleteQuestion(id);
-//		if (!response.contains("SUCCESS")) {
-//			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-//		}
+	@PutMapping("/question/delete")
+	public ResponseEntity<String> deleteQuestion(@RequestParam List<Long> ids) {
+		String response = iQuestionService.deleteQuestion(ids);
+
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 
-	@GetMapping("/question/{unitId}/questions")
-	public ResponseEntity<List<QuestionResponseDTO>> findAllByUnitId(@PathVariable long unitId, @RequestParam boolean isExercise) {
+	@GetMapping("/unit/{unitId}/questions")
+	public ResponseEntity<List<QuestionResponseDTO>> findAllByUnitId(@PathVariable long unitId,
+			@RequestParam boolean isExercise) {
 		List<QuestionResponseDTO> response = iQuestionService.findAllByUnitId(unitId, isExercise);
 
 		return ResponseEntity.ok(response);
+	}
+
+	@GetMapping("/question/{id}")
+	public ResponseEntity<?> findQuestionById(@PathVariable long id, @RequestParam String questionType) {
+		Object response = iQuestionService.findQuestionById(id, questionType);
+
+		return ResponseEntity.ok(response);
+
 	}
 }

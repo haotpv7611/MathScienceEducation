@@ -17,4 +17,6 @@ public interface IOptionQuestionService {
 
 	void createGameSwappingMatchingChoosingOptionQuestion(long questionId, String optionText, MultipartFile imageFile)
 			throws SizeLimitExceededException, IOException;
+	
+	void deleteOptionQuestion(long id);
 }

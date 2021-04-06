@@ -1,6 +1,7 @@
 package com.example.demo.models;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 import javax.persistence.Entity;
@@ -11,6 +12,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -23,13 +26,7 @@ public class Classes {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
 	private String className;
-	@CreatedDate
-	private LocalDateTime createdDate;
-//	@CreatedBy
-	private String createdBy;
-	@LastModifiedDate
-	private LocalDateTime modifiedDate;
-	private String modifiedBy;
+
 	private String status;
 
 	@ManyToOne
@@ -39,7 +36,23 @@ public class Classes {
 	@OneToMany(mappedBy = "classes")
 	private List<StudentProfile> studentProfileList;
 
-	public Classes() {
+	@CreatedDate
+	private LocalDateTime createdDate;
+//	@CreatedBy
+	private String createdBy;
+	@LastModifiedDate
+	private LocalDateTime modifiedDate;
+	private String modifiedBy;
+
+	@PrePersist
+	public void onCreate() {
+		this.createdDate = LocalDateTime.now(ZoneId.of("UTC+7"));
+		this.modifiedDate = LocalDateTime.now(ZoneId.of("UTC+7"));
+	}
+
+	@PreUpdate
+	public void onUpdate() {
+		this.modifiedDate = LocalDateTime.now(ZoneId.of("UTC+7"));
 	}
 
 	/**

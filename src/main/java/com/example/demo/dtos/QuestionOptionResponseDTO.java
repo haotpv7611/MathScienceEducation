@@ -1,41 +1,25 @@
 package com.example.demo.dtos;
 
 import java.time.LocalDateTime;
-
-import javax.validation.constraints.NotNull;
-
-import org.hibernate.validator.constraints.Length;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
-public class QuestionResponseDTO {
-
+public class QuestionOptionResponseDTO {
 	private long id;
-	@NotNull(message = "Question Title must be not null !")
-	@Length(max = 50, message = "Question Title length must be less than 50 !")
 	private String questionTitle;
-	@Length(max = 50, message = "Description length must be less than 50 !")
 	private String description;
 	private String questionImageUrl;
 	private String questionAudioUrl;
-	@NotNull(message = "Score must be not null !")
 	private float score;
 	private long unitId;
-	private String questionType;
 	@JsonFormat(pattern = "dd-MM-yyyy HH:mm")
 	private LocalDateTime createdDate;
 	private String createdBy;
 	@JsonFormat(pattern = "dd-MM-yyyy HH:mm")
 	private LocalDateTime modifiedDate;
 	private String modifiedBy;
-
-	public String getQuestionTitle() {
-		return questionTitle;
-	}
-
-	public void setQuestionTitle(String questionTitle) {
-		this.questionTitle = questionTitle;
-	}
+	private List<Object> optionQuestionDTOList;
 
 	/**
 	 * @return the id
@@ -52,22 +36,38 @@ public class QuestionResponseDTO {
 	}
 
 	/**
-	 * @return the questionText
+	 * @return the questionTitle
 	 */
+	public String getQuestionTitle() {
+		return questionTitle;
+	}
+
+	/**
+	 * @param questionTitle the questionTitle to set
+	 */
+	public void setQuestionTitle(String questionTitle) {
+		this.questionTitle = questionTitle;
+	}
+
+	/**
+	 * @return the description
+	 */
+	public String getDescription() {
+		return description;
+	}
+
+	/**
+	 * @param description the description to set
+	 */
+	public void setDescription(String description) {
+		this.description = description;
+	}
 
 	/**
 	 * @return the questionImageUrl
 	 */
 	public String getQuestionImageUrl() {
 		return questionImageUrl;
-	}
-
-	public String getDescription() {
-		return description;
-	}
-
-	public void setDescription(String description) {
-		this.description = description;
 	}
 
 	/**
@@ -117,20 +117,6 @@ public class QuestionResponseDTO {
 	 */
 	public void setUnitId(long unitId) {
 		this.unitId = unitId;
-	}
-
-	/**
-	 * @return the questionTypeId
-	 */
-	public String getQuestionType() {
-		return questionType;
-	}
-
-	/**
-	 * @param questionTypeId the questionTypeId to set
-	 */
-	public void setQuestionType(String questionType) {
-		this.questionType = questionType;
 	}
 
 	/**
@@ -187,6 +173,20 @@ public class QuestionResponseDTO {
 	 */
 	public void setModifiedBy(String modifiedBy) {
 		this.modifiedBy = modifiedBy;
+	}
+
+	/**
+	 * @return the optionQuestionExerciseDTOList
+	 */
+	public List<Object> getOptionQuestionDTOList() {
+		return optionQuestionDTOList;
+	}
+
+	/**
+	 * @param optionQuestionExerciseDTOList the optionQuestionExerciseDTOList to set
+	 */
+	public void setOptionQuestionDTOList(List<Object> optionQuestionDTOList) {
+		this.optionQuestionDTOList = optionQuestionDTOList;
 	}
 
 }

@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.dtos.GameRequestDTO;
 import com.example.demo.dtos.GameResponseDTO;
@@ -51,7 +52,7 @@ public class GameServiceImpl implements IGameService {
 	}
 
 	@Override
-	public GameResponseDTO findOneById(long id) {
+	public GameResponseDTO findGameById(long id) {
 
 //		try {
 		Game game = iGameRepository.findByIdAndIsDisable(id, false);
@@ -120,6 +121,19 @@ public class GameServiceImpl implements IGameService {
 		iGameRepository.save(game);
 
 		return "CREATE SUCCESS!";
+	}
+
+	@Override
+	@Transactional
+	public String deleteGame(long id) {
+		Game game = iGameRepository.findByIdAndIsDisable(id, false);
+		if (game == null) {
+			throw new ResourceNotFoundException();
+		}
+		
+		//thieu xoa cau hoi bang giua
+		game.setDisable(true);
+		return null;
 	}
 
 }

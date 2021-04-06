@@ -13,12 +13,18 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.dtos.OptionQuestionDTO;
+import com.example.demo.dtos.OptionQuestionExerciseDTO;
+import com.example.demo.dtos.OptionQuestionFillDTO;
+import com.example.demo.dtos.OptionQuestionGameDTO;
+import com.example.demo.dtos.QuestionOptionResponseDTO;
 import com.example.demo.dtos.QuestionResponseDTO;
 import com.example.demo.dtos.QuestionViewDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
+import com.example.demo.models.OptionQuestion;
 import com.example.demo.models.Question;
 import com.example.demo.models.QuestionType;
 import com.example.demo.models.Unit;
+import com.example.demo.repositories.IOptionQuestionRepository;
 import com.example.demo.repositories.IQuestionRepository;
 import com.example.demo.repositories.IQuestionTypeRepository;
 import com.example.demo.repositories.IUnitRepository;
@@ -53,14 +59,103 @@ public class QuestionServiceImpl implements IQuestionService {
 
 	@Autowired
 	private IUnitRepository iUnitRepository;
-	
+
 	@Autowired
 	private IQuestionTypeRepository iQuestionTypeRepository;
 
-//	@Override
-//	public Question findOneById(Long id) {
+	@Autowired
+	private IOptionQuestionRepository iOptionQuestionRepository;
+
+	@Override
+	public Object findQuestionById(long id, String questionType) {
+		Question question = iQuestionRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
+
+		List<OptionQuestion> optionQuestionList = iOptionQuestionRepository.findByQuestionIdAndIsDisable(id, false);
+		Object object = null;
+		
+		if (!questionType.equalsIgnoreCase(question.getQuestionType().getDescription())) {
+			throw new ResourceNotFoundException();
+		}
+		if (questionType.equals("EXERCISE")) {
+			List<Object> optionQuestionExerciseDTOList = new ArrayList<>();
+			if (!optionQuestionList.isEmpty()) {
+				for (OptionQuestion optionQuestion : optionQuestionList) {
+					OptionQuestionExerciseDTO optionQuestionExerciseDTO = modelMapper.map(optionQuestion,
+							OptionQuestionExerciseDTO.class);
+					optionQuestionExerciseDTOList.add(optionQuestionExerciseDTO);
+				}
+			}
+			QuestionOptionResponseDTO questionOptionResponseDTO = modelMapper.map(question,
+					QuestionOptionResponseDTO.class);
+			questionOptionResponseDTO.setOptionQuestionDTOList(optionQuestionExerciseDTOList);
+			object = questionOptionResponseDTO;
+		}
+		
+		if (questionType.equals("FILL")) {
+			List<Object> optionQuestionFillDTOList = new ArrayList<>();
+			if (!optionQuestionList.isEmpty()) {
+				for (OptionQuestion optionQuestion : optionQuestionList) {
+					OptionQuestionFillDTO optionQuestionFillDTO = modelMapper.map(optionQuestion,
+							OptionQuestionFillDTO.class);
+					optionQuestionFillDTOList.add(optionQuestionFillDTO);
+				}
+			}
+			QuestionOptionResponseDTO questionExerciseResponseDTO = modelMapper.map(question,
+					QuestionOptionResponseDTO.class);
+			questionExerciseResponseDTO.setOptionQuestionDTOList(optionQuestionFillDTOList);
+			object = questionExerciseResponseDTO;
+		}
+		
+		if (questionType.equals("FILL")) {
+			List<Object> optionQuestionFillDTOList = new ArrayList<>();
+			if (!optionQuestionList.isEmpty()) {
+				for (OptionQuestion optionQuestion : optionQuestionList) {
+					OptionQuestionFillDTO optionQuestionFillDTO = modelMapper.map(optionQuestion,
+							OptionQuestionFillDTO.class);
+					optionQuestionFillDTOList.add(optionQuestionFillDTO);
+				}
+			}
+			QuestionOptionResponseDTO questionExerciseResponseDTO = modelMapper.map(question,
+					QuestionOptionResponseDTO.class);
+			questionExerciseResponseDTO.setOptionQuestionDTOList(optionQuestionFillDTOList);
+			object = questionExerciseResponseDTO;
+		}
+		
+		if (questionType.equals("MATCH") || questionType.equals("CHOOSE") || questionType.equals("SWAP")) {
+			List<Object> optionQuestionGameDTOList = new ArrayList<>();
+			if (!optionQuestionList.isEmpty()) {
+				for (OptionQuestion optionQuestion : optionQuestionList) {
+					OptionQuestionGameDTO optionQuestionGameDTO = modelMapper.map(optionQuestion,
+							OptionQuestionGameDTO.class);
+					optionQuestionGameDTOList.add(optionQuestionGameDTO);
+				}
+			}
+			QuestionOptionResponseDTO questionExerciseResponseDTO = modelMapper.map(question,
+					QuestionOptionResponseDTO.class);
+			questionExerciseResponseDTO.setOptionQuestionDTOList(optionQuestionGameDTOList);
+			object = questionExerciseResponseDTO;
+		}
+
+		return object;
+	}
+
+//	public QuestionExerciseResponseDTO findFillInBlankQuestionById(long id) {
+//		Question question = iQuestionRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
 //
-//		return iQuestionRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
+//		List<OptionQuestion> optionQuestionList = iOptionQuestionRepository.findByQuestionIdAndIsDisable(id, false);
+//		List<OptionQuestionExerciseDTO> optionQuestionExerciseDTOList = new ArrayList<>();
+//		if (!optionQuestionList.isEmpty()) {
+//			for (OptionQuestion optionQuestion : optionQuestionList) {
+//				OptionQuestionExerciseDTO optionQuestionExerciseDTO = modelMapper.map(optionQuestion,
+//						OptionQuestionExerciseDTO.class);
+//				optionQuestionExerciseDTOList.add(optionQuestionExerciseDTO);
+//			}
+//		}
+//		QuestionExerciseResponseDTO questionExerciseResponseDTO = modelMapper.map(question,
+//				QuestionExerciseResponseDTO.class);
+//		questionExerciseResponseDTO.setOptionQuestionExerciseDTOList(optionQuestionExerciseDTOList);
+//
+//		return questionExerciseResponseDTO;
 //	}
 
 //	@Override
@@ -80,8 +175,6 @@ public class QuestionServiceImpl implements IQuestionService {
 //
 //		return listQuestions;
 //	}
-
-
 
 	@Override
 	public List<QuestionViewDTO> showQuestionByExerciseId(long exerciseId) {
@@ -137,18 +230,27 @@ public class QuestionServiceImpl implements IQuestionService {
 
 	@Override
 	@Transactional
-	public String deleteQuestion(long id) {
-		Question question = iQuestionRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
-		// thiếu delete option
+	public String deleteQuestion(List<Long> ids) {
+		for (long id : ids) {
+			Question question = iQuestionRepository.findByIdAndIsDisable(id, false);
+			if (question == null) {
+				throw new ResourceNotFoundException();
+			}
 
-		question.setDisable(true);
-		iQuestionRepository.save(question);
+			List<OptionQuestion> optionQuestions = iOptionQuestionRepository.findByQuestionIdAndIsDisable(id, false);
+			for (OptionQuestion optionQuestion : optionQuestions) {
+				iOptionsService.deleteOptionQuestion(optionQuestion.getId());
+			}
+
+			question.setDisable(true);
+			iQuestionRepository.save(question);
+		}
+
 		return "DELETE SUCCESS !";
 	}
 
 	@Override
 	@Transactional
-
 	public String createExerciseQuestion(MultipartFile imageFile, MultipartFile audioFile, String questionTitle,
 			String description, float score, String questionType, long unitId, List<String> optionTextList,
 			List<Boolean> isCorrectList) throws SizeLimitExceededException, IOException {
@@ -411,7 +513,8 @@ public class QuestionServiceImpl implements IQuestionService {
 		if (audioFile != null) {
 			question.setQuestionAudioUrl(firebaseService.saveFile(audioFile));
 		}
-		QuestionType questionType = iQuestionTypeRepository.findById(questionTypeId).orElseThrow(() -> new ResourceNotFoundException());
+		QuestionType questionType = iQuestionTypeRepository.findById(questionTypeId)
+				.orElseThrow(() -> new ResourceNotFoundException());
 		question.setQuestionType(questionType);
 		iQuestionRepository.save(question);
 

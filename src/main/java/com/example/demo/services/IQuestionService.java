@@ -6,6 +6,7 @@ import java.util.List;
 import org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.demo.dtos.QuestionOptionResponseDTO;
 import com.example.demo.dtos.QuestionResponseDTO;
 import com.example.demo.dtos.QuestionViewDTO;;
 
@@ -30,8 +31,10 @@ public interface IQuestionService {
 	String updateQuestion(long id, String questionTitle, String questionText, MultipartFile multipartImage,
 			MultipartFile multipartAudio, float score, long unitId) throws SizeLimitExceededException, IOException;
 
-	String deleteQuestion(long id);
+	String deleteQuestion(List<Long> ids);
 
 	List<QuestionResponseDTO> findAllByUnitId(long unitId, boolean isExercise);
+
+	Object findQuestionById(long id, String questionType);
 
 }

@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dtos.GameRequestDTO;
@@ -36,7 +37,7 @@ public class GameController {
 	@GetMapping("/game/{id}")
 	public ResponseEntity<GameResponseDTO> findOneById(@PathVariable long id) {
 
-		return ResponseEntity.ok(iGameService.findOneById(id));
+		return ResponseEntity.ok(iGameService.findGameById(id));
 	}
 
 	@PutMapping("/game/{id}")
@@ -71,5 +72,14 @@ public class GameController {
 		String response = iGameService.createGame(gameRequestDTO);
 
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
+	}
+	
+
+	@PutMapping("/game")
+	public ResponseEntity<String> deleteGame(@RequestParam long id) {		
+		
+		String response = iGameService.deleteGame(id);
+
+		return ResponseEntity.ok(response);
 	}
 }

@@ -8,8 +8,11 @@ import com.example.demo.dtos.GameResponseDTO;
 public interface IGameService {
 	List<GameResponseDTO> findAllByLessonId(long lessonId);
 
-	GameResponseDTO findOneById(long id);
+	GameResponseDTO findGameById(long id);
 
 	String updateGame(long id, GameRequestDTO gameRequestDTO);
+
 	String createGame(GameRequestDTO gameRequestDTO);
+	
+	String deleteGame(long id);
 }

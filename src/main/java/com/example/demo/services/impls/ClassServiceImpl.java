@@ -89,7 +89,7 @@ public class ClassServiceImpl implements IClassService{
 		// 1. connect database through repository
 		// 2. find entity by id
 		// 3. if not existed throw exception
-		for (Long id : ids) {
+		for (long id : ids) {
 			Classes classes = iClassRepository.findByIdAndStatusNot(id, "DELETED");
 			if (classes == null) {
 				throw new ResourceNotFoundException();

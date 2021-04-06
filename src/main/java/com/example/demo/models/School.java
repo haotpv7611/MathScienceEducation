@@ -26,19 +26,11 @@ public class School {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
-
 	private String schoolName;
 	private String schoolStreet;
 	private String schoolDistrict;
 	private String schoolCode;
 	private int schoolCount;
-	@CreatedDate
-	private LocalDateTime createdDate;
-//	@CreatedBy
-	private String createdBy;
-	@LastModifiedDate
-	private LocalDateTime modifiedDate;
-	private String modifiedBy;
 	private String status;
 
 	@OneToMany(mappedBy = "school")
@@ -47,16 +39,24 @@ public class School {
 	@ManyToOne
 	@JoinColumn(name = "schoolLevelId")
 	private SchoolLevel schoolLevel;
-	
+
+	@CreatedDate
+	private LocalDateTime createdDate;
+//	@CreatedBy
+	private String createdBy;
+	@LastModifiedDate
+	private LocalDateTime modifiedDate;
+	private String modifiedBy;
+
 	@PrePersist
 	public void onCreate() {
-	    this.createdDate = LocalDateTime.now(ZoneId.of("UTC+7"));
-	    this.modifiedDate = LocalDateTime.now(ZoneId.of("UTC+7"));
+		this.createdDate = LocalDateTime.now(ZoneId.of("UTC+7"));
+		this.modifiedDate = LocalDateTime.now(ZoneId.of("UTC+7"));
 	}
 
 	@PreUpdate
 	public void onUpdate() {
-	    this.modifiedDate = LocalDateTime.now(ZoneId.of("UTC+7"));
+		this.modifiedDate = LocalDateTime.now(ZoneId.of("UTC+7"));
 	}
 
 	/**
