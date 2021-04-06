@@ -28,6 +28,7 @@ public class SchoolServiceImpl implements ISchoolService {
 	@Autowired
 	private ModelMapper modelMapper;
 
+	// done
 	@Override
 	public SchoolResponseDTO findSchoolById(long id) {
 		School school = iSchoolRepository.findByIdAndStatusNot(id, "DELETED");
@@ -44,6 +45,7 @@ public class SchoolServiceImpl implements ISchoolService {
 		return schoolResponseDTO;
 	}
 
+	// done
 	@Override
 	public String checkSchoolExisted(SchoolRequestDTO schoolRequestDTO) {
 		String schoolLevel = schoolRequestDTO.getSchoolLevel();
@@ -61,9 +63,9 @@ public class SchoolServiceImpl implements ISchoolService {
 		return "OK";
 	}
 
+	// done
 	@Override
 	public String createSchool(SchoolRequestDTO schoolRequestDTO) {
-
 		String schoolCode = generateSchoolCode(schoolRequestDTO.getSchoolName());
 		int schoolCount = generateSchoolCount(schoolCode);
 		String schoolLevel = schoolRequestDTO.getSchoolLevel();
@@ -77,6 +79,7 @@ public class SchoolServiceImpl implements ISchoolService {
 		return "CREATE SUCCESS!";
 	}
 
+	// done
 	@Override
 	public String updateSchool(long id, SchoolRequestDTO schoolRequestDTO) {
 		School school = iSchoolRepository.findByIdAndStatusNot(id, "DELETED");
@@ -94,8 +97,6 @@ public class SchoolServiceImpl implements ISchoolService {
 
 	@Override
 	public String changeStatusSchool(IdAndStatusDTO idAndStatusDTO) {
-		// validate data
-
 		School school = iSchoolRepository.findByIdAndStatusNot(idAndStatusDTO.getId(), "DELETED");
 		if (school == null) {
 			throw new ResourceNotFoundException();
@@ -103,9 +104,12 @@ public class SchoolServiceImpl implements ISchoolService {
 		school.setStatus(idAndStatusDTO.getStatus());
 		iSchoolRepository.save(school);
 
+		// thiếu change status liên kết
+
 		return "CHANGE SUCCESS!";
 	}
 
+	//done
 	@Override
 	public List<SchoolResponseDTO> findAllSchool() {
 
@@ -116,7 +120,7 @@ public class SchoolServiceImpl implements ISchoolService {
 
 		if (schoolList != null) {
 			for (School school : schoolList) {
-				SchoolResponseDTO schoolResponseDTO = modelMapper.map(school, SchoolResponseDTO.class);				
+				SchoolResponseDTO schoolResponseDTO = modelMapper.map(school, SchoolResponseDTO.class);
 				String schoolCount = String.valueOf(school.getSchoolCount());
 				if (school.getSchoolCount() == 1) {
 					schoolCount = "";

@@ -102,8 +102,14 @@ public class QuestionServiceImpl implements IQuestionService {
 			List<Object> optionQuestionFillDTOList = new ArrayList<>();
 			if (!optionQuestionList.isEmpty()) {
 				for (OptionQuestion optionQuestion : optionQuestionList) {
-					OptionQuestionFillDTO optionQuestionFillDTO = modelMapper.map(optionQuestion,
-							OptionQuestionFillDTO.class);
+					OptionQuestionFillDTO optionQuestionFillDTO = new OptionQuestionFillDTO();
+					if (optionQuestion.getOptionInputType().equalsIgnoreCase("Text")) {
+						optionQuestionFillDTO.setText(optionQuestion.getOptionText());
+					}
+					if (optionQuestion.getOptionInputType().equalsIgnoreCase("Operator")) {
+						optionQuestionFillDTO.setOperator(optionQuestion.getOptionText());
+					}
+					optionQuestionFillDTO.setOptionInputType(optionQuestion.getOptionInputType());
 					optionQuestionFillDTOList.add(optionQuestionFillDTO);
 				}
 			}
@@ -436,7 +442,7 @@ public class QuestionServiceImpl implements IQuestionService {
 		}
 		String error = validateQuestionInput(questionTitle, description, score);
 
-		// validate option data input		
+		// validate option data input
 		for (long optionId : optionIdList) {
 			OptionQuestion optionQuestion = iOptionQuestionRepository.findByIdAndIsDisableFalse(optionId);
 			if (optionQuestion == null) {

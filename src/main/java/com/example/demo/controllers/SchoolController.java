@@ -48,8 +48,9 @@ public class SchoolController {
 
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
 		}
+		String response = iSchoolService.checkSchoolExisted(schoolRequestDTO);
 
-		return ResponseEntity.ok(iSchoolService.checkSchoolExisted(schoolRequestDTO));
+		return ResponseEntity.ok(response);
 	}
 
 	@PostMapping
@@ -72,14 +73,17 @@ public class SchoolController {
 	@PutMapping("/{id}")
 	public ResponseEntity<String> updateSchool(@PathVariable long id,
 			@Valid @RequestBody SchoolRequestDTO schoolRequestDTO, BindingResult bindingResult) {
+		String response = iSchoolService.updateSchool(id, schoolRequestDTO);
 
-		return ResponseEntity.ok(iSchoolService.updateSchool(id, schoolRequestDTO));
+		return ResponseEntity.ok(response);
 	}
 
 	@GetMapping("/all")
-	public ResponseEntity<List<SchoolResponseDTO>> findAllSchool() {
+	public ResponseEntity<List<SchoolResponseDTO>> findAllSchools() {
+		List<SchoolResponseDTO> response = iSchoolService.findAllSchool();
 
-		return ResponseEntity.ok(iSchoolService.findAllSchool());
+		return ResponseEntity.ok(response);
+
 	}
 
 	@PutMapping("/changeStatus")
@@ -97,9 +101,10 @@ public class SchoolController {
 		if (!status.equals("ACTIVE") && !status.equals("INACTIVE") && !status.equals("DELETED")) {
 
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("STATUS INVALID!");
-		}
+		}		
+		String response = iSchoolService.changeStatusSchool(idAndStatusDTO);
 
-		return ResponseEntity.ok(iSchoolService.changeStatusSchool(idAndStatusDTO));
+		return ResponseEntity.ok(response);
 	}
 
 }

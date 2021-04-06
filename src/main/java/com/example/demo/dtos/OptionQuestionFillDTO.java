@@ -2,7 +2,8 @@ package com.example.demo.dtos;
 
 public class OptionQuestionFillDTO {
 	private long id;
-	private String optionText;
+	private String text;
+	private String operator;
 	private String optionInputType;
 
 	/**
@@ -20,17 +21,31 @@ public class OptionQuestionFillDTO {
 	}
 
 	/**
-	 * @return the optionText
+	 * @return the text
 	 */
-	public String getOptionText() {
-		return optionText;
+	public String getText() {
+		return text;
 	}
 
 	/**
-	 * @param optionText the optionText to set
+	 * @param text the text to set
 	 */
-	public void setOptionText(String optionText) {
-		this.optionText = optionText;
+	public void setText(String text) {
+		this.text = text;
+	}
+
+	/**
+	 * @return the operator
+	 */
+	public String getOperator() {
+		return operator;
+	}
+
+	/**
+	 * @param operator the operator to set
+	 */
+	public void setOperator(String operator) {
+		this.operator = operator;
 	}
 
 	/**
