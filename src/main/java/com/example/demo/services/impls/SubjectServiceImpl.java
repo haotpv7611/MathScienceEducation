@@ -123,7 +123,7 @@ public class SubjectServiceImpl implements ISubjectService {
 		iGradeRepository.findById(gradeId).orElseThrow(() -> new ResourceNotFoundException());
 
 		// find subjectName is existed in grade or not
-		if (iSubjectRepository.findByGradeIdAndSubjectNameAndIsDisableFalse(gradeId, subjectName) != null) {
+		if (iSubjectRepository.findByGradeIdAndSubjectNameIgnoreCaseAndIsDisableFalse(gradeId, subjectName) != null) {
 			return "EXISTED";
 		}
 
@@ -154,7 +154,7 @@ public class SubjectServiceImpl implements ISubjectService {
 
 		// find subjectName is existed in grade or not
 		if (!subject.getSubjectName().equals(subjectName)) {
-			if (iSubjectRepository.findByGradeIdAndSubjectNameAndIsDisableFalse(gradeId, subjectName) != null) {
+			if (iSubjectRepository.findByGradeIdAndSubjectNameIgnoreCaseAndIsDisableFalse(gradeId, subjectName) != null) {
 				return "EXISTED";
 			}
 		}

@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.demo.dtos.LessonDTO;
+import com.example.demo.dtos.LessonResponseDTO;
 import com.example.demo.dtos.LessonRequestDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.Exercise;
@@ -25,80 +25,99 @@ public class LessonServiceImpl implements ILessonService {
 
 	@Autowired
 	ILessonRepository iLessonRepository;
+
 	@Autowired
 	IUnitRepository iUnitRepository;
+
 	@Autowired
 	ModelMapper modelMapper;
+
 	@Autowired
 	IExerciseRepository iExerciseRepository;
+
 	@Autowired
 	IExerciseService iExerciseService;
 
+	// done
 	@Override
-	public List<LessonDTO> findByUnitIdOrderByLessonNameAsc(long unitId) {
-		List<Lesson> lessonList = iLessonRepository.findByUnitIdAndIsDisableOrderByLessonNameAsc(unitId, false);
-		List<LessonDTO> lessonDTOList = new ArrayList<>();
+	public List<LessonResponseDTO> findByUnitIdOrderByLessonNameAsc(long unitId) {
+		List<Lesson> lessonList = iLessonRepository.findByUnitIdAndIsDisableFalseOrderByLessonNameAsc(unitId);
+		List<LessonResponseDTO> lessonResponseDTOList = new ArrayList<>();
 		if (!lessonList.isEmpty()) {
 			for (Lesson lesson : lessonList) {
-				lessonDTOList.add(modelMapper.map(lesson, LessonDTO.class));
+				LessonResponseDTO lessonResponseDTO = modelMapper.map(lesson, LessonResponseDTO.class);
+				lessonResponseDTOList.add(lessonResponseDTO);
 			}
 		}
-		return lessonDTOList;
+
+		return lessonResponseDTOList;
 	}
 
+	// done
 	@Override
-	public LessonDTO findById(long id) {
-		Lesson lesson = iLessonRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
-		return modelMapper.map(lesson, LessonDTO.class);
+	public LessonResponseDTO findById(long id) {
+		Lesson lesson = iLessonRepository.findByIdAndIsDisableFalse(id);
+		if (lesson == null) {
+			throw new ResourceNotFoundException();
+		}
+		LessonResponseDTO lessonResponseDTO = modelMapper.map(lesson, LessonResponseDTO.class);
+
+		return lessonResponseDTO;
 	}
 
+	// done
 	@Override
 	public String createLesson(LessonRequestDTO lessonRequestDTO) {
 		Unit unit = iUnitRepository.findByIdAndIsDisableFalse(lessonRequestDTO.getUnitId());
 		if (unit == null) {
-			return "Unit is not existed !";
+			throw new ResourceNotFoundException();
 		}
-		List<Lesson> listLessons = iLessonRepository
-				.findByUnitIdAndIsDisableOrderByLessonNameAsc(lessonRequestDTO.getUnitId(), false);
-		for (Lesson lesson : listLessons) {
-			if (lessonRequestDTO.getLessonName().equalsIgnoreCase(lesson.getLessonName())) {
-				return "Lesson is existed !";
-			}
+
+		long unitId = lessonRequestDTO.getUnitId();
+		String lessonName = lessonRequestDTO.getLessonName();
+		if (iLessonRepository.findByUnitIdAndLessonNameIgnoreCaseAndIsDisableFalse(unitId, lessonName) != null) {
+			return "EXISTED";
 		}
+
 		Lesson lesson = modelMapper.map(lessonRequestDTO, Lesson.class);
 		lesson.setDisable(false);
 		iLessonRepository.save(lesson);
-		return "CREATE SUCCESS !";
+
+		return "CREATE SUCCESS!";
 	}
 
+	// done
 	@Override
 	public String updateLesson(long id, LessonRequestDTO lessonRequestDTO) {
-
-		Lesson lesson = iLessonRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
-		if (lesson.isDisable()) {
+		Lesson lesson = iLessonRepository.findByIdAndIsDisableFalse(id);
+		if (lesson == null) {
 			throw new ResourceNotFoundException();
 		}
-		if (!lesson.getLessonName().equalsIgnoreCase(lessonRequestDTO.getLessonName())) {
-			List<Lesson> listLessons = iLessonRepository
-					.findByUnitIdAndIsDisableOrderByLessonNameAsc(lessonRequestDTO.getUnitId(), false);
-			for (Lesson lesson1 : listLessons) {
-				if (lessonRequestDTO.getLessonName().equalsIgnoreCase(lesson1.getLessonName())) {
-					return "Lesson is existed !";
-				}
+		Unit unit = iUnitRepository.findByIdAndIsDisableFalse(lessonRequestDTO.getUnitId());
+		if (unit == null) {
+			throw new ResourceNotFoundException();
+		}
+
+		long unitId = lessonRequestDTO.getUnitId();
+		String lessonName = lessonRequestDTO.getLessonName();
+		if (!lesson.getLessonName().equalsIgnoreCase(lessonName)) {
+			if (iLessonRepository.findByUnitIdAndLessonNameIgnoreCaseAndIsDisableFalse(unitId, lessonName) != null) {
+				return "EXISTED";
 			}
 		}
 
 		lesson.setLessonName(lessonRequestDTO.getLessonName());
 		lesson.setLessonUrl(lessonRequestDTO.getLessonUrl());
 		iLessonRepository.save(lesson);
-		return "UPDATE SUCCESS !";
+
+		return "UPDATE SUCCESS!";
 
 	}
 
 	@Override
 	@Transactional
 	public String deleteLesson(long id) {
-		Lesson lesson = iLessonRepository.findByIdAndIsDisable(id, false);
+		Lesson lesson = iLessonRepository.findByIdAndIsDisableFalse(id);
 		if (lesson == null) {
 			throw new ResourceNotFoundException();
 		}

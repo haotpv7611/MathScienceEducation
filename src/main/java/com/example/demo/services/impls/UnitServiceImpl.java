@@ -174,7 +174,7 @@ public class UnitServiceImpl implements IUnitService {
 			throw new ResourceNotFoundException();
 		}
 
-		List<Lesson> listLesson = iLessonRepository.findByUnitIdAndIsDisableOrderByLessonNameAsc(id, false);
+		List<Lesson> listLesson = iLessonRepository.findByUnitIdAndIsDisableFalse(id);
 		if (!listLesson.isEmpty()) {
 			for (Lesson lesson : listLesson) {
 				iLessonService.deleteLesson(lesson.getId());

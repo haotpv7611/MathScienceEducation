@@ -34,7 +34,7 @@ public class GameServiceImpl implements IGameService {
 
 	@Override
 	public List<GameResponseDTO> findAllByLessonId(long lessonId) {
-		Lesson lesson = iLessonRepository.findByIdAndIsDisable(lessonId, false);
+		Lesson lesson = iLessonRepository.findByIdAndIsDisableFalse(lessonId);
 		if (lesson == null) {
 			throw new ResourceNotFoundException();
 		}
@@ -84,7 +84,7 @@ public class GameServiceImpl implements IGameService {
 		String gameNameDTO = gameRequestDTO.getGameName();
 		long lessonId = gameRequestDTO.getLessonId();
 
-		Lesson lesson = iLessonRepository.findByIdAndIsDisable(lessonId, false);
+		Lesson lesson = iLessonRepository.findByIdAndIsDisableFalse(lessonId);
 		if (lesson == null) {
 			throw new ResourceNotFoundException();
 		}
@@ -110,7 +110,7 @@ public class GameServiceImpl implements IGameService {
 		String gameName = gameRequestDTO.getGameName();
 		long lessonId = gameRequestDTO.getLessonId();
 
-		Lesson lesson = iLessonRepository.findByIdAndIsDisable(lessonId, false);
+		Lesson lesson = iLessonRepository.findByIdAndIsDisableFalse(lessonId);
 		if (lesson == null) {
 			throw new ResourceNotFoundException();
 		}

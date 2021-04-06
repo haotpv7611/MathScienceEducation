@@ -14,6 +14,6 @@ public interface ISubjectRepository extends JpaRepository<Subject, Long> {
 
 	Subject findByIdAndIsDisableFalse(long id);
 
-	Subject findByGradeIdAndSubjectNameAndIsDisableFalse(long gradeId, String subjectName);
+	Subject findByGradeIdAndSubjectNameIgnoreCaseAndIsDisableFalse(long gradeId, String subjectName);
 
 }

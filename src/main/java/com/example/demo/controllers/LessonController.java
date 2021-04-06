@@ -15,9 +15,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.demo.dtos.LessonDTO;
+import com.example.demo.dtos.LessonResponseDTO;
 import com.example.demo.dtos.LessonRequestDTO;
 import com.example.demo.services.ILessonService;
 
@@ -29,15 +30,17 @@ public class LessonController {
 	ILessonService iLessonService;
 	
 	@GetMapping("/unit/{unitId}/lessons")
-	public ResponseEntity<List<LessonDTO>> findLessonByUnitId(@PathVariable long unitId){		
-		List<LessonDTO> response = iLessonService.findByUnitIdOrderByLessonNameAsc(unitId);
-		return ResponseEntity.status(HttpStatus.OK).body(response);
+	public ResponseEntity<List<LessonResponseDTO>> findLessonByUnitId(@PathVariable long unitId){		
+		List<LessonResponseDTO> response = iLessonService.findByUnitIdOrderByLessonNameAsc(unitId);
+		
+		return ResponseEntity.ok(response);
 	}
 	
 	@GetMapping("/lesson/{id}")
-	public ResponseEntity<LessonDTO> findOneById(@PathVariable long id){
-		LessonDTO response = iLessonService.findById(id);
-		return ResponseEntity.status(HttpStatus.OK).body(response);
+	public ResponseEntity<LessonResponseDTO> findLessonById(@PathVariable long id){
+		LessonResponseDTO response = iLessonService.findById(id);
+		
+		return ResponseEntity.ok(response);
 	}
 	
 	@PostMapping("/lesson")
@@ -50,9 +53,7 @@ public class LessonController {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
 		}
 		String response = iLessonService.createLesson(lessonRequestDTO);
-//		if(!response.contains("SUCCESS")) {
-//			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-//		}
+
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);	
 	}
 	
@@ -66,12 +67,16 @@ public class LessonController {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
 		}
 		String response = iLessonService.updateLesson(id, lessonRequestDTO);
-//		if(!response.contains("SUCCESS")) {
-//			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-//		}
-		return ResponseEntity.status(HttpStatus.OK).body(response);		
+
+		return ResponseEntity.ok(response);		
 		
 	}
 	
-	//thiếu delete lesson
+	@PutMapping("/lesson")
+	public ResponseEntity<String> deleteLesson(@RequestParam long id) {			
+		String response = iLessonService.deleteLesson(id);
+
+		return ResponseEntity.ok(response);		
+		
+	}
 }
