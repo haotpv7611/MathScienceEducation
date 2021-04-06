@@ -40,7 +40,7 @@ public class ProgressTestServiceImpl implements IProgressTestService {
 	@Override
 	public List<ProgressTestDTO> findBySubjectId(long subjectId) {
 		// check data input
-		Subject subject = iSubjectRepository.findByIdAndIsDisable(subjectId, false);
+		Subject subject = iSubjectRepository.findByIdAndIsDisableFalse(subjectId);
 		if (subject == null) {
 			throw new ResourceNotFoundException();
 		}
@@ -78,7 +78,7 @@ public class ProgressTestServiceImpl implements IProgressTestService {
 
 	@Override
 	public String createProgressTest(ProgressTestDTO progressTestDTO) {
-		Subject subject = iSubjectRepository.findByIdAndIsDisable(progressTestDTO.getSubjectId(), false);
+		Subject subject = iSubjectRepository.findByIdAndIsDisableFalse(progressTestDTO.getSubjectId());
 		if (subject == null) {
 			return "Subject is not existed";
 		}

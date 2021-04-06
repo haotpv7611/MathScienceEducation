@@ -6,18 +6,20 @@ import java.util.List;
 import org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.example.demo.dtos.SubjectDTO;
-import com.example.demo.models.Subject;
+import com.example.demo.dtos.SubjectResponseDTO;
 
 public interface ISubjectService {
 
-	public List<SubjectDTO> findSubjectByGradeId(long gradeId);
-	Subject findByIdAndIsDisable(long id, boolean isDisable);
-	String createSubject(String subjectName, MultipartFile multipartFile, String description, long gradeId)
+	public List<SubjectResponseDTO> findSubjectByGradeId(long gradeId);
+
+	String createSubject(String subjectName, MultipartFile file, String description, long gradeId)
 			throws SizeLimitExceededException, IOException;
-	String updateSubject(long id, String subjectName, MultipartFile multipartFile, String description, long gradeId)
+
+	String updateSubject(long id, String subjectName, MultipartFile file, String description, long gradeId)
 			throws SizeLimitExceededException, IOException;
+
 	String deleteSubject(long id);
-	SubjectDTO findById(long id);
-	
+
+	SubjectResponseDTO findById(long id);
+
 }

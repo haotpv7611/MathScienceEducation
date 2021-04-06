@@ -54,7 +54,7 @@ public class UnitServiceImpl implements IUnitService {
 	@Override
 	public List<UnitResponseDTO> findBySubjectIdOrderByUnitNameAsc(long subjectId) {
 		// check data input
-		Subject subject = iSubjectRepository.findByIdAndIsDisable(subjectId, false);
+		Subject subject = iSubjectRepository.findByIdAndIsDisableFalse(subjectId);
 		if (subject == null) {
 			throw new ResourceNotFoundException();
 		}
@@ -117,7 +117,7 @@ public class UnitServiceImpl implements IUnitService {
 	@Override
 	public String createUnit(UnitRequestDTO unitRequestDTO) {
 		// check data input
-		Subject subject = iSubjectRepository.findByIdAndIsDisable(unitRequestDTO.getSubjectId(), false);
+		Subject subject = iSubjectRepository.findByIdAndIsDisableFalse(unitRequestDTO.getSubjectId());
 		if (subject == null) {
 			throw new ResourceNotFoundException();
 		}

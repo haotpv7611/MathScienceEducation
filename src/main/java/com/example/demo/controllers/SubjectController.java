@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.example.demo.dtos.SubjectDTO;
+import com.example.demo.dtos.SubjectResponseDTO;
 import com.example.demo.services.ISubjectService;
 
 @CrossOrigin
@@ -26,49 +26,56 @@ public class SubjectController {
 	@Autowired
 	ISubjectService iSubjectService;
 
+	// done
 	@GetMapping("/grade/{gradeId}/subjects")
-	public ResponseEntity<List<SubjectDTO>> findSubjectByGradeId(@PathVariable long gradeId) {
+	public ResponseEntity<List<SubjectResponseDTO>> findSubjectByGradeId(@PathVariable long gradeId) {
+		List<SubjectResponseDTO> response = iSubjectService.findSubjectByGradeId(gradeId);
 
-		List<SubjectDTO> response = iSubjectService.findSubjectByGradeId(gradeId);
-
-		return ResponseEntity.status(HttpStatus.OK).body(response);
+		return ResponseEntity.ok(response);
 	}
-	
+
+	// done
 	@GetMapping("/subject/{id}")
-	public ResponseEntity<SubjectDTO> findById(@PathVariable long id){
-		SubjectDTO response = iSubjectService.findById(id);
-//		return ResponseEntity.status(HttpStatus.CREATED).body(response);
-		return ResponseEntity.status(HttpStatus.OK).body(response);
+	public ResponseEntity<SubjectResponseDTO> findSubjectById(@PathVariable long id) {
+		SubjectResponseDTO response = iSubjectService.findById(id);
+
+		return ResponseEntity.ok(response);
 	}
 
+	// done
 	@PostMapping("/subject")
 	public ResponseEntity<String> createSubject(@RequestParam String subjectName,
-			@RequestParam MultipartFile multipartFile, @RequestParam String description, @RequestParam long gradeId)
-			throws SizeLimitExceededException, IOException {
+			@RequestParam MultipartFile multipartFile, @RequestParam(required = false) String description,
+			@RequestParam long gradeId) throws SizeLimitExceededException, IOException {
 		String response = iSubjectService.createSubject(subjectName, multipartFile, description, gradeId);
 		if (!response.contains("SUCCESS")) {
+			
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 		}
+		
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 
+	// done
 	@PutMapping("/subject/{id}")
-	public ResponseEntity<String> updateSubject(@PathVariable long id, @RequestParam(required = false) String subjectName,
-			@RequestParam (required = false) MultipartFile multipartFile, @RequestParam(required = false) String description, @RequestParam long gradeId)
+	public ResponseEntity<String> updateSubject(@PathVariable long id,
+			@RequestParam String subjectName,
+			@RequestParam(required = false) MultipartFile multipartFile,
+			@RequestParam(required = false) String description, @RequestParam long gradeId)
 			throws SizeLimitExceededException, IOException {
 		String response = iSubjectService.updateSubject(id, subjectName, multipartFile, description, gradeId);
 		if (!response.contains("SUCCESS")) {
+			
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 		}
-		return ResponseEntity.status(HttpStatus.OK).body(response);
+		
+		return ResponseEntity.ok(response);
 	}
-	
+
 	@PutMapping("subject/delete/{id}")
-	public ResponseEntity<String> deleteSubject(@PathVariable long id){
+	public ResponseEntity<String> deleteSubject(@PathVariable long id) {
 		String response = iSubjectService.deleteSubject(id);
-//		if (!response.contains("SUCCESS")) {
-//			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-//		}
+
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 }

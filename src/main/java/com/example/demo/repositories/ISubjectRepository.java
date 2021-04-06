@@ -8,9 +8,12 @@ import org.springframework.stereotype.Repository;
 import com.example.demo.models.Subject;
 
 @Repository
-public interface ISubjectRepository extends JpaRepository<Subject, Long>{
+public interface ISubjectRepository extends JpaRepository<Subject, Long> {
 
-	List<Subject> findByGradeIdAndIsDisable(long gradeId, boolean isDisable);
-	Subject findByIdAndIsDisable(long id, boolean isDisable);
-	
+	List<Subject> findByGradeIdAndIsDisableFalse(long gradeId);
+
+	Subject findByIdAndIsDisableFalse(long id);
+
+	Subject findByGradeIdAndSubjectNameAndIsDisableFalse(long gradeId, String subjectName);
+
 }
