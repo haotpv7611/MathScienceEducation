@@ -2,10 +2,8 @@ package com.example.demo.dtos;
 
 public class UnitResponseDTO {
 	private long id;
-
 	private int unitName;
 	private long subjectId;
-	private boolean isDisable;
 	private String description;
 
 	public String getDescription() {
@@ -14,9 +12,6 @@ public class UnitResponseDTO {
 
 	public void setDescription(String description) {
 		this.description = description;
-	}
-
-	public UnitResponseDTO() {
 	}
 
 	public long getId() {
@@ -41,14 +36,6 @@ public class UnitResponseDTO {
 
 	public void setSubjectId(long subjectId) {
 		this.subjectId = subjectId;
-	}
-
-	public boolean isDisable() {
-		return isDisable;
-	}
-
-	public void setDisable(boolean isDisable) {
-		this.isDisable = isDisable;
 	}
 
 }

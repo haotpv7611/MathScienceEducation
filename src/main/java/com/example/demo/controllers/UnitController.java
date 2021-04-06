@@ -51,12 +51,12 @@ public class UnitController {
 	@PostMapping("/unit")
 	public ResponseEntity<String> createUnit(@Valid @RequestBody UnitRequestDTO unitRequestDTO,
 			BindingResult bindingResult) {
-
 		if (bindingResult.hasErrors()) {
 			String error = "";
 			for (ObjectError object : bindingResult.getAllErrors()) {
 				error += "/n" + object.getDefaultMessage();
 			}
+			
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
 		}
 		String response = iUnitService.createUnit(unitRequestDTO);
@@ -73,6 +73,7 @@ public class UnitController {
 			for (ObjectError object : bindingResult.getAllErrors()) {
 				error += "/n" + object.getDefaultMessage();
 			}
+			
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
 		}
 		String response = iUnitService.updateUnit(id, unitRequestDTO);

@@ -54,7 +54,7 @@ public class LessonServiceImpl implements ILessonService {
 
 	@Override
 	public String createLesson(LessonRequestDTO lessonRequestDTO) {
-		Unit unit = iUnitRepository.findByIdAndIsDisable(lessonRequestDTO.getUnitId(), false);
+		Unit unit = iUnitRepository.findByIdAndIsDisableFalse(lessonRequestDTO.getUnitId());
 		if (unit == null) {
 			return "Unit is not existed !";
 		}
@@ -74,8 +74,7 @@ public class LessonServiceImpl implements ILessonService {
 	@Override
 	public String updateLesson(long id, LessonRequestDTO lessonRequestDTO) {
 
-		Lesson lesson = iLessonRepository.findById(id)
-				.orElseThrow(() -> new ResourceNotFoundException());
+		Lesson lesson = iLessonRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
 		if (lesson.isDisable()) {
 			throw new ResourceNotFoundException();
 		}
@@ -109,8 +108,8 @@ public class LessonServiceImpl implements ILessonService {
 				iExerciseService.deleteExercise(exercise.getId());
 			}
 		}
-		
-		//thieu delete game
+
+		// thieu delete game
 
 		lesson.setDisable(true);
 		iLessonRepository.save(lesson);

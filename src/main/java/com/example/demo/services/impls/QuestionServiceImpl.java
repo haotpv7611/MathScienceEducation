@@ -277,7 +277,7 @@ public class QuestionServiceImpl implements IQuestionService {
 		}
 
 		int questionTypeId = 1;
-		Unit unit = iUnitRepository.findByIdAndIsDisable(unitId, false);
+		Unit unit = iUnitRepository.findByIdAndIsDisableFalse(unitId);
 		if (unit == null) {
 			throw new ResourceNotFoundException();
 		}
@@ -320,7 +320,7 @@ public class QuestionServiceImpl implements IQuestionService {
 		}
 
 		int questionTypeId = 2;
-		Unit unit = iUnitRepository.findByIdAndIsDisable(unitId, false);
+		Unit unit = iUnitRepository.findByIdAndIsDisableFalse(unitId);
 		if (unit == null) {
 			throw new ResourceNotFoundException();
 		}
@@ -354,7 +354,7 @@ public class QuestionServiceImpl implements IQuestionService {
 		}
 
 		int questionTypeId = questionTypeList.indexOf(questionType) + 3;
-		Unit unit = iUnitRepository.findByIdAndIsDisable(unitId, false);
+		Unit unit = iUnitRepository.findByIdAndIsDisableFalse(unitId);
 		if (unit == null) {
 			throw new ResourceNotFoundException();
 		}
@@ -417,7 +417,7 @@ public class QuestionServiceImpl implements IQuestionService {
 
 	@Override
 	public List<QuestionResponseDTO> findAllByUnitId(long unitId, boolean isExercise) {
-		Unit unit = iUnitRepository.findByIdAndIsDisable(unitId, false);
+		Unit unit = iUnitRepository.findByIdAndIsDisableFalse(unitId);
 		if (unit == null) {
 			throw new ResourceNotFoundException();
 		}
