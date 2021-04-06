@@ -179,11 +179,11 @@ public class UnitServiceImpl implements IUnitService {
 		}
 
 		List<Question> questionLists = iQuestionRepository.findByUnitIdAndIsDisable(id, false);
-		if (!questionLists.isEmpty()) {
-			for (Question question : questionLists) {
-				iQuestionService.deleteQuestion(question.getId());
-			}
-		}
+//		if (!questionLists.isEmpty()) {
+//			for (Question question : questionLists) {
+//				iQuestionService.deleteQuestion(question.getId());
+//			}
+//		}
 
 		unit.setDisable(true);
 		iUnitRepository.save(unit);
