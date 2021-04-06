@@ -1,6 +1,6 @@
 package com.example.demo.dtos;
 
-public class UnitDTO {
+public class UnitResponseDTO {
 	private long id;
 
 	private int unitName;
@@ -16,7 +16,7 @@ public class UnitDTO {
 		this.description = description;
 	}
 
-	public UnitDTO() {
+	public UnitResponseDTO() {
 	}
 
 	public long getId() {

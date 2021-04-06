@@ -3,13 +3,13 @@ package com.example.demo.dtos;
 import java.util.List;
 
 public class UnitViewDTO {
-	List<UnitDTO> unit;
+	List<UnitResponseDTO> unit;
 	ProgressTestDTO progressTest;
 
 	public UnitViewDTO() {
 	}
 
-	public UnitViewDTO(List<UnitDTO> unit, ProgressTestDTO progressTest) {
+	public UnitViewDTO(List<UnitResponseDTO> unit, ProgressTestDTO progressTest) {
 		super();
 		this.unit = unit;
 		this.progressTest = progressTest;
@@ -18,14 +18,14 @@ public class UnitViewDTO {
 	/**
 	 * @return the unit
 	 */
-	public List<UnitDTO> getUnit() {
+	public List<UnitResponseDTO> getUnit() {
 		return unit;
 	}
 
 	/**
 	 * @param unit the unit to set
 	 */
-	public void setUnit(List<UnitDTO> unit) {
+	public void setUnit(List<UnitResponseDTO> unit) {
 		this.unit = unit;
 	}
 

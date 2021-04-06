@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.dtos.ProgressTestDTO;
-import com.example.demo.dtos.UnitDTO;
+import com.example.demo.dtos.UnitResponseDTO;
 import com.example.demo.dtos.UnitRequestDTO;
 import com.example.demo.dtos.UnitViewDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
@@ -31,6 +31,7 @@ public class UnitServiceImpl implements IUnitService {
 
 	@Autowired
 	private IUnitRepository iUnitRepository;
+
 	@Autowired
 	private ILessonRepository iLessonRepository;
 
@@ -44,47 +45,46 @@ public class UnitServiceImpl implements IUnitService {
 	private ISubjectRepository iSubjectRepository;
 
 	@Autowired
-	private ModelMapper modelMapper;
-
-	@Autowired
-	private UnitServiceImpl unitServiceImpl;
-
-	@Autowired
 	private IProgressTestService iProgressTestService;
 
+	@Autowired
+	private ModelMapper modelMapper;
+
+	// done
 	@Override
-	public List<UnitDTO> findBySubjectIdOrderByUnitNameAsc(long subjectId) {
+	public List<UnitResponseDTO> findBySubjectIdOrderByUnitNameAsc(long subjectId) {
+		// check data input
+		Subject subject = iSubjectRepository.findByIdAndIsDisable(subjectId, false);
+		if (subject == null) {
+			throw new ResourceNotFoundException();
+		}
 
-		// 1. connect database through repository
-		// 2. find all entities are not disable and have subjectId = ?, sort acscending
-		// by unitName
+		// find all active entities and have subjectId = ?, sort acscending by unitName
 		List<Unit> unitList = iUnitRepository.findBySubjectIdAndIsDisableOrderByUnitNameAsc(subjectId, false);
+		List<UnitResponseDTO> unitDTOList = new ArrayList<>();
 
-		List<UnitDTO> unitDTOList = new ArrayList<>();
-
-		// 3. convert all entities to dtos
-		// 4. add all dtos to newsDTOList and return
+		// convert all entities to dtos and return
 		if (!unitList.isEmpty()) {
 			for (Unit unit : unitList) {
-				UnitDTO unitDTO = modelMapper.map(unit, UnitDTO.class);
-				unitDTOList.add(unitDTO);
+				UnitResponseDTO unitResponseDTO = modelMapper.map(unit, UnitResponseDTO.class);
+				unitDTOList.add(unitResponseDTO);
 			}
 		}
 
 		return unitDTOList;
 	}
 
+	// not done
 	@Override
 	public List<UnitViewDTO> showUnitViewBySubjectId(long subjectId) {
-
 		// 1. get list unitDTO and progressTestDTO by subjectId
-		List<UnitDTO> unitDTOList = unitServiceImpl.findBySubjectIdOrderByUnitNameAsc(subjectId);
+		List<UnitResponseDTO> unitDTOList = findBySubjectIdOrderByUnitNameAsc(subjectId);
 		List<ProgressTestDTO> progressTestDTOList = iProgressTestService.findBySubjectId(subjectId);
 
 		List<UnitViewDTO> unitViewDTOList = new ArrayList<>();
 
 		if (!unitDTOList.isEmpty()) {
-			List<UnitDTO> unitDTOListSplit = new ArrayList<>();
+			List<UnitResponseDTO> unitDTOListSplit = new ArrayList<>();
 
 			// 2. split list unitDTO into small lists by progresTest unitAfterId
 			// 3. group small list unitDTO and break progressTestDTO into unitViewDTO
@@ -105,7 +105,6 @@ public class UnitServiceImpl implements IUnitService {
 
 			// 5. if list unitDTO split more than progressTestDTO, set unitViewDTO with
 			// progressTestDTO is null
-
 			if (!unitDTOListSplit.isEmpty()) {
 				UnitViewDTO unitViewDTO = new UnitViewDTO(unitDTOListSplit, null);
 				unitViewDTOList.add(unitViewDTO);
@@ -117,58 +116,51 @@ public class UnitServiceImpl implements IUnitService {
 
 	@Override
 	public String createUnit(UnitRequestDTO unitRequestDTO) {
+		// check data input
 		Subject subject = iSubjectRepository.findByIdAndIsDisable(unitRequestDTO.getSubjectId(), false);
 		if (subject == null) {
 			throw new ResourceNotFoundException();
 		}
-//		List<Unit> listUnits = iUnitRepository
-//				.findBySubjectIdAndIsDisableOrderByUnitNameAsc(unitRequestDTO.getSubjectId(), false);
-//		for (Unit unit : listUnits) {
-//			if (unitRequestDTO.getUnitName() == unit.getUnitName()) {
-//				return "Unit is existed !";
-//			}
-//		}
-		
-		if (iUnitRepository.findBySubjectIdAndUnitNameAndIsDisable(unitRequestDTO.getSubjectId(), unitRequestDTO.getUnitName(), false) != null) {
+
+		// check unitName existed, if existed: return
+		long subjectId = unitRequestDTO.getSubjectId();
+		int unitName = unitRequestDTO.getUnitName();
+		if (iUnitRepository.findBySubjectIdAndUnitNameAndIsDisable(subjectId, unitName, false) != null) {
 			return "EXISTED";
 		}
+
+		// save data and return
 		Unit unit = modelMapper.map(unitRequestDTO, Unit.class);
 		unit.setDisable(false);
 		iUnitRepository.save(unit);
+
 		return "CREATE SUCCESS!";
 	}
 
+	// done
 	@Override
 	public String updateUnit(long id, UnitRequestDTO unitRequestDTO) {
-		int unitName = unitRequestDTO.getUnitName();
+		// check data input
 		Unit unit = iUnitRepository.findByIdAndIsDisable(id, false);
-		System.out.println(unit);
-
 		if (unit == null) {
 			throw new ResourceNotFoundException();
 		}
 
-//		Unit unit = iUnitRepository.findById(unitRequestDTO.getId()).orElseThrow(() -> new ResourceNotFoundException());
-//		if (unit.isDisable()) {
-//			throw new ResourceNotFoundException();
-//		}
-
+		// check unitName existed, if existed: return
+		int unitName = unitRequestDTO.getUnitName();
+		String description = unitRequestDTO.getDescription();
 		if (unit.getUnitName() != unitName) {
 			if (iUnitRepository.findBySubjectIdAndUnitNameAndIsDisable(unit.getSubjectId(), unitName, false) != null) {
 				return "EXISTED";
 			}
 		}
-//		List<Unit> listUnits = iUnitRepository
-//				.findBySubjectIdAndIsDisableOrderByUnitNameAsc(unitRequestDTO.getSubjectId(), false);
-//		for (Unit unit1 : listUnits) {
-//			if (unitRequestDTO.getUnitName() == unit1.getUnitName()) {
-//				return "Unit is existed !";
-//			}
-//		}
-		unit.setUnitName(unitRequestDTO.getUnitName());
-		unit.setDescription(unitRequestDTO.getDescription());
+
+		// save data and return
+		unit.setUnitName(unitName);
+		unit.setDescription(description);
 		iUnitRepository.save(unit);
-		return "UPDATE SUCCESS !";
+
+		return "UPDATE SUCCESS!";
 	}
 
 	@Override
@@ -178,7 +170,7 @@ public class UnitServiceImpl implements IUnitService {
 		if (unit == null) {
 			throw new ResourceNotFoundException();
 		}
-		
+
 		List<Lesson> listLesson = iLessonRepository.findByUnitIdAndIsDisableOrderByLessonNameAsc(id, false);
 		if (!listLesson.isEmpty()) {
 			for (Lesson lesson : listLesson) {
@@ -198,13 +190,18 @@ public class UnitServiceImpl implements IUnitService {
 		return "DELETE SUCCESS !";
 	}
 
-//	@Override
-//	public Unit findById(long id) {
-//		Unit unit = iUnitRepository.findByIdAndIsDisable(id, false);
-//		if (unit == null) {
-//			throw new ResourceNotFoundException();
-//		}
-//		return unit;
-//	}
+	//done
+	@Override
+	public UnitResponseDTO findById(long id) {
+		// check data input
+		Unit unit = iUnitRepository.findByIdAndIsDisable(id, false);
+		if (unit == null) {
+			throw new ResourceNotFoundException();
+		}
+
+		UnitResponseDTO unitResponseDTO = modelMapper.map(unit, UnitResponseDTO.class);
+
+		return unitResponseDTO;
+	}
 
 }

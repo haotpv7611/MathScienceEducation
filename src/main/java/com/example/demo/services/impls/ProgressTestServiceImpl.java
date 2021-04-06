@@ -39,6 +39,11 @@ public class ProgressTestServiceImpl implements IProgressTestService {
 
 	@Override
 	public List<ProgressTestDTO> findBySubjectId(long subjectId) {
+		// check data input
+		Subject subject = iSubjectRepository.findByIdAndIsDisable(subjectId, false);
+		if (subject == null) {
+			throw new ResourceNotFoundException();
+		}
 
 		// 1. connect database through repository
 		// 2. find all entities are not disable and have subjectId = ?
@@ -115,11 +120,12 @@ public class ProgressTestServiceImpl implements IProgressTestService {
 	@Transactional
 	public String deleteProgressTest(long id) {
 		ProgressTest progressTest = iProgressTestRepository.findByIdAndIsDisable(id, false);
-				
+
 		if (progressTest == null) {
 			throw new ResourceNotFoundException();
 		}
-		List<Exercise> exerciseList = iExerciseRepository.findByProgressTestIdAndIsDisableOrderByExerciseNameAsc(id, false);
+		List<Exercise> exerciseList = iExerciseRepository.findByProgressTestIdAndIsDisableOrderByExerciseNameAsc(id,
+				false);
 		for (Exercise exercise : exerciseList) {
 			iExerciseService.deleteExercise(exercise.getId());
 		}

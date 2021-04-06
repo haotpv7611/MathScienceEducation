@@ -21,12 +21,12 @@ public class OptionQuestion {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
-
 	private String optionText;
 	private String optionImageUrl;
 	private String optionInputType;
 	private boolean isCorrect;
 	private long questionId;
+	private boolean isDisable;
 
 	@CreatedDate
 	private LocalDateTime createdDate;
@@ -36,7 +36,7 @@ public class OptionQuestion {
 	private LocalDateTime modifiedDate;
 //	@LastModifiedBy
 	private String modifiedBy;
-	private boolean isDisable;
+	
 
 	public String getOptionText() {
 		return optionText;
@@ -135,7 +135,6 @@ public class OptionQuestion {
 	}
 
 	public OptionQuestion() {
-		// TODO Auto-generated constructor stub
 	}
 
 	public OptionQuestion(String optionText, boolean isCorrect, long questionId, boolean isDisable) {
