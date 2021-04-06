@@ -1,10 +1,14 @@
 package com.example.demo.dtos;
 
+import java.time.LocalDateTime;
+
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.Length;
 
-public class QuestionDTO {
+import com.fasterxml.jackson.annotation.JsonFormat;
+
+public class QuestionResponseDTO {
 
 	private long id;
 	@NotNull(message = "Question Title must be not null !")
@@ -17,24 +21,24 @@ public class QuestionDTO {
 	@NotNull(message = "Score must be not null !")
 	private float score;
 	private long unitId;
-	private long questionTypeId;
+	private String questionType;
+	@JsonFormat(pattern = "dd-MM-yyyy HH:mm")
+	private LocalDateTime createdDate;
+	private String createdBy;
+	@JsonFormat(pattern = "dd-MM-yyyy HH:mm")
+	private LocalDateTime modifiedDate;
+	private String modifiedBy;
 
-	public QuestionDTO() {
+	public QuestionResponseDTO() {
 	}
-
-	
 
 	public String getQuestionTitle() {
 		return questionTitle;
 	}
 
-
-
 	public void setQuestionTitle(String questionTitle) {
 		this.questionTitle = questionTitle;
 	}
-
-
 
 	/**
 	 * @return the id
@@ -54,7 +58,6 @@ public class QuestionDTO {
 	 * @return the questionText
 	 */
 
-
 	/**
 	 * @return the questionImageUrl
 	 */
@@ -66,13 +69,9 @@ public class QuestionDTO {
 		return description;
 	}
 
-
-
 	public void setDescription(String description) {
 		this.description = description;
 	}
-
-
 
 	/**
 	 * @param questionImageUrl the questionImageUrl to set
@@ -126,14 +125,71 @@ public class QuestionDTO {
 	/**
 	 * @return the questionTypeId
 	 */
-	public long getQuestionTypeId() {
-		return questionTypeId;
+	public String getQuestionType() {
+		return questionType;
 	}
 
 	/**
 	 * @param questionTypeId the questionTypeId to set
 	 */
-	public void setQuestionTypeId(long questionTypeId) {
-		this.questionTypeId = questionTypeId;
+	public void setQuestionType(String questionType) {
+		this.questionType = questionType;
 	}
+
+	/**
+	 * @return the createdDate
+	 */
+	public LocalDateTime getCreatedDate() {
+		return createdDate;
+	}
+
+	/**
+	 * @param createdDate the createdDate to set
+	 */
+	public void setCreatedDate(LocalDateTime createdDate) {
+		this.createdDate = createdDate;
+	}
+
+	/**
+	 * @return the createdBy
+	 */
+	public String getCreatedBy() {
+		return createdBy;
+	}
+
+	/**
+	 * @param createdBy the createdBy to set
+	 */
+	public void setCreatedBy(String createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	/**
+	 * @return the modifiedDate
+	 */
+	public LocalDateTime getModifiedDate() {
+		return modifiedDate;
+	}
+
+	/**
+	 * @param modifiedDate the modifiedDate to set
+	 */
+	public void setModifiedDate(LocalDateTime modifiedDate) {
+		this.modifiedDate = modifiedDate;
+	}
+
+	/**
+	 * @return the modifiedBy
+	 */
+	public String getModifiedBy() {
+		return modifiedBy;
+	}
+
+	/**
+	 * @param modifiedBy the modifiedBy to set
+	 */
+	public void setModifiedBy(String modifiedBy) {
+		this.modifiedBy = modifiedBy;
+	}
+
 }

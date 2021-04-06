@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.example.demo.dtos.QuestionDTO;
+import com.example.demo.dtos.QuestionResponseDTO;
 import com.example.demo.services.IQuestionService;
 
 @CrossOrigin
@@ -74,7 +74,8 @@ public class QuestionController {
 			@RequestParam String questionType, @RequestParam long unitId,
 			@RequestParam List<MultipartFile> imageFileList, @RequestParam List<String> optionTextList)
 			throws SizeLimitExceededException, IOException {
-		String respone = iQuestionService.createGameSwappingMatchingChoosingQuestion(questionTitle, description, score, questionType, unitId, imageFileList, optionTextList);
+		String respone = iQuestionService.createGameSwappingMatchingChoosingQuestion(questionTitle, description, score,
+				questionType, unitId, imageFileList, optionTextList);
 		if (!respone.contains("SUCCESS")) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(respone);
 		}
@@ -106,8 +107,9 @@ public class QuestionController {
 	}
 
 	@GetMapping("/question/{unitId}/questions")
-	public ResponseEntity<List<QuestionDTO>> getAllListQuestionByUnitId(@PathVariable long unitId) {
-		List<QuestionDTO> responses = iQuestionService.findByUnitIdAndIsDisable(unitId, false);
-		return ResponseEntity.status(HttpStatus.OK).body(responses);
+	public ResponseEntity<List<QuestionResponseDTO>> findAllByUnitId(@PathVariable long unitId, @RequestParam boolean isExercise) {
+		List<QuestionResponseDTO> response = iQuestionService.findAllByUnitId(unitId, isExercise);
+
+		return ResponseEntity.ok(response);
 	}
 }

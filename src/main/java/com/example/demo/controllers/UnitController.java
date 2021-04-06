@@ -90,7 +90,7 @@ public class UnitController {
 
 	//done
 	@GetMapping("/unit/{id}")
-	public ResponseEntity<UnitResponseDTO> findById(@PathVariable long id) {
+	public ResponseEntity<UnitResponseDTO> findUnitById(@PathVariable long id) {
 		UnitResponseDTO response = iUnitService.findById(id);
 
 		return ResponseEntity.ok(response);

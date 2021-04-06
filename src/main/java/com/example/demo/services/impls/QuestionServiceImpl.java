@@ -13,12 +13,14 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.dtos.OptionQuestionDTO;
-import com.example.demo.dtos.QuestionDTO;
+import com.example.demo.dtos.QuestionResponseDTO;
 import com.example.demo.dtos.QuestionViewDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.Question;
+import com.example.demo.models.QuestionType;
 import com.example.demo.models.Unit;
 import com.example.demo.repositories.IQuestionRepository;
+import com.example.demo.repositories.IQuestionTypeRepository;
 import com.example.demo.repositories.IUnitRepository;
 import com.example.demo.services.IExerciseGameQuestionService;
 import com.example.demo.services.IOptionQuestionService;
@@ -32,7 +34,7 @@ public class QuestionServiceImpl implements IQuestionService {
 	private final int OPTION_TEXT_LENGTH = 50;
 	private final int OPTION_INPUT_TYPE_LENGTH = 50;
 	private final String OPTION_TYPE_EXERCISE = "EXERCISE";
-	private final String OPTION_TYPE_FILL_IN_BLANK = "FILL";	
+	private final String OPTION_TYPE_FILL_IN_BLANK = "FILL";
 
 	@Autowired
 	private IQuestionRepository iQuestionRepository;
@@ -51,6 +53,9 @@ public class QuestionServiceImpl implements IQuestionService {
 
 	@Autowired
 	private IUnitRepository iUnitRepository;
+	
+	@Autowired
+	private IQuestionTypeRepository iQuestionTypeRepository;
 
 //	@Override
 //	public Question findOneById(Long id) {
@@ -75,6 +80,8 @@ public class QuestionServiceImpl implements IQuestionService {
 //
 //		return listQuestions;
 //	}
+
+
 
 	@Override
 	public List<QuestionViewDTO> showQuestionByExerciseId(long exerciseId) {
@@ -244,17 +251,18 @@ public class QuestionServiceImpl implements IQuestionService {
 			return error.trim();
 		}
 
-		int questionTypeId = questionTypeList.indexOf(questionType) + 2;
+		int questionTypeId = questionTypeList.indexOf(questionType) + 3;
 		Unit unit = iUnitRepository.findByIdAndIsDisable(unitId, false);
 		if (unit == null) {
 			throw new ResourceNotFoundException();
 		}
-		
+
 		long questionId = createQuestion(null, null, questionTitle, description, score, unitId, questionTypeId);
 		for (int i = 0; i < optionTextList.size(); i++) {
-			iOptionsService.createGameSwappingMatchingChoosingOptionQuestion(questionId, optionTextList.get(i), imageFileList.get(i));
+			iOptionsService.createGameSwappingMatchingChoosingOptionQuestion(questionId, optionTextList.get(i),
+					imageFileList.get(i));
 		}
-		
+
 		return "CREATE SUCCESS !";
 	}
 
@@ -306,14 +314,27 @@ public class QuestionServiceImpl implements IQuestionService {
 	}
 
 	@Override
-	public List<QuestionDTO> findByUnitIdAndIsDisable(long unitId, boolean isDisable) {
-		List<Question> questionLists = iQuestionRepository.findByUnitIdAndIsDisable(unitId, isDisable);
-		List<QuestionDTO> questionDTOLists = new ArrayList<>();
-		for (Question question : questionLists) {
-			QuestionDTO questionDTO = modelMapper.map(question, QuestionDTO.class);
-			questionDTOLists.add(questionDTO);
+	public List<QuestionResponseDTO> findAllByUnitId(long unitId, boolean isExercise) {
+		Unit unit = iUnitRepository.findByIdAndIsDisable(unitId, false);
+		if (unit == null) {
+			throw new ResourceNotFoundException();
 		}
-		return questionDTOLists;
+
+		List<Question> questionList = null;
+		List<QuestionResponseDTO> questionDTOList = new ArrayList<>();
+		if (isExercise) {
+			questionList = iQuestionRepository.findByUnitIdAndQuestionTypeIdAndIsDisable(unitId, 1, false);
+		} else {
+			questionList = iQuestionRepository.findByUnitIdAndQuestionTypeIdNotAndIsDisable(unitId, 1, false);
+		}
+
+		for (Question question : questionList) {
+			QuestionResponseDTO questionResponseDTO = modelMapper.map(question, QuestionResponseDTO.class);
+			questionResponseDTO.setQuestionType(question.getQuestionType().getDescription());
+			questionDTOList.add(questionResponseDTO);
+		}
+
+		return questionDTOList;
 	}
 
 	private String validateQuestionInput(String questionTitle, String description, float score) {
@@ -390,7 +411,8 @@ public class QuestionServiceImpl implements IQuestionService {
 		if (audioFile != null) {
 			question.setQuestionAudioUrl(firebaseService.saveFile(audioFile));
 		}
-		question.setQuestionTypeId(questionTypeId);
+		QuestionType questionType = iQuestionTypeRepository.findById(questionTypeId).orElseThrow(() -> new ResourceNotFoundException());
+		question.setQuestionType(questionType);
 		iQuestionRepository.save(question);
 
 		return question.getId();

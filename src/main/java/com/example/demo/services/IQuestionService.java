@@ -6,7 +6,7 @@ import java.util.List;
 import org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.example.demo.dtos.QuestionDTO;
+import com.example.demo.dtos.QuestionResponseDTO;
 import com.example.demo.dtos.QuestionViewDTO;;
 
 public interface IQuestionService {
@@ -32,6 +32,6 @@ public interface IQuestionService {
 
 	String deleteQuestion(long id);
 
-	List<QuestionDTO> findByUnitIdAndIsDisable(long unitId, boolean isDisable);
+	List<QuestionResponseDTO> findAllByUnitId(long unitId, boolean isExercise);
 
 }

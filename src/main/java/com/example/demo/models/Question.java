@@ -1,12 +1,17 @@
 package com.example.demo.models;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -25,7 +30,12 @@ public class Question {
 	private String questionImageUrl;
 	private String questionAudioUrl;
 	private float score;
-	private long questionTypeId;
+	private boolean isDisable;
+	private long unitId;
+
+	@ManyToOne
+	@JoinColumn(name = "questionTypeId")
+	private QuestionType questionType;
 
 	@CreatedDate
 	private LocalDateTime createdDate;
@@ -36,8 +46,16 @@ public class Question {
 //	@LastModifiedBy
 	private String modifiedBy;
 
-	private boolean isDisable;
-	private long unitId;
+	@PrePersist
+	public void onCreate() {
+		this.createdDate = LocalDateTime.now(ZoneId.of("UTC+7"));
+		this.modifiedDate = LocalDateTime.now(ZoneId.of("UTC+7"));
+	}
+
+	@PreUpdate
+	public void onUpdate() {
+		this.modifiedDate = LocalDateTime.now(ZoneId.of("UTC+7"));
+	}
 
 	public String getQuestionTitle() {
 		return questionTitle;
@@ -77,14 +95,6 @@ public class Question {
 
 	public void setScore(float score) {
 		this.score = score;
-	}
-
-	public long getQuestionTypeId() {
-		return questionTypeId;
-	}
-
-	public void setQuestionTypeId(long questionTypeId) {
-		this.questionTypeId = questionTypeId;
 	}
 
 	public LocalDateTime getCreatedDate() {
@@ -139,24 +149,24 @@ public class Question {
 		return id;
 	}
 
-	public Question(long id, String questionTitle, String description, String questionImageUrl, String questionAudioUrl,
-			float score, long questionTypeId, LocalDateTime createdDate, String createdBy, LocalDateTime modifiedDate,
-			String modifiedBy, boolean isDisable, long unitId) {
-		super();
-		this.id = id;
-		this.questionTitle = questionTitle;
-		this.description = description;
-		this.questionImageUrl = questionImageUrl;
-		this.questionAudioUrl = questionAudioUrl;
-		this.score = score;
-		this.questionTypeId = questionTypeId;
-		this.createdDate = createdDate;
-		this.createdBy = createdBy;
-		this.modifiedDate = modifiedDate;
-		this.modifiedBy = modifiedBy;
-		this.isDisable = isDisable;
-		this.unitId = unitId;
-	}
+//	public Question(long id, String questionTitle, String description, String questionImageUrl, String questionAudioUrl,
+//			float score, int questionTypeId, LocalDateTime createdDate, String createdBy, LocalDateTime modifiedDate,
+//			String modifiedBy, boolean isDisable, long unitId) {
+//		super();
+//		this.id = id;
+//		this.questionTitle = questionTitle;
+//		this.description = description;
+//		this.questionImageUrl = questionImageUrl;
+//		this.questionAudioUrl = questionAudioUrl;
+//		this.score = score;
+//		this.questionTypeId = questionTypeId;
+//		this.createdDate = createdDate;
+//		this.createdBy = createdBy;
+//		this.modifiedDate = modifiedDate;
+//		this.modifiedBy = modifiedBy;
+//		this.isDisable = isDisable;
+//		this.unitId = unitId;
+//	}
 
 	public Question(String questionTitle, String description, float score, long unitId, boolean isDisable) {
 		super();
@@ -168,7 +178,20 @@ public class Question {
 	}
 
 	public Question() {
+	}
 
+	/**
+	 * @return the questionType
+	 */
+	public QuestionType getQuestionType() {
+		return questionType;
+	}
+
+	/**
+	 * @param questionType the questionType to set
+	 */
+	public void setQuestionType(QuestionType questionType) {
+		this.questionType = questionType;
 	}
 
 }
