@@ -31,6 +31,8 @@ public class QuestionServiceImpl implements IQuestionService {
 	private final int DESCRIPTION_LENGTH = 250;
 	private final int OPTION_TEXT_LENGTH = 50;
 	private final int OPTION_INPUT_TYPE_LENGTH = 50;
+	private final String OPTION_TYPE_EXERCISE = "EXERCISE";
+	private final String OPTION_TYPE_FILL_IN_BLANK = "FILL";	
 
 	@Autowired
 	private IQuestionRepository iQuestionRepository;
@@ -155,7 +157,7 @@ public class QuestionServiceImpl implements IQuestionService {
 				error += "\nNot supported this file type for audio!";
 			}
 		}
-		if (!questionType.equalsIgnoreCase("EXERCISE")) {
+		if (!questionType.equalsIgnoreCase(OPTION_TYPE_EXERCISE)) {
 			throw new ResourceNotFoundException();
 		}
 
@@ -170,13 +172,6 @@ public class QuestionServiceImpl implements IQuestionService {
 		if (unit == null) {
 			throw new ResourceNotFoundException();
 		}
-
-//		List<String> questionTypeList = Stream
-//				.of("EXERCISE", "GAME_FILL_IN_BLANK", "GAME_MATCHING", "GAME_SWAPPING", "GAME_CHOOSING")
-//				.collect(Collectors.toList());
-//		if (questionTypeList.contains(questionType) == false) {
-//			throw new ResourceNotFoundException();
-//		}		
 
 		long questionId = createQuestion(imageFile, audioFile, questionTitle, description, score, unitId,
 				questionTypeId);
@@ -205,7 +200,7 @@ public class QuestionServiceImpl implements IQuestionService {
 				error += "\nNot supported this file type for audio!";
 			}
 		}
-		if (!questionType.equalsIgnoreCase("GAME_FILL_IN_BLANK")) {
+		if (!questionType.equalsIgnoreCase(OPTION_TYPE_FILL_IN_BLANK)) {
 			throw new ResourceNotFoundException();
 		}
 
@@ -238,7 +233,7 @@ public class QuestionServiceImpl implements IQuestionService {
 			throws SizeLimitExceededException, IOException {
 		String error = validateQuestionInput(questionTitle, description, score);
 		List<String> questionTypeList = new ArrayList<>();
-		questionTypeList.addAll(Arrays.asList("GAME_MATCHING", "GAME_SWAPPING", "GAME_CHOOSING"));
+		questionTypeList.addAll(Arrays.asList("MATCH", "SWAP", "CHOOSE"));
 		if (questionTypeList.contains(questionType) == false) {
 			throw new ResourceNotFoundException();
 		}
