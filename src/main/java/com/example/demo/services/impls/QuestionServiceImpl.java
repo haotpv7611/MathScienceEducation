@@ -109,7 +109,7 @@ public class QuestionServiceImpl implements IQuestionService {
 					if (optionQuestion.getOptionInputType().equalsIgnoreCase("Operator")) {
 						optionQuestionFillDTO.setOperator(optionQuestion.getOptionText());
 					}
-					
+
 					optionQuestionFillDTO.setId(optionQuestion.getId());
 					optionQuestionFillDTO.setOptionInputType(optionQuestion.getOptionInputType());
 					optionQuestionFillDTOList.add(optionQuestionFillDTO);
@@ -332,7 +332,7 @@ public class QuestionServiceImpl implements IQuestionService {
 		String error = validateQuestionInput(questionTitle, description, score);
 
 		// validate option data input
-		String optionError = validateSwappingMatchingChoosingOptionInput(imageFileList, optionTextList);
+		String optionError = validateSwappingMatchingChoosingOptionInput(imageFileList, optionTextList, "CREATE");
 		error += optionError;
 		if (!error.isEmpty()) {
 			return error.trim();
@@ -451,7 +451,7 @@ public class QuestionServiceImpl implements IQuestionService {
 				throw new ResourceNotFoundException();
 			}
 		}
-		String optionError = validateSwappingMatchingChoosingOptionInput(imageFileList, optionTextList);
+		String optionError = validateSwappingMatchingChoosingOptionInput(imageFileList, optionTextList, "UPDATE");
 		error += optionError;
 		if (!error.isEmpty()) {
 			return error.trim();
@@ -536,18 +536,24 @@ public class QuestionServiceImpl implements IQuestionService {
 	}
 
 	private String validateSwappingMatchingChoosingOptionInput(List<MultipartFile> imageFileList,
-			List<String> optionTextList) {
+			List<String> optionTextList, String action) {
 		String optionError = "";
 		for (int i = 0; i < optionTextList.size(); i++) {
 			optionError = validateRequiredString(optionTextList.get(i), OPTION_TEXT_LENGTH, "\nOptionText is invalid!");
-			optionError += validateRequiredFile(imageFileList.get(i), "image", "\nImageFile is invalid!",
-					"\nNot supported this file type for image!");
+			if (action.equalsIgnoreCase("CREATE")) {
+				optionError += validateRequiredFile(imageFileList.get(i), "image", "\nImageFile is invalid!",
+						"\nNot supported this file type for image!");
+			}
+			if (action.equalsIgnoreCase("UPDATE")) {
+				optionError += validateFile(imageFileList.get(i), "image", "\nNot supported this file type for image!");
+			}
 			if (!optionError.isEmpty()) {
 				break;
 			}
 		}
 
 		return optionError;
+
 	}
 
 	private long createQuestion(MultipartFile imageFile, MultipartFile audioFile, String questionTitle,
