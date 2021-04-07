@@ -1,12 +1,15 @@
 package com.example.demo.models;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -19,11 +22,10 @@ public class ExerciseGameQuestion {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
-
 	private long questionId;
 	private long exerciseId;
 	private long gameId;
-	private boolean isGQuestion;
+	private boolean isExerciseQuestions;
 	private boolean isDisable;
 	@CreatedDate
 	private LocalDateTime createdDate;
@@ -33,17 +35,30 @@ public class ExerciseGameQuestion {
 	private LocalDateTime modifiedDate;
 //	@LastModifiedBy
 	private String modifiedBy;
-	
-	
 
-
-
-	public boolean isGQuestion() {
-		return isGQuestion;
+	@PrePersist
+	public void onCreate() {
+		this.createdDate = LocalDateTime.now(ZoneId.of("UTC+7"));
+		this.modifiedDate = LocalDateTime.now(ZoneId.of("UTC+7"));
 	}
 
-	public void setGQuestion(boolean isGQuestion) {
-		this.isGQuestion = isGQuestion;
+	@PreUpdate
+	public void onUpdate() {
+		this.modifiedDate = LocalDateTime.now(ZoneId.of("UTC+7"));
+	}
+
+	/**
+	 * @return the isExerciseQuestions
+	 */
+	public boolean isExerciseQuestions() {
+		return isExerciseQuestions;
+	}
+
+	/**
+	 * @param isExerciseQuestions the isExerciseQuestions to set
+	 */
+	public void setExerciseQuestions(boolean isExerciseQuestions) {
+		this.isExerciseQuestions = isExerciseQuestions;
 	}
 
 	public LocalDateTime getCreatedDate() {
@@ -139,6 +154,19 @@ public class ExerciseGameQuestion {
 	 */
 	public long getId() {
 		return id;
+	}
+
+	public ExerciseGameQuestion() {
+	}
+
+	public ExerciseGameQuestion(long questionId, long exerciseId, long gameId, boolean isExerciseQuestions,
+			boolean isDisable) {
+		super();
+		this.questionId = questionId;
+		this.exerciseId = exerciseId;
+		this.gameId = gameId;
+		this.isExerciseQuestions = isExerciseQuestions;
+		this.isDisable = isDisable;
 	}
 
 }

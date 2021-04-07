@@ -47,8 +47,7 @@ public class ProgressTestServiceImpl implements IProgressTestService {
 
 		// 1. connect database through repository
 		// 2. find all entities are not disable and have subjectId = ?
-		List<ProgressTest> progressTestList = iProgressTestRepository.findBySubjectIdAndIsDisable(subjectId, false);
-
+		List<ProgressTest> progressTestList = iProgressTestRepository.findBySubjectIdAndIsDisableFalse(subjectId);
 		List<ProgressTestDTO> progressTestDTOList = new ArrayList<>();
 
 		// 3. convert all entities to dtos
@@ -63,87 +62,115 @@ public class ProgressTestServiceImpl implements IProgressTestService {
 		return progressTestDTOList;
 	}
 
-	@Override
-	public List<ProgressTestDTO> findBySubjectIdAndIsDisable(long subjectId) {
-		List<ProgressTest> progressTestLists = iProgressTestRepository.findBySubjectId(subjectId);
-		List<ProgressTestDTO> progressTestDTOLists = new ArrayList<>();
-		if (!progressTestLists.isEmpty()) {
-			for (ProgressTest progressTest : progressTestLists) {
-				ProgressTestDTO progressTestDTO = modelMapper.map(progressTest, ProgressTestDTO.class);
-				progressTestDTOLists.add(progressTestDTO);
-			}
-		}
-		return progressTestDTOLists;
-	}
+//	@Override
+//	public List<ProgressTestDTO> findBySubjectIdAndIsDisable(long subjectId) {
+//		List<ProgressTest> progressTestLists = iProgressTestRepository.findBySubjectId(subjectId);
+//		List<ProgressTestDTO> progressTestDTOLists = new ArrayList<>();
+//		if (!progressTestLists.isEmpty()) {
+//			for (ProgressTest progressTest : progressTestLists) {
+//				ProgressTestDTO progressTestDTO = modelMapper.map(progressTest, ProgressTestDTO.class);
+//				progressTestDTOLists.add(progressTestDTO);
+//			}
+//		}
+//		return progressTestDTOLists;
+//	}
 
 	@Override
 	public String createProgressTest(ProgressTestDTO progressTestDTO) {
-		Subject subject = iSubjectRepository.findByIdAndIsDisableFalse(progressTestDTO.getSubjectId());
+		long subjectId = progressTestDTO.getId();
+		String progressTestName = progressTestDTO.getProgressTestName();
+		Subject subject = iSubjectRepository.findByIdAndIsDisableFalse(subjectId);
 		if (subject == null) {
-			return "Subject is not existed";
+			throw new ResourceNotFoundException();
 		}
-		List<ProgressTestDTO> listProgressTestLists = findBySubjectIdAndIsDisable(progressTestDTO.getSubjectId());
-		for (ProgressTestDTO progressTestDTO2 : listProgressTestLists) {
-			if (progressTestDTO.getProgressTestName().equalsIgnoreCase(progressTestDTO2.getProgressTestName())) {
-				return "Progress Tesst Name is existed !";
-			}
+
+		if (iProgressTestRepository.findBySubjectIdAndProgressTestNameAndIsDisableFalse(subjectId,
+				progressTestName) != null) {
+			return "EXISTED";
 		}
+
+//		List<ProgressTestDTO> listProgressTestLists = findBySubjectIdAndIsDisable(progressTestDTO.getSubjectId());
+//		for (ProgressTestDTO progressTestDTO2 : listProgressTestLists) {
+//			if (progressTestDTO.getProgressTestName().equalsIgnoreCase(progressTestDTO2.getProgressTestName())) {
+//				return "Progress Tesst Name is existed !";
+//			}
+//		}
 		ProgressTest progressTest = modelMapper.map(progressTestDTO, ProgressTest.class);
 		progressTest.setDisable(false);
 		iProgressTestRepository.save(progressTest);
-		return "CREATE SUCCESSS !";
+
+		return "CREATE SUCCESSS!";
 	}
 
 	@Override
-	public String updateProgressTest(ProgressTestDTO progressTestDTO) {
-		ProgressTest progressTest = iProgressTestRepository.findById(progressTestDTO.getId())
-				.orElseThrow(() -> new ResourceNotFoundException());
-		if (progressTest.isDisable()) {
-			throw new ResourceNotFoundException();
-		}
-		if (!progressTest.getProgressTestName().equalsIgnoreCase(progressTestDTO.getProgressTestName())) {
-			List<ProgressTestDTO> listProgressTestLists = findBySubjectIdAndIsDisable(progressTestDTO.getSubjectId());
-			for (ProgressTestDTO progressTestDTO2 : listProgressTestLists) {
-				if (progressTestDTO.getProgressTestName().equalsIgnoreCase(progressTestDTO2.getProgressTestName())) {
-					return "Progress Tesst Name is existed !";
-				}
-			}
-		}
-		progressTest.setProgressTestName(progressTestDTO.getProgressTestName());
-		progressTest.setDescription(progressTestDTO.getDescription());
-		progressTest.setUnitAfterId(progressTestDTO.getUnitAfterId());
-		iProgressTestRepository.save(progressTest);
-		return "UPDATE SUCCESS !";
-	}
-
-	@Override
-	@Transactional
-	public String deleteProgressTest(long id) {
-		ProgressTest progressTest = iProgressTestRepository.findByIdAndIsDisable(id, false);
-
+	public String updateProgressTest(long id, ProgressTestDTO progressTestDTO) {
+		long subjectId = progressTestDTO.getId();
+		String progressTestName = progressTestDTO.getProgressTestName();
+		String description = progressTestDTO.getDescription();
+		long unitAfterId = progressTestDTO.getUnitAfterId();
+		ProgressTest progressTest = iProgressTestRepository.findByIdAndIsDisableFalse(id);
 		if (progressTest == null) {
 			throw new ResourceNotFoundException();
 		}
-		List<Exercise> exerciseList = iExerciseRepository.findByProgressTestIdAndIsDisableOrderByExerciseNameAsc(id,
-				false);
-		if (exerciseList != null) {
+		Subject subject = iSubjectRepository.findByIdAndIsDisableFalse(subjectId);
+		if (subject == null) {
+			throw new ResourceNotFoundException();
+		}
+
+		if (!progressTest.getProgressTestName().equalsIgnoreCase(progressTestName)) {
+			if (iProgressTestRepository.findBySubjectIdAndProgressTestNameAndIsDisableFalse(subjectId,
+					progressTestName) != null) {
+				return "EXISTED";
+			}
+
+//			List<ProgressTestDTO> listProgressTestLists = findBySubjectIdAndIsDisable(progressTestDTO.getSubjectId());
+//			for (ProgressTestDTO progressTestDTO2 : listProgressTestLists) {
+//				if (progressTestDTO.getProgressTestName().equalsIgnoreCase(progressTestDTO2.getProgressTestName())) {
+//					return "Progress Tesst Name is existed !";
+//				}
+//			}
+		}
+		progressTest.setProgressTestName(progressTestName);
+		progressTest.setDescription(description);
+		progressTest.setUnitAfterId(unitAfterId);
+		iProgressTestRepository.save(progressTest);
+
+		return "UPDATE SUCCESS!";
+	}
+
+//	@Override
+//	public String deleteProgressTest(List<Long> ids) {
+//		for (long id : ids) {
+//			deleteOneProgressTest(id);
+//		}
+//		return "DELETE SUCCESS !";
+//	}
+
+	@Override
+	@Transactional
+	public void deleteOneProgressTest(long id) {
+		ProgressTest progressTest = iProgressTestRepository.findByIdAndIsDisableFalse(id);
+		if (progressTest == null) {
+			throw new ResourceNotFoundException();
+		}
+		List<Exercise> exerciseList = iExerciseRepository.findByProgressTestIdAndIsDisableFalse(id);
+		if (!exerciseList.isEmpty()) {
 			for (Exercise exercise : exerciseList) {
-				iExerciseService.deleteExercise(exercise.getId());
+				iExerciseService.deleteOneExercise(exercise.getId());
 			}
 		}
 		progressTest.setDisable(true);
 		iProgressTestRepository.save(progressTest);
-		return "DELETE SUCCESS !";
 	}
 
 	@Override
 	public ProgressTestDTO findById(long id) {
-		ProgressTest progressTest = iProgressTestRepository.findById(id)
-				.orElseThrow(() -> new ResourceNotFoundException());
-		if (progressTest.isDisable()) {
+		ProgressTest progressTest = iProgressTestRepository.findByIdAndIsDisableFalse(id);
+		if (progressTest == null) {
 			throw new ResourceNotFoundException();
 		}
 		ProgressTestDTO progressTestDTO = modelMapper.map(progressTest, ProgressTestDTO.class);
+
 		return progressTestDTO;
 	}
 }

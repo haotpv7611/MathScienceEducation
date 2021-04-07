@@ -76,6 +76,6 @@ public class SubjectController {
 	public ResponseEntity<String> deleteSubject(@PathVariable long id) {
 		String response = iSubjectService.deleteSubject(id);
 
-		return ResponseEntity.status(HttpStatus.OK).body(response);
+		return ResponseEntity.ok(response);
 	}
 }

@@ -10,7 +10,9 @@ import com.example.demo.models.Unit;
 @Repository
 public interface IUnitRepository extends JpaRepository<Unit, Long> {
 
-	List<Unit> findBySubjectIdAndIsDisableFalseOrderByUnitNameAsc(Long subjectId);
+	List<Unit> findBySubjectIdAndIsDisableFalseOrderByUnitNameAsc(long subjectId);
+	
+	List<Unit> findBySubjectIdAndIsDisableFalse(long subjectId);
 
 	Unit findByIdAndIsDisableFalse(long id);
 

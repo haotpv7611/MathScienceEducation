@@ -238,23 +238,45 @@ public class QuestionServiceImpl implements IQuestionService {
 	public String deleteQuestion(List<Long> ids) {
 		for (long id : ids) {
 			// validate data input
-			Question question = iQuestionRepository.findByIdAndIsDisableFalse(id);
-			if (question == null) {
-				throw new ResourceNotFoundException();
-			}
-
-			// first: delete all active option by questionId
-			List<OptionQuestion> optionQuestions = iOptionQuestionRepository.findByQuestionIdAndIsDisableFalse(id);
-			for (OptionQuestion optionQuestion : optionQuestions) {
-				iOptionsService.deleteOptionQuestion(optionQuestion.getId());
-			}
-
-			// last: delete question and return
-			question.setDisable(true);
-			iQuestionRepository.save(question);
+//			Question question = iQuestionRepository.findByIdAndIsDisableFalse(id);
+//			if (question == null) {
+//				throw new ResourceNotFoundException();
+//			}
+//
+//			// first: delete all active option by questionId
+//			List<OptionQuestion> optionQuestions = iOptionQuestionRepository.findByQuestionIdAndIsDisableFalse(id);
+//			for (OptionQuestion optionQuestion : optionQuestions) {
+//				iOptionsService.deleteOptionQuestion(optionQuestion.getId());
+//			}
+//
+//			// last: delete question and return
+//			question.setDisable(true);
+//			iQuestionRepository.save(question);
+			
+			deleteOneQuestion(id);
 		}
 
-		return "DELETE SUCCESS !";
+		return "DELETE SUCCESS!";
+	}
+
+	@Override
+	@Transactional
+	public void deleteOneQuestion(long id) {
+
+		Question question = iQuestionRepository.findByIdAndIsDisableFalse(id);
+		if (question == null) {
+			throw new ResourceNotFoundException();
+		}
+
+		// first: delete all active option by questionId
+		List<OptionQuestion> optionQuestions = iOptionQuestionRepository.findByQuestionIdAndIsDisableFalse(id);
+		for (OptionQuestion optionQuestion : optionQuestions) {
+			iOptionsService.deleteOptionQuestion(optionQuestion.getId());
+		}
+
+		// last: delete question and return
+		question.setDisable(true);
+		iQuestionRepository.save(question);		
 	}
 
 	// done
@@ -503,9 +525,9 @@ public class QuestionServiceImpl implements IQuestionService {
 		// gameQuestion
 		List<Question> questionList = null;
 		if (isExercise) {
-			questionList = iQuestionRepository.findByUnitIdAndQuestionTypeIdAndIsDisable(unitId, 1, false);
+			questionList = iQuestionRepository.findByUnitIdAndQuestionTypeIdAndIsDisableFalse(unitId, 1);
 		} else {
-			questionList = iQuestionRepository.findByUnitIdAndQuestionTypeIdNotAndIsDisable(unitId, 1, false);
+			questionList = iQuestionRepository.findByUnitIdAndQuestionTypeIdNotAndIsDisableFalse(unitId, 1);
 		}
 
 		// convert to DTO and return

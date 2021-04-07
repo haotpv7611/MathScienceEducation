@@ -7,13 +7,15 @@ import com.example.demo.dtos.ProgressTestDTO;
 public interface IProgressTestService {
 	List<ProgressTestDTO> findBySubjectId(long subjectId);
 
-	List<ProgressTestDTO> findBySubjectIdAndIsDisable(long subjectId);
+//	List<ProgressTestDTO> findBySubjectIdAndIsDisable(long subjectId);
 
 	String createProgressTest(ProgressTestDTO progressTestDTO);
 
-	String updateProgressTest(ProgressTestDTO progressTestDTO);
+	String updateProgressTest(long id, ProgressTestDTO progressTestDTO);
 
-	String deleteProgressTest(long id);
+//	String deleteProgressTest(List<Long> ids);
+	
+	void deleteOneProgressTest(long id);
 
 	ProgressTestDTO findById(long id);
 }

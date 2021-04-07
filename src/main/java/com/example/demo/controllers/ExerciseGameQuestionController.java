@@ -19,22 +19,19 @@ public class ExerciseGameQuestionController {
 
 	@Autowired
 	IExerciseGameQuestionService iExerciseGameQuestionService;
-	
+
 	@PostMapping("/exerciseGameQuestion")
-	public ResponseEntity<String> addQuestionToGameQuestionExercise(@RequestBody ExerciseGameQuestionDTO exerciseGameQuestionDTO){
-		String response = iExerciseGameQuestionService.addQuestionToExercise(exerciseGameQuestionDTO);
-		if(!response.contains("SUCESSS")) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-		}
+	public ResponseEntity<String> addQuestionToGameQuestionExercise(
+			@RequestBody ExerciseGameQuestionDTO exerciseGameQuestionDTO) {
+		String response = iExerciseGameQuestionService.addExerciseOrGameQuestion(exerciseGameQuestionDTO);
+		
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
-	
+
 	@PutMapping("/exerciseGameQuestion/delete")
-	public ResponseEntity<String> deleteQuestionFronExerciseGameQuestion(@RequestParam long id){
-		String response = iExerciseGameQuestionService.deleteQuestionFromExercise(id);
-		if(!response.contains("SUCCESS")) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-		}
-		return ResponseEntity.status(HttpStatus.OK).body(response);
+	public ResponseEntity<String> deleteExerciseOrGameQuestion(@RequestParam long id) {
+		iExerciseGameQuestionService.deleteExerciseGameQuestion(id);;
+
+		return ResponseEntity.ok("DELETE SUCCESS!");
 	}
 }

@@ -74,9 +74,9 @@ public class LessonController {
 	
 	@PutMapping("/lesson")
 	public ResponseEntity<String> deleteLesson(@RequestParam long id) {			
-		String response = iLessonService.deleteLesson(id);
+		iLessonService.deleteOneLesson(id);
 
-		return ResponseEntity.ok(response);		
+		return ResponseEntity.ok("DELETE SUCCESS!");		
 		
 	}
 }

@@ -1,6 +1,5 @@
 package com.example.demo.services.impls;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.modelmapper.ModelMapper;
@@ -9,8 +8,14 @@ import org.springframework.stereotype.Service;
 
 import com.example.demo.dtos.ExerciseGameQuestionDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
+import com.example.demo.models.Exercise;
 import com.example.demo.models.ExerciseGameQuestion;
+import com.example.demo.models.Game;
+import com.example.demo.models.Question;
 import com.example.demo.repositories.IExerciseGameQuestionRepository;
+import com.example.demo.repositories.IExerciseRepository;
+import com.example.demo.repositories.IGameRepository;
+import com.example.demo.repositories.IQuestionRepository;
 import com.example.demo.services.IExerciseGameQuestionService;
 
 @Service
@@ -20,86 +25,95 @@ public class ExerciseGameQuestionServiceImpl implements IExerciseGameQuestionSer
 	private IExerciseGameQuestionRepository iExerciseGameQuestionRepository;
 
 	@Autowired
-	ModelMapper modelMapper;
+	private IQuestionRepository iQuestionRepository;
+
+	@Autowired
+	private IExerciseRepository iExerciseRepository;
+
+	@Autowired
+	private IGameRepository iGameRepository;
+
+	@Autowired
+	private ModelMapper modelMapper;
+//
+//	@Override
+//	public List<ExerciseGameQuestionDTO> findAllQuestionByExerciseId1(long exerciseId) {
+//		List<ExerciseGameQuestion> list = iExerciseGameQuestionRepository.findByExerciseId(exerciseId);
+//		List<ExerciseGameQuestionDTO> listGameQuestionExercise = new ArrayList<>();
+//		for (ExerciseGameQuestion exerciseGameQuestion : list) {
+//			ExerciseGameQuestionDTO exerciseGameQuestionDTO = modelMapper.map(exerciseGameQuestion,
+//					ExerciseGameQuestionDTO.class);
+//			listGameQuestionExercise.add(exerciseGameQuestionDTO);
+//		}
+//		return listGameQuestionExercise;
+//	}
+//
+//	@Override
+//	public List<ExerciseGameQuestionDTO> findAllQuestionByGameId1(long gameId) {
+//
+//		List<ExerciseGameQuestion> list = iExerciseGameQuestionRepository.findByGameId(gameId);
+//		List<ExerciseGameQuestionDTO> listGameQuestionExercise = new ArrayList<>();
+//		for (ExerciseGameQuestion exerciseGameQuestion : list) {
+//			ExerciseGameQuestionDTO exerciseGameQuestionDTO = modelMapper.map(exerciseGameQuestion,
+//					ExerciseGameQuestionDTO.class);
+//			listGameQuestionExercise.add(exerciseGameQuestionDTO);
+//		}
+//
+//		return listGameQuestionExercise;
+//	}
 
 	@Override
-	public List<ExerciseGameQuestionDTO> findAllQuestionByExerciseId1(long exerciseId) {
-		List<ExerciseGameQuestion> list = iExerciseGameQuestionRepository.findByExerciseId(exerciseId);
-		List<ExerciseGameQuestionDTO> listGameQuestionExercise = new ArrayList<>();
-		for (ExerciseGameQuestion exerciseGameQuestion : list) {
-			ExerciseGameQuestionDTO exerciseGameQuestionDTO = modelMapper.map(exerciseGameQuestion,
-					ExerciseGameQuestionDTO.class);
-			listGameQuestionExercise.add(exerciseGameQuestionDTO);
-		}
-		return listGameQuestionExercise;
-	}
+	public String addExerciseOrGameQuestion(ExerciseGameQuestionDTO exerciseGameQuestionDTO) {
+		boolean isExercise = exerciseGameQuestionDTO.isExercise();
+		long questionId = exerciseGameQuestionDTO.getQuestionId();
+		long exerciseId = exerciseGameQuestionDTO.getExerciseId();
+		long gameId = exerciseGameQuestionDTO.getGameId();
 
-	@Override
-	public List<ExerciseGameQuestionDTO> findAllQuestionByGameId1(long gameId) {
-
-		List<ExerciseGameQuestion> list = iExerciseGameQuestionRepository.findByGameId(gameId);
-		List<ExerciseGameQuestionDTO> listGameQuestionExercise = new ArrayList<>();
-		for (ExerciseGameQuestion exerciseGameQuestion : list) {
-			ExerciseGameQuestionDTO exerciseGameQuestionDTO = modelMapper.map(exerciseGameQuestion,
-					ExerciseGameQuestionDTO.class);
-			listGameQuestionExercise.add(exerciseGameQuestionDTO);
-		}
-
-		return listGameQuestionExercise;
-	}
-
-	@Override
-	public String addQuestionToExercise(ExerciseGameQuestionDTO exerciseGameQuestionDTO) {
-		// get List Question of this exercise is existed !
-
-		if (exerciseGameQuestionDTO.getExerciseId() != 0 && exerciseGameQuestionDTO.getExerciseId() != 1) {
-
-			List<ExerciseGameQuestionDTO> listQuestionExercise = findAllQuestionByExerciseId1(
-					exerciseGameQuestionDTO.getExerciseId());
-
-			for (ExerciseGameQuestionDTO exerciseGameQuestion1 : listQuestionExercise) {
-
-				if (exerciseGameQuestion1.getQuestionId() == exerciseGameQuestionDTO.getQuestionId()) {
-					return "This question is existed !";
-				}
-			}
-			ExerciseGameQuestion exerciseGameQuestion = modelMapper.map(exerciseGameQuestionDTO,
-					ExerciseGameQuestion.class);
-			exerciseGameQuestion.setGameId(1);
-			exerciseGameQuestion.setDisable(false);
-			exerciseGameQuestion.setGQuestion(false);
-			iExerciseGameQuestionRepository.save(exerciseGameQuestion);
-		}
-
-		if (exerciseGameQuestionDTO.getGameId() != 0 && exerciseGameQuestionDTO.getGameId() != 1) {
-			List<ExerciseGameQuestionDTO> listQuestionGame = findAllQuestionByGameId1(
-					exerciseGameQuestionDTO.getGameId());
-			for (ExerciseGameQuestionDTO exerciseGameQuestion1 : listQuestionGame) {
-				if (exerciseGameQuestion1.getQuestionId() == exerciseGameQuestionDTO.getQuestionId()) {
-					return "This question is existed !";
-				}
-			}
-			ExerciseGameQuestion exerciseGameQuestion = modelMapper.map(exerciseGameQuestionDTO,
-					ExerciseGameQuestion.class);
-			exerciseGameQuestion.setExerciseId(1);
-			exerciseGameQuestion.setGQuestion(true);
-			exerciseGameQuestion.setDisable(false);
-			iExerciseGameQuestionRepository.save(exerciseGameQuestion);
-		}
-		return "CREATE SUCCESS !";
-	}
-
-	@Override
-	public String deleteQuestionFromExercise(long id) {
-		ExerciseGameQuestion exerciseGameQuestion = iExerciseGameQuestionRepository.findById(id)
-				.orElseThrow(() -> new ResourceNotFoundException());
-		if (exerciseGameQuestion == null) {
+		// validate data input
+		Question question = iQuestionRepository.findByIdAndIsDisableFalse(questionId);
+		if (question == null) {
 			throw new ResourceNotFoundException();
 		}
-		exerciseGameQuestion.setDisable(true);
+
+		if (isExercise) {
+			Exercise exercise = iExerciseRepository.findByIdAndIsDisableFalse(exerciseId);
+			if (exercise == null) {
+				throw new ResourceNotFoundException();
+			}
+			if (!iExerciseGameQuestionRepository.findByQuestionIdAndExerciseIdAndIsDisableFalse(questionId, exerciseId)
+					.isEmpty()) {
+				return "EXISTED";
+			}
+		} else {
+			Game game = iGameRepository.findByIdAndIsDisableFalse(gameId);
+			if (game == null) {
+				throw new ResourceNotFoundException();
+			}
+			if (!iExerciseGameQuestionRepository.findByQuestionIdAndGameIdAndIsDisableFalse(questionId, gameId)
+					.isEmpty()) {
+				return "EXISTED";
+			}
+		}
+
+		ExerciseGameQuestion exerciseGameQuestion = null;
+		if (isExercise) {
+			exerciseGameQuestion = new ExerciseGameQuestion(questionId, exerciseId, 0, isExercise, false);
+		} else {
+			exerciseGameQuestion = new ExerciseGameQuestion(questionId, 0, gameId, isExercise, false);
+		}
 		iExerciseGameQuestionRepository.save(exerciseGameQuestion);
-		return "DELETE SUCCESS !";
+
+		return "CREATE SUCCESS!";
 	}
+
+//	@Override
+//	public String deleteExerciseOrGameQuestion(List<Long> ids) {
+//		for (Long id : ids) {
+//			deleteExerciseGameQuestion(id);
+//		}
+//
+//		return "DELETE SUCCESS!";
+//	}
 
 	@Override
 	public List<Long> findAllQuestionIdByExerciseId(long exerciseId) {
@@ -111,6 +125,16 @@ public class ExerciseGameQuestionServiceImpl implements IExerciseGameQuestionSer
 	public List<Long> findAllQuestionIdByGameId(long gameId) {
 
 		return iExerciseGameQuestionRepository.findAllQuestionIdByGameId(gameId);
+	}
+
+	@Override
+	public void deleteExerciseGameQuestion(long id) {
+		ExerciseGameQuestion exerciseGameQuestion = iExerciseGameQuestionRepository.findByIdAndIsDisableFalse(id);
+		if (exerciseGameQuestion == null) {
+			throw new ResourceNotFoundException();
+		}
+		exerciseGameQuestion.setDisable(true);
+		iExerciseGameQuestionRepository.save(exerciseGameQuestion);
 	}
 
 }

@@ -1,6 +1,7 @@
 package com.example.demo.models;
 
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
@@ -10,6 +11,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -29,13 +32,24 @@ public class StudentProfile {
 	private String parentPhone;
 
 	@CreatedDate
-	private Date createdDate;
+	private LocalDateTime createdDate;
 	private String createdBy;
 	@LastModifiedDate
-	private Date modifiedDate;
+	private LocalDateTime modifiedDate;
 	private String modifiedBy;
 	private String status;
 	private long studentCount;
+
+	@PrePersist
+	public void onCreate() {
+		this.createdDate = LocalDateTime.now(ZoneId.of("UTC+7"));
+		this.modifiedDate = LocalDateTime.now(ZoneId.of("UTC+7"));
+	}
+
+	@PreUpdate
+	public void onUpdate() {
+		this.modifiedDate = LocalDateTime.now(ZoneId.of("UTC+7"));
+	}
 
 	@OneToOne
 	@JoinColumn(name = "accountId")
@@ -46,7 +60,6 @@ public class StudentProfile {
 	private Classes classes;
 
 	public StudentProfile() {
-
 	}
 
 	public StudentProfile(String dOB, String gender, String parentName, String parentPhone, Account account,
@@ -105,14 +118,14 @@ public class StudentProfile {
 	/**
 	 * @return the createdDate
 	 */
-	public Date getCreatedDate() {
+	public LocalDateTime getCreatedDate() {
 		return createdDate;
 	}
 
 	/**
 	 * @param createdDate the createdDate to set
 	 */
-	public void setCreatedDate(Date createdDate) {
+	public void setCreatedDate(LocalDateTime createdDate) {
 		this.createdDate = createdDate;
 	}
 
@@ -133,14 +146,14 @@ public class StudentProfile {
 	/**
 	 * @return the modifiedDate
 	 */
-	public Date getModifiedDate() {
+	public LocalDateTime getModifiedDate() {
 		return modifiedDate;
 	}
 
 	/**
 	 * @param modifiedDate the modifiedDate to set
 	 */
-	public void setModifiedDate(Date modifiedDate) {
+	public void setModifiedDate(LocalDateTime modifiedDate) {
 		this.modifiedDate = modifiedDate;
 	}
 

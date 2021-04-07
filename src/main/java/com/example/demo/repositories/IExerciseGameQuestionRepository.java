@@ -11,13 +11,19 @@ import com.example.demo.models.ExerciseGameQuestion;
 @Repository
 public interface IExerciseGameQuestionRepository extends JpaRepository<ExerciseGameQuestion, Long>{
 	
-	List<ExerciseGameQuestion> findByExerciseId(long exerciseId);	
-	
-	List<ExerciseGameQuestion> findByGameId(long gameId);
+//	List<ExerciseGameQuestion> findByExerciseId(long exerciseId);	
+//	
+//	List<ExerciseGameQuestion> findByGameId(long gameId);
 
 	@Query(value = "SELECT questionId FROM ExerciseGameQuestion WHERE exerciseId = ?1 and isDisable = false")
 	List<Long> findAllQuestionIdByExerciseId(long exerciseId);
 	
 	@Query(value = "SELECT questionId FROM ExerciseGameQuestion WHERE gameId = ?1 and isDisable = false")
 	List<Long> findAllQuestionIdByGameId(long gameId);
+	
+	ExerciseGameQuestion findByIdAndIsDisableFalse(long id);
+	
+	List<ExerciseGameQuestion> findByQuestionIdAndExerciseIdAndIsDisableFalse(long questionId, long exerciseId);
+	
+	List<ExerciseGameQuestion> findByQuestionIdAndGameIdAndIsDisableFalse(long questionId, long exerciseId);
 }

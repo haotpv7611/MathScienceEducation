@@ -13,10 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.demo.dtos.GameRequestDTO;
 import com.example.demo.dtos.GameResponseDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
-import com.example.demo.models.ExerciseGameQuestion;
 import com.example.demo.models.Game;
 import com.example.demo.models.Lesson;
-import com.example.demo.repositories.IExerciseGameQuestionRepository;
 import com.example.demo.repositories.IGameRepository;
 import com.example.demo.repositories.ILessonRepository;
 import com.example.demo.services.IExerciseGameQuestionService;
@@ -36,11 +34,9 @@ public class GameServiceImpl implements IGameService {
 	private ModelMapper modelMapper;
 
 	@Autowired
-	private IExerciseGameQuestionRepository iExerciseGameQuestionRepository;
-
-	@Autowired
 	private IExerciseGameQuestionService iExerciseGameQuestionService;
 
+	// done
 	@Override
 	public List<GameResponseDTO> findAllByLessonId(long lessonId) {
 		Lesson lesson = iLessonRepository.findByIdAndIsDisableFalse(lessonId);
@@ -48,7 +44,7 @@ public class GameServiceImpl implements IGameService {
 			throw new ResourceNotFoundException();
 		}
 
-		List<Game> gameList = iGameRepository.findByLessonIdAndIsDisable(lessonId, false);
+		List<Game> gameList = iGameRepository.findByLessonIdAndIsDisableFalse(lessonId);
 		List<GameResponseDTO> gameResponseDTOList = new ArrayList<>();
 		if (!gameList.isEmpty()) {
 			for (Game game : gameList) {
@@ -60,6 +56,7 @@ public class GameServiceImpl implements IGameService {
 		return gameResponseDTOList;
 	}
 
+	// done
 	@Override
 	public GameResponseDTO findGameById(long id) {
 
@@ -69,6 +66,7 @@ public class GameServiceImpl implements IGameService {
 			throw new ResourceNotFoundException();
 		}
 		GameResponseDTO gameResponseDTO = modelMapper.map(game, GameResponseDTO.class);
+
 		return gameResponseDTO;
 
 //		} catch (ResourceNotFoundException ex) {
@@ -92,7 +90,6 @@ public class GameServiceImpl implements IGameService {
 	public String updateGame(long id, GameRequestDTO gameRequestDTO) {
 		String gameNameDTO = gameRequestDTO.getGameName();
 		long lessonId = gameRequestDTO.getLessonId();
-
 		Lesson lesson = iLessonRepository.findByIdAndIsDisableFalse(lessonId);
 		if (lesson == null) {
 			throw new ResourceNotFoundException();
@@ -103,7 +100,7 @@ public class GameServiceImpl implements IGameService {
 		}
 
 		if (!game.getGameName().equalsIgnoreCase(gameNameDTO)) {
-			if (iGameRepository.findByLessonIdAndGameNameAndIsDisable(lessonId, gameNameDTO, false) != null) {
+			if (iGameRepository.findByLessonIdAndGameNameAndIsDisableFalse(lessonId, gameNameDTO) != null) {
 				return "EXISTED";
 			}
 		}
@@ -111,19 +108,19 @@ public class GameServiceImpl implements IGameService {
 		game.setGameName(gameNameDTO);
 		game.setDescription(gameRequestDTO.getDescription());
 		iGameRepository.save(game);
-		return "UPDATE SUCCESS !";
+
+		return "UPDATE SUCCESS!";
 	}
 
 	@Override
 	public String createGame(GameRequestDTO gameRequestDTO) {
 		String gameName = gameRequestDTO.getGameName();
 		long lessonId = gameRequestDTO.getLessonId();
-
 		Lesson lesson = iLessonRepository.findByIdAndIsDisableFalse(lessonId);
 		if (lesson == null) {
 			throw new ResourceNotFoundException();
 		}
-		if (iGameRepository.findByLessonIdAndGameNameAndIsDisable(lessonId, gameName, false) != null) {
+		if (iGameRepository.findByLessonIdAndGameNameAndIsDisableFalse(lessonId, gameName) != null) {
 			return "EXISTED";
 		}
 		Game game = modelMapper.map(gameRequestDTO, Game.class);
@@ -133,22 +130,38 @@ public class GameServiceImpl implements IGameService {
 	}
 
 	@Override
+	public String deleteGame(List<Long> ids) {
+		for (Long id : ids) {
+			deleteOneGame(id);
+		}
+
+//		// xoa bang giua
+//		List<ExerciseGameQuestion> exerciseGameQuestionLists = iExerciseGameQuestionRepository.findByGameId(id);
+//		if (exerciseGameQuestionLists != null) {
+//			for (ExerciseGameQuestion exerciseGameQuestion : exerciseGameQuestionLists) {
+//				iExerciseGameQuestionService.deleteQuestionFromExercise(exerciseGameQuestion.getId());
+//			}
+//		}
+
+		return "DELETE SUCESS!";
+	}
+	
+	@Override
 	@Transactional
-	public String deleteGame(long id) {
+	public void deleteOneGame(long id) {
 		Game game = iGameRepository.findByIdAndIsDisableFalse(id);
 		if (game == null) {
 			throw new ResourceNotFoundException();
 		}
-		// xoa bang giua
-		List<ExerciseGameQuestion> exerciseGameQuestionLists = iExerciseGameQuestionRepository.findByGameId(id);
-		if (exerciseGameQuestionLists != null) {
-			for (ExerciseGameQuestion exerciseGameQuestion : exerciseGameQuestionLists) {
-				iExerciseGameQuestionService.deleteQuestionFromExercise(exerciseGameQuestion.getId());
-			}
+
+		List<Long> gameQuestionIdList = iExerciseGameQuestionService.findAllQuestionIdByGameId(id);
+		if (!gameQuestionIdList.isEmpty()) {
+			for (Long gameQuestionId : gameQuestionIdList) {
+				iExerciseGameQuestionService.deleteExerciseGameQuestion(gameQuestionId);
+			}				
 		}
 		game.setDisable(true);
 		iGameRepository.save(game);
-		return "DELETE SUCESS !";
 	}
 
 }

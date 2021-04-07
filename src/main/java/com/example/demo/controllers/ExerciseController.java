@@ -29,18 +29,18 @@ public class ExerciseController {
 	IExerciseService iExerciseService;
 
 	@GetMapping("/lesson/{lessonId}/exercises")
-	public ResponseEntity<List<ExerciseDTO>> findByLessonIdAndIsDisableOrderByExerciseNameAsc(
-			@PathVariable long lessonId) {
-		List<ExerciseDTO> response = iExerciseService.findByLessonIdAndIsDisableOrderByExerciseNameAsc(lessonId);
-		return ResponseEntity.status(HttpStatus.OK).body(response);
+	public ResponseEntity<List<ExerciseDTO>> findByLessonIdOrderByExerciseNameAsc(@PathVariable long lessonId) {
+		List<ExerciseDTO> response = iExerciseService.findByLessonIdOrderByExerciseNameAsc(lessonId);
+
+		return ResponseEntity.ok(response);
 	}
 
 	@GetMapping("/progressTest/{progressTestId}/exercises")
-	public ResponseEntity<List<ExerciseDTO>> findByProgressTestIdAndIsDisableOrderByExerciseNameAsc(
+	public ResponseEntity<List<ExerciseDTO>> findByProgressTestIdOrderByExerciseNameAsc(
 			@PathVariable long progressTestId) {
-		List<ExerciseDTO> response = iExerciseService
-				.findByProgressTestIdAndIsDisableOrderByExerciseNameAsc(progressTestId);
-		return ResponseEntity.status(HttpStatus.OK).body(response);
+		List<ExerciseDTO> response = iExerciseService.findByProgressTestIdOrderByExerciseNameAsc(progressTestId);
+
+		return ResponseEntity.ok(response);
 	}
 
 	@PostMapping("/exercise")
@@ -54,9 +54,7 @@ public class ExerciseController {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
 		}
 		String response = iExerciseService.createExercise(exerciseDTO);
-//		if (!response.contains("SUCCESS")) {
-//			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-//		}
+
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 
@@ -70,19 +68,15 @@ public class ExerciseController {
 			}
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
 		}
-		String response = iExerciseService.updateExercise(exerciseDTO);
-//		if (!response.contains("SUCCESS")) {
-//			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-//		}
-		return ResponseEntity.status(HttpStatus.OK).body(response);
+		String response = iExerciseService.updateExercise(id, exerciseDTO);
+
+		return ResponseEntity.ok(response);
 	}
-	
+
 	@PutMapping("/exercise/delete")
-	public ResponseEntity<String> deleteExercise(@RequestParam long id){
-		String response = iExerciseService.deleteExercise(id);
-//		if (!response.contains("SUCCESS")) {
-//			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-//		}
-		return ResponseEntity.status(HttpStatus.OK).body(response);
+	public ResponseEntity<String> deleteExercise(@RequestParam long id) {
+		iExerciseService.deleteOneExercise(id);
+
+		return ResponseEntity.ok("DELETE SUCCESS!");
 	}
 }

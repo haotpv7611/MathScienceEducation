@@ -8,8 +8,10 @@ import org.springframework.stereotype.Repository;
 import com.example.demo.models.Game;
 
 @Repository
-public interface IGameRepository extends JpaRepository<Game, Long>{
-	List<Game>  findByLessonIdAndIsDisable(long lessonId, boolean isDisable);
+public interface IGameRepository extends JpaRepository<Game, Long> {
+	List<Game> findByLessonIdAndIsDisableFalse(long lessonId);
+
 	Game findByIdAndIsDisableFalse(long id);
-	Game findByLessonIdAndGameNameAndIsDisable(long lessonId, String gameName, boolean isDisable);
+
+	Game findByLessonIdAndGameNameAndIsDisableFalse(long lessonId, String gameName);
 }

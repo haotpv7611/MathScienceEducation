@@ -9,8 +9,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.dtos.ProgressTestDTO;
-import com.example.demo.dtos.UnitResponseDTO;
 import com.example.demo.dtos.UnitRequestDTO;
+import com.example.demo.dtos.UnitResponseDTO;
 import com.example.demo.dtos.UnitViewDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.Lesson;
@@ -174,28 +174,28 @@ public class UnitServiceImpl implements IUnitService {
 			throw new ResourceNotFoundException();
 		}
 
-		List<Lesson> listLesson = iLessonRepository.findByUnitIdAndIsDisableFalse(id);
-		if (!listLesson.isEmpty()) {
-			for (Lesson lesson : listLesson) {
-				iLessonService.deleteLesson(lesson.getId());
+		List<Lesson> lessonList = iLessonRepository.findByUnitIdAndIsDisableFalse(id);
+		if (!lessonList.isEmpty()) {
+			for (Lesson lesson : lessonList) {
+				iLessonService.deleteOneLesson(lesson.getId());
 			}
 		}
 
-		List<Question> questionLists = iQuestionRepository.findByUnitIdAndIsDisable(id, false);
-//		if (!questionLists.isEmpty()) {
-//			for (Question question : questionLists) {
-//				iQuestionService.deleteQuestion(question.getId());
-//			}
-//		}
+		List<Question> questionList = iQuestionRepository.findByUnitIdAndIsDisableFalse(id);
+		if (questionList.isEmpty()) {
+			for (Question question : questionList) {
+				iQuestionService.deleteOneQuestion(question.getId());
+			}
+		}
 
 		unit.setDisable(true);
 		iUnitRepository.save(unit);
-		return "DELETE SUCCESS !";
+		return "DELETE SUCCESS!";
 	}
 
 	// done
 	@Override
-	public UnitResponseDTO findById(long id) {		
+	public UnitResponseDTO findById(long id) {
 		Unit unit = iUnitRepository.findByIdAndIsDisableFalse(id);
 		if (unit == null) {
 			throw new ResourceNotFoundException();

@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dtos.GameRequestDTO;
@@ -30,14 +29,16 @@ public class GameController {
 
 	@GetMapping("/lesson/{lessonId}/game/all")
 	public ResponseEntity<List<GameResponseDTO>> findAllByLessonId(@PathVariable long lessonId) {
-
-		return ResponseEntity.ok(iGameService.findAllByLessonId(lessonId));
+		List<GameResponseDTO> response = iGameService.findAllByLessonId(lessonId);
+		
+		return ResponseEntity.ok(response);
 	}
 
 	@GetMapping("/game/{id}")
 	public ResponseEntity<GameResponseDTO> findOneById(@PathVariable long id) {
-
-		return ResponseEntity.ok(iGameService.findGameById(id));
+		GameResponseDTO response = iGameService.findGameById(id);
+		
+		return ResponseEntity.ok(response);
 	}
 
 	@PutMapping("/game/{id}")
@@ -50,8 +51,7 @@ public class GameController {
 			}
 
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
-		}
-		
+		}		
 		String response = iGameService.updateGame(id, gameRequestDTO);
 
 		return ResponseEntity.ok(response);
@@ -68,7 +68,6 @@ public class GameController {
 
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
 		}
-
 		String response = iGameService.createGame(gameRequestDTO);
 
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -76,9 +75,8 @@ public class GameController {
 	
 
 	@PutMapping("/game")
-	public ResponseEntity<String> deleteGame(@RequestParam long id) {		
-		
-		String response = iGameService.deleteGame(id);
+	public ResponseEntity<String> deleteGame(@RequestBody List<Long> ids) {		
+		String response = iGameService.deleteGame(ids);
 
 		return ResponseEntity.ok(response);
 	}

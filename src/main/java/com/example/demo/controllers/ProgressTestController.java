@@ -28,19 +28,21 @@ public class ProgressTestController {
 	@Autowired
 	private IProgressTestService iProgressTestService;
 
-	@GetMapping("subject/{subjectId}/progressTest")
-	public ResponseEntity<List<ProgressTestDTO>> findBySubjectId(@PathVariable Long subjectId) {
+	@GetMapping("/subject/{subjectId}/progressTest")
+	public ResponseEntity<List<ProgressTestDTO>> findBySubjectId(@PathVariable long subjectId) {
 		List<ProgressTestDTO> response = iProgressTestService.findBySubjectId(subjectId);
-		return ResponseEntity.status(HttpStatus.OK).body(response);
+		
+		return ResponseEntity.ok(response);
 	}
 
-	@GetMapping("progressTest/{id}")
-	public ResponseEntity<ProgressTestDTO> findById(@PathVariable long id) {
+	@GetMapping("/progressTest/{id}")
+	public ResponseEntity<ProgressTestDTO> findProgressTestById(@PathVariable long id) {
 		ProgressTestDTO response = iProgressTestService.findById(id);
-		return ResponseEntity.status(HttpStatus.OK).body(response);
+		
+		return ResponseEntity.ok(response);
 	}
 
-	@PostMapping("progressTest")
+	@PostMapping("/progressTest")
 	public ResponseEntity<String> createProgressTest(@Valid @RequestBody ProgressTestDTO progressTestDTO,
 			BindingResult bindingResult) {
 		if (bindingResult.hasErrors()) {
@@ -51,9 +53,7 @@ public class ProgressTestController {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
 		}
 		String response = iProgressTestService.createProgressTest(progressTestDTO);
-		if (!response.contains("SUCCESS")) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-		}
+		
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 
@@ -68,19 +68,15 @@ public class ProgressTestController {
 			}
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
 		}
-		String response = iProgressTestService.updateProgressTest(progressTestDTO);
-		if (!response.contains("SUCCESS")) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-		}
-		return ResponseEntity.status(HttpStatus.OK).body(response);
+		String response = iProgressTestService.updateProgressTest(id, progressTestDTO);
+		
+		return ResponseEntity.ok(response);
 	}
 
 	@PutMapping("progressTest/delete")
 	public ResponseEntity<String> deleteProgressTest(@RequestParam long id) {
-		String response = iProgressTestService.deleteProgressTest(id);
-		if (!response.contains("SUCCESS")) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-		}
-		return ResponseEntity.status(HttpStatus.OK).body(response);
+		iProgressTestService.deleteOneProgressTest(id);
+		
+		return ResponseEntity.ok("DELETE SUCCESS!");
 	}
 }

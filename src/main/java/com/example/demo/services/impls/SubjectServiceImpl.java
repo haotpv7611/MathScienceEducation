@@ -91,22 +91,23 @@ public class SubjectServiceImpl implements ISubjectService {
 			throw new ResourceNotFoundException();
 		}
 
-//		List<Unit> listUnits = iUnitRepository.findBySubjectIdAndIsDisableOrderByUnitNameAsc(id, false);
-//		if (!listUnits.isEmpty()) {
-//			for (Unit unit : listUnits) {
-//				iUnitService.deleteUnit(unit.getId());
-//			}
-//		}
-		List<ProgressTest> progresssTestList = iProgressTestRepository.findBySubjectId(id);
+		List<Unit> listUnitList = iUnitRepository.findBySubjectIdAndIsDisableFalse(id);
+		if (!listUnitList.isEmpty()) {
+			for (Unit unit : listUnitList) {
+				iUnitService.deleteUnit(unit.getId());
+			}
+		}
+		List<ProgressTest> progresssTestList = iProgressTestRepository.findBySubjectIdAndIsDisableFalse(id);
 		if (!progresssTestList.isEmpty()) {
 			for (ProgressTest progressTest : progresssTestList) {
-				iProgressTestService.deleteProgressTest(progressTest.getId());
+				iProgressTestService.deleteOneProgressTest(progressTest.getId());
 			}
 		}
 
 		subject.setDisable(true);
 		iSubjectRepository.save(subject);
-		return "DELETE SUCCESS !";
+		
+		return "DELETE SUCCESS!";
 	}
 
 	// done

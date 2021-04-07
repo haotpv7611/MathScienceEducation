@@ -18,7 +18,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 public class Lesson {
-
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
@@ -26,6 +25,7 @@ public class Lesson {
 	private String lessonUrl;
 	private long unitId;
 	private boolean isDisable;
+	
 	@CreatedDate
 	private LocalDateTime createdDate;
 //	@CreatedBy

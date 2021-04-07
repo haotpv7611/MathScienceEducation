@@ -8,10 +8,12 @@ import org.springframework.stereotype.Repository;
 import com.example.demo.models.ProgressTest;
 
 @Repository
-public interface IProgressTestRepository extends JpaRepository<ProgressTest, Long> {	
-	List<ProgressTest> findBySubjectIdAndIsDisable(long subjectId, boolean isDisable);
+public interface IProgressTestRepository extends JpaRepository<ProgressTest, Long> {
+	List<ProgressTest> findBySubjectIdAndIsDisableFalse(long subjectId);
 
-	List<ProgressTest> findBySubjectId(long subjectId);
+//	List<ProgressTest> findBySubjectId(long subjectId);
+
+	ProgressTest findByIdAndIsDisableFalse(long id);
 	
-	ProgressTest findByIdAndIsDisable(long id, boolean isDisable);
+	ProgressTest findBySubjectIdAndProgressTestNameAndIsDisableFalse(long subjectId, String progressTestName);
 }

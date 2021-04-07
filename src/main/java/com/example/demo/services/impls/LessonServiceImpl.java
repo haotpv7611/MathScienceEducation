@@ -12,12 +12,15 @@ import com.example.demo.dtos.LessonResponseDTO;
 import com.example.demo.dtos.LessonRequestDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.Exercise;
+import com.example.demo.models.Game;
 import com.example.demo.models.Lesson;
 import com.example.demo.models.Unit;
 import com.example.demo.repositories.IExerciseRepository;
+import com.example.demo.repositories.IGameRepository;
 import com.example.demo.repositories.ILessonRepository;
 import com.example.demo.repositories.IUnitRepository;
 import com.example.demo.services.IExerciseService;
+import com.example.demo.services.IGameService;
 import com.example.demo.services.ILessonService;
 
 @Service
@@ -37,6 +40,12 @@ public class LessonServiceImpl implements ILessonService {
 
 	@Autowired
 	IExerciseService iExerciseService;
+
+	@Autowired
+	IGameRepository iGameRepository;
+
+	@Autowired
+	IGameService iGameService;
 
 	// done
 	@Override
@@ -114,25 +123,49 @@ public class LessonServiceImpl implements ILessonService {
 
 	}
 
+//	@Override
+//	public String deleteLesson(long id) {
+//		Lesson lesson = iLessonRepository.findByIdAndIsDisableFalse(id);
+//		if (lesson == null) {
+//			throw new ResourceNotFoundException();
+//		}
+//		List<Exercise> exercises = iExerciseRepository.findByLessonIdOrderByExerciseNameAsc(id);
+//		if (!exercises.isEmpty()) {
+//			for (Exercise exercise : exercises) {
+//				iExerciseService.deleteExercise(exercise.getId());
+//			}
+//		}
+//
+//		// thieu delete game
+//
+//		lesson.setDisable(true);
+//		iLessonRepository.save(lesson);
+//		return "DELETE SUCCESS !";
+//	}
+
 	@Override
 	@Transactional
-	public String deleteLesson(long id) {
+	public void deleteOneLesson(long id) {
 		Lesson lesson = iLessonRepository.findByIdAndIsDisableFalse(id);
 		if (lesson == null) {
 			throw new ResourceNotFoundException();
 		}
-		List<Exercise> exercises = iExerciseRepository.findByLessonIdOrderByExerciseNameAsc(id);
-		if (!exercises.isEmpty()) {
-			for (Exercise exercise : exercises) {
-				iExerciseService.deleteExercise(exercise.getId());
+		List<Exercise> exerciseList = iExerciseRepository.findByLessonIdAndIsDisableFalse(id);
+		if (!exerciseList.isEmpty()) {
+			for (Exercise exercise : exerciseList) {
+				iExerciseService.deleteOneExercise(exercise.getId());
 			}
 		}
 
-		// thieu delete game
+		List<Game> gameList = iGameRepository.findByLessonIdAndIsDisableFalse(id);
+		if (!gameList.isEmpty()) {
+			for (Game game : gameList) {
+				iGameService.deleteOneGame(game.getId());
+			}
+		}
 
 		lesson.setDisable(true);
 		iLessonRepository.save(lesson);
-		return "DELETE SUCCESS !";
 	}
 
 }

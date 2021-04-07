@@ -28,9 +28,9 @@ public class QuestionController {
 	private IQuestionService iQuestionService;
 
 	@GetMapping("/exersise/{exerciseId}/questions/student")
-	public ResponseEntity<List<QuestionViewDTO>> findQuestionByExerciseId(@PathVariable long exerciseId){
+	public ResponseEntity<List<QuestionViewDTO>> findQuestionByExerciseId(@PathVariable long exerciseId) {
 		List<QuestionViewDTO> response = iQuestionService.findQuestionByExerciseId(exerciseId);
-		
+
 		return ResponseEntity.ok(response);
 	}
 //	
@@ -39,11 +39,12 @@ public class QuestionController {
 //		List<QuestionViewDTO> response = iQuestionService.showQuestionByGameId(gameId);
 //		return ResponseEntity.status(HttpStatus.OK).body(response);
 //	}
-	
+
 	@GetMapping("exerciseOrGame/{id}/questions")
-	public ResponseEntity<List<QuestionResponseDTO>> findQuestionByExerciseIdRoleAdmin(@PathVariable long id, @RequestParam boolean isExericse){
+	public ResponseEntity<List<QuestionResponseDTO>> findQuestionByExerciseIdRoleAdmin(@PathVariable long id,
+			@RequestParam boolean isExericse) {
 		List<QuestionResponseDTO> response = iQuestionService.findQuestionByExerciseIdOrGameId(id, isExericse);
-		
+
 		return ResponseEntity.ok(response);
 	}
 
@@ -151,7 +152,7 @@ public class QuestionController {
 	public ResponseEntity<String> deleteQuestion(@RequestParam List<Long> ids) {
 		String response = iQuestionService.deleteQuestion(ids);
 
-		return ResponseEntity.status(HttpStatus.OK).body(response);
+		return ResponseEntity.ok(response);
 	}
 
 	@GetMapping("/unit/{unitId}/questions")

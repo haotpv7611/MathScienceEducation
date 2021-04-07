@@ -6,11 +6,15 @@ import com.example.demo.dtos.ExerciseDTO;
 
 public interface IExerciseService {
 
-	List<ExerciseDTO> findByLessonIdAndIsDisableOrderByExerciseNameAsc(long lessonId);
-	
-	List<ExerciseDTO> findByProgressTestIdAndIsDisableOrderByExerciseNameAsc(long progressTestId);
-	
+	List<ExerciseDTO> findByLessonIdOrderByExerciseNameAsc(long lessonId);
+
+	List<ExerciseDTO> findByProgressTestIdOrderByExerciseNameAsc(long progressTestId);
+
 	String createExercise(ExerciseDTO exerciseDTO);
-	String updateExercise(ExerciseDTO exerciseDTO);
-	String deleteExercise(long id);
+
+	String updateExercise(long id, ExerciseDTO exerciseDTO);
+
+//	String deleteExercise(List<Long> ids);
+	
+	void deleteOneExercise(long id);
 }
