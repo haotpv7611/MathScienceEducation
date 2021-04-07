@@ -20,10 +20,14 @@ import com.example.demo.dtos.QuestionOptionResponseDTO;
 import com.example.demo.dtos.QuestionResponseDTO;
 import com.example.demo.dtos.QuestionViewDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
+import com.example.demo.models.Exercise;
+import com.example.demo.models.Game;
 import com.example.demo.models.OptionQuestion;
 import com.example.demo.models.Question;
 import com.example.demo.models.QuestionType;
 import com.example.demo.models.Unit;
+import com.example.demo.repositories.IExerciseRepository;
+import com.example.demo.repositories.IGameRepository;
 import com.example.demo.repositories.IOptionQuestionRepository;
 import com.example.demo.repositories.IQuestionRepository;
 import com.example.demo.repositories.IQuestionTypeRepository;
@@ -37,8 +41,7 @@ public class QuestionServiceImpl implements IQuestionService {
 
 	private final int QUESTION_TITLE_LENGTH = 250;
 	private final int DESCRIPTION_LENGTH = 250;
-	private final int OPTION_TEXT_LENGTH = 50;
-	private final int OPTION_INPUT_TYPE_LENGTH = 50;
+	private final int OPTION_TEXT_LENGTH = 100;
 	private final String OPTION_TYPE_EXERCISE = "EXERCISE";
 	private final String OPTION_TYPE_FILL_IN_BLANK = "FILL";
 
@@ -66,7 +69,14 @@ public class QuestionServiceImpl implements IQuestionService {
 	@Autowired
 	private IOptionQuestionRepository iOptionQuestionRepository;
 
+	@Autowired
+	IExerciseRepository iExerciseRepository;
+
+	@Autowired
+	private IGameRepository iGameRepository;
+
 	// done
+	// admin role
 	@Override
 	public Object findQuestionById(long id, String questionType) {
 		// validate data input
@@ -141,61 +151,72 @@ public class QuestionServiceImpl implements IQuestionService {
 		return object;
 	}
 
-//	@Override
-//	public List<QuestionDTO> findByExerciseId (Long exerciseId) {
-//
-//		List<Long> listQuestionIds = iExerciseGameQuestionService.findQuestionIdByExerciseId(exerciseId);
-//
-//		List<QuestionDTO> listQuestionDTOs = new ArrayList<>();
-//
-//		if (listQuestionIds.size() > 0) {
-//			for (int i = 0; i < listQuestionIds.size(); i++) {
-//
-//				listQuestions.add(
-//						iQuestionRepository.findById(listQuestionIds.get(i)).orElseThrow(() -> new ResourceNotFoundException()));
-//			}
-//		}
-//
-//		return listQuestions;
-//	}
-
 	@Override
-	public List<QuestionViewDTO> showQuestionByExerciseId(long exerciseId) {
+	public List<QuestionResponseDTO> findQuestionByExerciseIdOrGameId(long id, boolean isExercise) {
+		List<Long> ids = null;
+		if (isExercise) {
+			Exercise exercise = iExerciseRepository.findByIdAndIsDisableFalse(id);
+			if (exercise == null) {
+				throw new ResourceNotFoundException();
+			}
+			ids = iExerciseGameQuestionService.findAllQuestionIdByExerciseId(id);
+		} else {
+			Game game = iGameRepository.findByIdAndIsDisableFalse(id);
+			if (game == null) {
+				throw new ResourceNotFoundException();
+			}
+			ids = iExerciseGameQuestionService.findAllQuestionIdByGameId(id);
+		}
+
+		List<QuestionResponseDTO> questionResponseDTOList = new ArrayList<>();
+
+		if (!questionResponseDTOList.isEmpty()) {
+			for (int i = 0; i < ids.size(); i++) {
+				Question question = iQuestionRepository.findByIdAndIsDisableFalse(ids.get(i));
+				if (question == null) {
+					throw new ResourceNotFoundException();
+				}
+				QuestionResponseDTO questionResponseDTO = modelMapper.map(question, QuestionResponseDTO.class);
+				questionResponseDTOList.add(questionResponseDTO);
+			}
+		}
+
+		return questionResponseDTOList;
+	}
+
+	// student role
+	@Override
+	public List<QuestionViewDTO> findQuestionByExerciseId(long exerciseId) {
+		// validate data input
+		Exercise exercise = iExerciseRepository.findByIdAndIsDisableFalse(exerciseId);
+		if (exercise == null) {
+			throw new ResourceNotFoundException();
+		}
 		// get list questionId by exerciseGame
-		List<Long> questionIdList = iExerciseGameQuestionService.findAllQuestionByExerciseId(exerciseId);
-
+		List<Long> questionIdList = iExerciseGameQuestionService.findAllQuestionIdByExerciseId(exerciseId);
 		List<QuestionViewDTO> questionViewDTOList = new ArrayList<>();
-
-//		if (!questionIdList.isEmpty()) {		
-//			List<Question> questionList = iQuestionRepository.findAllQuestionByListIdAndIsDisable(questionIdList);
-//		
-//			if (!questionList.isEmpty()) {
-//				for (Question question : questionList) {
-//					List<OptionsDTO> optionsList = iOptionsService.findByQuestionId(question.getId());
-//					if (!optionsList.isEmpty()) {
-//						QuestionViewDTO questionViewDTO = new QuestionViewDTO(question.getId(),
-//								question.getQuestionText(), question.getQuestionImageUrl(),
-//								question.getQuestionAudioUrl(), question.getScore(), optionsList);
-//						questionViewDTOList.add(questionViewDTO);
-//					}
-//				}
-//			}
-//		}
 		generateQuestionView(questionIdList, questionViewDTOList);
+
 		return questionViewDTOList;
 	}
 
 	@Override
 	public List<QuestionViewDTO> showQuestionByGameId(long gameId) {
-		List<Long> questionIdList = iExerciseGameQuestionService.findAllQuestionByGameId(gameId);
+		Game game = iGameRepository.findByIdAndIsDisableFalse(gameId);
+		if (game == null) {
+			throw new ResourceNotFoundException();
+		}
+		List<Long> questionIdList = iExerciseGameQuestionService.findAllQuestionIdByGameId(gameId);
 		List<QuestionViewDTO> questionViewDTOList = new ArrayList<>();
 		generateQuestionView(questionIdList, questionViewDTOList);
 		return null;
+
+		// not done
 	}
 
 	public void generateQuestionView(List<Long> questionIdList, List<QuestionViewDTO> questionViewDTOList) {
 		if (!questionIdList.isEmpty()) {
-			List<Question> questionList = iQuestionRepository.findAllQuestionByListIdAndIsDisable(questionIdList);
+			List<Question> questionList = iQuestionRepository.findByIsDisableFalseAndByIdIn(questionIdList);
 
 			if (!questionList.isEmpty()) {
 				for (Question question : questionList) {
@@ -525,8 +546,6 @@ public class QuestionServiceImpl implements IQuestionService {
 		String optionError = "";
 		for (int i = 0; i < optionTextList.size(); i++) {
 			optionError = validateRequiredString(optionTextList.get(i), OPTION_TEXT_LENGTH, "\nOptionText is invalid!");
-			optionError += validateRequiredString(optionInputTypeList.get(i), OPTION_INPUT_TYPE_LENGTH,
-					"\nOptionInputType is invalid!");
 			if (!optionError.isEmpty()) {
 				break;
 			}

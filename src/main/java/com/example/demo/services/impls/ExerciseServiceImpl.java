@@ -133,7 +133,7 @@ public class ExerciseServiceImpl implements IExerciseService {
 
 	@Override
 	public String deleteExercise(long id) {
-		Exercise exercise = iExerciseRepository.findByIdAndIsDisable(id, false);
+		Exercise exercise = iExerciseRepository.findByIdAndIsDisableFalse(id);
 		if (exercise == null) {
 			throw new ResourceNotFoundException();
 		}

@@ -55,7 +55,7 @@ public class GameServiceImpl implements IGameService {
 	public GameResponseDTO findGameById(long id) {
 
 //		try {
-		Game game = iGameRepository.findByIdAndIsDisable(id, false);
+		Game game = iGameRepository.findByIdAndIsDisableFalse(id);
 		if (game == null) {
 			throw new ResourceNotFoundException();
 		}
@@ -88,7 +88,7 @@ public class GameServiceImpl implements IGameService {
 		if (lesson == null) {
 			throw new ResourceNotFoundException();
 		}
-		Game game = iGameRepository.findByIdAndIsDisable(id, false);
+		Game game = iGameRepository.findByIdAndIsDisableFalse(id);
 		if (game == null) {
 			throw new ResourceNotFoundException();
 		}
@@ -126,7 +126,7 @@ public class GameServiceImpl implements IGameService {
 	@Override
 	@Transactional
 	public String deleteGame(long id) {
-		Game game = iGameRepository.findByIdAndIsDisable(id, false);
+		Game game = iGameRepository.findByIdAndIsDisableFalse(id);
 		if (game == null) {
 			throw new ResourceNotFoundException();
 		}

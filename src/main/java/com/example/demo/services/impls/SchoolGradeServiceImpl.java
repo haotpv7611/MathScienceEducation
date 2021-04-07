@@ -2,7 +2,6 @@ package com.example.demo.services.impls;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import org.modelmapper.ModelMapper;
@@ -58,7 +57,7 @@ public class SchoolGradeServiceImpl implements ISchoolGradeService {
 		return schoolResponseDTOList;
 	}
 
-	// validate linked
+	//done
 	@Override
 	public String linkGradeAndSchool(SchoolGradeDTO schoolGradeDTO) {
 		long gradeId = schoolGradeDTO.getGradeId();
@@ -103,10 +102,14 @@ public class SchoolGradeServiceImpl implements ISchoolGradeService {
 		String status = listIdAndStatusDTO.getStatus();
 		schoolGrade.setStatus(status);
 		iSchoolGradeRepository.save(schoolGrade);
+		
+		
+		//change status lower level
 
 		return "CHANGE SUCCESS!";
 	}
 
+	//done
 	@Override
 	public List<GradeDTO> findGradeLinkedBySchoolId(long schoolId) {
 		List<SchoolGrade> schoolGradeList = iSchoolGradeRepository.findBySchoolIdAndStatusNot(schoolId,

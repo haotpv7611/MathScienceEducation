@@ -2,23 +2,14 @@ package com.example.demo.dtos;
 
 import java.time.LocalDateTime;
 
-import javax.validation.constraints.NotNull;
-
-import org.hibernate.validator.constraints.Length;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 public class QuestionResponseDTO {
-
-	private long id;
-	@NotNull(message = "Question Title must be not null !")
-	@Length(max = 50, message = "Question Title length must be less than 50 !")
+	private long id;	
 	private String questionTitle;
-	@Length(max = 50, message = "Description length must be less than 50 !")
 	private String description;
 	private String questionImageUrl;
 	private String questionAudioUrl;
-	@NotNull(message = "Score must be not null !")
 	private float score;
 	private long unitId;
 	private String questionType;

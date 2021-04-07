@@ -11,9 +11,11 @@ import com.example.demo.dtos.QuestionViewDTO;;
 
 public interface IQuestionService {
 
-	List<QuestionViewDTO> showQuestionByExerciseId(long exerciseId);
+	List<QuestionViewDTO> findQuestionByExerciseId(long exerciseId);
 
 	List<QuestionViewDTO> showQuestionByGameId(long gameId);
+	
+	List<QuestionResponseDTO> findQuestionByExerciseIdOrGameId(long id, boolean isExercise);
 
 	String createExerciseQuestion(MultipartFile imageFile, MultipartFile audioFile, String questionTitle,
 			String description, float score, String questionType, long unitId, List<String> optionTextList,

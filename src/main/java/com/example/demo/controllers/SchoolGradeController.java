@@ -28,8 +28,9 @@ public class SchoolGradeController {
 	
 	@GetMapping("/grade/{gradeId}/school")
 	public ResponseEntity<List<SchoolResponseDTO>> findSchoolByGradeId(@PathVariable long gradeId) {
-
-		return ResponseEntity.ok(iSchoolGradeService.findSchoolLinkedByGradeId(gradeId));
+		List<SchoolResponseDTO> response = iSchoolGradeService.findSchoolLinkedByGradeId(gradeId);
+		
+		return ResponseEntity.ok(response);
 	}
 
 	@PostMapping("/schoolGrade")
@@ -45,13 +46,15 @@ public class SchoolGradeController {
 	
 	@PutMapping("/schoolGrade")
 	public ResponseEntity<String> removeLinkGradeAndSchool(@RequestBody ListIdAndStatusDTO listIdAndStatusDTO) {
-
-		return ResponseEntity.ok(iSchoolGradeService.changeStatusGradeAndSchool(listIdAndStatusDTO));
+		String response = iSchoolGradeService.changeStatusGradeAndSchool(listIdAndStatusDTO);
+		
+		return ResponseEntity.ok(response);
 	}
 	
 	@GetMapping("/grade/{schoolId}")
 	public ResponseEntity<List<GradeDTO>> findGradeBySchoolId(@PathVariable long schoolId) {
-
-		return ResponseEntity.ok(iSchoolGradeService.findGradeLinkedBySchoolId(schoolId));
+		List<GradeDTO> response = iSchoolGradeService.findGradeLinkedBySchoolId(schoolId);
+		
+		return ResponseEntity.ok(response);
 	}
 }

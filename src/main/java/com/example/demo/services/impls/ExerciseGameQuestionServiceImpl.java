@@ -101,13 +101,13 @@ public class ExerciseGameQuestionServiceImpl implements IExerciseGameQuestionSer
 	}
 
 	@Override
-	public List<Long> findAllQuestionByExerciseId(long exerciseId) {
+	public List<Long> findAllQuestionIdByExerciseId(long exerciseId) {
 
 		return iExerciseGameQuestionRepository.findAllQuestionIdByExerciseId(exerciseId);
 	}
 
 	@Override
-	public List<Long> findAllQuestionByGameId(long gameId) {
+	public List<Long> findAllQuestionIdByGameId(long gameId) {
 
 		return iExerciseGameQuestionRepository.findAllQuestionIdByGameId(gameId);
 	}

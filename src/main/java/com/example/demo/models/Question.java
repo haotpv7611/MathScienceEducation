@@ -20,11 +20,9 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 public class Question {
-
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
-
 	private String questionTitle;
 	private String description;
 	private String questionImageUrl;
@@ -32,10 +30,6 @@ public class Question {
 	private float score;
 	private boolean isDisable;
 	private long unitId;
-
-	@ManyToOne
-	@JoinColumn(name = "questionTypeId")
-	private QuestionType questionType;
 
 	@CreatedDate
 	private LocalDateTime createdDate;
@@ -56,6 +50,10 @@ public class Question {
 	public void onUpdate() {
 		this.modifiedDate = LocalDateTime.now(ZoneId.of("UTC+7"));
 	}
+
+	@ManyToOne
+	@JoinColumn(name = "questionTypeId")
+	private QuestionType questionType;
 
 	public String getQuestionTitle() {
 		return questionTitle;

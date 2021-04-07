@@ -26,17 +26,6 @@ public class QuestionViewDTO {
 		this.optionList = optionList;
 	}
 
-	public QuestionViewDTO(long id, String questionTitle, String description, String questionImageUrl,
-			String questionAudioUrl, float score) {
-		super();
-		this.id = id;
-		this.questionTitle = questionTitle;
-		this.description = description;
-		this.questionImageUrl = questionImageUrl;
-		this.questionAudioUrl = questionAudioUrl;
-		this.score = score;
-	}
-
 	public String getQuestionTitle() {
 		return questionTitle;
 	}

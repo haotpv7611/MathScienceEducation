@@ -92,7 +92,8 @@ public class OptionQuestionServiceImpl implements IOptionQuestionService {
 			throws SizeLimitExceededException, IOException {
 		OptionQuestion optionQuestion = iOptionQuestionRepository.findByIdAndIsDisableFalse(id);		
 		optionQuestion.setOptionText(optionText);
-		if (imageFile != null) {
+		if (imageFile != null) {			
+			firebaseService.deleteFile(optionQuestion.getOptionImageUrl());
 			optionQuestion.setOptionImageUrl(firebaseService.saveFile(imageFile));
 		}
 		iOptionQuestionRepository.save(optionQuestion);
@@ -105,6 +106,7 @@ public class OptionQuestionServiceImpl implements IOptionQuestionService {
 			throw new ResourceNotFoundException();
 		}
 		optionQuestion.setDisable(true);
+		firebaseService.deleteFile(optionQuestion.getOptionImageUrl());
 		iOptionQuestionRepository.save(optionQuestion);
 	}
 }

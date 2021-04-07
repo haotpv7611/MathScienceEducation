@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.dtos.QuestionResponseDTO;
+import com.example.demo.dtos.QuestionViewDTO;
 import com.example.demo.services.IQuestionService;
 
 @CrossOrigin
@@ -26,17 +27,25 @@ public class QuestionController {
 	@Autowired
 	private IQuestionService iQuestionService;
 
-//	@GetMapping("/exersise/{exerciseId}/questions")
-//	public ResponseEntity<List<QuestionViewDTO>> getListQuestionByExerciseId(@PathVariable long exerciseId){
-//		List<QuestionViewDTO> response = iQuestionService.showQuestionByExerciseId(exerciseId);
-//		return ResponseEntity.status(HttpStatus.OK).body(response);
-//	}
+	@GetMapping("/exersise/{exerciseId}/questions/student")
+	public ResponseEntity<List<QuestionViewDTO>> findQuestionByExerciseId(@PathVariable long exerciseId){
+		List<QuestionViewDTO> response = iQuestionService.findQuestionByExerciseId(exerciseId);
+		
+		return ResponseEntity.ok(response);
+	}
 //	
 //	@GetMapping("/game/{gameId}/questions")
 //	public ResponseEntity<List<QuestionViewDTO>> getListQuestionByGameId(@PathVariable long gameId){
 //		List<QuestionViewDTO> response = iQuestionService.showQuestionByGameId(gameId);
 //		return ResponseEntity.status(HttpStatus.OK).body(response);
 //	}
+	
+	@GetMapping("exerciseOrGame/{id}/questions")
+	public ResponseEntity<List<QuestionResponseDTO>> findQuestionByExerciseIdRoleAdmin(@PathVariable long id, @RequestParam boolean isExericse){
+		List<QuestionResponseDTO> response = iQuestionService.findQuestionByExerciseIdOrGameId(id, isExericse);
+		
+		return ResponseEntity.ok(response);
+	}
 
 	@PostMapping("/question/exercise")
 	public ResponseEntity<String> createExerciseQuestion(@RequestParam(required = false) MultipartFile imageFile,

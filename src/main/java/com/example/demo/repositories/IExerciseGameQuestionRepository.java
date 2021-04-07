@@ -11,8 +11,7 @@ import com.example.demo.models.ExerciseGameQuestion;
 @Repository
 public interface IExerciseGameQuestionRepository extends JpaRepository<ExerciseGameQuestion, Long>{
 	
-	List<ExerciseGameQuestion> findByExerciseId(long exerciseId);
-	
+	List<ExerciseGameQuestion> findByExerciseId(long exerciseId);	
 	
 	List<ExerciseGameQuestion> findByGameId(long gameId);
 

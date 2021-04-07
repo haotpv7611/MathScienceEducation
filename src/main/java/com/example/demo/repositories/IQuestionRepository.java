@@ -10,8 +10,10 @@ import com.example.demo.models.Question;
 
 @Repository
 public interface IQuestionRepository extends JpaRepository<Question, Long> {
-	@Query(value = "FROM Question WHERE isDisable = false AND id in ?1")
-	List<Question> findAllQuestionByListIdAndIsDisable(List<Long> questionIdList);
+//	@Query(value = "FROM Question WHERE isDisable = false AND id in ?1")
+//	List<Question> findAllQuestionByListIdAndIsDisable(List<Long> questionIdList);
+	
+	List<Question> findByIsDisableFalseAndByIdIn(List<Long> questionIdList);
 
 	List<Question> findByUnitIdAndIsDisable(long unitId, boolean isDisable);
 
