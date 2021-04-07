@@ -60,7 +60,7 @@ public class FirebaseService {
 
 		// 2. generate new file name with random UUID + fileExtension
 		// 3. generate new token
-		String fileName = UUID.randomUUID().toString() + StringUtils.getFilenameExtension(file.getOriginalFilename());
+		String fileName = UUID.randomUUID().toString() + "." + StringUtils.getFilenameExtension(file.getOriginalFilename());
 		String token = UUID.randomUUID().toString();
 
 		// 4. folder store file with 2 option image and audio
