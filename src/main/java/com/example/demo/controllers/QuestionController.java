@@ -121,12 +121,12 @@ public class QuestionController {
 			@RequestParam String questionTitle,
 			@RequestParam(required = false) String description, @RequestParam float score,
 			@RequestParam List<Long> optionIdList, @RequestParam List<String> optionTextList,
-			@RequestParam List<MultipartFile> imageFileList) throws SizeLimitExceededException, IOException {
+			@RequestParam(required = false) List<MultipartFile> imageFileList) throws SizeLimitExceededException, IOException {
 
 		String response = iQuestionService.updateGameSwappingMatchingChoosingQuestion(id, questionTitle, description, score, optionIdList, imageFileList, optionTextList);
-		if (!response.contains("SUCCESS")) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-		}
+//		if (!response.contains("SUCCESS")) {
+//			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+//		}
 		
 		return ResponseEntity.ok(response);
 	}
