@@ -216,7 +216,7 @@ public class QuestionServiceImpl implements IQuestionService {
 
 	public void generateQuestionView(List<Long> questionIdList, List<QuestionViewDTO> questionViewDTOList) {
 		if (!questionIdList.isEmpty()) {
-			List<Question> questionList = iQuestionRepository.findByIsDisableFalseAndByIdIn(questionIdList);
+			List<Question> questionList = iQuestionRepository.findByIsDisableFalseAndIdIn(questionIdList);
 
 			if (!questionList.isEmpty()) {
 				for (Question question : questionList) {
