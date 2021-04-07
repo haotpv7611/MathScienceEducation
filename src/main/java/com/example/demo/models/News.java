@@ -1,12 +1,15 @@
 package com.example.demo.models;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -18,10 +21,11 @@ public class News {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
-
 	private String newsTitle;
 	private String shortDescription;
 	private String newsContent;
+	private boolean isDisable;
+	private long accountId;
 
 	@CreatedDate
 	private LocalDateTime createdDate;
@@ -32,10 +36,15 @@ public class News {
 //	@LastModifiedBy
 	private String modifiedBy;
 
-	private boolean isDisable;
-	private long accountId;
+	@PrePersist
+	public void onCreate() {
+		this.createdDate = LocalDateTime.now(ZoneId.of("UTC+7"));
+		this.modifiedDate = LocalDateTime.now(ZoneId.of("UTC+7"));
+	}
 
-	public News() {
+	@PreUpdate
+	public void onUpdate() {
+		this.modifiedDate = LocalDateTime.now(ZoneId.of("UTC+7"));
 	}
 
 	/**

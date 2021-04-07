@@ -30,8 +30,7 @@ public class NewsServiceImpl implements INewsService {
 	private ModelMapper modelMapper;
 
 	@Override
-	public String createNews(NewsRequestDTO newsRequestDTO) {
-		
+	public String createNews(NewsRequestDTO newsRequestDTO) {		
 		// 1. connect database through repository
 		// 2. find entity by Id
 		// 3. if not found throw not found exception
@@ -39,7 +38,6 @@ public class NewsServiceImpl implements INewsService {
 		if (account == null) {
 			throw new ResourceNotFoundException();
 		}
-
 		// 4. if role is not admin, return error no permission
 		if (account.getRoleId() != 1) {
 
@@ -56,12 +54,12 @@ public class NewsServiceImpl implements INewsService {
 
 	@Override
 	public List<NewsResponseDTO> findAllNewsOrderByCreatedDateDesc(boolean isStudent) {
-		List<News> newsList = null;
-
+//		List<News> newsList = null;
+		List<News> newsList = iNewsRepository.findByIsDisableFalseOrderByCreatedDateDesc();
 		// 1. connect database through repository
 		// 2. find all entities are not disable and sort descending by Created Date
 
-		newsList = iNewsRepository.findByIsDisableOrderByCreatedDateDesc(false);
+		
 
 		List<NewsResponseDTO> newsDTOList = new ArrayList<>();
 
@@ -95,7 +93,7 @@ public class NewsServiceImpl implements INewsService {
 		// 3. if not found throw not found exception
 		// 4. else convert entity to dto
 		// 5. return
-		News news = iNewsRepository.findByIdAndIsDisable(id, false);
+		News news = iNewsRepository.findByIdAndIsDisableFalse(id);
 		if (news == null) {
 			throw new ResourceNotFoundException();
 		}
@@ -112,7 +110,7 @@ public class NewsServiceImpl implements INewsService {
 		// 2. find entity by id
 		// 3. if not existed throw exception
 		for (Long id : ids) {
-			News news = iNewsRepository.findByIdAndIsDisable(id, false);
+			News news = iNewsRepository.findByIdAndIsDisableFalse(id);
 			if (news == null) {
 				throw new ResourceNotFoundException();
 			}
@@ -133,9 +131,9 @@ public class NewsServiceImpl implements INewsService {
 		// descending by Created Date
 		// 4. else list all entities are not disable and sort descending by Created Date
 		if (iNewsRepository.count() >= 3) {
-			newsList = iNewsRepository.findTop3ByIsDisableOrderByCreatedDateDesc(false);
+			newsList = iNewsRepository.findTop3ByIsDisableFalseOrderByCreatedDateDesc();
 		} else {
-			newsList = iNewsRepository.findByIsDisableOrderByCreatedDateDesc(false);
+			newsList = iNewsRepository.findByIsDisableFalseOrderByCreatedDateDesc();
 		}
 
 		List<NewsResponseDTO> threeNewest = new ArrayList<>();

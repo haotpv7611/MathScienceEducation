@@ -41,7 +41,6 @@ public class BannerImageController {
 	@PostMapping
 	public ResponseEntity<String> createBannerImage(@RequestParam String description, @RequestParam MultipartFile file,
 			@RequestParam long accountId) throws SizeLimitExceededException, IOException {
-
 		String response = iBannerImageService.createBannerImage(description, file, accountId);
 		if (response.contains("permission")) {
 
@@ -56,9 +55,10 @@ public class BannerImageController {
 	}
 
 	@GetMapping("/all")
-	public ResponseEntity<List<BannerImageDTO>> findAll() {
+	public ResponseEntity<List<BannerImageDTO>> findAllBannerImage() {
+		List<BannerImageDTO> response = iBannerImageService.findAll();
 
-		return ResponseEntity.ok(iBannerImageService.findAll());
+		return ResponseEntity.ok(response);
 	}
 
 	@PutMapping
@@ -77,32 +77,35 @@ public class BannerImageController {
 
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("STATUS INVALID!");
 		}
+		String response = iBannerImageService.changeStatusBannerImage(listIdAndStatusDTO);
 
-		return ResponseEntity.ok(iBannerImageService.changeStatusBannerImage(listIdAndStatusDTO));
+		return ResponseEntity.ok(response);
 	}
 
 	@GetMapping("/{id}")
 	public ResponseEntity<BannerImageDTO> findBannerImageById(@PathVariable long id) {
-
-		return ResponseEntity.ok(iBannerImageService.findById(id));
+		BannerImageDTO response = iBannerImageService.findById(id);
+		
+		return ResponseEntity.ok(response);
 	}
 
 	@PutMapping("/{id}")
-	public ResponseEntity<String> updateBannerImage(@PathVariable long id, @RequestParam(required = false) String description,
-			@RequestParam(required = false) MultipartFile file) throws SizeLimitExceededException, IOException {
+	public ResponseEntity<String> updateBannerImage(@PathVariable long id,
+			@RequestParam(required = false) String description, @RequestParam(required = false) MultipartFile file)
+			throws SizeLimitExceededException, IOException {
 		String response = iBannerImageService.updateBannerImage(id, description, file);
 		if (!response.contains("SUCCESS")) {
 
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 		}
-
-		return ResponseEntity.status(HttpStatus.OK).body(response);
+		
+		return ResponseEntity.ok(response);
 	}
 
 	@GetMapping("/url")
 	public ResponseEntity<List<String>> showBannerImage() {
 		List<String> response = iBannerImageService.showBannerImage();
 
-		return ResponseEntity.status(HttpStatus.OK).body(response);
+		return ResponseEntity.ok(response);
 	}
 }

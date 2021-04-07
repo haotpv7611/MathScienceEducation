@@ -54,26 +54,30 @@ public class NewsController {
 
 	@GetMapping("/all")
 	public ResponseEntity<List<NewsResponseDTO>> findAllOrderByCreateDateDesc(@RequestParam boolean isStudent) {
+		List<NewsResponseDTO> response = inewsService.findAllNewsOrderByCreatedDateDesc(isStudent);
 
-		return ResponseEntity.ok(inewsService.findAllNewsOrderByCreatedDateDesc(isStudent));
+		return ResponseEntity.ok(response);
 	}
 
 	@GetMapping("/{id}")
 	public ResponseEntity<NewsResponseDTO> findNewsById(@PathVariable long id) {
+		NewsResponseDTO response = inewsService.findNewsById(id);
 
-		return ResponseEntity.ok(inewsService.findNewsById(id));
+		return ResponseEntity.ok(response);
 	}
 
 	@PutMapping
 	public ResponseEntity<String> deleteNews(@RequestBody List<Long> ids) {
+		String response = inewsService.deleteNews(ids);
 
-		return ResponseEntity.ok(inewsService.deleteNews(ids));
+		return ResponseEntity.ok(response);
 	}
 
 	@GetMapping("/3newest")
 	public ResponseEntity<List<NewsResponseDTO>> findThreeOrderByCreateDateDesc() {
+		List<NewsResponseDTO> response = inewsService.findThreeNewsOrderByCreatedDateDesc();
 
-		return ResponseEntity.ok(inewsService.findThreeNewsOrderByCreatedDateDesc());
+		return ResponseEntity.ok(response);
 	}
 
 }

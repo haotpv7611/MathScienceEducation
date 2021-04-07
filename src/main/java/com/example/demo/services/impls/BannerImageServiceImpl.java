@@ -36,36 +36,36 @@ public class BannerImageServiceImpl implements IBannerImageService {
 	@Autowired
 	ModelMapper modelMapper;
 
+	// done
 	@Override
 	public String createBannerImage(String description, MultipartFile file, long accountId)
 			throws SizeLimitExceededException, IOException {
-		// 1. validate parameter and return error if have
-		String error = "";
-		if (file.isEmpty()) {
-			error += "File is invalid!";
-		} else if (!file.getContentType().contains("image")) {
-			error += "Not supported this file type for image!";
-		}
-		if (description.isEmpty() || description.length() > DESCRIPTION_MAX_LENGTH) {
-			error += "\nDescription is invalid!";
-		}
-		if (!error.isEmpty()) {
-
-			return error.trim();
-		}
-
-		// 2. connect database through repository
-		// 3. find entity by Id
-		// 4. if not found throw not found exception
+		// 1. validate data input
 		Account account = iAccountRepository.findByIdAndStatusNot(accountId, "DELETED");
 		if (account == null) {
 			throw new ResourceNotFoundException();
 		}
-
-		// 5. if role is not admin, return error no permission
+		String error = validateRequiredFile(file, "image", "File is invalid!",
+				"Not supported this file type for image!");
+		error += validateRequiredString(description, DESCRIPTION_MAX_LENGTH, "\nDescription is invalid!");
+		if (!error.isEmpty()) {
+			return error.trim();
+		}
 		if (account.getRoleId() != 1) {
 			return "You do not have permission!";
 		}
+//				String error = "";
+//		if (file.isEmpty()) {
+//			error += "File is invalid!";
+//		} else if (!file.getContentType().contains("image")) {
+//			error += "Not supported this file type for image!";
+//		}
+
+		// 2. connect database through repository
+		// 3. find entity by Id
+		// 4. if not found throw not found exception
+
+		// 5. if role is not admin, return error no permission
 
 		// 6. create new entity and return SUCCESS
 		BannerImage bannerImage = new BannerImage();
@@ -84,9 +84,7 @@ public class BannerImageServiceImpl implements IBannerImageService {
 		// 1. connect database through repository
 		// 2. find all entities
 		List<BannerImage> bannerImageList = iBannerImageRepositoy.findByStatusNotOrderByStatusAsc("DELETED");
-
 		List<BannerImageDTO> bannerImageDTOList = new ArrayList<>();
-
 		// 3. convert all entities to dtos
 		// 4. add all dtos to bannerImageDTOList
 		if (!bannerImageList.isEmpty()) {
@@ -100,6 +98,7 @@ public class BannerImageServiceImpl implements IBannerImageService {
 		return bannerImageDTOList;
 	}
 
+	// done
 	@Override
 	@Transactional
 	public String changeStatusBannerImage(ListIdAndStatusDTO listIdAndStatusDTO) {
@@ -134,7 +133,6 @@ public class BannerImageServiceImpl implements IBannerImageService {
 		if (bannerImage == null) {
 			throw new ResourceNotFoundException();
 		}
-
 		BannerImageDTO bannerImageDTO = new BannerImageDTO(bannerImage.getDescription(), bannerImage.getImageUrl());
 
 		return bannerImageDTO;
@@ -143,40 +141,39 @@ public class BannerImageServiceImpl implements IBannerImageService {
 	@Override
 	public String updateBannerImage(long id, String description, MultipartFile file)
 			throws SizeLimitExceededException, IOException {
-		String error = "";
-
-		if (file != null) {
-			if (!file.getContentType().contains("image")) {
-				error += "Not supported this file type for image!";
-			}
-		}
-
-		// 1. connect database through repository
-		// 2. find entity by id
-		// 3. if not existed throw exception
 		BannerImage bannerImage = iBannerImageRepositoy.findByIdAndStatusNot(id, "DELETED");
 		if (bannerImage == null) {
 			throw new ResourceNotFoundException();
 		}
-
-		// 4. validate parameter
-		if (description == null) {
-			error += "\nDescription is invalid!";
-		} else {
-			if (description.length() > DESCRIPTION_MAX_LENGTH) {
-				error += "\nDescription is invalid!";
-			}
-		}
+		String error = validateRequiredString(description, DESCRIPTION_MAX_LENGTH, "\nDescription is invalid!");
+		error += validateFile(file, "image", "Not supported this file type for image!");
 		if (!error.isEmpty()) {
 
 			return error.trim();
 		}
+//		if (file != null) {
+//			if (!file.getContentType().contains("image")) {
+//				error += "Not supported this file type for image!";
+//			}
+//		}
+
+		// 1. connect database through repository
+		// 2. find entity by id
+		// 3. if not existed throw exception
+
+		// 4. validate parameter
+//		if (description == null) {
+//			error += "\nDescription is invalid!";
+//		} else {
+//			if (description.length() > DESCRIPTION_MAX_LENGTH) {
+//				error += "\nDescription is invalid!";
+//			}
+//		}
 
 		// 5. if parameter valid, update entity and return SUCCESS
 		// 6. else return error
 
 		bannerImage.setDescription(description.trim());
-
 		if (file != null) {
 			bannerImage.setImageUrl(firebaseService.saveFile(file));
 		}
@@ -198,6 +195,46 @@ public class BannerImageServiceImpl implements IBannerImageService {
 		}
 
 		return listUrls;
+	}
+
+	private String validateRequiredString(String property, int length, String errorMessage) {
+		String error = "";
+		if (property == null) {
+			error = errorMessage;
+		} else {
+			if (property.isEmpty() || property.length() > length) {
+				error = errorMessage;
+			}
+		}
+
+		return error;
+	}
+
+	private String validateFile(MultipartFile file, String contentType, String errorMessage) {
+		String error = "";
+		if (file != null) {
+			if (!file.getContentType().contains(contentType)) {
+				error += errorMessage;
+			}
+		}
+
+		return error;
+	}
+
+	private String validateRequiredFile(MultipartFile file, String contentType, String errorMessage,
+			String errorMessage2) {
+		String error = "";
+		if (file == null) {
+			error = errorMessage;
+		} else {
+			if (file.isEmpty()) {
+				error = errorMessage;
+			} else if (!file.getContentType().contains(contentType)) {
+				error += errorMessage2;
+			}
+		}
+
+		return error;
 	}
 
 }
