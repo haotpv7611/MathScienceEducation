@@ -97,6 +97,7 @@ public class ExerciseGameQuestionServiceImpl implements IExerciseGameQuestionSer
 			throw new ResourceNotFoundException();
 		}
 		exerciseGameQuestion.setDisable(true);
+		iExerciseGameQuestionRepository.save(exerciseGameQuestion);
 		return "DELETE SUCCESS !";
 	}
 

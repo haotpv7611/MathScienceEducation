@@ -126,8 +126,10 @@ public class ProgressTestServiceImpl implements IProgressTestService {
 		}
 		List<Exercise> exerciseList = iExerciseRepository.findByProgressTestIdAndIsDisableOrderByExerciseNameAsc(id,
 				false);
-		for (Exercise exercise : exerciseList) {
-			iExerciseService.deleteExercise(exercise.getId());
+		if (exerciseList != null) {
+			for (Exercise exercise : exerciseList) {
+				iExerciseService.deleteExercise(exercise.getId());
+			}
 		}
 		progressTest.setDisable(true);
 		iProgressTestRepository.save(progressTest);

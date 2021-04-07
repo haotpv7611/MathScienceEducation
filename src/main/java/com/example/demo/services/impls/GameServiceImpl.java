@@ -13,10 +13,13 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.demo.dtos.GameRequestDTO;
 import com.example.demo.dtos.GameResponseDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
+import com.example.demo.models.ExerciseGameQuestion;
 import com.example.demo.models.Game;
 import com.example.demo.models.Lesson;
+import com.example.demo.repositories.IExerciseGameQuestionRepository;
 import com.example.demo.repositories.IGameRepository;
 import com.example.demo.repositories.ILessonRepository;
+import com.example.demo.services.IExerciseGameQuestionService;
 import com.example.demo.services.IGameService;
 
 @Service
@@ -27,10 +30,16 @@ public class GameServiceImpl implements IGameService {
 	IGameRepository iGameRepository;
 
 	@Autowired
-	ILessonRepository iLessonRepository;
+	private ILessonRepository iLessonRepository;
 
 	@Autowired
-	ModelMapper modelMapper;
+	private ModelMapper modelMapper;
+
+	@Autowired
+	private IExerciseGameQuestionRepository iExerciseGameQuestionRepository;
+
+	@Autowired
+	private IExerciseGameQuestionService iExerciseGameQuestionService;
 
 	@Override
 	public List<GameResponseDTO> findAllByLessonId(long lessonId) {
@@ -130,10 +139,16 @@ public class GameServiceImpl implements IGameService {
 		if (game == null) {
 			throw new ResourceNotFoundException();
 		}
-		
-		//thieu xoa cau hoi bang giua
+		// xoa bang giua
+		List<ExerciseGameQuestion> exerciseGameQuestionLists = iExerciseGameQuestionRepository.findByGameId(id);
+		if (exerciseGameQuestionLists != null) {
+			for (ExerciseGameQuestion exerciseGameQuestion : exerciseGameQuestionLists) {
+				iExerciseGameQuestionService.deleteQuestionFromExercise(exerciseGameQuestion.getId());
+			}
+		}
 		game.setDisable(true);
-		return null;
+		iGameRepository.save(game);
+		return "DELETE SUCESS !";
 	}
 
 }
