@@ -12,12 +12,15 @@ import com.example.demo.dtos.LessonResponseDTO;
 import com.example.demo.dtos.LessonRequestDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.Exercise;
+import com.example.demo.models.Game;
 import com.example.demo.models.Lesson;
 import com.example.demo.models.Unit;
 import com.example.demo.repositories.IExerciseRepository;
+import com.example.demo.repositories.IGameRepository;
 import com.example.demo.repositories.ILessonRepository;
 import com.example.demo.repositories.IUnitRepository;
 import com.example.demo.services.IExerciseService;
+import com.example.demo.services.IGameService;
 import com.example.demo.services.ILessonService;
 
 @Service
@@ -38,6 +41,10 @@ public class LessonServiceImpl implements ILessonService {
 	@Autowired
 	IExerciseService iExerciseService;
 
+	@Autowired
+	IGameRepository iGameRepository;
+	@Autowired
+	IGameService iGameService;
 	// done
 	@Override
 	public List<LessonResponseDTO> findByUnitIdOrderByLessonNameAsc(long unitId) {
@@ -122,14 +129,17 @@ public class LessonServiceImpl implements ILessonService {
 			throw new ResourceNotFoundException();
 		}
 		List<Exercise> exercises = iExerciseRepository.findByLessonIdOrderByExerciseNameAsc(id);
-		if (!exercises.isEmpty()) {
+		if (exercises != null) {
 			for (Exercise exercise : exercises) {
 				iExerciseService.deleteExercise(exercise.getId());
 			}
 		}
-
-		// thieu delete game
-
+		List<Game> gameLists = iGameRepository.findByLessonIdAndIsDisable(id, false);
+		if(gameLists != null) {
+			for (Game game : gameLists) {
+				iGameService.deleteGame(game.getId());
+			}
+		}		
 		lesson.setDisable(true);
 		iLessonRepository.save(lesson);
 		return "DELETE SUCCESS !";
