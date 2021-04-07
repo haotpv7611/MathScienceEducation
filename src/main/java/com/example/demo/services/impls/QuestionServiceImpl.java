@@ -35,7 +35,7 @@ import com.example.demo.services.IQuestionService;
 @Service
 public class QuestionServiceImpl implements IQuestionService {
 
-	private final int QUESTION_TITLE_LENGTH = 50;
+	private final int QUESTION_TITLE_LENGTH = 250;
 	private final int DESCRIPTION_LENGTH = 250;
 	private final int OPTION_TEXT_LENGTH = 50;
 	private final int OPTION_INPUT_TYPE_LENGTH = 50;
@@ -102,7 +102,6 @@ public class QuestionServiceImpl implements IQuestionService {
 			List<Object> optionQuestionFillDTOList = new ArrayList<>();
 			if (!optionQuestionList.isEmpty()) {
 				for (OptionQuestion optionQuestion : optionQuestionList) {
-					System.out.println(optionQuestion.getId());
 					OptionQuestionFillDTO optionQuestionFillDTO = new OptionQuestionFillDTO();
 					if (optionQuestion.getOptionInputType().equalsIgnoreCase("Text")) {
 						optionQuestionFillDTO.setText(optionQuestion.getOptionText());
@@ -112,7 +111,6 @@ public class QuestionServiceImpl implements IQuestionService {
 					}
 					
 					optionQuestionFillDTO.setId(optionQuestion.getId());
-					System.out.println(optionQuestionFillDTO.getId());
 					optionQuestionFillDTO.setOptionInputType(optionQuestion.getOptionInputType());
 					optionQuestionFillDTOList.add(optionQuestionFillDTO);
 				}
