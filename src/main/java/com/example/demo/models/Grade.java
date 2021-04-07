@@ -10,11 +10,11 @@ import javax.persistence.OneToMany;
 
 @Entity
 public class Grade {
-
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
 	private int gradeName;
+
 	@OneToMany(mappedBy = "grade")
 	private Set<SchoolGrade> schoolGrade;
 

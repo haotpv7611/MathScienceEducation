@@ -52,6 +52,7 @@ public class NewsController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 
+	//both
 	@GetMapping("/all")
 	public ResponseEntity<List<NewsResponseDTO>> findAllOrderByCreateDateDesc(@RequestParam boolean isStudent) {
 		List<NewsResponseDTO> response = inewsService.findAllNewsOrderByCreatedDateDesc(isStudent);
@@ -59,6 +60,7 @@ public class NewsController {
 		return ResponseEntity.ok(response);
 	}
 
+	//both
 	@GetMapping("/{id}")
 	public ResponseEntity<NewsResponseDTO> findNewsById(@PathVariable long id) {
 		NewsResponseDTO response = inewsService.findNewsById(id);
@@ -73,6 +75,7 @@ public class NewsController {
 		return ResponseEntity.ok(response);
 	}
 
+	//student role
 	@GetMapping("/3newest")
 	public ResponseEntity<List<NewsResponseDTO>> findThreeOrderByCreateDateDesc() {
 		List<NewsResponseDTO> response = inewsService.findThreeNewsOrderByCreatedDateDesc();

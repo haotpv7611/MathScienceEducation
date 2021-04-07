@@ -102,6 +102,7 @@ public class BannerImageController {
 		return ResponseEntity.ok(response);
 	}
 
+	//student role
 	@GetMapping("/url")
 	public ResponseEntity<List<String>> showBannerImage() {
 		List<String> response = iBannerImageService.showBannerImage();

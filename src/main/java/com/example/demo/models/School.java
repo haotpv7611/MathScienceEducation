@@ -33,13 +33,6 @@ public class School {
 	private int schoolCount;
 	private String status;
 
-	@OneToMany(mappedBy = "school")
-	private Set<SchoolGrade> schoolGrade;
-
-	@ManyToOne
-	@JoinColumn(name = "schoolLevelId")
-	private SchoolLevel schoolLevel;
-
 	@CreatedDate
 	private LocalDateTime createdDate;
 //	@CreatedBy
@@ -58,6 +51,13 @@ public class School {
 	public void onUpdate() {
 		this.modifiedDate = LocalDateTime.now(ZoneId.of("UTC+7"));
 	}
+
+	@OneToMany(mappedBy = "school")
+	private Set<SchoolGrade> schoolGrade;
+
+	@ManyToOne
+	@JoinColumn(name = "schoolLevelId")
+	private SchoolLevel schoolLevel;
 
 	/**
 	 * @return the schoolName
