@@ -102,6 +102,7 @@ public class QuestionServiceImpl implements IQuestionService {
 			List<Object> optionQuestionFillDTOList = new ArrayList<>();
 			if (!optionQuestionList.isEmpty()) {
 				for (OptionQuestion optionQuestion : optionQuestionList) {
+					System.out.println(optionQuestion.getId());
 					OptionQuestionFillDTO optionQuestionFillDTO = new OptionQuestionFillDTO();
 					if (optionQuestion.getOptionInputType().equalsIgnoreCase("Text")) {
 						optionQuestionFillDTO.setText(optionQuestion.getOptionText());
@@ -109,6 +110,9 @@ public class QuestionServiceImpl implements IQuestionService {
 					if (optionQuestion.getOptionInputType().equalsIgnoreCase("Operator")) {
 						optionQuestionFillDTO.setOperator(optionQuestion.getOptionText());
 					}
+					
+					optionQuestionFillDTO.setId(optionQuestion.getId());
+					System.out.println(optionQuestionFillDTO.getId());
 					optionQuestionFillDTO.setOptionInputType(optionQuestion.getOptionInputType());
 					optionQuestionFillDTOList.add(optionQuestionFillDTO);
 				}
