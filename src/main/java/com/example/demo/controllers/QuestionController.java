@@ -109,9 +109,9 @@ public class QuestionController {
 
 		String response = iQuestionService.updateGameFillInBlankQuestion(id, imageFile, audioFile, questionTitle,
 				description, score, optionIdList, optionTextList, optionInputTypeList);
-		if (!response.contains("SUCCESS")) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-		}
+//		if (!response.contains("SUCCESS")) {
+//			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+//		}
 		
 		return ResponseEntity.ok(response);
 	}
