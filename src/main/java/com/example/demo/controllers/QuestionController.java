@@ -95,7 +95,7 @@ public class QuestionController {
 		if (!response.contains("SUCCESS")) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 		}
-		
+
 		return ResponseEntity.ok(response);
 	}
 
@@ -112,22 +112,29 @@ public class QuestionController {
 		if (!response.contains("SUCCESS")) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 		}
-		
+
 		return ResponseEntity.ok(response);
 	}
-	
+
 	@PutMapping("/question/{id}/game/others")
 	public ResponseEntity<String> updateGameSwappingMatchingChoosingQuestion(@PathVariable long id,
-			@RequestParam String questionTitle,
-			@RequestParam(required = false) String description, @RequestParam float score,
-			@RequestParam List<Long> optionIdList, @RequestParam List<String> optionTextList,
-			@RequestParam(required = false) List<MultipartFile> imageFileList) throws SizeLimitExceededException, IOException {
+			@RequestParam String questionTitle, @RequestParam(required = false) String description,
+			@RequestParam float score, @RequestParam List<Long> optionIdList, @RequestParam List<String> optionTextList,
+			@RequestParam(required = false) List<MultipartFile> imageFileList)
+			throws SizeLimitExceededException, IOException {
 
-		String response = iQuestionService.updateGameSwappingMatchingChoosingQuestion(id, questionTitle, description, score, optionIdList, imageFileList, optionTextList);
-//		if (!response.contains("SUCCESS")) {
-//			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-//		}
-		
+		for (int i = 0; i < imageFileList.size(); i++) {
+			if (imageFileList.get(i).getOriginalFilename().equalsIgnoreCase("fakeFile")) {
+				imageFileList.set(i, null);
+			}
+		}
+
+		String response = iQuestionService.updateGameSwappingMatchingChoosingQuestion(id, questionTitle, description,
+				score, optionIdList, imageFileList, optionTextList);
+		if (!response.contains("SUCCESS")) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+		}
+
 		return ResponseEntity.ok(response);
 	}
 
