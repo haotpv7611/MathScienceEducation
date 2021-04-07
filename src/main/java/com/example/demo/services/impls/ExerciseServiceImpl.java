@@ -10,7 +10,10 @@ import org.springframework.stereotype.Service;
 import com.example.demo.dtos.ExerciseDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.Exercise;
+import com.example.demo.models.ExerciseGameQuestion;
+import com.example.demo.repositories.IExerciseGameQuestionRepository;
 import com.example.demo.repositories.IExerciseRepository;
+import com.example.demo.services.IExerciseGameQuestionService;
 import com.example.demo.services.IExerciseService;
 
 @Service
@@ -18,6 +21,12 @@ public class ExerciseServiceImpl implements IExerciseService {
 
 	@Autowired
 	private IExerciseRepository iExerciseRepository;
+
+	@Autowired
+	private IExerciseGameQuestionRepository iExerciseGameQuestionRepository;
+
+	@Autowired
+	private IExerciseGameQuestionService iExerciseGameQuestionService;
 
 	@Autowired
 	private ModelMapper modelMapper;
@@ -137,14 +146,13 @@ public class ExerciseServiceImpl implements IExerciseService {
 		if (exercise == null) {
 			throw new ResourceNotFoundException();
 		}
-		
-		//????
-		if (exercise.getLessonId() != 0) {
-			exercise.setDisable(true);
+		List<ExerciseGameQuestion> exerciseGameQuestionLists = iExerciseGameQuestionRepository.findByExerciseId(id);
+		if (exerciseGameQuestionLists != null) {
+			for (ExerciseGameQuestion exerciseGameQuestion : exerciseGameQuestionLists) {
+				iExerciseGameQuestionService.deleteQuestionFromExercise(exerciseGameQuestion.getId());
+			}
 		}
-		if (exercise.getProgressTestId() != 0) {
-			exercise.setDisable(true);
-		}
+		exercise.setDisable(true);
 		iExerciseRepository.save(exercise);
 		return "DELETE SUCCESS";
 	}
