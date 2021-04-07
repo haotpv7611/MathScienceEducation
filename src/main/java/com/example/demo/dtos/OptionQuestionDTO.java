@@ -1,14 +1,7 @@
 package com.example.demo.dtos;
 
-import javax.validation.constraints.NotNull;
-
-import org.hibernate.validator.constraints.Length;
-
 public class OptionQuestionDTO {
-
 	private long id;
-	@NotNull(message = "optionText must be not null!")
-	@Length(max = 30, message = "optionText length must be less than 30!")
 	private String optionText;
 	private String optionImageUrl;
 	private String optionInputType;

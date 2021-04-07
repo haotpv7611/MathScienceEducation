@@ -11,8 +11,8 @@ public class QuestionViewDTO {
 	private float score;
 	private List<OptionQuestionDTO> optionList;
 
-//	public QuestionViewDTO() {
-//	}
+	public QuestionViewDTO() {
+	}
 
 	public QuestionViewDTO(long id, String questionTitle, String description, String questionImageUrl,
 			String questionAudioUrl, float score, List<OptionQuestionDTO> optionList) {
