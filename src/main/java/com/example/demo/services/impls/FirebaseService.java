@@ -60,7 +60,8 @@ public class FirebaseService {
 
 		// 2. generate new file name with random UUID + fileExtension
 		// 3. generate new token
-		String fileName = UUID.randomUUID().toString() + "." + StringUtils.getFilenameExtension(file.getOriginalFilename());
+		String fileName = UUID.randomUUID().toString() + "."
+				+ StringUtils.getFilenameExtension(file.getOriginalFilename());
 		String token = UUID.randomUUID().toString();
 
 		// 4. folder store file with 2 option image and audio
@@ -77,37 +78,37 @@ public class FirebaseService {
 		map.put("firebaseStorageDownloadTokens", token);
 		BlobId blobId = BlobId.of(BUCKET_NAME, folder + "/" + fileName);
 
-		//6. create file with blodId, set fileName and token, set file type
+		// 6. create file with blodId, set fileName and token, set file type
 		BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setMetadata(map).setContentType(file.getContentType()).build();
 		storage.create(blobInfo, file.getBytes());
 
-		//7. return URL
+		// 7. return URL
 		String URL = STORAGE_URL + folder + "%2F" + fileName + "?alt=media&token=" + token;
 
 		return URL;
 	}
 
-	public String deleteFile(String fileUrl) {
-		// 1. select folder to delete file
-		String folder = "";
-		if (fileUrl.contains("images")) {
-			folder = "images";
-		}
-		if (fileUrl.contains("audios")) {
-			folder = "audios";
-		}
-		
-		//2. identify fileName, delete file and return
-		if (fileUrl.isEmpty()) {
-			return "FileName is invalid!";
-		}
-		String filename = fileUrl.substring(fileUrl.indexOf("%2F") + 3, fileUrl.indexOf("?alt"));
-		BlobId blobId = BlobId.of(BUCKET_NAME, folder + "/" + filename);
-		if(storage.get(blobId) == null) {
-			return "FileName is invalid!";
-		}
-		storage.delete(blobId);
+	public void deleteFile(String fileUrl) {
+		if (!fileUrl.isEmpty()) {
+			// get storage folder store file
+			String folder = "";
+			if (fileUrl.contains("images")) {
+				folder = "images";
+			}
+			if (fileUrl.contains("audios")) {
+				folder = "audios";
+			}
+			String filename = fileUrl.substring(fileUrl.indexOf("%2F") + 3, fileUrl.indexOf("?alt"));
+			BlobId blobId = BlobId.of(BUCKET_NAME, folder + "/" + filename);
 
-		return "DELETE SUCCESS!";
+			// check file in firebase storage and delete
+			try {
+				if (storage.get(blobId) != null) {
+					storage.delete(blobId);
+				}
+			} catch (Exception e) {
+				throw e;
+			}
+		}
 	}
 }

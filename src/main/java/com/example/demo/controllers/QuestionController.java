@@ -48,19 +48,40 @@ public class QuestionController {
 		return ResponseEntity.ok(response);
 	}
 
+	@GetMapping("/unit/{unitId}/questions")
+	public ResponseEntity<List<QuestionResponseDTO>> findAllByUnitId(@PathVariable long unitId,
+			@RequestParam boolean isExercise) {
+		List<QuestionResponseDTO> response = iQuestionService.findAllByUnitId(unitId, isExercise);
+
+		return ResponseEntity.ok(response);
+	}
+
+	@GetMapping("/question/{id}")
+	public ResponseEntity<?> findQuestionById(@PathVariable long id, @RequestParam String questionType) {
+		Object response = iQuestionService.findQuestionById(id, questionType);
+
+		return ResponseEntity.ok(response);
+
+	}
+
 	@PostMapping("/question/exercise")
 	public ResponseEntity<String> createExerciseQuestion(@RequestParam(required = false) MultipartFile imageFile,
 			@RequestParam(required = false) MultipartFile audioFile, @RequestParam String questionTitle,
 			@RequestParam(required = false) String description, @RequestParam float score,
 			@RequestParam String questionType, @RequestParam long unitId, @RequestParam List<String> optionTextList,
 			@RequestParam List<Boolean> isCorrectList) throws SizeLimitExceededException, IOException {
-		String respone = iQuestionService.createExerciseQuestion(imageFile, audioFile, questionTitle, description,
+		String response = iQuestionService.createExerciseQuestion(imageFile, audioFile, questionTitle, description,
 				score, questionType, unitId, optionTextList, isCorrectList);
+		if (response.contains("FAIL")) {
 
-		if (!respone.contains("SUCCESS")) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(respone);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
 		}
-		return ResponseEntity.status(HttpStatus.CREATED).body(respone);
+		if (response.contains("SUCCESS")) {
+
+			return ResponseEntity.ok(response);
+		}
+
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 	}
 
 	@PostMapping("/question/game/fillInBlank")
@@ -69,13 +90,18 @@ public class QuestionController {
 			@RequestParam(required = false) String description, @RequestParam float score,
 			@RequestParam String questionType, @RequestParam long unitId, @RequestParam List<String> optionTextList,
 			@RequestParam List<String> optionInputTypeList) throws SizeLimitExceededException, IOException {
-		String respone = iQuestionService.createGameFillInBlankQuestion(imageFile, audioFile, questionTitle,
+		String response = iQuestionService.createGameFillInBlankQuestion(imageFile, audioFile, questionTitle,
 				description, score, questionType, unitId, optionTextList, optionInputTypeList);
+		if (response.contains("FAIL")) {
 
-		if (!respone.contains("SUCCESS")) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(respone);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
 		}
-		return ResponseEntity.status(HttpStatus.CREATED).body(respone);
+		if (response.contains("SUCCESS")) {
+
+			return ResponseEntity.ok(response);
+		}
+
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 	}
 
 	@PostMapping("/question/game/others")
@@ -84,12 +110,18 @@ public class QuestionController {
 			@RequestParam String questionType, @RequestParam long unitId,
 			@RequestParam List<MultipartFile> imageFileList, @RequestParam List<String> optionTextList)
 			throws SizeLimitExceededException, IOException {
-		String respone = iQuestionService.createGameSwappingMatchingChoosingQuestion(questionTitle, description, score,
+		String response = iQuestionService.createGameSwappingMatchingChoosingQuestion(questionTitle, description, score,
 				questionType, unitId, imageFileList, optionTextList);
-		if (!respone.contains("SUCCESS")) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(respone);
+		if (response.contains("FAIL")) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
 		}
-		return ResponseEntity.status(HttpStatus.CREATED).body(respone);
+		if (response.contains("SUCCESS")) {
+
+			return ResponseEntity.ok(response);
+		}
+
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 	}
 
 	@PutMapping("/question/{id}/exercise")
@@ -102,11 +134,16 @@ public class QuestionController {
 
 		String response = iQuestionService.updateExerciseQuestion(id, imageFile, audioFile, questionTitle, description,
 				score, optionIdList, optionTextList, isCorrectList);
-		if (!response.contains("SUCCESS")) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+		if (response.contains("FAIL")) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+		if (response.contains("SUCCESS")) {
+
+			return ResponseEntity.ok(response);
 		}
 
-		return ResponseEntity.ok(response);
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 	}
 
 	@PutMapping("/question/{id}/game/fillInBlank")
@@ -119,11 +156,16 @@ public class QuestionController {
 
 		String response = iQuestionService.updateGameFillInBlankQuestion(id, imageFile, audioFile, questionTitle,
 				description, score, optionIdList, optionTextList, optionInputTypeList);
-		if (!response.contains("SUCCESS")) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+		if (response.contains("FAIL")) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+		if (response.contains("SUCCESS")) {
+
+			return ResponseEntity.ok(response);
 		}
 
-		return ResponseEntity.ok(response);
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 	}
 
 	@PutMapping("/question/{id}/game/others")
@@ -141,33 +183,27 @@ public class QuestionController {
 
 		String response = iQuestionService.updateGameSwappingMatchingChoosingQuestion(id, questionTitle, description,
 				score, optionIdList, imageFileList, optionTextList);
-		if (!response.contains("SUCCESS")) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+		if (response.contains("FAIL")) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+		if (response.contains("SUCCESS")) {
+
+			return ResponseEntity.ok(response);
 		}
 
-		return ResponseEntity.ok(response);
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 	}
 
 	@PutMapping("/question/delete")
 	public ResponseEntity<String> deleteQuestion(@RequestParam List<Long> ids) {
 		String response = iQuestionService.deleteQuestion(ids);
+		if (response.contains("FAIL")) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
 
 		return ResponseEntity.ok(response);
 	}
 
-	@GetMapping("/unit/{unitId}/questions")
-	public ResponseEntity<List<QuestionResponseDTO>> findAllByUnitId(@PathVariable long unitId,
-			@RequestParam boolean isExercise) {
-		List<QuestionResponseDTO> response = iQuestionService.findAllByUnitId(unitId, isExercise);
-
-		return ResponseEntity.ok(response);
-	}
-
-	@GetMapping("/question/{id}")
-	public ResponseEntity<?> findQuestionById(@PathVariable long id, @RequestParam String questionType) {
-		Object response = iQuestionService.findQuestionById(id, questionType);
-
-		return ResponseEntity.ok(response);
-
-	}
 }

@@ -7,6 +7,8 @@ import java.util.List;
 
 import org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,12 +40,11 @@ import com.example.demo.services.IQuestionService;
 
 @Service
 public class QuestionServiceImpl implements IQuestionService {
-
 	private final int QUESTION_TITLE_LENGTH = 250;
 	private final int DESCRIPTION_LENGTH = 250;
 	private final int OPTION_TEXT_LENGTH = 100;
-	private final String OPTION_TYPE_EXERCISE = "EXERCISE";
-	private final String OPTION_TYPE_FILL_IN_BLANK = "FILL";
+
+	Logger logger = LoggerFactory.getLogger(OptionQuestionServiceImpl.class);
 
 	@Autowired
 	private IQuestionRepository iQuestionRepository;
@@ -178,7 +179,7 @@ public class QuestionServiceImpl implements IQuestionService {
 				if (question == null) {
 					throw new ResourceNotFoundException();
 				}
-				
+
 				QuestionResponseDTO questionResponseDTO = modelMapper.map(question, QuestionResponseDTO.class);
 				System.out.println(questionResponseDTO);
 				questionResponseDTOList.add(questionResponseDTO);
@@ -218,304 +219,6 @@ public class QuestionServiceImpl implements IQuestionService {
 		// not done
 	}
 
-	public void generateQuestionView(List<Long> questionIdList, List<QuestionViewDTO> questionViewDTOList) {
-		if (!questionIdList.isEmpty()) {
-			List<Question> questionList = iQuestionRepository.findByIsDisableFalseAndIdIn(questionIdList);
-
-			if (!questionList.isEmpty()) {
-				for (Question question : questionList) {
-					List<OptionQuestionDTO> optionsList = iOptionsService.findByQuestionId(question.getId());
-					if (!optionsList.isEmpty()) {
-						QuestionViewDTO questionViewDTO = new QuestionViewDTO(question.getId(),
-								question.getQuestionTitle(), question.getDescription(), question.getQuestionImageUrl(),
-								question.getQuestionAudioUrl(), question.getScore(), optionsList);
-						questionViewDTOList.add(questionViewDTO);
-					}
-				}
-			}
-		}
-	}
-
-	// done
-	@Override
-	@Transactional
-	public String deleteQuestion(List<Long> ids) {
-		for (long id : ids) {
-			// validate data input
-//			Question question = iQuestionRepository.findByIdAndIsDisableFalse(id);
-//			if (question == null) {
-//				throw new ResourceNotFoundException();
-//			}
-//
-//			// first: delete all active option by questionId
-//			List<OptionQuestion> optionQuestions = iOptionQuestionRepository.findByQuestionIdAndIsDisableFalse(id);
-//			for (OptionQuestion optionQuestion : optionQuestions) {
-//				iOptionsService.deleteOptionQuestion(optionQuestion.getId());
-//			}
-//
-//			// last: delete question and return
-//			question.setDisable(true);
-//			iQuestionRepository.save(question);
-			
-			deleteOneQuestion(id);
-		}
-
-		return "DELETE SUCCESS!";
-	}
-
-	@Override
-	@Transactional
-	public void deleteOneQuestion(long id) {
-
-		Question question = iQuestionRepository.findByIdAndIsDisableFalse(id);
-		if (question == null) {
-			throw new ResourceNotFoundException();
-		}
-
-		// first: delete all active option by questionId
-		List<OptionQuestion> optionQuestions = iOptionQuestionRepository.findByQuestionIdAndIsDisableFalse(id);
-		for (OptionQuestion optionQuestion : optionQuestions) {
-			iOptionsService.deleteOptionQuestion(optionQuestion.getId());
-		}
-
-		// last: delete question and return
-		question.setDisable(true);
-		iQuestionRepository.save(question);		
-	}
-
-	// done
-	@Override
-	@Transactional
-	public String createExerciseQuestion(MultipartFile imageFile, MultipartFile audioFile, String questionTitle,
-			String description, float score, String questionType, long unitId, List<String> optionTextList,
-			List<Boolean> isCorrectList) throws SizeLimitExceededException, IOException {
-		// validate question data input
-		if (!questionType.equalsIgnoreCase(OPTION_TYPE_EXERCISE)) {
-			throw new ResourceNotFoundException();
-		}
-		Unit unit = iUnitRepository.findByIdAndIsDisableFalse(unitId);
-		if (unit == null) {
-			throw new ResourceNotFoundException();
-		}
-		String error = validateQuestionInput(questionTitle, description, score);
-		error += validateFile(imageFile, "image", "\nNot supported this file type for image!");
-		error += validateFile(audioFile, "audio", "\nNot supported this file type for audio!");
-
-		// validate option data input
-		String optionError = validateExerciseOptionInput(optionTextList);
-		error += optionError;
-		if (!error.isEmpty()) {
-			return error.trim();
-		}
-
-		// first: create question
-		int questionTypeId = 1;
-		long questionId = createQuestion(imageFile, audioFile, questionTitle, description, score, unitId,
-				questionTypeId);
-
-		// last: create list option and return
-		for (int i = 0; i < optionTextList.size(); i++) {
-			iOptionsService.createExerciseOptionQuestion(questionId, optionTextList.get(i), isCorrectList.get(i));
-		}
-
-		return "CREATE SUCCESS!";
-	}
-
-	// done
-	@Override
-	@Transactional
-	public String createGameFillInBlankQuestion(MultipartFile imageFile, MultipartFile audioFile, String questionTitle,
-			String description, float score, String questionType, long unitId, List<String> optionTextList,
-			List<String> optionInputTypeList) throws SizeLimitExceededException, IOException {
-		// validate question data input
-		Unit unit = iUnitRepository.findByIdAndIsDisableFalse(unitId);
-		if (unit == null) {
-			throw new ResourceNotFoundException();
-		}
-		if (!questionType.equalsIgnoreCase(OPTION_TYPE_FILL_IN_BLANK)) {
-			throw new ResourceNotFoundException();
-		}
-		String error = validateQuestionInput(questionTitle, description, score);
-		error += validateFile(imageFile, "image", "\nNot supported this file type for image!");
-		error += validateFile(audioFile, "audio", "\nNot supported this file type for audio!");
-
-		// validate option data input
-		String optionError = validateGameFillInBlankOptionInput(optionTextList, optionInputTypeList);
-		error += optionError;
-		if (!error.isEmpty()) {
-			return error.trim();
-		}
-
-		// first: create question
-		int questionTypeId = 2;
-		long questionId = createQuestion(imageFile, audioFile, questionTitle, description, score, unitId,
-				questionTypeId);
-
-		// last: create list option and return
-		for (int i = 0; i < optionTextList.size(); i++) {
-			iOptionsService.createGameFillInBlankOptionQuestion(questionId, optionTextList.get(i),
-					optionInputTypeList.get(i));
-		}
-
-		return "CREATE SUCCESS!";
-	}
-
-	// done
-	@Override
-	@Transactional
-	public String createGameSwappingMatchingChoosingQuestion(String questionTitle, String description, float score,
-			String questionType, long unitId, List<MultipartFile> imageFileList, List<String> optionTextList)
-			throws SizeLimitExceededException, IOException {
-		// validate question data input
-		Unit unit = iUnitRepository.findByIdAndIsDisableFalse(unitId);
-		if (unit == null) {
-			throw new ResourceNotFoundException();
-		}
-		List<String> questionTypeList = new ArrayList<>();
-		questionTypeList.addAll(Arrays.asList("MATCH", "SWAP", "CHOOSE"));
-		if (questionTypeList.contains(questionType) == false) {
-			throw new ResourceNotFoundException();
-		}
-		String error = validateQuestionInput(questionTitle, description, score);
-
-		// validate option data input
-		String optionError = validateSwappingMatchingChoosingOptionInput(imageFileList, optionTextList, "CREATE");
-		error += optionError;
-		if (!error.isEmpty()) {
-			return error.trim();
-		}
-
-		// first: create question
-		int questionTypeId = questionTypeList.indexOf(questionType) + 3;
-		long questionId = createQuestion(null, null, questionTitle, description, score, unitId, questionTypeId);
-
-		// last: create list option and return
-		for (int i = 0; i < optionTextList.size(); i++) {
-			iOptionsService.createGameSwappingMatchingChoosingOptionQuestion(questionId, optionTextList.get(i),
-					imageFileList.get(i));
-		}
-
-		return "CREATE SUCCESS !";
-	}
-
-	// done
-	@Override
-	@Transactional
-	public String updateExerciseQuestion(long id, MultipartFile imageFile, MultipartFile audioFile,
-			String questionTitle, String description, float score, List<Long> optionIdList, List<String> optionTextList,
-			List<Boolean> isCorrectList) throws SizeLimitExceededException, IOException {
-		// validate question data input
-		Question question = iQuestionRepository.findByIdAndIsDisableFalse(id);
-		if (question == null) {
-			throw new ResourceNotFoundException();
-		}
-		String error = validateQuestionInput(questionTitle, description, score);
-		error += validateFile(imageFile, "image", "\nNot supported this file type for image!");
-		error += validateFile(audioFile, "audio", "\nNot supported this file type for audio!");
-
-		// validate option data input
-		for (long optionId : optionIdList) {
-			OptionQuestion optionQuestion = iOptionQuestionRepository.findByIdAndIsDisableFalse(optionId);
-			if (optionQuestion == null) {
-				throw new ResourceNotFoundException();
-			}
-		}
-		String optionError = validateExerciseOptionInput(optionTextList);
-		error += optionError;
-		if (!error.isEmpty()) {
-			return error.trim();
-		}
-
-		// first: update question
-		updateQuestion(id, imageFile, audioFile, questionTitle, description, score);
-
-		// last: update list option and return
-		for (int i = 0; i < optionIdList.size(); i++) {
-			iOptionsService.updateExerciseOptionQuestion(optionIdList.get(i), optionTextList.get(i),
-					isCorrectList.get(i));
-		}
-
-		return "UPDATE SUCCESS!";
-	}
-
-	// done
-	@Override
-	@Transactional
-	public String updateGameFillInBlankQuestion(long id, MultipartFile imageFile, MultipartFile audioFile,
-			String questionTitle, String description, float score, List<Long> optionIdList, List<String> optionTextList,
-			List<String> optionInputTypeList) throws SizeLimitExceededException, IOException {
-		// validate question data input
-		Question question = iQuestionRepository.findByIdAndIsDisableFalse(id);
-		if (question == null) {
-			throw new ResourceNotFoundException();
-		}
-		String error = validateQuestionInput(questionTitle, description, score);
-		error += validateFile(imageFile, "image", "\nNot supported this file type for image!");
-		error += validateFile(audioFile, "audio", "\nNot supported this file type for audio!");
-
-		// validate option data input
-		for (long optionId : optionIdList) {
-			OptionQuestion optionQuestion = iOptionQuestionRepository.findByIdAndIsDisableFalse(optionId);
-			if (optionQuestion == null) {
-				throw new ResourceNotFoundException();
-			}
-		}
-		String optionError = validateGameFillInBlankOptionInput(optionTextList, optionInputTypeList);
-		error += optionError;
-		if (!error.isEmpty()) {
-			return error.trim();
-		}
-
-		// first: update question
-		updateQuestion(id, imageFile, audioFile, questionTitle, description, score);
-
-		// last: update list option and return
-		for (int i = 0; i < optionIdList.size(); i++) {
-			iOptionsService.updateGameFillInBlankOptionQuestion(optionIdList.get(i), optionTextList.get(i),
-					optionInputTypeList.get(i));
-		}
-
-		return "UPDATE SUCCESS!";
-	}
-
-	// done
-	@Override
-	@Transactional
-	public String updateGameSwappingMatchingChoosingQuestion(long id, String questionTitle, String description,
-			float score, List<Long> optionIdList, List<MultipartFile> imageFileList, List<String> optionTextList)
-			throws SizeLimitExceededException, IOException {
-		// validate question data input
-		Question question = iQuestionRepository.findByIdAndIsDisableFalse(id);
-		if (question == null) {
-			throw new ResourceNotFoundException();
-		}
-		String error = validateQuestionInput(questionTitle, description, score);
-
-		// validate option data input
-		for (long optionId : optionIdList) {
-			OptionQuestion optionQuestion = iOptionQuestionRepository.findByIdAndIsDisableFalse(optionId);
-			if (optionQuestion == null) {
-				throw new ResourceNotFoundException();
-			}
-		}
-		String optionError = validateSwappingMatchingChoosingOptionInput(imageFileList, optionTextList, "UPDATE");
-		error += optionError;
-		if (!error.isEmpty()) {
-			return error.trim();
-		}
-
-		// first: update question
-		updateQuestion(id, null, null, questionTitle, description, score);
-
-		// last: update list option and return
-		for (int i = 0; i < optionIdList.size(); i++) {
-			iOptionsService.updateGameSwappingMatchingChoosingOptionQuestion(optionIdList.get(i), optionTextList.get(i),
-					imageFileList.get(i));
-		}
-
-		return "UPDATE SUCCESS!";
-	}
-
 	// done
 	@Override
 	public List<QuestionResponseDTO> findAllByUnitId(long unitId, boolean isExercise) {
@@ -543,6 +246,371 @@ public class QuestionServiceImpl implements IQuestionService {
 		}
 
 		return questionDTOList;
+	}
+
+	// done ok
+	@Override
+	@Transactional
+	public String createExerciseQuestion(MultipartFile imageFile, MultipartFile audioFile, String questionTitle,
+			String description, float score, String questionType, long unitId, List<String> optionTextList,
+			List<Boolean> isCorrectList) throws SizeLimitExceededException, IOException {
+		// validate question data input
+		if (!questionType.equals("EXERCISE")) {
+			throw new ResourceNotFoundException();
+		}
+		String error = validateQuestionInput(questionTitle, description, score);
+		error += validateFile(imageFile, "image", "\nNot supported this file type for image!");
+		error += validateFile(audioFile, "audio", "\nNot supported this file type for audio!");
+
+		// validate option data input
+		String optionError = validateExerciseOptionInput(optionTextList);
+		error += optionError;
+		if (!error.isEmpty()) {
+			return error.trim();
+		}
+
+		try {
+			Unit unit = iUnitRepository.findByIdAndIsDisableFalse(unitId);
+			if (unit == null) {
+				throw new ResourceNotFoundException();
+			}
+
+			// first: create question
+			int questionTypeId = 1;
+			long questionId = createQuestion(imageFile, audioFile, questionTitle, description, score, unitId,
+					questionTypeId);
+
+			// last: create list option and return
+			for (int i = 0; i < optionTextList.size(); i++) {
+				iOptionsService.createExerciseOptionQuestion(questionId, optionTextList.get(i), isCorrectList.get(i));
+			}
+
+			return "CREATE SUCCESS!";
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+
+			return "CREATE FAIL!";
+		}
+	}
+
+	// done ok
+	@Override
+	@Transactional
+	public String createGameFillInBlankQuestion(MultipartFile imageFile, MultipartFile audioFile, String questionTitle,
+			String description, float score, String questionType, long unitId, List<String> optionTextList,
+			List<String> optionInputTypeList) throws SizeLimitExceededException, IOException {
+		// validate question data input
+		if (!questionType.equals("FILL")) {
+			throw new ResourceNotFoundException();
+		}
+		String error = validateQuestionInput(questionTitle, description, score);
+		error += validateFile(imageFile, "image", "\nNot supported this file type for image!");
+		error += validateFile(audioFile, "audio", "\nNot supported this file type for audio!");
+
+		// validate option data input
+		String optionError = validateGameFillInBlankOptionInput(optionTextList, optionInputTypeList);
+		error += optionError;
+		if (!error.isEmpty()) {
+			return error.trim();
+		}
+
+		try {
+			Unit unit = iUnitRepository.findByIdAndIsDisableFalse(unitId);
+			if (unit == null) {
+				throw new ResourceNotFoundException();
+			}
+
+			// first: create question
+			int questionTypeId = 2;
+			long questionId = createQuestion(imageFile, audioFile, questionTitle, description, score, unitId,
+					questionTypeId);
+
+			// last: create list option and return
+			for (int i = 0; i < optionTextList.size(); i++) {
+				iOptionsService.createGameFillInBlankOptionQuestion(questionId, optionTextList.get(i),
+						optionInputTypeList.get(i));
+			}
+
+			return "CREATE SUCCESS!";
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+
+			return "CREATE FAIL!";
+		}
+	}
+
+	// done ok
+	@Override
+	@Transactional
+	public String createGameSwappingMatchingChoosingQuestion(String questionTitle, String description, float score,
+			String questionType, long unitId, List<MultipartFile> imageFileList, List<String> optionTextList)
+			throws SizeLimitExceededException, IOException {
+		// validate question data input
+		String[] questionTypes = { "MATCH", "SWAP", "CHOOSE" };
+		List<String> questionTypeList = Arrays.asList(questionTypes);
+		if (!questionTypeList.contains(questionType)) {
+			throw new ResourceNotFoundException();
+		}
+		String error = validateQuestionInput(questionTitle, description, score);
+
+		// validate option data input
+		String optionError = validateSwappingMatchingChoosingOptionInput(imageFileList, optionTextList, "CREATE");
+		error += optionError;
+		if (!error.isEmpty()) {
+			return error.trim();
+		}
+
+		try {
+			Unit unit = iUnitRepository.findByIdAndIsDisableFalse(unitId);
+			if (unit == null) {
+				throw new ResourceNotFoundException();
+			}
+
+			// first: create question
+			int questionTypeId = questionTypeList.indexOf(questionType) + 3;
+			long questionId = createQuestion(null, null, questionTitle, description, score, unitId, questionTypeId);
+
+			// last: create list option and return
+			for (int i = 0; i < optionTextList.size(); i++) {
+				iOptionsService.createGameSwappingMatchingChoosingOptionQuestion(questionId, optionTextList.get(i),
+						imageFileList.get(i));
+			}
+
+			return "CREATE SUCCESS!";
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+
+			return "CREATE FAIL!";
+		}
+	}
+
+	// done ok
+	@Override
+	@Transactional
+	public String updateExerciseQuestion(long id, MultipartFile imageFile, MultipartFile audioFile,
+			String questionTitle, String description, float score, List<Long> optionIdList, List<String> optionTextList,
+			List<Boolean> isCorrectList) throws SizeLimitExceededException, IOException {
+		// validate question data input
+		String error = validateQuestionInput(questionTitle, description, score);
+		error += validateFile(imageFile, "image", "\nNot supported this file type for image!");
+		error += validateFile(audioFile, "audio", "\nNot supported this file type for audio!");
+
+		try {
+			Question question = iQuestionRepository.findByIdAndIsDisableFalse(id);
+			if (question == null) {
+				throw new ResourceNotFoundException();
+			}
+			// validate option data input
+			for (long optionId : optionIdList) {
+				OptionQuestion optionQuestion = iOptionQuestionRepository.findByIdAndIsDisableFalse(optionId);
+				if (optionQuestion == null) {
+					throw new ResourceNotFoundException();
+				}
+			}
+			String optionError = validateExerciseOptionInput(optionTextList);
+			error += optionError;
+			if (!error.isEmpty()) {
+				return error.trim();
+			}
+
+			// first: update question
+			updateQuestion(id, imageFile, audioFile, questionTitle, description, score);
+
+			// last: update list option and return
+			for (int i = 0; i < optionIdList.size(); i++) {
+				iOptionsService.updateExerciseOptionQuestion(optionIdList.get(i), optionTextList.get(i),
+						isCorrectList.get(i));
+			}
+
+			return "UPDATE SUCCESS!";
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+
+			return "UPDATE FAIL!";
+		}
+	}
+
+	// done ok
+	@Override
+	@Transactional
+	public String updateGameFillInBlankQuestion(long id, MultipartFile imageFile, MultipartFile audioFile,
+			String questionTitle, String description, float score, List<Long> optionIdList, List<String> optionTextList,
+			List<String> optionInputTypeList) throws SizeLimitExceededException, IOException {
+		// validate question data input
+
+		String error = validateQuestionInput(questionTitle, description, score);
+		error += validateFile(imageFile, "image", "\nNot supported this file type for image!");
+		error += validateFile(audioFile, "audio", "\nNot supported this file type for audio!");
+
+		try {
+			Question question = iQuestionRepository.findByIdAndIsDisableFalse(id);
+			if (question == null) {
+				throw new ResourceNotFoundException();
+			}
+			// validate option data input
+			for (long optionId : optionIdList) {
+				OptionQuestion optionQuestion = iOptionQuestionRepository.findByIdAndIsDisableFalse(optionId);
+				if (optionQuestion == null) {
+					throw new ResourceNotFoundException();
+				}
+			}
+			String optionError = validateGameFillInBlankOptionInput(optionTextList, optionInputTypeList);
+			error += optionError;
+			if (!error.isEmpty()) {
+				return error.trim();
+			}
+
+			// first: update question
+			updateQuestion(id, imageFile, audioFile, questionTitle, description, score);
+
+			// last: update list option and return
+			for (int i = 0; i < optionIdList.size(); i++) {
+				iOptionsService.updateGameFillInBlankOptionQuestion(optionIdList.get(i), optionTextList.get(i),
+						optionInputTypeList.get(i));
+			}
+
+			return "UPDATE SUCCESS!";
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+
+			return "UPDATE FAIL!";
+		}
+	}
+
+	// done ok
+	@Override
+	@Transactional
+	public String updateGameSwappingMatchingChoosingQuestion(long id, String questionTitle, String description,
+			float score, List<Long> optionIdList, List<MultipartFile> imageFileList, List<String> optionTextList)
+			throws SizeLimitExceededException, IOException {
+		// validate question data input
+		String error = validateQuestionInput(questionTitle, description, score);
+
+		try {
+			Question question = iQuestionRepository.findByIdAndIsDisableFalse(id);
+			if (question == null) {
+				throw new ResourceNotFoundException();
+			}
+			// validate option data input
+			for (long optionId : optionIdList) {
+				OptionQuestion optionQuestion = iOptionQuestionRepository.findByIdAndIsDisableFalse(optionId);
+				if (optionQuestion == null) {
+					throw new ResourceNotFoundException();
+				}
+			}
+			String optionError = validateSwappingMatchingChoosingOptionInput(imageFileList, optionTextList, "UPDATE");
+			error += optionError;
+			if (!error.isEmpty()) {
+				return error.trim();
+			}
+
+			// first: update question
+			updateQuestion(id, null, null, questionTitle, description, score);
+
+			// last: update list option and return
+			for (int i = 0; i < optionIdList.size(); i++) {
+				iOptionsService.updateGameSwappingMatchingChoosingOptionQuestion(optionIdList.get(i),
+						optionTextList.get(i), imageFileList.get(i));
+			}
+
+			return "UPDATE SUCCESS!";
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+
+			return "UPDATE FAIL!";
+		}
+	}
+
+	// done ok
+	@Override
+	public String deleteQuestion(List<Long> ids) {
+		for (long id : ids) {
+			try {
+				deleteOneQuestion(id);
+			} catch (Exception e) {
+				logger.error(e.getMessage());
+				return "DELETE FAIL!";
+			}
+
+		}
+
+		return "DELETE SUCCESS!";
+	}
+
+	// done ok
+	@Override
+	@Transactional
+	public void deleteOneQuestion(long id) {
+		// validate questionId
+		try {
+			Question question = iQuestionRepository.findByIdAndIsDisableFalse(id);
+			if (question == null) {
+				throw new ResourceNotFoundException();
+			}
+
+			// first: delete all active option by questionId
+			List<OptionQuestion> optionQuestions = iOptionQuestionRepository.findByQuestionIdAndIsDisableFalse(id);
+			for (OptionQuestion optionQuestion : optionQuestions) {
+				iOptionsService.deleteOptionQuestion(optionQuestion.getId());
+			}
+
+			// last: delete question
+			question.setDisable(true);
+			iQuestionRepository.save(question);
+		} catch (Exception e) {
+			throw e;
+		}
+	}
+
+	private String validateString(String property, int length, String errorMessage) {
+		String error = "";
+		if (property != null) {
+			if (property.length() > length) {
+				error = errorMessage;
+			}
+		}
+
+		return error;
+	}
+
+	private String validateRequiredString(String property, int length, String errorMessage) {
+		String error = "";
+		if (property == null) {
+			error = errorMessage;
+		} else {
+			if (property.isEmpty() || property.length() > length) {
+				error = errorMessage;
+			}
+		}
+
+		return error;
+	}
+
+	private String validateFile(MultipartFile file, String contentType, String errorMessage) {
+		String error = "";
+		if (file != null) {
+			if (!file.getContentType().contains(contentType)) {
+				error += errorMessage;
+			}
+		}
+
+		return error;
+	}
+
+	private String validateRequiredFile(MultipartFile file, String contentType, String errorMessage,
+			String errorMessage2) {
+		String error = "";
+		if (file == null) {
+			error = errorMessage;
+		} else {
+			if (file.isEmpty()) {
+				error = errorMessage;
+			} else if (!file.getContentType().contains(contentType)) {
+				error += errorMessage2;
+			}
+		}
+
+		return error;
 	}
 
 	private String validateQuestionInput(String questionTitle, String description, float score) {
@@ -634,54 +702,21 @@ public class QuestionServiceImpl implements IQuestionService {
 		iQuestionRepository.save(question);
 	}
 
-	private String validateString(String property, int length, String errorMessage) {
-		String error = "";
-		if (property != null) {
-			if (property.length() > length) {
-				error = errorMessage;
+	public void generateQuestionView(List<Long> questionIdList, List<QuestionViewDTO> questionViewDTOList) {
+		if (!questionIdList.isEmpty()) {
+			List<Question> questionList = iQuestionRepository.findByIsDisableFalseAndIdIn(questionIdList);
+
+			if (!questionList.isEmpty()) {
+				for (Question question : questionList) {
+					List<OptionQuestionDTO> optionsList = iOptionsService.findByQuestionId(question.getId());
+					if (!optionsList.isEmpty()) {
+						QuestionViewDTO questionViewDTO = new QuestionViewDTO(question.getId(),
+								question.getQuestionTitle(), question.getDescription(), question.getQuestionImageUrl(),
+								question.getQuestionAudioUrl(), question.getScore(), optionsList);
+						questionViewDTOList.add(questionViewDTO);
+					}
+				}
 			}
 		}
-
-		return error;
-	}
-
-	private String validateRequiredString(String property, int length, String errorMessage) {
-		String error = "";
-		if (property == null) {
-			error = errorMessage;
-		} else {
-			if (property.isEmpty() || property.length() > length) {
-				error = errorMessage;
-			}
-		}
-
-		return error;
-	}
-
-	private String validateFile(MultipartFile file, String contentType, String errorMessage) {
-		String error = "";
-		if (file != null) {
-			if (!file.getContentType().contains(contentType)) {
-				error += errorMessage;
-			}
-		}
-
-		return error;
-	}
-
-	private String validateRequiredFile(MultipartFile file, String contentType, String errorMessage,
-			String errorMessage2) {
-		String error = "";
-		if (file == null) {
-			error = errorMessage;
-		} else {
-			if (file.isEmpty()) {
-				error = errorMessage;
-			} else if (!file.getContentType().contains(contentType)) {
-				error += errorMessage2;
-			}
-		}
-
-		return error;
 	}
 }
