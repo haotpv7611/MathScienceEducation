@@ -30,7 +30,7 @@ public class UnitController {
 	@Autowired
 	private IUnitService iUnitService;
 
-	//done
+	// done
 	@GetMapping("/subject/{subjectId}/units")
 	public ResponseEntity<List<UnitResponseDTO>> findBySubjectIdOrderByUnitNameAsc(@PathVariable long subjectId) {
 		List<UnitResponseDTO> response = iUnitService.findBySubjectIdOrderByUnitNameAsc(subjectId);
@@ -47,7 +47,15 @@ public class UnitController {
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 
-	//done
+	// done
+	@GetMapping("/unit/{id}")
+	public ResponseEntity<UnitResponseDTO> findUnitById(@PathVariable long id) {
+		UnitResponseDTO response = iUnitService.findById(id);
+
+		return ResponseEntity.ok(response);
+	}
+
+	// done
 	@PostMapping("/unit")
 	public ResponseEntity<String> createUnit(@Valid @RequestBody UnitRequestDTO unitRequestDTO,
 			BindingResult bindingResult) {
@@ -56,15 +64,19 @@ public class UnitController {
 			for (ObjectError object : bindingResult.getAllErrors()) {
 				error += "/n" + object.getDefaultMessage();
 			}
-			
+
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
 		}
 		String response = iUnitService.createUnit(unitRequestDTO);
+		if (response.contains("FAIL")) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
 
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 
-	//done
+	// done
 	@PutMapping("/unit/{id}")
 	public ResponseEntity<String> updateUnit(@PathVariable long id, @Valid @RequestBody UnitRequestDTO unitRequestDTO,
 			BindingResult bindingResult) {
@@ -73,10 +85,14 @@ public class UnitController {
 			for (ObjectError object : bindingResult.getAllErrors()) {
 				error += "/n" + object.getDefaultMessage();
 			}
-			
+
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
 		}
 		String response = iUnitService.updateUnit(id, unitRequestDTO);
+		if (response.contains("FAIL")) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
 
 		return ResponseEntity.ok(response);
 	}
@@ -84,17 +100,12 @@ public class UnitController {
 	@PutMapping("unit/delete")
 	public ResponseEntity<String> deleteUnit(@RequestParam long id) {
 		String response = iUnitService.deleteUnit(id);
+		if (response.contains("FAIL")) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
 
 		return ResponseEntity.ok(response);
 
 	}
-
-	//done
-	@GetMapping("/unit/{id}")
-	public ResponseEntity<UnitResponseDTO> findUnitById(@PathVariable long id) {
-		UnitResponseDTO response = iUnitService.findById(id);
-
-		return ResponseEntity.ok(response);
-	}
-
 }

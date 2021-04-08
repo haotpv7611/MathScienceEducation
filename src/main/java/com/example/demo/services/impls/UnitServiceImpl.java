@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +30,7 @@ import com.example.demo.services.IUnitService;
 
 @Service
 public class UnitServiceImpl implements IUnitService {
+	Logger logger = LoggerFactory.getLogger(UnitServiceImpl.class);
 
 	@Autowired
 	private IUnitRepository iUnitRepository;
@@ -76,6 +79,18 @@ public class UnitServiceImpl implements IUnitService {
 		return unitDTOList;
 	}
 
+	// done
+	@Override
+	public UnitResponseDTO findById(long id) {
+		Unit unit = iUnitRepository.findByIdAndIsDisableFalse(id);
+		if (unit == null) {
+			throw new ResourceNotFoundException();
+		}
+		UnitResponseDTO unitResponseDTO = modelMapper.map(unit, UnitResponseDTO.class);
+
+		return unitResponseDTO;
+	}
+
 	// not done
 	@Override
 	public List<UnitViewDTO> showUnitViewBySubjectId(long subjectId) {
@@ -119,23 +134,29 @@ public class UnitServiceImpl implements IUnitService {
 	// done
 	@Override
 	public String createUnit(UnitRequestDTO unitRequestDTO) {
-		// validate data input
-		Subject subject = iSubjectRepository.findByIdAndIsDisableFalse(unitRequestDTO.getSubjectId());
-		if (subject == null) {
-			throw new ResourceNotFoundException();
-		}
-
-		// check unitName existed, if existed: return
 		long subjectId = unitRequestDTO.getSubjectId();
 		int unitName = unitRequestDTO.getUnitName();
-		if (iUnitRepository.findBySubjectIdAndUnitNameAndIsDisableFalse(subjectId, unitName) != null) {
-			return "EXISTED";
-		}
+		try {
 
-		// save data and return
-		Unit unit = modelMapper.map(unitRequestDTO, Unit.class);
-		unit.setDisable(false);
-		iUnitRepository.save(unit);
+			// validate subjectId and check unitName existed
+			Subject subject = iSubjectRepository.findByIdAndIsDisableFalse(subjectId);
+			if (subject == null) {
+				throw new ResourceNotFoundException();
+			}			
+			if (iUnitRepository.findBySubjectIdAndUnitNameAndIsDisableFalse(subjectId, unitName) != null) {
+
+				return "EXISTED";
+			}
+
+			// save data and return
+			Unit unit = modelMapper.map(unitRequestDTO, Unit.class);
+			unit.setDisable(false);
+			iUnitRepository.save(unit);
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+
+			return "CREATE FAIL!";
+		}
 
 		return "CREATE SUCCESS!";
 	}
@@ -143,66 +164,81 @@ public class UnitServiceImpl implements IUnitService {
 	// done
 	@Override
 	public String updateUnit(long id, UnitRequestDTO unitRequestDTO) {
-		// validate data input
-		Unit unit = iUnitRepository.findByIdAndIsDisableFalse(id);
-		if (unit == null) {
-			throw new ResourceNotFoundException();
-		}
-
-		// check unitName existed, if existed: return
+		long subjectId = unitRequestDTO.getSubjectId();
 		int unitName = unitRequestDTO.getUnitName();
 		String description = unitRequestDTO.getDescription();
-		if (unit.getUnitName() != unitName) {
-			if (iUnitRepository.findBySubjectIdAndUnitNameAndIsDisableFalse(unit.getSubjectId(), unitName) != null) {
-				return "EXISTED";
-			}
-		}
 
-		// save data and return
-		unit.setUnitName(unitName);
-		unit.setDescription(description);
-		iUnitRepository.save(unit);
+		try {
+			// validate unitId, subjectId and check unitName existed
+			Unit unit = iUnitRepository.findByIdAndIsDisableFalse(id);
+			if (unit == null) {
+				throw new ResourceNotFoundException();
+			}
+			Subject subject = iSubjectRepository.findByIdAndIsDisableFalse(subjectId);
+			if (subject == null) {
+				throw new ResourceNotFoundException();
+			}
+
+			if (unit.getUnitName() != unitName) {
+				if (iUnitRepository.findBySubjectIdAndUnitNameAndIsDisableFalse(subjectId,
+						unitName) != null) {
+					return "EXISTED";
+				}
+			}
+
+			// save data and return
+			unit.setUnitName(unitName);
+			unit.setDescription(description);
+			iUnitRepository.save(unit);
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+
+			return "UPDATE FAIL!";
+		}
 
 		return "UPDATE SUCCESS!";
 	}
 
 	@Override
-	@Transactional
 	public String deleteUnit(long id) {
-		Unit unit = iUnitRepository.findByIdAndIsDisableFalse(id);
-		if (unit == null) {
-			throw new ResourceNotFoundException();
-		}
+		try {
+			deleteOneUnit(id);
+		} catch (Exception e) {
+			logger.error(e.getMessage());
 
-		List<Lesson> lessonList = iLessonRepository.findByUnitIdAndIsDisableFalse(id);
-		if (!lessonList.isEmpty()) {
-			for (Lesson lesson : lessonList) {
-				iLessonService.deleteOneLesson(lesson.getId());
-			}
+			return "DELETE FAIL!";
 		}
-
-		List<Question> questionList = iQuestionRepository.findByUnitIdAndIsDisableFalse(id);
-		if (questionList.isEmpty()) {
-			for (Question question : questionList) {
-				iQuestionService.deleteOneQuestion(question.getId());
-			}
-		}
-
-		unit.setDisable(true);
-		iUnitRepository.save(unit);
 		return "DELETE SUCCESS!";
 	}
 
-	// done
 	@Override
-	public UnitResponseDTO findById(long id) {
-		Unit unit = iUnitRepository.findByIdAndIsDisableFalse(id);
-		if (unit == null) {
-			throw new ResourceNotFoundException();
-		}
-		UnitResponseDTO unitResponseDTO = modelMapper.map(unit, UnitResponseDTO.class);
+	@Transactional
+	public void deleteOneUnit(long id) {
+		try {
+			// validate unitId
+			Unit unit = iUnitRepository.findByIdAndIsDisableFalse(id);
+			if (unit == null) {
+				throw new ResourceNotFoundException();
+			}
 
-		return unitResponseDTO;
+			List<Lesson> lessonList = iLessonRepository.findByUnitIdAndIsDisableFalse(id);
+			if (!lessonList.isEmpty()) {
+				for (Lesson lesson : lessonList) {
+					iLessonService.deleteOneLesson(lesson.getId());
+				}
+			}
+			List<Question> questionList = iQuestionRepository.findByUnitIdAndIsDisableFalse(id);
+			if (questionList.isEmpty()) {
+				for (Question question : questionList) {
+					iQuestionService.deleteOneQuestion(question.getId());
+				}
+			}
+
+			unit.setDisable(true);
+			iUnitRepository.save(unit);
+		} catch (Exception e) {
+			throw e;
+		}
 	}
 
 }

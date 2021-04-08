@@ -18,4 +18,6 @@ public interface IUnitService {
 	String updateUnit(long id, UnitRequestDTO unitRequestDTO);
 
 	String deleteUnit(long id);
+	
+	void deleteOneUnit(long id);
 }
