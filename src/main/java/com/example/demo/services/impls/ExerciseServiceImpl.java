@@ -108,13 +108,13 @@ public class ExerciseServiceImpl implements IExerciseService {
 				exercise = new Exercise(exerciseName, description, lessonId, 0, isProgressTest, false);
 			}
 			iExerciseRepository.save(exercise);
-
-			return "CREATE SUCCESS!";
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 
 			return "CREATE FAIL!";
 		}
+
+		return "CREATE SUCCESS!";
 	}
 
 	// done ok
@@ -127,7 +127,7 @@ public class ExerciseServiceImpl implements IExerciseService {
 		String description = exerciseRequestDTO.getDescription();
 
 		try {
-			// validate exerciseId
+			// validate exerciseId and check exerciseName existed
 			Exercise exercise = iExerciseRepository.findByIdAndIsDisableFalse(id);
 			if (exercise == null) {
 				throw new ResourceNotFoundException();
@@ -160,13 +160,13 @@ public class ExerciseServiceImpl implements IExerciseService {
 			exercise.setExerciseName(exerciseName);
 			exercise.setDescription(description);
 			iExerciseRepository.save(exercise);
-
-			return "UPDATE SUCCESS!";
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 
 			return "UPDATE FAIL!";
 		}
+
+		return "UPDATE SUCCESS!";
 	}
 
 	// done ok
@@ -177,10 +177,10 @@ public class ExerciseServiceImpl implements IExerciseService {
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 
-			return "DELETE SUCCESS!";
+			return "DELETE FAIL!";
 		}
 
-		return "DELETE FAIL!";
+		return "DELETE SUCCESS!";
 	}
 
 	// done ok

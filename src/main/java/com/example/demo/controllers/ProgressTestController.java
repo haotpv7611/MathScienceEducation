@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dtos.ProgressTestDTO;
+import com.example.demo.dtos.ProgressTestRequestDTO;
 import com.example.demo.services.IProgressTestService;
 
 @CrossOrigin
@@ -31,19 +32,19 @@ public class ProgressTestController {
 	@GetMapping("/subject/{subjectId}/progressTest")
 	public ResponseEntity<List<ProgressTestDTO>> findBySubjectId(@PathVariable long subjectId) {
 		List<ProgressTestDTO> response = iProgressTestService.findBySubjectId(subjectId);
-		
+
 		return ResponseEntity.ok(response);
 	}
 
 	@GetMapping("/progressTest/{id}")
 	public ResponseEntity<ProgressTestDTO> findProgressTestById(@PathVariable long id) {
 		ProgressTestDTO response = iProgressTestService.findById(id);
-		
+
 		return ResponseEntity.ok(response);
 	}
 
 	@PostMapping("/progressTest")
-	public ResponseEntity<String> createProgressTest(@Valid @RequestBody ProgressTestDTO progressTestDTO,
+	public ResponseEntity<String> createProgressTest(@Valid @RequestBody ProgressTestRequestDTO progressTestRequestDTO,
 			BindingResult bindingResult) {
 		if (bindingResult.hasErrors()) {
 			String error = "";
@@ -52,14 +53,18 @@ public class ProgressTestController {
 			}
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
 		}
-		String response = iProgressTestService.createProgressTest(progressTestDTO);
-		
+		String response = iProgressTestService.createProgressTest(progressTestRequestDTO);
+		if (response.contains("FAIL")) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 
 	@PutMapping("progressTest/{id}")
 	public ResponseEntity<String> updateProgressTest(@PathVariable long id,
-			@Valid @RequestBody ProgressTestDTO progressTestDTO, BindingResult bindingResult) {
+			@Valid @RequestBody ProgressTestRequestDTO progressTestRequestDTO, BindingResult bindingResult) {
 		System.out.println("start");
 		if (bindingResult.hasErrors()) {
 			String error = "";
@@ -68,15 +73,23 @@ public class ProgressTestController {
 			}
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
 		}
-		String response = iProgressTestService.updateProgressTest(id, progressTestDTO);
-		
+		String response = iProgressTestService.updateProgressTest(id, progressTestRequestDTO);
+		if (response.contains("FAIL")) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+
 		return ResponseEntity.ok(response);
 	}
 
 	@PutMapping("progressTest/delete")
 	public ResponseEntity<String> deleteProgressTest(@RequestParam long id) {
-		iProgressTestService.deleteOneProgressTest(id);
-		
-		return ResponseEntity.ok("DELETE SUCCESS!");
+		String response = iProgressTestService.deleteProgressTest(id);
+		if (response.contains("FAIL")) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+
+		return ResponseEntity.ok(response);
 	}
 }

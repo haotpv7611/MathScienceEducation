@@ -78,7 +78,7 @@ public class QuestionController {
 		}
 		if (response.contains("SUCCESS")) {
 
-			return ResponseEntity.ok(response);
+			return ResponseEntity.status(HttpStatus.CREATED).body(response);
 		}
 
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
@@ -98,7 +98,7 @@ public class QuestionController {
 		}
 		if (response.contains("SUCCESS")) {
 
-			return ResponseEntity.ok(response);
+			return ResponseEntity.status(HttpStatus.CREATED).body(response);
 		}
 
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
@@ -118,7 +118,7 @@ public class QuestionController {
 		}
 		if (response.contains("SUCCESS")) {
 
-			return ResponseEntity.ok(response);
+			return ResponseEntity.status(HttpStatus.CREATED).body(response);
 		}
 
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);

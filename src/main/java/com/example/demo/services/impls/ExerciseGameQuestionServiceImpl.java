@@ -126,13 +126,13 @@ public class ExerciseGameQuestionServiceImpl implements IExerciseGameQuestionSer
 				}
 				iExerciseGameQuestionRepository.save(exerciseGameQuestion);
 			}
-
-			return "ADD SUCCESS!";
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 
 			return "ADD FAIL!";
 		}
+
+		return "ADD SUCCESS!";
 	}
 
 	// done ok
@@ -140,13 +140,13 @@ public class ExerciseGameQuestionServiceImpl implements IExerciseGameQuestionSer
 	public String deleteExerciseOrGameQuestion(long id) {
 		try {
 			deleteOneExerciseGameQuestion(id);
-
-			return "DELETE SUCCESS!";
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 
 			return "DELETE FAIL!";
 		}
+
+		return "DELETE SUCCESS!";
 	}
 
 	// done ok

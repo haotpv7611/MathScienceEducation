@@ -266,7 +266,7 @@ public class QuestionServiceImpl implements IQuestionService {
 		String optionError = validateExerciseOptionInput(optionTextList);
 		error += optionError;
 		if (!error.isEmpty()) {
-			
+
 			return error.trim();
 		}
 
@@ -285,13 +285,13 @@ public class QuestionServiceImpl implements IQuestionService {
 			for (int i = 0; i < optionTextList.size(); i++) {
 				iOptionsService.createExerciseOptionQuestion(questionId, optionTextList.get(i), isCorrectList.get(i));
 			}
-
-			return "CREATE SUCCESS!";
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 
 			return "CREATE FAIL!";
 		}
+
+		return "CREATE SUCCESS!";
 	}
 
 	// done ok
@@ -312,7 +312,7 @@ public class QuestionServiceImpl implements IQuestionService {
 		String optionError = validateGameFillInBlankOptionInput(optionTextList, optionInputTypeList);
 		error += optionError;
 		if (!error.isEmpty()) {
-			
+
 			return error.trim();
 		}
 
@@ -332,13 +332,13 @@ public class QuestionServiceImpl implements IQuestionService {
 				iOptionsService.createGameFillInBlankOptionQuestion(questionId, optionTextList.get(i),
 						optionInputTypeList.get(i));
 			}
-
-			return "CREATE SUCCESS!";
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 
 			return "CREATE FAIL!";
 		}
+
+		return "CREATE SUCCESS!";
 	}
 
 	// done ok
@@ -359,7 +359,7 @@ public class QuestionServiceImpl implements IQuestionService {
 		String optionError = validateSwappingMatchingChoosingOptionInput(imageFileList, optionTextList, "CREATE");
 		error += optionError;
 		if (!error.isEmpty()) {
-			
+
 			return error.trim();
 		}
 
@@ -378,13 +378,13 @@ public class QuestionServiceImpl implements IQuestionService {
 				iOptionsService.createGameSwappingMatchingChoosingOptionQuestion(questionId, optionTextList.get(i),
 						imageFileList.get(i));
 			}
-
-			return "CREATE SUCCESS!";
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 
 			return "CREATE FAIL!";
 		}
+
+		return "CREATE SUCCESS!";
 	}
 
 	// done ok
@@ -413,7 +413,7 @@ public class QuestionServiceImpl implements IQuestionService {
 			String optionError = validateExerciseOptionInput(optionTextList);
 			error += optionError;
 			if (!error.isEmpty()) {
-				
+
 				return error.trim();
 			}
 
@@ -425,13 +425,13 @@ public class QuestionServiceImpl implements IQuestionService {
 				iOptionsService.updateExerciseOptionQuestion(optionIdList.get(i), optionTextList.get(i),
 						isCorrectList.get(i));
 			}
-
-			return "UPDATE SUCCESS!";
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 
 			return "UPDATE FAIL!";
 		}
+
+		return "UPDATE SUCCESS!";
 	}
 
 	// done ok
@@ -461,7 +461,7 @@ public class QuestionServiceImpl implements IQuestionService {
 			String optionError = validateGameFillInBlankOptionInput(optionTextList, optionInputTypeList);
 			error += optionError;
 			if (!error.isEmpty()) {
-				
+
 				return error.trim();
 			}
 
@@ -473,13 +473,13 @@ public class QuestionServiceImpl implements IQuestionService {
 				iOptionsService.updateGameFillInBlankOptionQuestion(optionIdList.get(i), optionTextList.get(i),
 						optionInputTypeList.get(i));
 			}
-
-			return "UPDATE SUCCESS!";
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 
 			return "UPDATE FAIL!";
 		}
+
+		return "UPDATE SUCCESS!";
 	}
 
 	// done ok
@@ -506,7 +506,7 @@ public class QuestionServiceImpl implements IQuestionService {
 			String optionError = validateSwappingMatchingChoosingOptionInput(imageFileList, optionTextList, "UPDATE");
 			error += optionError;
 			if (!error.isEmpty()) {
-				
+
 				return error.trim();
 			}
 
@@ -518,13 +518,13 @@ public class QuestionServiceImpl implements IQuestionService {
 				iOptionsService.updateGameSwappingMatchingChoosingOptionQuestion(optionIdList.get(i),
 						optionTextList.get(i), imageFileList.get(i));
 			}
-
-			return "UPDATE SUCCESS!";
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 
 			return "UPDATE FAIL!";
 		}
+
+		return "UPDATE SUCCESS!";
 	}
 
 	// done ok
@@ -535,7 +535,7 @@ public class QuestionServiceImpl implements IQuestionService {
 				deleteOneQuestion(id);
 			} catch (Exception e) {
 				logger.error(e.getMessage());
-				
+
 				return "DELETE FAIL!";
 			}
 		}
