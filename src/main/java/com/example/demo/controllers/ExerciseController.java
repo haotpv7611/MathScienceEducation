@@ -90,6 +90,6 @@ public class ExerciseController {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
 		}
 
-		return ResponseEntity.ok("DELETE SUCCESS!");
+		return ResponseEntity.ok(response);
 	}
 }

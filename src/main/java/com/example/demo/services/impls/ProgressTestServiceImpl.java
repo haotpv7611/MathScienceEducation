@@ -24,7 +24,7 @@ import com.example.demo.services.IProgressTestService;
 
 @Service
 public class ProgressTestServiceImpl implements IProgressTestService {
-	Logger logger = LoggerFactory.getLogger(OptionQuestionServiceImpl.class);
+	Logger logger = LoggerFactory.getLogger(ProgressTestServiceImpl.class);
 
 	@Autowired
 	private IProgressTestRepository iProgressTestRepository;

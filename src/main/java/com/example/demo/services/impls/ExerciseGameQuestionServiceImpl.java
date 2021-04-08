@@ -22,7 +22,7 @@ import com.example.demo.services.IExerciseGameQuestionService;
 
 @Service
 public class ExerciseGameQuestionServiceImpl implements IExerciseGameQuestionService {
-	Logger logger = LoggerFactory.getLogger(IExerciseGameQuestionService.class);
+	Logger logger = LoggerFactory.getLogger(ExerciseGameQuestionServiceImpl.class);
 
 	@Autowired
 	private IExerciseGameQuestionRepository iExerciseGameQuestionRepository;

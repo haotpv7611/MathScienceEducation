@@ -8,7 +8,6 @@ public class GameRequestDTO {
 	@NotNull(message = "ClassName must be not null!")
 	@Length(max = 50, message = "ClassName length must be less than 50!")
 	private String gameName;
-
 	@Length(max = 50, message = "ClassName length must be less than 50!")
 	private String description;
 	private long lessonId;

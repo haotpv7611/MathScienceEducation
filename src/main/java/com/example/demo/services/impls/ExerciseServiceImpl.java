@@ -24,7 +24,7 @@ import com.example.demo.services.IExerciseService;
 
 @Service
 public class ExerciseServiceImpl implements IExerciseService {
-	Logger logger = LoggerFactory.getLogger(OptionQuestionServiceImpl.class);
+	Logger logger = LoggerFactory.getLogger(ExerciseServiceImpl.class);
 
 	@Autowired
 	private IExerciseRepository iExerciseRepository;

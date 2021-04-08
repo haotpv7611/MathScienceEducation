@@ -28,24 +28,25 @@ public class LessonController {
 
 	@Autowired
 	ILessonService iLessonService;
-	
+
 	@GetMapping("/unit/{unitId}/lessons")
-	public ResponseEntity<List<LessonResponseDTO>> findLessonByUnitId(@PathVariable long unitId){		
+	public ResponseEntity<List<LessonResponseDTO>> findLessonByUnitId(@PathVariable long unitId) {
 		List<LessonResponseDTO> response = iLessonService.findByUnitIdOrderByLessonNameAsc(unitId);
-		
+
 		return ResponseEntity.ok(response);
 	}
-	
+
 	@GetMapping("/lesson/{id}")
-	public ResponseEntity<LessonResponseDTO> findLessonById(@PathVariable long id){
+	public ResponseEntity<LessonResponseDTO> findLessonById(@PathVariable long id) {
 		LessonResponseDTO response = iLessonService.findById(id);
-		
+
 		return ResponseEntity.ok(response);
 	}
-	
+
 	@PostMapping("/lesson")
-	public ResponseEntity<String> createLesson(@Valid @RequestBody LessonRequestDTO lessonRequestDTO, BindingResult bingdingResult){
-		if(bingdingResult.hasErrors()) {
+	public ResponseEntity<String> createLesson(@Valid @RequestBody LessonRequestDTO lessonRequestDTO,
+			BindingResult bingdingResult) {
+		if (bingdingResult.hasErrors()) {
 			String error = "";
 			for (ObjectError object : bingdingResult.getAllErrors()) {
 				error += "/n" + object.getDefaultMessage();
@@ -53,13 +54,18 @@ public class LessonController {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
 		}
 		String response = iLessonService.createLesson(lessonRequestDTO);
+		if (response.contains("FAIL")) {
 
-		return ResponseEntity.status(HttpStatus.CREATED).body(response);	
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+
+		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
-	
+
 	@PutMapping("/lesson/{id}")
-	public ResponseEntity<String> updateLesson(@PathVariable long id, @Valid @RequestBody LessonRequestDTO lessonRequestDTO, BindingResult bindingResult){
-		if(bindingResult.hasErrors()) {
+	public ResponseEntity<String> updateLesson(@PathVariable long id,
+			@Valid @RequestBody LessonRequestDTO lessonRequestDTO, BindingResult bindingResult) {
+		if (bindingResult.hasErrors()) {
 			String error = "";
 			for (ObjectError object : bindingResult.getAllErrors()) {
 				error += "/n" + object.getDefaultMessage();
@@ -67,16 +73,24 @@ public class LessonController {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
 		}
 		String response = iLessonService.updateLesson(id, lessonRequestDTO);
+		if (response.contains("FAIL")) {
 
-		return ResponseEntity.ok(response);		
-		
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+
+		return ResponseEntity.ok(response);
+
 	}
-	
-	@PutMapping("/lesson")
-	public ResponseEntity<String> deleteLesson(@RequestParam long id) {			
-		iLessonService.deleteOneLesson(id);
 
-		return ResponseEntity.ok("DELETE SUCCESS!");		
-		
+	@PutMapping("/lesson")
+	public ResponseEntity<String> deleteLesson(@RequestParam long id) {
+		String response = iLessonService.deleteLesson(id);
+		if (response.contains("FAIL")) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+
+		return ResponseEntity.ok(response);
+
 	}
 }

@@ -14,7 +14,7 @@ public interface IGameService {
 
 	String createGame(GameRequestDTO gameRequestDTO);
 	
-	String deleteGame(List<Long> ids);
+	String deleteGame(long id);
 	
 	void deleteOneGame(long id);
 }

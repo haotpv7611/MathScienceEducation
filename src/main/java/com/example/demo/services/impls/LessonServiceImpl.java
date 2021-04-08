@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +27,7 @@ import com.example.demo.services.ILessonService;
 
 @Service
 public class LessonServiceImpl implements ILessonService {
+	Logger logger = LoggerFactory.getLogger(LessonServiceImpl.class);
 
 	@Autowired
 	ILessonRepository iLessonRepository;
@@ -77,95 +80,110 @@ public class LessonServiceImpl implements ILessonService {
 	// done
 	@Override
 	public String createLesson(LessonRequestDTO lessonRequestDTO) {
-		Unit unit = iUnitRepository.findByIdAndIsDisableFalse(lessonRequestDTO.getUnitId());
-		if (unit == null) {
-			throw new ResourceNotFoundException();
-		}
+		try {
+			// validate unitId and check lessonName existed
+			long unitId = lessonRequestDTO.getUnitId();
+			Unit unit = iUnitRepository.findByIdAndIsDisableFalse(unitId);
+			if (unit == null) {
+				throw new ResourceNotFoundException();
+			}
+			String lessonName = lessonRequestDTO.getLessonName();
+			if (iLessonRepository.findByUnitIdAndLessonNameIgnoreCaseAndIsDisableFalse(unitId, lessonName) != null) {
 
-		long unitId = lessonRequestDTO.getUnitId();
-		String lessonName = lessonRequestDTO.getLessonName();
-		if (iLessonRepository.findByUnitIdAndLessonNameIgnoreCaseAndIsDisableFalse(unitId, lessonName) != null) {
-			return "EXISTED";
-		}
+				return "EXISTED";
+			}
 
-		Lesson lesson = modelMapper.map(lessonRequestDTO, Lesson.class);
-		lesson.setDisable(false);
-		iLessonRepository.save(lesson);
+			Lesson lesson = modelMapper.map(lessonRequestDTO, Lesson.class);
+			lesson.setDisable(false);
+			iLessonRepository.save(lesson);
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+
+			return "CREATE FAIL!";
+		}
 
 		return "CREATE SUCCESS!";
 	}
 
 	// done
 	@Override
-	public String updateLesson(long id, LessonRequestDTO lessonRequestDTO) {
-		Lesson lesson = iLessonRepository.findByIdAndIsDisableFalse(id);
-		if (lesson == null) {
-			throw new ResourceNotFoundException();
-		}
-		Unit unit = iUnitRepository.findByIdAndIsDisableFalse(lessonRequestDTO.getUnitId());
-		if (unit == null) {
-			throw new ResourceNotFoundException();
-		}
-
-		long unitId = lessonRequestDTO.getUnitId();
+	public String updateLesson(long id, LessonRequestDTO lessonRequestDTO) {		
 		String lessonName = lessonRequestDTO.getLessonName();
-		if (!lesson.getLessonName().equalsIgnoreCase(lessonName)) {
-			if (iLessonRepository.findByUnitIdAndLessonNameIgnoreCaseAndIsDisableFalse(unitId, lessonName) != null) {
-				return "EXISTED";
+		String lessonUrl = lessonRequestDTO.getLessonUrl();
+		
+		try {
+			// validate lessonId, unitId and check lessonName existed
+			Lesson lesson = iLessonRepository.findByIdAndIsDisableFalse(id);
+			if (lesson == null) {
+				throw new ResourceNotFoundException();
 			}
-		}
+			long unitId = lessonRequestDTO.getUnitId();
+			Unit unit = iUnitRepository.findByIdAndIsDisableFalse(unitId);
+			if (unit == null) {
+				throw new ResourceNotFoundException();
+			}
+			if (!lesson.getLessonName().equalsIgnoreCase(lessonName)) {
+				if (iLessonRepository.findByUnitIdAndLessonNameIgnoreCaseAndIsDisableFalse(unitId,
+						lessonName) != null) {
 
-		lesson.setLessonName(lessonRequestDTO.getLessonName());
-		lesson.setLessonUrl(lessonRequestDTO.getLessonUrl());
-		iLessonRepository.save(lesson);
+					return "EXISTED";
+				}
+			}
+
+			lesson.setLessonName(lessonName);
+			lesson.setLessonUrl(lessonUrl);
+			iLessonRepository.save(lesson);
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+
+			return "UPDATE FAIL!";
+		}
 
 		return "UPDATE SUCCESS!";
 
 	}
 
-//	@Override
-//	public String deleteLesson(long id) {
-//		Lesson lesson = iLessonRepository.findByIdAndIsDisableFalse(id);
-//		if (lesson == null) {
-//			throw new ResourceNotFoundException();
-//		}
-//		List<Exercise> exercises = iExerciseRepository.findByLessonIdOrderByExerciseNameAsc(id);
-//		if (!exercises.isEmpty()) {
-//			for (Exercise exercise : exercises) {
-//				iExerciseService.deleteExercise(exercise.getId());
-//			}
-//		}
-//
-//		// thieu delete game
-//
-//		lesson.setDisable(true);
-//		iLessonRepository.save(lesson);
-//		return "DELETE SUCCESS !";
-//	}
+	@Override
+	public String deleteLesson(long id) {
+		try {
+			deleteOneLesson(id);
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+
+			return "DELETE FAIL!";
+		}
+
+		return "DELETE SUCCESS!";
+	}
 
 	@Override
 	@Transactional
 	public void deleteOneLesson(long id) {
-		Lesson lesson = iLessonRepository.findByIdAndIsDisableFalse(id);
-		if (lesson == null) {
-			throw new ResourceNotFoundException();
-		}
-		List<Exercise> exerciseList = iExerciseRepository.findByLessonIdAndIsDisableFalse(id);
-		if (!exerciseList.isEmpty()) {
-			for (Exercise exercise : exerciseList) {
-				iExerciseService.deleteOneExercise(exercise.getId());
+		try {
+			// validate lessonId
+			Lesson lesson = iLessonRepository.findByIdAndIsDisableFalse(id);
+			if (lesson == null) {
+				throw new ResourceNotFoundException();
 			}
-		}
 
-		List<Game> gameList = iGameRepository.findByLessonIdAndIsDisableFalse(id);
-		if (!gameList.isEmpty()) {
-			for (Game game : gameList) {
-				iGameService.deleteOneGame(game.getId());
+			List<Exercise> exerciseList = iExerciseRepository.findByLessonIdAndIsDisableFalse(id);
+			if (!exerciseList.isEmpty()) {
+				for (Exercise exercise : exerciseList) {
+					iExerciseService.deleteOneExercise(exercise.getId());
+				}
 			}
-		}
+			List<Game> gameList = iGameRepository.findByLessonIdAndIsDisableFalse(id);
+			if (!gameList.isEmpty()) {
+				for (Game game : gameList) {
+					iGameService.deleteOneGame(game.getId());
+				}
+			}
 
-		lesson.setDisable(true);
-		iLessonRepository.save(lesson);
+			lesson.setDisable(true);
+			iLessonRepository.save(lesson);
+		} catch (Exception e) {
+			throw e;
+		}
 	}
 
 }

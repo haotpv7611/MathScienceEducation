@@ -40,11 +40,11 @@ import com.example.demo.services.IQuestionService;
 
 @Service
 public class QuestionServiceImpl implements IQuestionService {
+	Logger logger = LoggerFactory.getLogger(QuestionServiceImpl.class);
+
 	private final int QUESTION_TITLE_LENGTH = 250;
 	private final int DESCRIPTION_LENGTH = 250;
 	private final int OPTION_TEXT_LENGTH = 100;
-
-	Logger logger = LoggerFactory.getLogger(QuestionServiceImpl.class);
 
 	@Autowired
 	private IQuestionRepository iQuestionRepository;

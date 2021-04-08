@@ -15,7 +15,7 @@ public interface ILessonService {
 
 	String updateLesson(long id, LessonRequestDTO lessonRequestDTO);
 
-//	String deleteLesson(long id);
+	String deleteLesson(long id);
 
 	void deleteOneLesson(long id);
 }
