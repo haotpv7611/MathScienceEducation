@@ -126,6 +126,7 @@ public class OptionQuestionServiceImpl implements IOptionQuestionService {
 
 	// done ok
 	@Override
+	@Transactional
 	public void updateGameSwappingMatchingChoosingOptionQuestion(long id, String optionText, MultipartFile imageFile)
 			throws SizeLimitExceededException, IOException
 	{
@@ -139,7 +140,8 @@ public class OptionQuestionServiceImpl implements IOptionQuestionService {
 			// allow update optionText, optionImageUrl if not null and save data
 			optionQuestion.setOptionText(optionText);
 			if (imageFile != null) {
-				firebaseService.deleteFile(optionQuestion.getOptionImageUrl());
+				String optionImageUrl = optionQuestion.getOptionImageUrl();
+				firebaseService.deleteFile(optionImageUrl);
 				optionQuestion.setOptionImageUrl(firebaseService.saveFile(imageFile));
 			}
 			iOptionQuestionRepository.save(optionQuestion);

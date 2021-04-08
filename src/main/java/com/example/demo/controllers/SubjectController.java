@@ -48,12 +48,16 @@ public class SubjectController {
 			@RequestParam MultipartFile multipartFile, @RequestParam(required = false) String description,
 			@RequestParam long gradeId) throws SizeLimitExceededException, IOException {
 		String response = iSubjectService.createSubject(subjectName, multipartFile, description, gradeId);
+		if (response.contains("FAIL")) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
 		if (!response.contains("SUCCESS")) {
 			
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+			return ResponseEntity.status(HttpStatus.CREATED).body(response);
 		}
 		
-		return ResponseEntity.status(HttpStatus.CREATED).body(response);
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 	}
 
 	// done
@@ -64,18 +68,26 @@ public class SubjectController {
 			@RequestParam(required = false) String description, @RequestParam long gradeId)
 			throws SizeLimitExceededException, IOException {
 		String response = iSubjectService.updateSubject(id, subjectName, multipartFile, description, gradeId);
-		if (!response.contains("SUCCESS")) {
-			
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+		if (response.contains("FAIL")) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
 		}
-		
-		return ResponseEntity.ok(response);
+		if (response.contains("SUCCESS")) {
+			
+			return ResponseEntity.ok(response);
+		}
+				
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 	}
 
 	@PutMapping("subject/delete/{id}")
 	public ResponseEntity<String> deleteSubject(@PathVariable long id) {
 		String response = iSubjectService.deleteSubject(id);
+		if (response.contains("FAIL")) {
 
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+		
 		return ResponseEntity.ok(response);
 	}
 }

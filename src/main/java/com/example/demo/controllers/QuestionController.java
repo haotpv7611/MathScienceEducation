@@ -86,12 +86,12 @@ public class QuestionController {
 
 	@PostMapping("/question/game/fillInBlank")
 	public ResponseEntity<String> createGameFillInBlankQuestion(@RequestParam(required = false) MultipartFile imageFile,
-			@RequestParam(required = false) MultipartFile audioFile, @RequestParam String questionTitle,
-			@RequestParam(required = false) String description, @RequestParam float score,
-			@RequestParam String questionType, @RequestParam long unitId, @RequestParam List<String> optionTextList,
-			@RequestParam List<String> optionInputTypeList) throws SizeLimitExceededException, IOException {
-		String response = iQuestionService.createGameFillInBlankQuestion(imageFile, audioFile, questionTitle,
-				description, score, questionType, unitId, optionTextList, optionInputTypeList);
+			@RequestParam String questionTitle, @RequestParam(required = false) String description,
+			@RequestParam float score, @RequestParam String questionType, @RequestParam long unitId,
+			@RequestParam List<String> optionTextList, @RequestParam List<String> optionInputTypeList)
+			throws SizeLimitExceededException, IOException {
+		String response = iQuestionService.createGameFillInBlankQuestion(imageFile, questionTitle, description, score,
+				questionType, unitId, optionTextList, optionInputTypeList);
 		if (response.contains("FAIL")) {
 
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
@@ -148,14 +148,13 @@ public class QuestionController {
 
 	@PutMapping("/question/{id}/game/fillInBlank")
 	public ResponseEntity<String> updateGameFillInBlankQuestion(@PathVariable long id,
-			@RequestParam(required = false) MultipartFile imageFile,
-			@RequestParam(required = false) MultipartFile audioFile, @RequestParam String questionTitle,
+			@RequestParam(required = false) MultipartFile imageFile, @RequestParam String questionTitle,
 			@RequestParam(required = false) String description, @RequestParam float score,
 			@RequestParam List<Long> optionIdList, @RequestParam List<String> optionTextList,
 			@RequestParam List<String> optionInputTypeList) throws SizeLimitExceededException, IOException {
 
-		String response = iQuestionService.updateGameFillInBlankQuestion(id, imageFile, audioFile, questionTitle,
-				description, score, optionIdList, optionTextList, optionInputTypeList);
+		String response = iQuestionService.updateGameFillInBlankQuestion(id, imageFile, questionTitle, description,
+				score, optionIdList, optionTextList, optionInputTypeList);
 		if (response.contains("FAIL")) {
 
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);

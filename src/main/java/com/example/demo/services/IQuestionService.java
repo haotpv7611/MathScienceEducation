@@ -25,9 +25,9 @@ public interface IQuestionService {
 			String description, float score, String questionType, long unitId, List<String> optionTextList,
 			List<Boolean> isCorrectList) throws SizeLimitExceededException, IOException;
 
-	String createGameFillInBlankQuestion(MultipartFile imageFile, MultipartFile audioFile, String questionTitle,
-			String description, float score, String questionType, long unitId, List<String> optionTextList,
-			List<String> optionInputTypeList) throws SizeLimitExceededException, IOException;
+	String createGameFillInBlankQuestion(MultipartFile imageFile, String questionTitle, String description, float score,
+			String questionType, long unitId, List<String> optionTextList, List<String> optionInputTypeList)
+			throws SizeLimitExceededException, IOException;
 
 	String createGameSwappingMatchingChoosingQuestion(String questionTitle, String description, float score,
 			String questionType, long unitId, List<MultipartFile> imageFileList, List<String> optionTextList)
@@ -37,9 +37,9 @@ public interface IQuestionService {
 			String description, float score, List<Long> optionIdList, List<String> optionTextList,
 			List<Boolean> isCorrectList) throws SizeLimitExceededException, IOException;
 
-	String updateGameFillInBlankQuestion(long id, MultipartFile imageFile, MultipartFile audioFile,
-			String questionTitle, String description, float score, List<Long> optionIdList, List<String> optionTextList,
-			List<String> optionInputTypeList) throws SizeLimitExceededException, IOException;
+	String updateGameFillInBlankQuestion(long id, MultipartFile imageFile, String questionTitle, String description,
+			float score, List<Long> optionIdList, List<String> optionTextList, List<String> optionInputTypeList)
+			throws SizeLimitExceededException, IOException;
 
 	String updateGameSwappingMatchingChoosingQuestion(long id, String questionTitle, String description, float score,
 			List<Long> optionIdList, List<MultipartFile> imageFileList, List<String> optionTextList)

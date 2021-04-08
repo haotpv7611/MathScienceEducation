@@ -6,6 +6,8 @@ import java.util.List;
 
 import org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +28,7 @@ import com.example.demo.services.IUnitService;
 
 @Service
 public class SubjectServiceImpl implements ISubjectService {
+	Logger logger = LoggerFactory.getLogger(SubjectServiceImpl.class);
 
 	private final int DESCRIPTION_MAX_LENGTH = 50;
 	private final int SUBJECTNAME_MAX_LENGTH = 20;
@@ -83,94 +86,127 @@ public class SubjectServiceImpl implements ISubjectService {
 		return subjectResponseDTO;
 	}
 
-	@Override
-	@Transactional
-	public String deleteSubject(long id) {
-		Subject subject = iSubjectRepository.findByIdAndIsDisableFalse(id);
-		if (subject == null) {
-			throw new ResourceNotFoundException();
-		}
-
-		List<Unit> listUnitList = iUnitRepository.findBySubjectIdAndIsDisableFalse(id);
-		if (!listUnitList.isEmpty()) {
-			for (Unit unit : listUnitList) {
-				iUnitService.deleteUnit(unit.getId());
-			}
-		}
-		List<ProgressTest> progresssTestList = iProgressTestRepository.findBySubjectIdAndIsDisableFalse(id);
-		if (!progresssTestList.isEmpty()) {
-			for (ProgressTest progressTest : progresssTestList) {
-				iProgressTestService.deleteOneProgressTest(progressTest.getId());
-			}
-		}
-
-		subject.setDisable(true);
-		iSubjectRepository.save(subject);
-		
-		return "DELETE SUCCESS!";
-	}
-
 	// done
 	@Override
+	@Transactional
 	public String createSubject(String subjectName, MultipartFile file, String description, long gradeId)
 			throws SizeLimitExceededException, IOException {
-		// validate data input
-		String error = validateRequiredString(subjectName, SUBJECTNAME_MAX_LENGTH, "\nSubjectName is invalid!");
-		error += validateRequiredFile(file, "image", "\nFile is invalid!", "\nNot supported this file type for image!");
-		error += validateString(description, DESCRIPTION_MAX_LENGTH, "\nDescription is invalid!");
-		if (!error.isEmpty()) {
-			return error.trim();
-		}
-		iGradeRepository.findById(gradeId).orElseThrow(() -> new ResourceNotFoundException());
+		try {
 
-		// find subjectName is existed in grade or not
-		if (iSubjectRepository.findByGradeIdAndSubjectNameIgnoreCaseAndIsDisableFalse(gradeId, subjectName) != null) {
-			return "EXISTED";
-		}
+			// validate data input
+			String error = validateRequiredString(subjectName, SUBJECTNAME_MAX_LENGTH, "\nSubjectName is invalid!");
+			error += validateRequiredFile(file, "image", "\nFile is invalid!",
+					"\nNot supported this file type for image!");
+			error += validateString(description, DESCRIPTION_MAX_LENGTH, "\nDescription is invalid!");
+			if (!error.isEmpty()) {
+				return error.trim();
+			}
+			iGradeRepository.findById(gradeId).orElseThrow(() -> new ResourceNotFoundException());
 
-		// save data and return
-		Subject subject = new Subject(subjectName, gradeId, false, description);
-		subject.setImageUrl(firebaseService.saveFile(file));
-		iSubjectRepository.save(subject);
+			// find subjectName is existed in grade or not
+			if (iSubjectRepository.findByGradeIdAndSubjectNameIgnoreCaseAndIsDisableFalse(gradeId,
+					subjectName) != null) {
+				return "EXISTED";
+			}
+
+			// save data and return
+			Subject subject = new Subject(subjectName, gradeId, false, description);
+			subject.setImageUrl(firebaseService.saveFile(file));
+			iSubjectRepository.save(subject);
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+			
+			return "CREATE FAIL!";
+		}
 
 		return "CREATE SUCCESS!";
 	}
 
 	// done
 	@Override
+	@Transactional
 	public String updateSubject(long id, String subjectName, MultipartFile file, String description, long gradeId)
 			throws SizeLimitExceededException, IOException {
-		// validate data input
-		Subject subject = iSubjectRepository.findByIdAndIsDisableFalse(id);
-		if (subject == null) {
-			throw new ResourceNotFoundException();
-		}
-		iGradeRepository.findById(gradeId).orElseThrow(() -> new ResourceNotFoundException());
-		String error = validateRequiredString(subjectName, SUBJECTNAME_MAX_LENGTH, "\nSubjectName is invalid!");
-		error += validateFile(file, "image", "\nNot supported this file type for image!");
-		error += validateString(description, DESCRIPTION_MAX_LENGTH, "\nDescription is invalid!");
-		if (!error.isEmpty()) {
-			return error.trim();
-		}
-
-		// find subjectName is existed in grade or not
-		if (!subject.getSubjectName().equals(subjectName)) {
-			if (iSubjectRepository.findByGradeIdAndSubjectNameIgnoreCaseAndIsDisableFalse(gradeId, subjectName) != null) {
-				return "EXISTED";
+		try {
+			// validate data input
+			Subject subject = iSubjectRepository.findByIdAndIsDisableFalse(id);
+			if (subject == null) {
+				throw new ResourceNotFoundException();
 			}
-		}
+			iGradeRepository.findById(gradeId).orElseThrow(() -> new ResourceNotFoundException());
+			String error = validateRequiredString(subjectName, SUBJECTNAME_MAX_LENGTH, "\nSubjectName is invalid!");
+			error += validateFile(file, "image", "\nNot supported this file type for image!");
+			error += validateString(description, DESCRIPTION_MAX_LENGTH, "\nDescription is invalid!");
+			if (!error.isEmpty()) {
+				return error.trim();
+			}
 
-		// save data and return
-		subject.setSubjectName(subjectName);
-		if (file != null) {
-			subject.setImageUrl(firebaseService.saveFile(file));
+			// find subjectName is existed in grade or not
+			if (!subject.getSubjectName().equals(subjectName)) {
+				if (iSubjectRepository.findByGradeIdAndSubjectNameIgnoreCaseAndIsDisableFalse(gradeId,
+						subjectName) != null) {
+
+					return "EXISTED";
+				}
+			}
+
+			// save data and return
+			String subjectImageUrl = subject.getImageUrl();
+			subject.setSubjectName(subjectName);
+			if (file != null) {
+				firebaseService.deleteFile(subjectImageUrl);
+				subject.setImageUrl(firebaseService.saveFile(file));
+			}
+			if (description != null) {
+				subject.setDescription(description);
+			}
+			iSubjectRepository.save(subject);
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+
+			return "UPDATE FAIL!";
 		}
-		if (description != null) {
-			subject.setDescription(description);
-		}
-		iSubjectRepository.save(subject);
 
 		return "UPDATE SUCCESS!";
+	}
+
+	@Override
+	@Transactional
+	public String deleteSubject(long id) {
+		try {
+			// validate subjectId
+			Subject subject = iSubjectRepository.findByIdAndIsDisableFalse(id);
+			if (subject == null) {
+				throw new ResourceNotFoundException();
+			}
+
+			List<Unit> listUnitList = iUnitRepository.findBySubjectIdAndIsDisableFalse(id);
+			if (!listUnitList.isEmpty()) {
+				for (Unit unit : listUnitList) {
+					iUnitService.deleteUnit(unit.getId());
+				}
+			}
+			List<ProgressTest> progresssTestList = iProgressTestRepository.findBySubjectIdAndIsDisableFalse(id);
+			if (!progresssTestList.isEmpty()) {
+				for (ProgressTest progressTest : progresssTestList) {
+					iProgressTestService.deleteOneProgressTest(progressTest.getId());
+				}
+			}
+
+			String subjectImageUrl = subject.getImageUrl();
+			subject.setDisable(true);
+			subject.setImageUrl("DELETED");
+			iSubjectRepository.save(subject);
+			if (!subjectImageUrl.isEmpty()) {
+				firebaseService.deleteFile(subjectImageUrl);
+			}
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+
+			return "DELETE FAIL!";
+		}
+
+		return "DELETE SUCCESS!";
 	}
 
 	private String validateString(String property, int length, String errorMessage) {

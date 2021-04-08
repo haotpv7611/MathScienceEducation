@@ -297,8 +297,8 @@ public class QuestionServiceImpl implements IQuestionService {
 	// done ok
 	@Override
 	@Transactional
-	public String createGameFillInBlankQuestion(MultipartFile imageFile, MultipartFile audioFile, String questionTitle,
-			String description, float score, String questionType, long unitId, List<String> optionTextList,
+	public String createGameFillInBlankQuestion(MultipartFile imageFile, String questionTitle, String description,
+			float score, String questionType, long unitId, List<String> optionTextList,
 			List<String> optionInputTypeList) throws SizeLimitExceededException, IOException {
 		// validate question data input
 		if (!questionType.equals("FILL")) {
@@ -306,7 +306,6 @@ public class QuestionServiceImpl implements IQuestionService {
 		}
 		String error = validateQuestionInput(questionTitle, description, score);
 		error += validateFile(imageFile, "image", "\nNot supported this file type for image!");
-		error += validateFile(audioFile, "audio", "\nNot supported this file type for audio!");
 
 		// validate option data input
 		String optionError = validateGameFillInBlankOptionInput(optionTextList, optionInputTypeList);
@@ -324,7 +323,7 @@ public class QuestionServiceImpl implements IQuestionService {
 
 			// first: create question
 			int questionTypeId = 2;
-			long questionId = createQuestion(imageFile, audioFile, questionTitle, description, score, unitId,
+			long questionId = createQuestion(imageFile, null, questionTitle, description, score, unitId,
 					questionTypeId);
 
 			// last: create list option and return
@@ -437,14 +436,13 @@ public class QuestionServiceImpl implements IQuestionService {
 	// done ok
 	@Override
 	@Transactional
-	public String updateGameFillInBlankQuestion(long id, MultipartFile imageFile, MultipartFile audioFile,
-			String questionTitle, String description, float score, List<Long> optionIdList, List<String> optionTextList,
+	public String updateGameFillInBlankQuestion(long id, MultipartFile imageFile, String questionTitle,
+			String description, float score, List<Long> optionIdList, List<String> optionTextList,
 			List<String> optionInputTypeList) throws SizeLimitExceededException, IOException {
 		// validate question data input
 
 		String error = validateQuestionInput(questionTitle, description, score);
 		error += validateFile(imageFile, "image", "\nNot supported this file type for image!");
-		error += validateFile(audioFile, "audio", "\nNot supported this file type for audio!");
 
 		try {
 			Question question = iQuestionRepository.findByIdAndIsDisableFalse(id);
@@ -466,7 +464,7 @@ public class QuestionServiceImpl implements IQuestionService {
 			}
 
 			// first: update question
-			updateQuestion(id, imageFile, audioFile, questionTitle, description, score);
+			updateQuestion(id, imageFile, null, questionTitle, description, score);
 
 			// last: update list option and return
 			for (int i = 0; i < optionIdList.size(); i++) {
@@ -561,8 +559,18 @@ public class QuestionServiceImpl implements IQuestionService {
 			}
 
 			// last: delete question
+			String questionImageUrl = question.getQuestionImageUrl();
+			String questionAudioUrl = question.getQuestionAudioUrl();
 			question.setDisable(true);
+			question.setQuestionImageUrl(null);
+			question.setQuestionAudioUrl(null);
 			iQuestionRepository.save(question);
+			if (questionImageUrl != null) {
+				firebaseService.deleteFile(questionImageUrl);
+			}
+			if (questionAudioUrl != null) {
+				firebaseService.deleteFile(questionAudioUrl);
+			}
 		} catch (Exception e) {
 			throw e;
 		}
@@ -675,6 +683,7 @@ public class QuestionServiceImpl implements IQuestionService {
 
 	}
 
+	@Transactional
 	private long createQuestion(MultipartFile imageFile, MultipartFile audioFile, String questionTitle,
 			String description, float score, long unitId, int questionTypeId)
 			throws SizeLimitExceededException, IOException {
@@ -693,16 +702,21 @@ public class QuestionServiceImpl implements IQuestionService {
 		return question.getId();
 	}
 
+	@Transactional
 	private void updateQuestion(long id, MultipartFile imageFile, MultipartFile audioFile, String questionTitle,
 			String description, float score) throws SizeLimitExceededException, IOException {
 		Question question = iQuestionRepository.findByIdAndIsDisableFalse(id);
 		question.setQuestionTitle(questionTitle);
 		question.setDescription(description);
-		question.setScore(score);
+		question.setScore(score);		
+		String questionImageUrl = question.getQuestionImageUrl();
+		String questionAudioUrl = question.getQuestionAudioUrl();
 		if (imageFile != null) {
+			firebaseService.deleteFile(questionImageUrl);
 			question.setQuestionImageUrl(firebaseService.saveFile(imageFile));
 		}
 		if (audioFile != null) {
+			firebaseService.deleteFile(questionAudioUrl);
 			question.setQuestionAudioUrl(firebaseService.saveFile(audioFile));
 		}
 		iQuestionRepository.save(question);
