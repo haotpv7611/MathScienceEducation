@@ -84,22 +84,29 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				List<SchoolGrade> schoolGradeList = iSchoolGradeRepository.findBySchoolIdAndStatusNot(schoolId,
 						DELETE_STATUS);
 				if (!schoolGradeList.isEmpty()) {
+					System.out.println("schoolGrade" + schoolGradeList.size());
+					List<Classes> classesList = new ArrayList<>();
 					for (SchoolGrade schoolGrade : schoolGradeList) {
-						schoolGradeDTO = modelMapper.map(schoolGrade, SchoolGradeDTO.class);
-
-						// get all class
-						classResponseDTOList.addAll(iClassService.findBySchoolGradeId(schoolGradeDTO));
+						classesList.addAll(schoolGrade.getClassList());
+						
+//						schoolGradeDTO = modelMapper.map(schoolGrade, SchoolGradeDTO.class);
+//
+//						// get all class
+//						classResponseDTOList.addAll(iClassService.findBySchoolGradeId(schoolGradeDTO));
+//						System.out.println(classResponseDTOList.size());
 					}
-					if (!classResponseDTOList.isEmpty()) {
-						for (ClassResponseDTO classResponseDTO : classResponseDTOList) {
+					if (!classesList.isEmpty()) {
+						for (Classes classes : classesList) {
 							// get all student in class
-							Classes classes = modelMapper.map(classResponseDTO, Classes.class);
-							System.out.println(classes.getClassName() + classes.getId());
+//							System.out.println("cl re: " + classResponseDTO.getId());
+//							Classes classes = modelMapper.map(classResponseDTO, Classes.class);
+//							System.out.println("Class: " + classes.getId());
+//							System.out.println("sg: " + classes.getSchoolGrade());
 							Grade grade = classes.getSchoolGrade().getGrade();
 
 							int gradeName = grade.getGradeName();
 							studentResponseDTOList
-									.addAll(findStudentByClassedId(classResponseDTO.getId(), schoolName, gradeName));
+									.addAll(findStudentByClassedId(classes.getId(), schoolName, gradeName));
 						}
 					}
 

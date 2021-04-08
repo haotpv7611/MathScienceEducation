@@ -160,6 +160,7 @@ public class QuestionServiceImpl implements IQuestionService {
 				throw new ResourceNotFoundException();
 			}
 			ids = iExerciseGameQuestionService.findAllQuestionIdByExerciseId(id);
+			System.out.println(ids.size());
 		} else {
 			Game game = iGameRepository.findByIdAndIsDisableFalse(id);
 			if (game == null) {
@@ -169,14 +170,17 @@ public class QuestionServiceImpl implements IQuestionService {
 		}
 
 		List<QuestionResponseDTO> questionResponseDTOList = new ArrayList<>();
-
-		if (!questionResponseDTOList.isEmpty()) {
+		System.out.println(ids.size());
+		if (!ids.isEmpty()) {
 			for (int i = 0; i < ids.size(); i++) {
+				System.out.println(ids.get(i));
 				Question question = iQuestionRepository.findByIdAndIsDisableFalse(ids.get(i));
 				if (question == null) {
 					throw new ResourceNotFoundException();
 				}
+				
 				QuestionResponseDTO questionResponseDTO = modelMapper.map(question, QuestionResponseDTO.class);
+				System.out.println(questionResponseDTO);
 				questionResponseDTOList.add(questionResponseDTO);
 			}
 		}
