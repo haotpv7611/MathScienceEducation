@@ -14,8 +14,12 @@ public interface IQuestionService {
 	List<QuestionViewDTO> findQuestionByExerciseId(long exerciseId);
 
 	List<QuestionViewDTO> showQuestionByGameId(long gameId);
-	
+
 	List<QuestionResponseDTO> findQuestionByExerciseIdOrGameId(long id, boolean isExercise);
+
+	List<QuestionResponseDTO> findAllByUnitId(long unitId, boolean isExercise);
+
+	Object findQuestionById(long id, String questionType);
 
 	String createExerciseQuestion(MultipartFile imageFile, MultipartFile audioFile, String questionTitle,
 			String description, float score, String questionType, long unitId, List<String> optionTextList,
@@ -42,11 +46,7 @@ public interface IQuestionService {
 			throws SizeLimitExceededException, IOException;
 
 	String deleteQuestion(List<Long> ids);
-	
+
 	void deleteOneQuestion(long id);
-
-	List<QuestionResponseDTO> findAllByUnitId(long unitId, boolean isExercise);
-
-	Object findQuestionById(long id, String questionType);
 
 }

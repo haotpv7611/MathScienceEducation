@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.demo.dtos.ExerciseGameQuestionDTO;
+import com.example.demo.dtos.ExerciseGameQuestionRequestDTO;
 import com.example.demo.services.IExerciseGameQuestionService;
 
 @CrossOrigin
@@ -22,16 +22,24 @@ public class ExerciseGameQuestionController {
 
 	@PostMapping("/exerciseGameQuestion")
 	public ResponseEntity<String> addQuestionToGameQuestionExercise(
-			@RequestBody ExerciseGameQuestionDTO exerciseGameQuestionDTO) {
-		String response = iExerciseGameQuestionService.addExerciseOrGameQuestion(exerciseGameQuestionDTO);
-		
+			@RequestBody ExerciseGameQuestionRequestDTO exerciseGameQuestionRequestDTO) {
+		String response = iExerciseGameQuestionService.addExerciseOrGameQuestion(exerciseGameQuestionRequestDTO);
+		if (response.contains("FAIL")) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 
 	@PutMapping("/exerciseGameQuestion/delete")
 	public ResponseEntity<String> deleteExerciseOrGameQuestion(@RequestParam long id) {
-		iExerciseGameQuestionService.deleteExerciseGameQuestion(id);;
+		String response = iExerciseGameQuestionService.deleteExerciseOrGameQuestion(id);
+		if (response.contains("FAIL")) {
 
-		return ResponseEntity.ok("DELETE SUCCESS!");
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+
+		return ResponseEntity.ok(response);
 	}
 }

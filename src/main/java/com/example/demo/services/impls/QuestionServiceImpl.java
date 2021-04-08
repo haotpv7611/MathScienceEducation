@@ -44,7 +44,7 @@ public class QuestionServiceImpl implements IQuestionService {
 	private final int DESCRIPTION_LENGTH = 250;
 	private final int OPTION_TEXT_LENGTH = 100;
 
-	Logger logger = LoggerFactory.getLogger(OptionQuestionServiceImpl.class);
+	Logger logger = LoggerFactory.getLogger(QuestionServiceImpl.class);
 
 	@Autowired
 	private IQuestionRepository iQuestionRepository;
@@ -266,6 +266,7 @@ public class QuestionServiceImpl implements IQuestionService {
 		String optionError = validateExerciseOptionInput(optionTextList);
 		error += optionError;
 		if (!error.isEmpty()) {
+			
 			return error.trim();
 		}
 
@@ -311,6 +312,7 @@ public class QuestionServiceImpl implements IQuestionService {
 		String optionError = validateGameFillInBlankOptionInput(optionTextList, optionInputTypeList);
 		error += optionError;
 		if (!error.isEmpty()) {
+			
 			return error.trim();
 		}
 
@@ -357,6 +359,7 @@ public class QuestionServiceImpl implements IQuestionService {
 		String optionError = validateSwappingMatchingChoosingOptionInput(imageFileList, optionTextList, "CREATE");
 		error += optionError;
 		if (!error.isEmpty()) {
+			
 			return error.trim();
 		}
 
@@ -410,6 +413,7 @@ public class QuestionServiceImpl implements IQuestionService {
 			String optionError = validateExerciseOptionInput(optionTextList);
 			error += optionError;
 			if (!error.isEmpty()) {
+				
 				return error.trim();
 			}
 
@@ -457,6 +461,7 @@ public class QuestionServiceImpl implements IQuestionService {
 			String optionError = validateGameFillInBlankOptionInput(optionTextList, optionInputTypeList);
 			error += optionError;
 			if (!error.isEmpty()) {
+				
 				return error.trim();
 			}
 
@@ -501,6 +506,7 @@ public class QuestionServiceImpl implements IQuestionService {
 			String optionError = validateSwappingMatchingChoosingOptionInput(imageFileList, optionTextList, "UPDATE");
 			error += optionError;
 			if (!error.isEmpty()) {
+				
 				return error.trim();
 			}
 
@@ -529,9 +535,9 @@ public class QuestionServiceImpl implements IQuestionService {
 				deleteOneQuestion(id);
 			} catch (Exception e) {
 				logger.error(e.getMessage());
+				
 				return "DELETE FAIL!";
 			}
-
 		}
 
 		return "DELETE SUCCESS!";

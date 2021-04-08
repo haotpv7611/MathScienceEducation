@@ -253,7 +253,7 @@ public class ExerciseServiceImpl implements IExerciseService {
 		List<Long> exerciseQuestionIdList = iExerciseGameQuestionService.findAllQuestionIdByExerciseId(id);
 		if (!exerciseQuestionIdList.isEmpty()) {
 			for (Long exerciseQuestionId : exerciseQuestionIdList) {
-				iExerciseGameQuestionService.deleteExerciseGameQuestion(exerciseQuestionId);
+				iExerciseGameQuestionService.deleteOneExerciseGameQuestion(exerciseQuestionId);
 			}
 		}
 		exercise.setDisable(true);

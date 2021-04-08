@@ -157,7 +157,7 @@ public class GameServiceImpl implements IGameService {
 		List<Long> gameQuestionIdList = iExerciseGameQuestionService.findAllQuestionIdByGameId(id);
 		if (!gameQuestionIdList.isEmpty()) {
 			for (Long gameQuestionId : gameQuestionIdList) {
-				iExerciseGameQuestionService.deleteExerciseGameQuestion(gameQuestionId);
+				iExerciseGameQuestionService.deleteOneExerciseGameQuestion(gameQuestionId);
 			}				
 		}
 		game.setDisable(true);

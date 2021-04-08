@@ -60,7 +60,6 @@ public class OptionQuestionServiceImpl implements IOptionQuestionService {
 		} catch (Exception e) {
 			throw e;
 		}
-
 	}
 
 	// done ok

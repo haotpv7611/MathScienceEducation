@@ -2,7 +2,7 @@ package com.example.demo.services;
 
 import java.util.List;
 
-import com.example.demo.dtos.ExerciseGameQuestionDTO;
+import com.example.demo.dtos.ExerciseGameQuestionRequestDTO;
 
 public interface IExerciseGameQuestionService {
 	List<Long> findAllQuestionIdByExerciseId(long exerciseId);
@@ -13,9 +13,9 @@ public interface IExerciseGameQuestionService {
 //
 //	List<ExerciseGameQuestionDTO> findAllQuestionByGameId1(long gameId);
 
-	String addExerciseOrGameQuestion(ExerciseGameQuestionDTO exerciseGameQuestionDTO);
+	String addExerciseOrGameQuestion(ExerciseGameQuestionRequestDTO exerciseGameQuestionRequestDTO);
 
-//	String deleteExerciseOrGameQuestion(List<Long> ids);
+	String deleteExerciseOrGameQuestion(long id);
 	
-	void deleteExerciseGameQuestion(long id);
+	void deleteOneExerciseGameQuestion(long id);
 }
