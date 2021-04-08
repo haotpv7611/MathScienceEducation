@@ -3,6 +3,7 @@ package com.example.demo.services;
 import java.util.List;
 
 import com.example.demo.dtos.ExerciseDTO;
+import com.example.demo.dtos.ExerciseRequestDTO;
 
 public interface IExerciseService {
 
@@ -10,11 +11,11 @@ public interface IExerciseService {
 
 	List<ExerciseDTO> findByProgressTestIdOrderByExerciseNameAsc(long progressTestId);
 
-	String createExercise(ExerciseDTO exerciseDTO);
+	String createExercise(ExerciseRequestDTO exerciseRequestDTO);
 
-	String updateExercise(long id, ExerciseDTO exerciseDTO);
+	String updateExercise(long id, ExerciseRequestDTO exerciseRequestDTO);
 
-//	String deleteExercise(List<Long> ids);
+	String deleteExercise(long id);
 	
 	void deleteOneExercise(long id);
 }

@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dtos.ExerciseDTO;
+import com.example.demo.dtos.ExerciseRequestDTO;
 import com.example.demo.services.IExerciseService;
 
 @CrossOrigin
@@ -44,7 +45,7 @@ public class ExerciseController {
 	}
 
 	@PostMapping("/exercise")
-	public ResponseEntity<String> createExercise(@Valid @RequestBody ExerciseDTO exerciseDTO,
+	public ResponseEntity<String> createExercise(@Valid @RequestBody ExerciseRequestDTO exerciseRequestDTO,
 			BindingResult bindingResult) {
 		if (bindingResult.hasErrors()) {
 			String error = "";
@@ -53,14 +54,18 @@ public class ExerciseController {
 			}
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
 		}
-		String response = iExerciseService.createExercise(exerciseDTO);
+		String response = iExerciseService.createExercise(exerciseRequestDTO);
+		if (response.contains("FAIL")) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
 
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 
 	@PutMapping("/exercise/{id}")
-	public ResponseEntity<String> updateExercise(@PathVariable long id, @Valid @RequestBody ExerciseDTO exerciseDTO,
-			BindingResult bindingResult) {
+	public ResponseEntity<String> updateExercise(@PathVariable long id,
+			@Valid @RequestBody ExerciseRequestDTO exerciseRequestDTO, BindingResult bindingResult) {
 		if (bindingResult.hasErrors()) {
 			String error = "";
 			for (ObjectError object : bindingResult.getAllErrors()) {
@@ -68,14 +73,22 @@ public class ExerciseController {
 			}
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
 		}
-		String response = iExerciseService.updateExercise(id, exerciseDTO);
+		String response = iExerciseService.updateExercise(id, exerciseRequestDTO);
+		if (response.contains("FAIL")) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
 
 		return ResponseEntity.ok(response);
 	}
 
 	@PutMapping("/exercise/delete")
 	public ResponseEntity<String> deleteExercise(@RequestParam long id) {
-		iExerciseService.deleteOneExercise(id);
+		String response = iExerciseService.deleteExercise(id);
+		if (response.contains("FAIL")) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
 
 		return ResponseEntity.ok("DELETE SUCCESS!");
 	}
