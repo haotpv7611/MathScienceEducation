@@ -171,17 +171,15 @@ public class QuestionServiceImpl implements IQuestionService {
 		}
 
 		List<QuestionResponseDTO> questionResponseDTOList = new ArrayList<>();
-		System.out.println(ids.size());
 		if (!ids.isEmpty()) {
 			for (int i = 0; i < ids.size(); i++) {
-				System.out.println(ids.get(i));
 				Question question = iQuestionRepository.findByIdAndIsDisableFalse(ids.get(i));
 				if (question == null) {
 					throw new ResourceNotFoundException();
 				}
 
 				QuestionResponseDTO questionResponseDTO = modelMapper.map(question, QuestionResponseDTO.class);
-				System.out.println(questionResponseDTO);
+				questionResponseDTO.setQuestionType(question.getQuestionType().getDescription());
 				questionResponseDTOList.add(questionResponseDTO);
 			}
 		}
