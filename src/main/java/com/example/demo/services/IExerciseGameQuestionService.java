@@ -15,7 +15,7 @@ public interface IExerciseGameQuestionService {
 
 	String addExerciseOrGameQuestion(ExerciseGameQuestionRequestDTO exerciseGameQuestionRequestDTO);
 
-	String deleteExerciseOrGameQuestion(long id);
+	String deleteExerciseOrGameQuestion(ExerciseGameQuestionRequestDTO exerciseGameQuestionRequestDTO);
 	
 	void deleteOneExerciseGameQuestion(long id);
 }

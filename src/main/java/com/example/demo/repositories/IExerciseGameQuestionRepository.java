@@ -23,7 +23,7 @@ public interface IExerciseGameQuestionRepository extends JpaRepository<ExerciseG
 	
 	ExerciseGameQuestion findByIdAndIsDisableFalse(long id);
 	
-	List<ExerciseGameQuestion> findByQuestionIdAndExerciseIdAndIsDisableFalse(long questionId, long exerciseId);
+	ExerciseGameQuestion findByQuestionIdAndExerciseIdAndIsDisableFalse(long questionId, long exerciseId);
 	
-	List<ExerciseGameQuestion> findByQuestionIdAndGameIdAndIsDisableFalse(long questionId, long exerciseId);
+	ExerciseGameQuestion findByQuestionIdAndGameIdAndIsDisableFalse(long questionId, long exerciseId);
 }
