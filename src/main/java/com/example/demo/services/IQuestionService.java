@@ -7,19 +7,22 @@ import org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.dtos.QuestionResponseDTO;
-import com.example.demo.dtos.QuestionViewDTO;;
+import com.example.demo.dtos.QuestionExerciseViewDTO;;
 
 public interface IQuestionService {
 
-	List<QuestionViewDTO> findQuestionByExerciseId(long exerciseId);
+	Object findQuestionById(long id, String questionType);
 
-	List<QuestionViewDTO> showQuestionByGameId(long gameId);
-
+	// show list only question in each exercise or game role admin (subject menu)
 	List<QuestionResponseDTO> findQuestionByExerciseIdOrGameId(long id, boolean isExercise);
 
+	// show list only question in question bank role admin
 	List<QuestionResponseDTO> findAllByUnitId(long unitId, boolean isExercise);
 
-	Object findQuestionById(long id, String questionType);
+	// show list question and option in role student (do exercise)
+	List<QuestionExerciseViewDTO> findQuestionByExerciseId(long exerciseId);
+
+//	List<QuestionExerciseViewDTO> showQuestionByGameId(long gameId);
 
 	String createExerciseQuestion(MultipartFile imageFile, MultipartFile audioFile, String questionTitle,
 			String description, float score, String questionType, long unitId, List<String> optionTextList,

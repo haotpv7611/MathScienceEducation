@@ -104,7 +104,7 @@ public class ProgressTestServiceImpl implements IProgressTestService {
 			progressTest.setDisable(false);
 			iProgressTestRepository.save(progressTest);
 		} catch (Exception e) {
-			logger.error("CREATE: progressTest name = " + progressTestName + " in subjectId =  " + subjectId + "! "
+			logger.error("CREATE: progressTestName = " + progressTestName + " in subjectId =  " + subjectId + "! "
 					+ e.getMessage());
 			if (e instanceof ResourceNotFoundException) {
 

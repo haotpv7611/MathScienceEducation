@@ -38,52 +38,47 @@ public class GameServiceImpl implements IGameService {
 
 	// done
 	@Override
-	public List<GameResponseDTO> findAllByLessonId(long lessonId) {
-		Lesson lesson = iLessonRepository.findByIdAndIsDisableFalse(lessonId);
-		if (lesson == null) {
-			throw new ResourceNotFoundException();
-		}
-
-		List<Game> gameList = iGameRepository.findByLessonIdAndIsDisableFalse(lessonId);
-		List<GameResponseDTO> gameResponseDTOList = new ArrayList<>();
-		if (!gameList.isEmpty()) {
-			for (Game game : gameList) {
-				GameResponseDTO gameResponseDTO = modelMapper.map(game, GameResponseDTO.class);
-				gameResponseDTOList.add(gameResponseDTO);
+	public Object findGameById(long id) {
+		GameResponseDTO gameResponseDTO = null;
+		try {
+			Game game = iGameRepository.findByIdAndIsDisableFalse(id);
+			if (game == null) {
+				throw new ResourceNotFoundException();
 			}
+			gameResponseDTO = modelMapper.map(game, GameResponseDTO.class);
+		} catch (Exception e) {
+			logger.error("FIND: gameId = " + id + "! " + e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
+
+				return "NOT FOUND!";
+			}
+
+			return "FIND FAIL!";
 		}
 
-		return gameResponseDTOList;
+		return gameResponseDTO;
 	}
 
 	// done
 	@Override
-	public GameResponseDTO findGameById(long id) {
+	public List<GameResponseDTO> findAllByLessonId(long lessonId) {
+		List<GameResponseDTO> gameResponseDTOList = new ArrayList<>();
+		try {
+			List<Game> gameList = iGameRepository.findByLessonIdAndIsDisableFalse(lessonId);
 
-//		try {
-		Game game = iGameRepository.findByIdAndIsDisableFalse(id);
-		if (game == null) {
-			throw new ResourceNotFoundException();
+			if (!gameList.isEmpty()) {
+				for (Game game : gameList) {
+					GameResponseDTO gameResponseDTO = modelMapper.map(game, GameResponseDTO.class);
+					gameResponseDTOList.add(gameResponseDTO);
+				}
+			}
+		} catch (Exception e) {
+			logger.error("FIND: all game by lessonId = " + lessonId + "! " + e.getMessage());
+
+			return null;
 		}
-		GameResponseDTO gameResponseDTO = modelMapper.map(game, GameResponseDTO.class);
 
-		return gameResponseDTO;
-
-//		} catch (ResourceNotFoundException ex) {
-//			logger.warn(ex.getClass().getName() + ex.getMessage() + "\n");
-//			throw new ResourceNotFoundException();
-
-//		}catch (Exception e) {
-//			if (e instanceof ResourceNotFoundException){
-//				logger.warn("ResourceNotFound " + e.getClass().getName() + ": " + e.getMessage() + "\n");
-//				
-//				throw new ResourceNotFoundException();
-//			}
-//			System.out.println(e.getMessage());
-//			logger.warn(e.getMessage() + "\n");
-//			return null;
-//		}
-
+		return gameResponseDTOList;
 	}
 
 	@Override
@@ -103,7 +98,11 @@ public class GameServiceImpl implements IGameService {
 			Game game = modelMapper.map(gameRequestDTO, Game.class);
 			iGameRepository.save(game);
 		} catch (Exception e) {
-			logger.error(e.getMessage());
+			logger.error("CREATE: gameName = " + gameName + " in lessonId =  " + lessonId + "! " + e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
+
+				return "NOT FOUND!";
+			}
 
 			return "CREATE FAIL!";
 		}
@@ -128,7 +127,7 @@ public class GameServiceImpl implements IGameService {
 			}
 			if (!game.getGameName().equalsIgnoreCase(gameNameDTO)) {
 				if (iGameRepository.findByLessonIdAndGameNameAndIsDisableFalse(lessonId, gameNameDTO) != null) {
-					
+
 					return "EXISTED";
 				}
 			}
@@ -137,7 +136,11 @@ public class GameServiceImpl implements IGameService {
 			game.setDescription(gameRequestDTO.getDescription());
 			iGameRepository.save(game);
 		} catch (Exception e) {
-			logger.error(e.getMessage());
+			logger.error("UPDATE: gameId = " + id + "! " + e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
+
+				return "NOT FOUND!";
+			}
 
 			return "UPDATE FAIL!";
 		}
@@ -150,7 +153,11 @@ public class GameServiceImpl implements IGameService {
 		try {
 			deleteOneGame(id);
 		} catch (Exception e) {
-			logger.error(e.getMessage());
+			logger.error("DELETE: gameId = " + id + "! " + e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
+
+				return "NOT FOUND!";
+			}
 
 			return "DELETE FAIL!";
 		}

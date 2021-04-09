@@ -14,22 +14,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.example.demo.dtos.OptionQuestionDTO;
 import com.example.demo.dtos.OptionQuestionExerciseDTO;
 import com.example.demo.dtos.OptionQuestionFillDTO;
 import com.example.demo.dtos.OptionQuestionGameDTO;
+import com.example.demo.dtos.QuestionExerciseViewDTO;
 import com.example.demo.dtos.QuestionOptionResponseDTO;
 import com.example.demo.dtos.QuestionResponseDTO;
-import com.example.demo.dtos.QuestionViewDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
-import com.example.demo.models.Exercise;
-import com.example.demo.models.Game;
 import com.example.demo.models.OptionQuestion;
 import com.example.demo.models.Question;
 import com.example.demo.models.QuestionType;
 import com.example.demo.models.Unit;
 import com.example.demo.repositories.IExerciseRepository;
-import com.example.demo.repositories.IGameRepository;
 import com.example.demo.repositories.IOptionQuestionRepository;
 import com.example.demo.repositories.IQuestionRepository;
 import com.example.demo.repositories.IQuestionTypeRepository;
@@ -37,6 +33,7 @@ import com.example.demo.repositories.IUnitRepository;
 import com.example.demo.services.IExerciseGameQuestionService;
 import com.example.demo.services.IOptionQuestionService;
 import com.example.demo.services.IQuestionService;
+import com.example.demo.utils.Util;
 
 @Service
 public class QuestionServiceImpl implements IQuestionService {
@@ -73,178 +70,200 @@ public class QuestionServiceImpl implements IQuestionService {
 	@Autowired
 	IExerciseRepository iExerciseRepository;
 
-	@Autowired
-	private IGameRepository iGameRepository;
+//	@Autowired
+//	private IGameRepository iGameRepository;
 
 	// done
-	// admin role
 	@Override
 	public Object findQuestionById(long id, String questionType) {
-		// validate data input
-		Question question = iQuestionRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
-		if (!questionType.equalsIgnoreCase(question.getQuestionType().getDescription())) {
-			throw new ResourceNotFoundException();
-		}
-
-		// get all active option by questionId = ?
-		List<OptionQuestion> optionQuestionList = iOptionQuestionRepository.findByQuestionIdAndIsDisableFalse(id);
 		Object object = null;
-
-		// convert list option to ExerciseDTO
-		// add question, list optionDTO to questionDTO and return
-		if (questionType.equals("EXERCISE")) {
-			List<Object> optionQuestionExerciseDTOList = new ArrayList<>();
-			if (!optionQuestionList.isEmpty()) {
-				for (OptionQuestion optionQuestion : optionQuestionList) {
-					OptionQuestionExerciseDTO optionQuestionExerciseDTO = modelMapper.map(optionQuestion,
-							OptionQuestionExerciseDTO.class);
-					optionQuestionExerciseDTOList.add(optionQuestionExerciseDTO);
-				}
+		try {
+			// validate data input
+			Question question = iQuestionRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
+			if (!questionType.equalsIgnoreCase(question.getQuestionType().getDescription())) {
+				throw new ResourceNotFoundException();
 			}
-			QuestionOptionResponseDTO questionOptionResponseDTO = modelMapper.map(question,
-					QuestionOptionResponseDTO.class);
-			questionOptionResponseDTO.setOptionQuestionDTOList(optionQuestionExerciseDTOList);
-			object = questionOptionResponseDTO;
-		}
 
-		// convert list option to GameFillDTO
-		// add question, list optionDTO to questionDTO and return
-		if (questionType.equals("FILL")) {
-			List<Object> optionQuestionFillDTOList = new ArrayList<>();
-			if (!optionQuestionList.isEmpty()) {
-				for (OptionQuestion optionQuestion : optionQuestionList) {
-					OptionQuestionFillDTO optionQuestionFillDTO = new OptionQuestionFillDTO();
-					if (optionQuestion.getOptionInputType().equalsIgnoreCase("Text")) {
-						optionQuestionFillDTO.setText(optionQuestion.getOptionText());
+			// get all active option by questionId = ?
+			List<OptionQuestion> optionQuestionList = iOptionQuestionRepository.findByQuestionIdAndIsDisableFalse(id);
+
+			// convert list option to ExerciseDTO
+			// add question, list optionDTO to questionDTO and return
+			if (questionType.equals("EXERCISE")) {
+				List<Object> optionQuestionExerciseDTOList = new ArrayList<>();
+				if (!optionQuestionList.isEmpty()) {
+					for (OptionQuestion optionQuestion : optionQuestionList) {
+						OptionQuestionExerciseDTO optionQuestionExerciseDTO = modelMapper.map(optionQuestion,
+								OptionQuestionExerciseDTO.class);
+						optionQuestionExerciseDTOList.add(optionQuestionExerciseDTO);
 					}
-					if (optionQuestion.getOptionInputType().equalsIgnoreCase("Operator")) {
-						optionQuestionFillDTO.setOperator(optionQuestion.getOptionText());
+				}
+				QuestionOptionResponseDTO questionOptionResponseDTO = modelMapper.map(question,
+						QuestionOptionResponseDTO.class);
+				questionOptionResponseDTO.setOptionQuestionDTOList(optionQuestionExerciseDTOList);
+				object = questionOptionResponseDTO;
+			}
+
+			// convert list option to GameFillDTO
+			// add question, list optionDTO to questionDTO and return
+			if (questionType.equals("FILL")) {
+				List<Object> optionQuestionFillDTOList = new ArrayList<>();
+				if (!optionQuestionList.isEmpty()) {
+					for (OptionQuestion optionQuestion : optionQuestionList) {
+						OptionQuestionFillDTO optionQuestionFillDTO = new OptionQuestionFillDTO();
+						if (optionQuestion.getOptionInputType().equalsIgnoreCase("Text")) {
+							optionQuestionFillDTO.setText(optionQuestion.getOptionText());
+						}
+						if (optionQuestion.getOptionInputType().equalsIgnoreCase("Operator")) {
+							optionQuestionFillDTO.setOperator(optionQuestion.getOptionText());
+						}
+
+						optionQuestionFillDTO.setId(optionQuestion.getId());
+						optionQuestionFillDTO.setOptionInputType(optionQuestion.getOptionInputType());
+						optionQuestionFillDTOList.add(optionQuestionFillDTO);
 					}
-
-					optionQuestionFillDTO.setId(optionQuestion.getId());
-					optionQuestionFillDTO.setOptionInputType(optionQuestion.getOptionInputType());
-					optionQuestionFillDTOList.add(optionQuestionFillDTO);
 				}
+				QuestionOptionResponseDTO questionOptionResponseDTO = modelMapper.map(question,
+						QuestionOptionResponseDTO.class);
+				questionOptionResponseDTO.setOptionQuestionDTOList(optionQuestionFillDTOList);
+				object = questionOptionResponseDTO;
 			}
-			QuestionOptionResponseDTO questionExerciseResponseDTO = modelMapper.map(question,
-					QuestionOptionResponseDTO.class);
-			questionExerciseResponseDTO.setOptionQuestionDTOList(optionQuestionFillDTOList);
-			object = questionExerciseResponseDTO;
-		}
 
-		// convert list option to GameOtherDTO
-		// add question, list optionDTO to questionDTO and return
-		if (questionType.equals("MATCH") || questionType.equals("CHOOSE") || questionType.equals("SWAP")) {
-			List<Object> optionQuestionGameDTOList = new ArrayList<>();
-			if (!optionQuestionList.isEmpty()) {
-				for (OptionQuestion optionQuestion : optionQuestionList) {
-					OptionQuestionGameDTO optionQuestionGameDTO = modelMapper.map(optionQuestion,
-							OptionQuestionGameDTO.class);
-					optionQuestionGameDTOList.add(optionQuestionGameDTO);
+			// convert list option to GameOtherDTO
+			// add question, list optionDTO to questionDTO and return
+			if (questionType.equals("MATCH") || questionType.equals("CHOOSE") || questionType.equals("SWAP")) {
+				List<Object> optionQuestionGameDTOList = new ArrayList<>();
+				if (!optionQuestionList.isEmpty()) {
+					for (OptionQuestion optionQuestion : optionQuestionList) {
+						OptionQuestionGameDTO optionQuestionGameDTO = modelMapper.map(optionQuestion,
+								OptionQuestionGameDTO.class);
+						optionQuestionGameDTOList.add(optionQuestionGameDTO);
+					}
 				}
+				QuestionOptionResponseDTO questionOptionResponseDTO = modelMapper.map(question,
+						QuestionOptionResponseDTO.class);
+				questionOptionResponseDTO.setOptionQuestionDTOList(optionQuestionGameDTOList);
+				object = questionOptionResponseDTO;
 			}
-			QuestionOptionResponseDTO questionExerciseResponseDTO = modelMapper.map(question,
-					QuestionOptionResponseDTO.class);
-			questionExerciseResponseDTO.setOptionQuestionDTOList(optionQuestionGameDTOList);
-			object = questionExerciseResponseDTO;
+		} catch (Exception e) {
+			logger.error("FIND: questionId = " + id + " and questionType = " + questionType + "! " + e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
+
+				return "NOT FOUND!";
+			}
+
+			return "FIND FAIL!";
 		}
 
 		return object;
 	}
 
+	// done ok
 	@Override
 	public List<QuestionResponseDTO> findQuestionByExerciseIdOrGameId(long id, boolean isExercise) {
 		List<Long> ids = null;
-		if (isExercise) {
-			Exercise exercise = iExerciseRepository.findByIdAndIsDisableFalse(id);
-			if (exercise == null) {
-				throw new ResourceNotFoundException();
-			}
-			ids = iExerciseGameQuestionService.findAllQuestionIdByExerciseId(id);
-			System.out.println(ids.size());
-		} else {
-			Game game = iGameRepository.findByIdAndIsDisableFalse(id);
-			if (game == null) {
-				throw new ResourceNotFoundException();
-			}
-			ids = iExerciseGameQuestionService.findAllQuestionIdByGameId(id);
-		}
-
 		List<QuestionResponseDTO> questionResponseDTOList = new ArrayList<>();
-		if (!ids.isEmpty()) {
-			for (int i = 0; i < ids.size(); i++) {
-				Question question = iQuestionRepository.findByIdAndIsDisableFalse(ids.get(i));
-				if (question == null) {
-					throw new ResourceNotFoundException();
-				}
 
-				QuestionResponseDTO questionResponseDTO = modelMapper.map(question, QuestionResponseDTO.class);
-				questionResponseDTO.setQuestionType(question.getQuestionType().getDescription());
-				questionResponseDTOList.add(questionResponseDTO);
+		try {
+			if (isExercise) {
+				ids = iExerciseGameQuestionService.findAllQuestionIdByExerciseId(id);
+			} else {
+				ids = iExerciseGameQuestionService.findAllQuestionIdByGameId(id);
 			}
+
+			if (!ids.isEmpty()) {
+				for (int i = 0; i < ids.size(); i++) {
+					Question question = iQuestionRepository.findByIdAndIsDisableFalse(ids.get(i));
+					QuestionResponseDTO questionResponseDTO = modelMapper.map(question, QuestionResponseDTO.class);
+					questionResponseDTO.setQuestionType(question.getQuestionType().getDescription());
+					questionResponseDTOList.add(questionResponseDTO);
+				}
+			}
+		} catch (Exception e) {
+			logger.error("FIND: all question by" + (isExercise ? "exerciseId = " : "gameId = ") + id + "! "
+					+ e.getMessage());
+
+			return null;
 		}
 
 		return questionResponseDTOList;
 	}
 
-	// student role
-	@Override
-	public List<QuestionViewDTO> findQuestionByExerciseId(long exerciseId) {
-		// validate data input
-		Exercise exercise = iExerciseRepository.findByIdAndIsDisableFalse(exerciseId);
-		if (exercise == null) {
-			throw new ResourceNotFoundException();
-		}
-		// get list questionId by exerciseGame
-		List<Long> questionIdList = iExerciseGameQuestionService.findAllQuestionIdByExerciseId(exerciseId);
-		List<QuestionViewDTO> questionViewDTOList = new ArrayList<>();
-		generateQuestionView(questionIdList, questionViewDTOList);
-
-		return questionViewDTOList;
-	}
-
-	@Override
-	public List<QuestionViewDTO> showQuestionByGameId(long gameId) {
-		Game game = iGameRepository.findByIdAndIsDisableFalse(gameId);
-		if (game == null) {
-			throw new ResourceNotFoundException();
-		}
-		List<Long> questionIdList = iExerciseGameQuestionService.findAllQuestionIdByGameId(gameId);
-		List<QuestionViewDTO> questionViewDTOList = new ArrayList<>();
-		generateQuestionView(questionIdList, questionViewDTOList);
-		return null;
-
-		// not done
-	}
-
 	// done
 	@Override
 	public List<QuestionResponseDTO> findAllByUnitId(long unitId, boolean isExercise) {
-		// validate data input
-		Unit unit = iUnitRepository.findByIdAndIsDisableFalse(unitId);
-		if (unit == null) {
-			throw new ResourceNotFoundException();
-		}
-
-		// find all active question by unitId = ? and is exerciseQuestion or is
-		// gameQuestion
-		List<Question> questionList = null;
-		if (isExercise) {
-			questionList = iQuestionRepository.findByUnitIdAndQuestionTypeIdAndIsDisableFalse(unitId, 1);
-		} else {
-			questionList = iQuestionRepository.findByUnitIdAndQuestionTypeIdNotAndIsDisableFalse(unitId, 1);
-		}
-
-		// convert to DTO and return
 		List<QuestionResponseDTO> questionDTOList = new ArrayList<>();
-		for (Question question : questionList) {
-			QuestionResponseDTO questionResponseDTO = modelMapper.map(question, QuestionResponseDTO.class);
-			questionResponseDTO.setQuestionType(question.getQuestionType().getDescription());
-			questionDTOList.add(questionResponseDTO);
+		try {
+			// find all active question by unitId = ? and is exerciseQuestion or is
+			// gameQuestion
+			List<Question> questionList = null;
+			if (isExercise) {
+				questionList = iQuestionRepository.findByUnitIdAndQuestionTypeIdAndIsDisableFalse(unitId, 1);
+			} else {
+				questionList = iQuestionRepository.findByUnitIdAndQuestionTypeIdNotAndIsDisableFalse(unitId, 1);
+			}
+
+			// convert to DTO and return
+
+			for (Question question : questionList) {
+				QuestionResponseDTO questionResponseDTO = modelMapper.map(question, QuestionResponseDTO.class);
+				questionResponseDTO.setQuestionType(question.getQuestionType().getDescription());
+				questionDTOList.add(questionResponseDTO);
+			}
+		} catch (Exception e) {
+			logger.error("FIND: all question by unitId = " + unitId + "! " + e.getMessage());
+
+			return null;
 		}
 
 		return questionDTOList;
 	}
+
+	@Override
+	public List<QuestionExerciseViewDTO> findQuestionByExerciseId(long exerciseId) {
+		List<QuestionExerciseViewDTO> questionExerciseViewDTOList = new ArrayList<>();
+		try {
+			// get list questionId by exerciseGame
+			List<Long> questionIdList = iExerciseGameQuestionService.findAllQuestionIdByExerciseId(exerciseId);
+
+			if (!questionIdList.isEmpty()) {
+				List<Question> questionList = iQuestionRepository.findByIsDisableFalseAndIdIn(questionIdList);
+
+				if (!questionList.isEmpty()) {
+					for (Question question : questionList) {
+						List<OptionQuestionExerciseDTO> optionQuestionExerciseDTOList = iOptionsService
+								.findExerciseOptionByQuestionId(question.getId());
+						if (!optionQuestionExerciseDTOList.isEmpty()) {
+							QuestionExerciseViewDTO questionExerciseViewDTO = modelMapper.map(question,
+									QuestionExerciseViewDTO.class);
+							questionExerciseViewDTO.setOptionList(optionQuestionExerciseDTOList);
+							questionExerciseViewDTOList.add(questionExerciseViewDTO);
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+			logger.error("FIND: all question by exerciseId = " + exerciseId + "! " + e.getMessage());
+
+			return null;
+		}
+
+		return questionExerciseViewDTOList;
+	}
+
+//	@Override
+//	public List<QuestionExerciseViewDTO> showQuestionByGameId(long gameId) {
+//		Game game = iGameRepository.findByIdAndIsDisableFalse(gameId);
+//		if (game == null) {
+//			throw new ResourceNotFoundException();
+//		}
+//		List<Long> questionIdList = iExerciseGameQuestionService.findAllQuestionIdByGameId(gameId);
+//		List<QuestionExerciseViewDTO> questionViewDTOList = new ArrayList<>();
+////		generateQuestionView(questionIdList, questionViewDTOList);
+//		return null;
+//
+//		// not done
+//	}
 
 	// done ok
 	@Override
@@ -257,8 +276,8 @@ public class QuestionServiceImpl implements IQuestionService {
 			throw new ResourceNotFoundException();
 		}
 		String error = validateQuestionInput(questionTitle, description, score);
-		error += validateFile(imageFile, "image", "\nNot supported this file type for image!");
-		error += validateFile(audioFile, "audio", "\nNot supported this file type for audio!");
+		error += Util.validateFile(imageFile, "image", "\nNot supported this file type for image!");
+		error += Util.validateFile(audioFile, "audio", "\nNot supported this file type for audio!");
 
 		// validate option data input
 		String optionError = validateExerciseOptionInput(optionTextList);
@@ -284,7 +303,11 @@ public class QuestionServiceImpl implements IQuestionService {
 				iOptionsService.createExerciseOptionQuestion(questionId, optionTextList.get(i), isCorrectList.get(i));
 			}
 		} catch (Exception e) {
-			logger.error(e.getMessage());
+			logger.error("CREATE: questionType = " + questionType + " in unitId =  " + unitId + "! " + e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
+
+				return "NOT FOUND!";
+			}
 
 			return "CREATE FAIL!";
 		}
@@ -303,7 +326,7 @@ public class QuestionServiceImpl implements IQuestionService {
 			throw new ResourceNotFoundException();
 		}
 		String error = validateQuestionInput(questionTitle, description, score);
-		error += validateFile(imageFile, "image", "\nNot supported this file type for image!");
+		error += Util.validateFile(imageFile, "image", "\nNot supported this file type for image!");
 
 		// validate option data input
 		String optionError = validateGameFillInBlankOptionInput(optionTextList, optionInputTypeList);
@@ -330,7 +353,11 @@ public class QuestionServiceImpl implements IQuestionService {
 						optionInputTypeList.get(i));
 			}
 		} catch (Exception e) {
-			logger.error(e.getMessage());
+			logger.error("CREATE: questionType = " + questionType + " in unitId =  " + unitId + "! " + e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
+
+				return "NOT FOUND!";
+			}
 
 			return "CREATE FAIL!";
 		}
@@ -376,7 +403,11 @@ public class QuestionServiceImpl implements IQuestionService {
 						imageFileList.get(i));
 			}
 		} catch (Exception e) {
-			logger.error(e.getMessage());
+			logger.error("CREATE: questionType = " + questionType + " in unitId =  " + unitId + "! " + e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
+
+				return "NOT FOUND!";
+			}
 
 			return "CREATE FAIL!";
 		}
@@ -392,8 +423,8 @@ public class QuestionServiceImpl implements IQuestionService {
 			List<Boolean> isCorrectList) throws SizeLimitExceededException, IOException {
 		// validate question data input
 		String error = validateQuestionInput(questionTitle, description, score);
-		error += validateFile(imageFile, "image", "\nNot supported this file type for image!");
-		error += validateFile(audioFile, "audio", "\nNot supported this file type for audio!");
+		error += Util.validateFile(imageFile, "image", "\nNot supported this file type for image!");
+		error += Util.validateFile(audioFile, "audio", "\nNot supported this file type for audio!");
 
 		try {
 			Question question = iQuestionRepository.findByIdAndIsDisableFalse(id);
@@ -423,7 +454,11 @@ public class QuestionServiceImpl implements IQuestionService {
 						isCorrectList.get(i));
 			}
 		} catch (Exception e) {
-			logger.error(e.getMessage());
+			logger.error("UPDATE: questionId = " + id + "! " + e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
+
+				return "NOT FOUND!";
+			}
 
 			return "UPDATE FAIL!";
 		}
@@ -440,7 +475,7 @@ public class QuestionServiceImpl implements IQuestionService {
 		// validate question data input
 
 		String error = validateQuestionInput(questionTitle, description, score);
-		error += validateFile(imageFile, "image", "\nNot supported this file type for image!");
+		error += Util.validateFile(imageFile, "image", "\nNot supported this file type for image!");
 
 		try {
 			Question question = iQuestionRepository.findByIdAndIsDisableFalse(id);
@@ -470,7 +505,11 @@ public class QuestionServiceImpl implements IQuestionService {
 						optionInputTypeList.get(i));
 			}
 		} catch (Exception e) {
-			logger.error(e.getMessage());
+			logger.error("UPDATE: questionId = " + id + "! " + e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
+
+				return "NOT FOUND!";
+			}
 
 			return "UPDATE FAIL!";
 		}
@@ -515,7 +554,11 @@ public class QuestionServiceImpl implements IQuestionService {
 						optionTextList.get(i), imageFileList.get(i));
 			}
 		} catch (Exception e) {
-			logger.error(e.getMessage());
+			logger.error("UPDATE: questionId = " + id + "! " + e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
+
+				return "NOT FOUND!";
+			}
 
 			return "UPDATE FAIL!";
 		}
@@ -530,7 +573,11 @@ public class QuestionServiceImpl implements IQuestionService {
 			try {
 				deleteOneQuestion(id);
 			} catch (Exception e) {
-				logger.error(e.getMessage());
+				logger.error("DELETE: questionId = " + id + "! " + e.getMessage());
+				if (e instanceof ResourceNotFoundException) {
+
+					return "NOT FOUND!";
+				}
 
 				return "DELETE FAIL!";
 			}
@@ -574,60 +621,10 @@ public class QuestionServiceImpl implements IQuestionService {
 		}
 	}
 
-	private String validateString(String property, int length, String errorMessage) {
-		String error = "";
-		if (property != null) {
-			if (property.length() > length) {
-				error = errorMessage;
-			}
-		}
-
-		return error;
-	}
-
-	private String validateRequiredString(String property, int length, String errorMessage) {
-		String error = "";
-		if (property == null) {
-			error = errorMessage;
-		} else {
-			if (property.isEmpty() || property.length() > length) {
-				error = errorMessage;
-			}
-		}
-
-		return error;
-	}
-
-	private String validateFile(MultipartFile file, String contentType, String errorMessage) {
-		String error = "";
-		if (file != null) {
-			if (!file.getContentType().contains(contentType)) {
-				error += errorMessage;
-			}
-		}
-
-		return error;
-	}
-
-	private String validateRequiredFile(MultipartFile file, String contentType, String errorMessage,
-			String errorMessage2) {
-		String error = "";
-		if (file == null) {
-			error = errorMessage;
-		} else {
-			if (file.isEmpty()) {
-				error = errorMessage;
-			} else if (!file.getContentType().contains(contentType)) {
-				error += errorMessage2;
-			}
-		}
-
-		return error;
-	}
-
 	private String validateQuestionInput(String questionTitle, String description, float score) {
-		String error = validateRequiredString(questionTitle, QUESTION_TITLE_LENGTH, "\nQuestion Title is invalid!");
-		error += validateString(description, DESCRIPTION_LENGTH, "\nDescription is invalid!");
+		String error = Util.validateRequiredString(questionTitle, QUESTION_TITLE_LENGTH,
+				"\nQuestion Title is invalid!");
+		error += Util.validateString(description, DESCRIPTION_LENGTH, "\nDescription is invalid!");
 
 		if (score <= 0) {
 			error += "\nScore is invalid!";
@@ -639,7 +636,7 @@ public class QuestionServiceImpl implements IQuestionService {
 	private String validateExerciseOptionInput(List<String> optionTextList) {
 		String optionError = "";
 		for (String optionText : optionTextList) {
-			optionError = validateRequiredString(optionText, OPTION_TEXT_LENGTH, "\nOptionText is invalid!");
+			optionError = Util.validateRequiredString(optionText, OPTION_TEXT_LENGTH, "\nOptionText is invalid!");
 			if (!optionError.isEmpty()) {
 				break;
 			}
@@ -651,7 +648,8 @@ public class QuestionServiceImpl implements IQuestionService {
 	private String validateGameFillInBlankOptionInput(List<String> optionTextList, List<String> optionInputTypeList) {
 		String optionError = "";
 		for (int i = 0; i < optionTextList.size(); i++) {
-			optionError = validateRequiredString(optionTextList.get(i), OPTION_TEXT_LENGTH, "\nOptionText is invalid!");
+			optionError = Util.validateRequiredString(optionTextList.get(i), OPTION_TEXT_LENGTH,
+					"\nOptionText is invalid!");
 			if (!optionError.isEmpty()) {
 				break;
 			}
@@ -664,13 +662,15 @@ public class QuestionServiceImpl implements IQuestionService {
 			List<String> optionTextList, String action) {
 		String optionError = "";
 		for (int i = 0; i < optionTextList.size(); i++) {
-			optionError = validateRequiredString(optionTextList.get(i), OPTION_TEXT_LENGTH, "\nOptionText is invalid!");
+			optionError = Util.validateRequiredString(optionTextList.get(i), OPTION_TEXT_LENGTH,
+					"\nOptionText is invalid!");
 			if (action.equalsIgnoreCase("CREATE")) {
-				optionError += validateRequiredFile(imageFileList.get(i), "image", "\nImageFile is invalid!",
+				optionError += Util.validateRequiredFile(imageFileList.get(i), "image", "\nImageFile is invalid!",
 						"\nNot supported this file type for image!");
 			}
 			if (action.equalsIgnoreCase("UPDATE")) {
-				optionError += validateFile(imageFileList.get(i), "image", "\nNot supported this file type for image!");
+				optionError += Util.validateFile(imageFileList.get(i), "image",
+						"\nNot supported this file type for image!");
 			}
 			if (!optionError.isEmpty()) {
 				break;
@@ -706,7 +706,7 @@ public class QuestionServiceImpl implements IQuestionService {
 		Question question = iQuestionRepository.findByIdAndIsDisableFalse(id);
 		question.setQuestionTitle(questionTitle);
 		question.setDescription(description);
-		question.setScore(score);		
+		question.setScore(score);
 		String questionImageUrl = question.getQuestionImageUrl();
 		String questionAudioUrl = question.getQuestionAudioUrl();
 		if (imageFile != null) {
@@ -720,21 +720,22 @@ public class QuestionServiceImpl implements IQuestionService {
 		iQuestionRepository.save(question);
 	}
 
-	public void generateQuestionView(List<Long> questionIdList, List<QuestionViewDTO> questionViewDTOList) {
-		if (!questionIdList.isEmpty()) {
-			List<Question> questionList = iQuestionRepository.findByIsDisableFalseAndIdIn(questionIdList);
-
-			if (!questionList.isEmpty()) {
-				for (Question question : questionList) {
-					List<OptionQuestionDTO> optionsList = iOptionsService.findByQuestionId(question.getId());
-					if (!optionsList.isEmpty()) {
-						QuestionViewDTO questionViewDTO = new QuestionViewDTO(question.getId(),
-								question.getQuestionTitle(), question.getDescription(), question.getQuestionImageUrl(),
-								question.getQuestionAudioUrl(), question.getScore(), optionsList);
-						questionViewDTOList.add(questionViewDTO);
-					}
-				}
-			}
-		}
-	}
+//	private void generateQuestionView(List<Long> questionIdList, List<QuestionExerciseViewDTO> questionViewDTOList) {
+//		if (!questionIdList.isEmpty()) {
+//			List<Question> questionList = iQuestionRepository.findByIsDisableFalseAndIdIn(questionIdList);
+//
+//			if (!questionList.isEmpty()) {
+//				for (Question question : questionList) {
+//					List<OptionQuestionExerciseDTO> optionQuestionExerciseDTOList = iOptionsService
+//							.findExerciseOptionByQuestionId(question.getId());
+//					if (!optionQuestionExerciseDTOList.isEmpty()) {
+//						QuestionExerciseViewDTO questionExerciseViewDTO = modelMapper.map(question,
+//								QuestionExerciseViewDTO.class);
+//						questionExerciseViewDTO.setOptionList(optionQuestionExerciseDTOList);
+//						questionViewDTOList.add(questionExerciseViewDTO);
+//					}
+//				}
+//			}
+//		}
+//	}
 }

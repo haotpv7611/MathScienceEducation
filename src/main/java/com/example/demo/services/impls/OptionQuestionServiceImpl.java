@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.example.demo.dtos.OptionQuestionDTO;
+import com.example.demo.dtos.OptionQuestionExerciseDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.OptionQuestion;
 import com.example.demo.repositories.IOptionQuestionRepository;
@@ -31,21 +31,27 @@ public class OptionQuestionServiceImpl implements IOptionQuestionService {
 
 	// not ok about data response OptionQuestionDTO
 	@Override
-	public List<OptionQuestionDTO> findByQuestionId(long questionId) {
-		// find all active option by questionId
-		List<OptionQuestion> optionList = iOptionQuestionRepository.findByQuestionIdAndIsDisableFalse(questionId);
-		List<OptionQuestionDTO> optionDTOList = new ArrayList<>();
+	public List<OptionQuestionExerciseDTO> findExerciseOptionByQuestionId(long questionId) {
 
-		// convert all entities to dtos and return list option
-		// cần check lại data response cho role student
-		if (!optionList.isEmpty()) {
-			for (OptionQuestion option : optionList) {
-				OptionQuestionDTO optionQuestionDTO = modelMapper.map(option, OptionQuestionDTO.class);
-				optionDTOList.add(optionQuestionDTO);
+		List<OptionQuestionExerciseDTO> optionQuestionExerciseDTOList = new ArrayList<>();
+		try {
+			// find all active option by questionId
+			List<OptionQuestion> optionList = iOptionQuestionRepository.findByQuestionIdAndIsDisableFalse(questionId);
+
+			// convert all entities to dtos and return list option
+			// cần check lại data response cho role student
+			if (!optionList.isEmpty()) {
+				for (OptionQuestion option : optionList) {
+					OptionQuestionExerciseDTO optionQuestionExerciseDTO = modelMapper.map(option,
+							OptionQuestionExerciseDTO.class);
+					optionQuestionExerciseDTOList.add(optionQuestionExerciseDTO);
+				}
 			}
+		} catch (Exception e) {
+			throw e;
 		}
 
-		return optionDTOList;
+		return optionQuestionExerciseDTOList;
 	}
 
 	// done ok
@@ -128,8 +134,7 @@ public class OptionQuestionServiceImpl implements IOptionQuestionService {
 	@Override
 	@Transactional
 	public void updateGameSwappingMatchingChoosingOptionQuestion(long id, String optionText, MultipartFile imageFile)
-			throws SizeLimitExceededException, IOException
-	{
+			throws SizeLimitExceededException, IOException {
 		try {
 			// validate optionId
 			OptionQuestion optionQuestion = iOptionQuestionRepository.findByIdAndIsDisableFalse(id);
@@ -145,7 +150,7 @@ public class OptionQuestionServiceImpl implements IOptionQuestionService {
 				optionQuestion.setOptionImageUrl(firebaseService.saveFile(imageFile));
 			}
 			iOptionQuestionRepository.save(optionQuestion);
-		} catch (Exception e) {							
+		} catch (Exception e) {
 			throw e;
 		}
 	}

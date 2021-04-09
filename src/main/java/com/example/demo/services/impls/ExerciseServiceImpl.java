@@ -112,7 +112,7 @@ public class ExerciseServiceImpl implements IExerciseService {
 			iExerciseRepository.save(exercise);
 		} catch (Exception e) {
 			logger.error("CREATE: exerciseName = " + exerciseName + " in lessonId =  " + lessonId
-					+ " in progressTestId =  " + progressTestId + "! " + e.getMessage());
+					+ ", in progressTestId =  " + progressTestId + "! " + e.getMessage());
 			if (e instanceof ResourceNotFoundException) {
 
 				return "NOT FOUND!";

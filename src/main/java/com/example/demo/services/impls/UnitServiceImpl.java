@@ -230,6 +230,7 @@ public class UnitServiceImpl implements IUnitService {
 
 			return "DELETE FAIL!";
 		}
+		
 		return "DELETE SUCCESS!";
 	}
 

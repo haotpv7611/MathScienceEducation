@@ -2,29 +2,13 @@ package com.example.demo.dtos;
 
 import java.util.List;
 
-public class QuestionViewDTO {
+public class QuestionExerciseViewDTO {
 	private long id;
 	private String questionTitle;
-	private String description;
 	private String questionImageUrl;
 	private String questionAudioUrl;
 	private float score;
-	private List<OptionQuestionDTO> optionList;
-
-	public QuestionViewDTO() {
-	}
-
-	public QuestionViewDTO(long id, String questionTitle, String description, String questionImageUrl,
-			String questionAudioUrl, float score, List<OptionQuestionDTO> optionList) {
-		super();
-		this.id = id;
-		this.questionTitle = questionTitle;
-		this.description = description;
-		this.questionImageUrl = questionImageUrl;
-		this.questionAudioUrl = questionAudioUrl;
-		this.score = score;
-		this.optionList = optionList;
-	}
+	private List<OptionQuestionExerciseDTO> optionList;
 
 	public String getQuestionTitle() {
 		return questionTitle;
@@ -57,14 +41,6 @@ public class QuestionViewDTO {
 	 */
 	public String getQuestionImageUrl() {
 		return questionImageUrl;
-	}
-
-	public String getDescription() {
-		return description;
-	}
-
-	public void setDescription(String description) {
-		this.description = description;
 	}
 
 	/**
@@ -105,14 +81,14 @@ public class QuestionViewDTO {
 	/**
 	 * @return the option
 	 */
-	public List<OptionQuestionDTO> getOptionList() {
+	public List<OptionQuestionExerciseDTO> getOptionList() {
 		return optionList;
 	}
 
 	/**
 	 * @param option the option to set
 	 */
-	public void setOptionList(List<OptionQuestionDTO> optionList) {
+	public void setOptionList(List<OptionQuestionExerciseDTO> optionList) {
 		this.optionList = optionList;
 	}
 

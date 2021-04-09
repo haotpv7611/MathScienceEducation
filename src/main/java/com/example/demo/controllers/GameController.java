@@ -28,16 +28,28 @@ public class GameController {
 	@Autowired
 	IGameService iGameService;
 
-	@GetMapping("/lesson/{lessonId}/game/all")
-	public ResponseEntity<List<GameResponseDTO>> findAllByLessonId(@PathVariable long lessonId) {
-		List<GameResponseDTO> response = iGameService.findAllByLessonId(lessonId);
+	@GetMapping("/game/{id}")
+	public ResponseEntity<?> findOneById(@PathVariable long id) {
+		Object response = iGameService.findGameById(id);
+		if (response.equals("NOT FOUND!")) {
+
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
+		if (response.equals("FIND FAIL!")) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
 
 		return ResponseEntity.ok(response);
 	}
 
-	@GetMapping("/game/{id}")
-	public ResponseEntity<GameResponseDTO> findOneById(@PathVariable long id) {
-		GameResponseDTO response = iGameService.findGameById(id);
+	@GetMapping("/lesson/{lessonId}/game/all")
+	public ResponseEntity<List<GameResponseDTO>> findAllByLessonId(@PathVariable long lessonId) {
+		List<GameResponseDTO> response = iGameService.findAllByLessonId(lessonId);
+		if (response == null) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
 
 		return ResponseEntity.ok(response);
 	}
@@ -53,10 +65,19 @@ public class GameController {
 
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
 		}
+		
 		String response = iGameService.createGame(gameRequestDTO);
+		if (response.contains("NOT FOUND")) {
+
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
 		if (response.contains("FAIL")) {
 
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+		if (response.contains("EXISTED")) {
+
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 		}
 
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -73,10 +94,19 @@ public class GameController {
 
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
 		}
+		
 		String response = iGameService.updateGame(id, gameRequestDTO);
+		if (response.contains("NOT FOUND")) {
+
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
 		if (response.contains("FAIL")) {
 
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+		if (response.contains("EXISTED")) {
+
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 		}
 
 		return ResponseEntity.ok(response);
@@ -85,6 +115,10 @@ public class GameController {
 	@PutMapping("/game")
 	public ResponseEntity<String> deleteGame(@RequestParam long id) {
 		String response = iGameService.deleteGame(id);
+		if (response.contains("NOT FOUND")) {
+
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
 		if (response.contains("FAIL")) {
 
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);

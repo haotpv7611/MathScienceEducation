@@ -6,10 +6,12 @@ import java.util.List;
 import org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.example.demo.dtos.OptionQuestionDTO;
+import com.example.demo.dtos.OptionQuestionExerciseDTO;
 
 public interface IOptionQuestionService {
-	List<OptionQuestionDTO> findByQuestionId(long questionId);
+
+	// get option for exercise question role student
+	List<OptionQuestionExerciseDTO> findExerciseOptionByQuestionId(long questionId);
 
 	// create option for question in exercise
 	void createExerciseOptionQuestion(long questionId, String optionText, boolean isCorrect);
@@ -30,6 +32,6 @@ public interface IOptionQuestionService {
 	// update option for question in another games
 	void updateGameSwappingMatchingChoosingOptionQuestion(long id, String optionText, MultipartFile imageFile)
 			throws SizeLimitExceededException, IOException;
-	
+
 	void deleteOptionQuestion(long id);
 }

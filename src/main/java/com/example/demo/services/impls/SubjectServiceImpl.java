@@ -129,7 +129,7 @@ public class SubjectServiceImpl implements ISubjectService {
 			subject.setImageUrl(firebaseService.saveFile(file));
 			iSubjectRepository.save(subject);
 		} catch (Exception e) {
-			logger.error("CREATE: subject name = " + subjectName + " in gradeId =  " + gradeId + "! " + e.getMessage());
+			logger.error("CREATE: subjectName = " + subjectName + " in gradeId =  " + gradeId + "! " + e.getMessage());
 			if (e instanceof ResourceNotFoundException) {
 
 				return "NOT FOUND!";

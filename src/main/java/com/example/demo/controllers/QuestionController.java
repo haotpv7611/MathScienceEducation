@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.dtos.QuestionResponseDTO;
-import com.example.demo.dtos.QuestionViewDTO;
+import com.example.demo.dtos.QuestionExerciseViewDTO;
 import com.example.demo.services.IQuestionService;
 
 @CrossOrigin
@@ -27,12 +27,22 @@ public class QuestionController {
 	@Autowired
 	private IQuestionService iQuestionService;
 
-	@GetMapping("/exersise/{exerciseId}/questions/student")
-	public ResponseEntity<List<QuestionViewDTO>> findQuestionByExerciseId(@PathVariable long exerciseId) {
-		List<QuestionViewDTO> response = iQuestionService.findQuestionByExerciseId(exerciseId);
+	@GetMapping("/question/{id}")
+	public ResponseEntity<?> findQuestionById(@PathVariable long id, @RequestParam String questionType) {
+		Object response = iQuestionService.findQuestionById(id, questionType);
+		if (response.equals("NOT FOUND!")) {
+
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
+		if (response.equals("FIND FAIL!")) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
 
 		return ResponseEntity.ok(response);
+
 	}
+
 //	
 //	@GetMapping("/game/{gameId}/questions")
 //	public ResponseEntity<List<QuestionViewDTO>> getListQuestionByGameId(@PathVariable long gameId){
@@ -44,6 +54,10 @@ public class QuestionController {
 	public ResponseEntity<List<QuestionResponseDTO>> findQuestionByExerciseIdRoleAdmin(@PathVariable long id,
 			@RequestParam boolean isExericse) {
 		List<QuestionResponseDTO> response = iQuestionService.findQuestionByExerciseIdOrGameId(id, isExericse);
+		if (response == null) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
 
 		return ResponseEntity.ok(response);
 	}
@@ -52,16 +66,23 @@ public class QuestionController {
 	public ResponseEntity<List<QuestionResponseDTO>> findAllByUnitId(@PathVariable long unitId,
 			@RequestParam boolean isExercise) {
 		List<QuestionResponseDTO> response = iQuestionService.findAllByUnitId(unitId, isExercise);
+		if (response == null) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
 
 		return ResponseEntity.ok(response);
 	}
 
-	@GetMapping("/question/{id}")
-	public ResponseEntity<?> findQuestionById(@PathVariable long id, @RequestParam String questionType) {
-		Object response = iQuestionService.findQuestionById(id, questionType);
+	@GetMapping("/exersise/{exerciseId}/questions")
+	public ResponseEntity<List<QuestionExerciseViewDTO>> findQuestionByExerciseId(@PathVariable long exerciseId) {
+		List<QuestionExerciseViewDTO> response = iQuestionService.findQuestionByExerciseId(exerciseId);
+		if (response == null) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
 
 		return ResponseEntity.ok(response);
-
 	}
 
 	@PostMapping("/question/exercise")
@@ -72,6 +93,10 @@ public class QuestionController {
 			@RequestParam List<Boolean> isCorrectList) throws SizeLimitExceededException, IOException {
 		String response = iQuestionService.createExerciseQuestion(imageFile, audioFile, questionTitle, description,
 				score, questionType, unitId, optionTextList, isCorrectList);
+		if (response.contains("NOT FOUND")) {
+
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
 		if (response.contains("FAIL")) {
 
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
@@ -92,6 +117,10 @@ public class QuestionController {
 			throws SizeLimitExceededException, IOException {
 		String response = iQuestionService.createGameFillInBlankQuestion(imageFile, questionTitle, description, score,
 				questionType, unitId, optionTextList, optionInputTypeList);
+		if (response.contains("NOT FOUND")) {
+
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
 		if (response.contains("FAIL")) {
 
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
@@ -112,6 +141,10 @@ public class QuestionController {
 			throws SizeLimitExceededException, IOException {
 		String response = iQuestionService.createGameSwappingMatchingChoosingQuestion(questionTitle, description, score,
 				questionType, unitId, imageFileList, optionTextList);
+		if (response.contains("NOT FOUND")) {
+
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
 		if (response.contains("FAIL")) {
 
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
@@ -134,6 +167,10 @@ public class QuestionController {
 
 		String response = iQuestionService.updateExerciseQuestion(id, imageFile, audioFile, questionTitle, description,
 				score, optionIdList, optionTextList, isCorrectList);
+		if (response.contains("NOT FOUND")) {
+
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
 		if (response.contains("FAIL")) {
 
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
@@ -155,6 +192,10 @@ public class QuestionController {
 
 		String response = iQuestionService.updateGameFillInBlankQuestion(id, imageFile, questionTitle, description,
 				score, optionIdList, optionTextList, optionInputTypeList);
+		if (response.contains("NOT FOUND")) {
+
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
 		if (response.contains("FAIL")) {
 
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
@@ -182,6 +223,10 @@ public class QuestionController {
 
 		String response = iQuestionService.updateGameSwappingMatchingChoosingQuestion(id, questionTitle, description,
 				score, optionIdList, imageFileList, optionTextList);
+		if (response.contains("NOT FOUND")) {
+
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
 		if (response.contains("FAIL")) {
 
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
@@ -197,6 +242,10 @@ public class QuestionController {
 	@PutMapping("/question/delete")
 	public ResponseEntity<String> deleteQuestion(@RequestParam List<Long> ids) {
 		String response = iQuestionService.deleteQuestion(ids);
+		if (response.contains("NOT FOUND")) {
+
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
 		if (response.contains("FAIL")) {
 
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
