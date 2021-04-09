@@ -1,8 +1,12 @@
 package com.example.demo.controllers;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -21,7 +25,16 @@ public class ExerciseGameQuestionController {
 
 	@PostMapping("/exerciseGameQuestion")
 	public ResponseEntity<String> addQuestionToGameQuestionExercise(
-			@RequestBody ExerciseGameQuestionRequestDTO exerciseGameQuestionRequestDTO) {
+			@Valid @RequestBody ExerciseGameQuestionRequestDTO exerciseGameQuestionRequestDTO,
+			BindingResult bindingResult) {
+		if (bindingResult.hasErrors()) {
+			String error = "";
+			for (ObjectError object : bindingResult.getAllErrors()) {
+				error += "\n" + object.getDefaultMessage();
+			}
+
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
+		}
 		String response = iExerciseGameQuestionService.addExerciseOrGameQuestion(exerciseGameQuestionRequestDTO);
 		if (response.contains("NOT FOUND")) {
 
@@ -41,19 +54,21 @@ public class ExerciseGameQuestionController {
 
 	@PutMapping("/exerciseGameQuestion/delete")
 	public ResponseEntity<String> deleteExerciseOrGameQuestion(
-			@RequestBody ExerciseGameQuestionRequestDTO exerciseGameQuestionRequestDTO) {
-		if (exerciseGameQuestionRequestDTO.getQuestionIds().isEmpty()) {
-			
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("QUESTION INVALID!");
-		} else {
-			if (exerciseGameQuestionRequestDTO.getQuestionIds().size() != 1) {
-				
-				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("QUESTION INVALID!");
+			@Valid @RequestBody ExerciseGameQuestionRequestDTO exerciseGameQuestionRequestDTO,
+			BindingResult bindingResult) {
+		if (bindingResult.hasErrors()) {
+			String error = "";
+			for (ObjectError object : bindingResult.getAllErrors()) {
+				error += "\n" + object.getDefaultMessage();
 			}
+			if (exerciseGameQuestionRequestDTO.getQuestionIds().size() != 1) {
+				error += "\n" + "QUESTION INVALID!";
+			}
+
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
 		}
 
 		String response = iExerciseGameQuestionService.deleteExerciseOrGameQuestion(exerciseGameQuestionRequestDTO);
-
 		if (response.contains("NOT FOUND")) {
 
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);

@@ -10,6 +10,9 @@ import com.example.demo.dtos.SubjectResponseDTO;
 
 public interface ISubjectService {
 
+	Object findById(long id);
+
+	// show view all subject both roles
 	public List<SubjectResponseDTO> findSubjectByGradeId(long gradeId);
 
 	String createSubject(String subjectName, MultipartFile file, String description, long gradeId)
@@ -19,7 +22,5 @@ public interface ISubjectService {
 			throws SizeLimitExceededException, IOException;
 
 	String deleteSubject(long id);
-
-	SubjectResponseDTO findById(long id);
 
 }

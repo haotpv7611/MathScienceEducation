@@ -2,7 +2,10 @@ package com.example.demo.dtos;
 
 import java.util.List;
 
+import javax.validation.constraints.NotEmpty;
+
 public class ExerciseGameQuestionRequestDTO {
+	@NotEmpty(message = "QuestionId must not null")
 	private List<Long> questionIds;
 	private long exerciseId;
 	private long gameId;

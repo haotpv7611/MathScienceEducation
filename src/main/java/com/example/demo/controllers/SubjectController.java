@@ -26,68 +26,87 @@ public class SubjectController {
 	@Autowired
 	ISubjectService iSubjectService;
 
-	// done
+	@GetMapping("/subject/{id}")
+	public ResponseEntity<?> findSubjectById(@PathVariable long id) {
+		Object response = iSubjectService.findById(id);
+		if (response.equals("NOT FOUND!")) {
+
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
+		if (response.equals("FIND FAIL!")) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+
+		return ResponseEntity.ok(response);
+	}
+
 	@GetMapping("/grade/{gradeId}/subjects")
 	public ResponseEntity<List<SubjectResponseDTO>> findSubjectByGradeId(@PathVariable long gradeId) {
 		List<SubjectResponseDTO> response = iSubjectService.findSubjectByGradeId(gradeId);
+		if (response == null) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
 
 		return ResponseEntity.ok(response);
 	}
 
-	// done
-	@GetMapping("/subject/{id}")
-	public ResponseEntity<SubjectResponseDTO> findSubjectById(@PathVariable long id) {
-		SubjectResponseDTO response = iSubjectService.findById(id);
-
-		return ResponseEntity.ok(response);
-	}
-
-	// done
 	@PostMapping("/subject")
 	public ResponseEntity<String> createSubject(@RequestParam String subjectName,
 			@RequestParam MultipartFile multipartFile, @RequestParam(required = false) String description,
 			@RequestParam long gradeId) throws SizeLimitExceededException, IOException {
 		String response = iSubjectService.createSubject(subjectName, multipartFile, description, gradeId);
-		if (response.contains("FAIL")) {
+		if (response.contains("NOT FOUND")) {
 
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 		}
-		if (!response.contains("SUCCESS")) {
-			
-			return ResponseEntity.status(HttpStatus.CREATED).body(response);
-		}
-		
-		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-	}
-
-	// done
-	@PutMapping("/subject/{id}")
-	public ResponseEntity<String> updateSubject(@PathVariable long id,
-			@RequestParam String subjectName,
-			@RequestParam(required = false) MultipartFile multipartFile,
-			@RequestParam(required = false) String description, @RequestParam long gradeId)
-			throws SizeLimitExceededException, IOException {
-		String response = iSubjectService.updateSubject(id, subjectName, multipartFile, description, gradeId);
 		if (response.contains("FAIL")) {
 
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
 		}
 		if (response.contains("SUCCESS")) {
-			
+
+			return ResponseEntity.status(HttpStatus.CREATED).body(response);
+		}
+
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+	}
+
+	@PutMapping("/subject/{id}")
+	public ResponseEntity<String> updateSubject(@PathVariable long id, @RequestParam String subjectName,
+			@RequestParam(required = false) MultipartFile multipartFile,
+			@RequestParam(required = false) String description, @RequestParam long gradeId)
+			throws SizeLimitExceededException, IOException {
+		String response = iSubjectService.updateSubject(id, subjectName, multipartFile, description, gradeId);
+		if (response.contains("NOT FOUND")) {
+
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
+		if (response.contains("FAIL")) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+		if (response.contains("SUCCESS")) {
+
 			return ResponseEntity.ok(response);
 		}
-				
+
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 	}
 
 	@PutMapping("subject/delete/{id}")
 	public ResponseEntity<String> deleteSubject(@PathVariable long id) {
 		String response = iSubjectService.deleteSubject(id);
+		if (response.contains("NOT FOUND")) {
+
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
 		if (response.contains("FAIL")) {
 
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
 		}
-		
+
 		return ResponseEntity.ok(response);
 	}
 }

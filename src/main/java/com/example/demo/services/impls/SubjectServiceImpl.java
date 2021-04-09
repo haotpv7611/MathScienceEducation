@@ -25,6 +25,7 @@ import com.example.demo.repositories.IUnitRepository;
 import com.example.demo.services.IProgressTestService;
 import com.example.demo.services.ISubjectService;
 import com.example.demo.services.IUnitService;
+import com.example.demo.utils.Util;
 
 @Service
 public class SubjectServiceImpl implements ISubjectService {
@@ -56,48 +57,62 @@ public class SubjectServiceImpl implements ISubjectService {
 	@Autowired
 	FirebaseService firebaseService;
 
-	// done
+	// done ok
+	@Override
+	public Object findById(long id) {
+		SubjectResponseDTO subjectResponseDTO = null;
+		try {
+			Subject subject = iSubjectRepository.findByIdAndIsDisableFalse(id);
+			if (subject == null) {
+				throw new ResourceNotFoundException();
+			}
+			subjectResponseDTO = modelMapper.map(subject, SubjectResponseDTO.class);
+		} catch (Exception e) {
+			logger.error("FIND: subjectId = " + id + "! " + e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
+
+				return "NOT FOUND!";
+			}
+
+			return "FIND FAIL!";
+		}
+
+		return subjectResponseDTO;
+	}
+
+	// done ok
 	@Override
 	public List<SubjectResponseDTO> findSubjectByGradeId(long gradeId) {
-		// validate data input
-		iGradeRepository.findById(gradeId).orElseThrow(() -> new ResourceNotFoundException());
-
-		// find all subjects and return
-		List<Subject> subjectList = iSubjectRepository.findByGradeIdAndIsDisableFalse(gradeId);
 		List<SubjectResponseDTO> subjectResponseDTOList = new ArrayList<>();
-		if (!subjectList.isEmpty()) {
-			for (Subject subject : subjectList) {
-				subjectResponseDTOList.add(modelMapper.map(subject, SubjectResponseDTO.class));
+		try {
+			// find all subjects and return
+			List<Subject> subjectList = iSubjectRepository.findByGradeIdAndIsDisableFalse(gradeId);
+			if (!subjectList.isEmpty()) {
+				for (Subject subject : subjectList) {
+					subjectResponseDTOList.add(modelMapper.map(subject, SubjectResponseDTO.class));
+				}
 			}
+		} catch (Exception e) {
+			logger.error("FIND: subject by gradeId = " + gradeId + "! " + e.getMessage());
+
+			return null;
 		}
 
 		return subjectResponseDTOList;
 	}
 
-	// done
-	@Override
-	public SubjectResponseDTO findById(long id) {
-		Subject subject = iSubjectRepository.findByIdAndIsDisableFalse(id);
-		if (subject == null) {
-			throw new ResourceNotFoundException();
-		}
-		SubjectResponseDTO subjectResponseDTO = modelMapper.map(subject, SubjectResponseDTO.class);
-
-		return subjectResponseDTO;
-	}
-
-	// done
+	// done ok
 	@Override
 	@Transactional
 	public String createSubject(String subjectName, MultipartFile file, String description, long gradeId)
 			throws SizeLimitExceededException, IOException {
 		try {
-
 			// validate data input
-			String error = validateRequiredString(subjectName, SUBJECTNAME_MAX_LENGTH, "\nSubjectName is invalid!");
-			error += validateRequiredFile(file, "image", "\nFile is invalid!",
+			String error = Util.validateRequiredString(subjectName, SUBJECTNAME_MAX_LENGTH,
+					"\nSubjectName is invalid!");
+			error += Util.validateRequiredFile(file, "image", "\nFile is invalid!",
 					"\nNot supported this file type for image!");
-			error += validateString(description, DESCRIPTION_MAX_LENGTH, "\nDescription is invalid!");
+			error += Util.validateString(description, DESCRIPTION_MAX_LENGTH, "\nDescription is invalid!");
 			if (!error.isEmpty()) {
 				return error.trim();
 			}
@@ -114,15 +129,19 @@ public class SubjectServiceImpl implements ISubjectService {
 			subject.setImageUrl(firebaseService.saveFile(file));
 			iSubjectRepository.save(subject);
 		} catch (Exception e) {
-			logger.error(e.getMessage());
-			
+			logger.error("CREATE: subject name = " + subjectName + " in gradeId =  " + gradeId + "! " + e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
+
+				return "NOT FOUND!";
+			}
+
 			return "CREATE FAIL!";
 		}
 
 		return "CREATE SUCCESS!";
 	}
 
-	// done
+	// done ok
 	@Override
 	@Transactional
 	public String updateSubject(long id, String subjectName, MultipartFile file, String description, long gradeId)
@@ -134,9 +153,10 @@ public class SubjectServiceImpl implements ISubjectService {
 				throw new ResourceNotFoundException();
 			}
 			iGradeRepository.findById(gradeId).orElseThrow(() -> new ResourceNotFoundException());
-			String error = validateRequiredString(subjectName, SUBJECTNAME_MAX_LENGTH, "\nSubjectName is invalid!");
-			error += validateFile(file, "image", "\nNot supported this file type for image!");
-			error += validateString(description, DESCRIPTION_MAX_LENGTH, "\nDescription is invalid!");
+			String error = Util.validateRequiredString(subjectName, SUBJECTNAME_MAX_LENGTH,
+					"\nSubjectName is invalid!");
+			error += Util.validateFile(file, "image", "\nNot supported this file type for image!");
+			error += Util.validateString(description, DESCRIPTION_MAX_LENGTH, "\nDescription is invalid!");
 			if (!error.isEmpty()) {
 				return error.trim();
 			}
@@ -162,7 +182,11 @@ public class SubjectServiceImpl implements ISubjectService {
 			}
 			iSubjectRepository.save(subject);
 		} catch (Exception e) {
-			logger.error(e.getMessage());
+			logger.error("UPDATE: subjectId = " + id + "! " + e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
+
+				return "NOT FOUND!";
+			}
 
 			return "UPDATE FAIL!";
 		}
@@ -170,6 +194,7 @@ public class SubjectServiceImpl implements ISubjectService {
 		return "UPDATE SUCCESS!";
 	}
 
+	// done ok
 	@Override
 	@Transactional
 	public String deleteSubject(long id) {
@@ -201,63 +226,16 @@ public class SubjectServiceImpl implements ISubjectService {
 				firebaseService.deleteFile(subjectImageUrl);
 			}
 		} catch (Exception e) {
-			logger.error(e.getMessage());
+			logger.error("DELETE: subjectId = " + id + "! " + e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
+
+				return "NOT FOUND!";
+			}
 
 			return "DELETE FAIL!";
 		}
 
 		return "DELETE SUCCESS!";
-	}
-
-	private String validateString(String property, int length, String errorMessage) {
-		String error = "";
-		if (property != null) {
-			if (property.length() > length) {
-				error = errorMessage;
-			}
-		}
-
-		return error;
-	}
-
-	private String validateRequiredString(String property, int length, String errorMessage) {
-		String error = "";
-		if (property == null) {
-			error = errorMessage;
-		} else {
-			if (property.isEmpty() || property.length() > length) {
-				error = errorMessage;
-			}
-		}
-
-		return error;
-	}
-
-	private String validateFile(MultipartFile file, String contentType, String errorMessage) {
-		String error = "";
-		if (file != null) {
-			if (!file.getContentType().contains(contentType)) {
-				error += errorMessage;
-			}
-		}
-
-		return error;
-	}
-
-	private String validateRequiredFile(MultipartFile file, String contentType, String errorMessage,
-			String errorMessage2) {
-		String error = "";
-		if (file == null) {
-			error = errorMessage;
-		} else {
-			if (file.isEmpty()) {
-				error = errorMessage;
-			} else if (!file.getContentType().contains(contentType)) {
-				error += errorMessage2;
-			}
-		}
-
-		return error;
 	}
 
 }

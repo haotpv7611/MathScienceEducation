@@ -127,7 +127,11 @@ public class ExerciseGameQuestionServiceImpl implements IExerciseGameQuestionSer
 				iExerciseGameQuestionRepository.save(exerciseGameQuestion);
 			}
 		} catch (Exception e) {
-			logger.error(e.getMessage());
+			logger.error("ADD QUESTION: " + e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
+
+				return "NOT FOUND!";
+			}
 
 			return "ADD FAIL!";
 		}
@@ -171,7 +175,12 @@ public class ExerciseGameQuestionServiceImpl implements IExerciseGameQuestionSer
 
 			deleteOneExerciseGameQuestion(exerciseGameQuestion.getId());
 		} catch (Exception e) {
-			logger.error(e.getMessage());
+			logger.error("DELETE: questionId = " + questionId + ", exerciseID = " + exerciseId + ", gameId = " + gameId
+					+ "! " + e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
+
+				return "NOT FOUND!";
+			}
 
 			return "DELETE FAIL!";
 		}

@@ -5,7 +5,7 @@ public class SubjectResponseDTO {
 	private long id;
 	private String subjectName;
 	private String imageUrl;
-	private long gradeId;
+//	private long gradeId;
 	private String description;
 
 	public String getDescription() {
@@ -40,12 +40,12 @@ public class SubjectResponseDTO {
 		this.imageUrl = imageUrl;
 	}
 
-	public long getGradeId() {
-		return gradeId;
-	}
-
-	public void setGradeId(long gradeId) {
-		this.gradeId = gradeId;
-	}
+//	public long getGradeId() {
+//		return gradeId;
+//	}
+//
+//	public void setGradeId(long gradeId) {
+//		this.gradeId = gradeId;
+//	}
 
 }
