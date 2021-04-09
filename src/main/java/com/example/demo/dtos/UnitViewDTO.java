@@ -4,12 +4,12 @@ import java.util.List;
 
 public class UnitViewDTO {
 	List<UnitResponseDTO> unit;
-	ProgressTestDTO progressTest;
+	ProgressTestResponseDTO progressTest;
 
 	public UnitViewDTO() {
 	}
 
-	public UnitViewDTO(List<UnitResponseDTO> unit, ProgressTestDTO progressTest) {
+	public UnitViewDTO(List<UnitResponseDTO> unit, ProgressTestResponseDTO progressTest) {
 		super();
 		this.unit = unit;
 		this.progressTest = progressTest;
@@ -32,14 +32,14 @@ public class UnitViewDTO {
 	/**
 	 * @return the progressTest
 	 */
-	public ProgressTestDTO getProgressTest() {
+	public ProgressTestResponseDTO getProgressTest() {
 		return progressTest;
 	}
 
 	/**
 	 * @param progressTest the progressTest to set
 	 */
-	public void setProgressTest(ProgressTestDTO progressTest) {
+	public void setProgressTest(ProgressTestResponseDTO progressTest) {
 		this.progressTest = progressTest;
 	}
 

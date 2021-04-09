@@ -35,6 +35,7 @@ public class ExerciseGameQuestionController {
 
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
 		}
+		
 		String response = iExerciseGameQuestionService.addExerciseOrGameQuestion(exerciseGameQuestionRequestDTO);
 		if (response.contains("NOT FOUND")) {
 
@@ -60,10 +61,7 @@ public class ExerciseGameQuestionController {
 			String error = "";
 			for (ObjectError object : bindingResult.getAllErrors()) {
 				error += "\n" + object.getDefaultMessage();
-			}
-			if (exerciseGameQuestionRequestDTO.getQuestionIds().size() != 1) {
-				error += "\n" + "QUESTION INVALID!";
-			}
+			}			
 
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
 		}

@@ -31,9 +31,29 @@ public class UnitController {
 	private IUnitService iUnitService;
 
 	// done
+	@GetMapping("/unit/{id}")
+	public ResponseEntity<?> findUnitById(@PathVariable long id) {
+		Object response = iUnitService.findById(id);
+		if (response.equals("NOT FOUND!")) {
+
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
+		if (response.equals("FIND FAIL!")) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+
+		return ResponseEntity.ok(response);
+	}
+
+	// done
 	@GetMapping("/subject/{subjectId}/units")
 	public ResponseEntity<List<UnitResponseDTO>> findBySubjectIdOrderByUnitNameAsc(@PathVariable long subjectId) {
 		List<UnitResponseDTO> response = iUnitService.findBySubjectIdOrderByUnitNameAsc(subjectId);
+		if (response == null) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
 
 		return ResponseEntity.ok(response);
 	}
@@ -48,14 +68,6 @@ public class UnitController {
 	}
 
 	// done
-	@GetMapping("/unit/{id}")
-	public ResponseEntity<UnitResponseDTO> findUnitById(@PathVariable long id) {
-		UnitResponseDTO response = iUnitService.findById(id);
-
-		return ResponseEntity.ok(response);
-	}
-
-	// done
 	@PostMapping("/unit")
 	public ResponseEntity<String> createUnit(@Valid @RequestBody UnitRequestDTO unitRequestDTO,
 			BindingResult bindingResult) {
@@ -67,10 +79,19 @@ public class UnitController {
 
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
 		}
+
 		String response = iUnitService.createUnit(unitRequestDTO);
+		if (response.contains("NOT FOUND")) {
+
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
 		if (response.contains("FAIL")) {
 
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+		if (response.contains("EXISTED")) {
+
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 		}
 
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -89,9 +110,17 @@ public class UnitController {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
 		}
 		String response = iUnitService.updateUnit(id, unitRequestDTO);
+		if (response.contains("NOT FOUND")) {
+
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
 		if (response.contains("FAIL")) {
 
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+		if (response.contains("EXISTED")) {
+
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 		}
 
 		return ResponseEntity.ok(response);
@@ -100,6 +129,10 @@ public class UnitController {
 	@PutMapping("unit/delete")
 	public ResponseEntity<String> deleteUnit(@RequestParam long id) {
 		String response = iUnitService.deleteUnit(id);
+		if (response.contains("NOT FOUND")) {
+
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
 		if (response.contains("FAIL")) {
 
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);

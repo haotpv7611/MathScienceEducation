@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.demo.dtos.ProgressTestDTO;
+import com.example.demo.dtos.ProgressTestResponseDTO;
 import com.example.demo.dtos.ProgressTestRequestDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.Exercise;
@@ -42,53 +42,46 @@ public class ProgressTestServiceImpl implements IProgressTestService {
 	private IExerciseRepository iExerciseRepository;
 
 	@Override
-	public List<ProgressTestDTO> findBySubjectId(long subjectId) {
-		// check data input
-		Subject subject = iSubjectRepository.findByIdAndIsDisableFalse(subjectId);
-		if (subject == null) {
-			throw new ResourceNotFoundException();
-		}
-
-		// 1. connect database through repository
-		// 2. find all entities are not disable and have subjectId = ?
-		List<ProgressTest> progressTestList = iProgressTestRepository.findBySubjectIdAndIsDisableFalse(subjectId);
-		List<ProgressTestDTO> progressTestDTOList = new ArrayList<>();
-
-		// 3. convert all entities to dtos
-		// 4. add all dtos to newsDTOList and return
-		if (!progressTestList.isEmpty()) {
-			for (ProgressTest progressTest : progressTestList) {
-				ProgressTestDTO progressTestDTO = modelMapper.map(progressTest, ProgressTestDTO.class);
-				progressTestDTOList.add(progressTestDTO);
+	public Object findById(long id) {
+		ProgressTestResponseDTO progressTestResponseDTO = null;
+		try {
+			ProgressTest progressTest = iProgressTestRepository.findByIdAndIsDisableFalse(id);
+			if (progressTest == null) {
+				throw new ResourceNotFoundException();
 			}
-		}
+			progressTestResponseDTO = modelMapper.map(progressTest, ProgressTestResponseDTO.class);
+		} catch (Exception e) {
+			logger.error("FIND: progressTestId = " + id + "! " + e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
 
-		return progressTestDTOList;
+				return "NOT FOUND!";
+			}
+
+			return "FIND FAIL!";
+		}
+		return progressTestResponseDTO;
 	}
 
 	@Override
-	public ProgressTestDTO findById(long id) {
-		ProgressTest progressTest = iProgressTestRepository.findByIdAndIsDisableFalse(id);
-		if (progressTest == null) {
-			throw new ResourceNotFoundException();
+	public List<ProgressTestResponseDTO> findBySubjectId(long subjectId) {
+		List<ProgressTestResponseDTO> progressTestResponseDTOList = new ArrayList<>();
+		try {
+			List<ProgressTest> progressTestList = iProgressTestRepository.findBySubjectIdAndIsDisableFalse(subjectId);
+			if (!progressTestList.isEmpty()) {
+				for (ProgressTest progressTest : progressTestList) {
+					ProgressTestResponseDTO progressTestDTO = modelMapper.map(progressTest,
+							ProgressTestResponseDTO.class);
+					progressTestResponseDTOList.add(progressTestDTO);
+				}
+			}
+		} catch (Exception e) {
+			logger.error("FIND: all progressTest by subjectId = " + subjectId + "! " + e.getMessage());
+
+			return null;
 		}
-		ProgressTestDTO progressTestDTO = modelMapper.map(progressTest, ProgressTestDTO.class);
 
-		return progressTestDTO;
+		return progressTestResponseDTOList;
 	}
-
-//	@Override
-//	public List<ProgressTestDTO> findBySubjectIdAndIsDisable(long subjectId) {
-//		List<ProgressTest> progressTestLists = iProgressTestRepository.findBySubjectId(subjectId);
-//		List<ProgressTestDTO> progressTestDTOLists = new ArrayList<>();
-//		if (!progressTestLists.isEmpty()) {
-//			for (ProgressTest progressTest : progressTestLists) {
-//				ProgressTestDTO progressTestDTO = modelMapper.map(progressTest, ProgressTestDTO.class);
-//				progressTestDTOLists.add(progressTestDTO);
-//			}
-//		}
-//		return progressTestDTOLists;
-//	}
 
 	@Override
 	public String createProgressTest(ProgressTestRequestDTO progressTestRequestDTO) {
@@ -111,7 +104,12 @@ public class ProgressTestServiceImpl implements IProgressTestService {
 			progressTest.setDisable(false);
 			iProgressTestRepository.save(progressTest);
 		} catch (Exception e) {
-			logger.error(e.getMessage());
+			logger.error("CREATE: progressTest name = " + progressTestName + " in subjectId =  " + subjectId + "! "
+					+ e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
+
+				return "NOT FOUND!";
+			}
 
 			return "CREATE FAIL!";
 		}
@@ -148,7 +146,11 @@ public class ProgressTestServiceImpl implements IProgressTestService {
 			progressTest.setUnitAfterId(unitAfterId);
 			iProgressTestRepository.save(progressTest);
 		} catch (Exception e) {
-			logger.error(e.getMessage());
+			logger.error("UPDATE: progressTestId = " + id + "! " + e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
+
+				return "NOT FOUND!";
+			}
 
 			return "UPDATE FAIL!";
 		}
@@ -161,7 +163,11 @@ public class ProgressTestServiceImpl implements IProgressTestService {
 		try {
 			deleteOneProgressTest(id);
 		} catch (Exception e) {
-			logger.error(e.getMessage());
+			logger.error("DELETE: progressTestId = " + id + "! " + e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
+
+				return "NOT FOUND!";
+			}
 
 			return "DELETE FAIL!";
 		}

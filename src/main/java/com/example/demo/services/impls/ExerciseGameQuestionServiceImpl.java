@@ -127,7 +127,7 @@ public class ExerciseGameQuestionServiceImpl implements IExerciseGameQuestionSer
 				iExerciseGameQuestionRepository.save(exerciseGameQuestion);
 			}
 		} catch (Exception e) {
-			logger.error("ADD QUESTION: " + e.getMessage());
+			logger.error("ADD: question in exerciseId = " + exerciseId + ", gameId = " + gameId + "!" + e.getMessage());
 			if (e instanceof ResourceNotFoundException) {
 
 				return "NOT FOUND!";
@@ -143,40 +143,44 @@ public class ExerciseGameQuestionServiceImpl implements IExerciseGameQuestionSer
 	@Override
 	public String deleteExerciseOrGameQuestion(ExerciseGameQuestionRequestDTO exerciseGameQuestionRequestDTO) {
 		boolean isExercise = exerciseGameQuestionRequestDTO.isExercise();
-		long questionId = exerciseGameQuestionRequestDTO.getQuestionIds().get(0);
+		List<Long> questionIds = exerciseGameQuestionRequestDTO.getQuestionIds();
 		long exerciseId = exerciseGameQuestionRequestDTO.getExerciseId();
 		long gameId = exerciseGameQuestionRequestDTO.getGameId();
 
 		try {
 			// validate questionId, exerciseId or gameId and checkName existed
-			Question question = iQuestionRepository.findByIdAndIsDisableFalse(questionId);
-			if (question == null) {
-				throw new ResourceNotFoundException();
+			for (long questionId : questionIds) {
+				Question question = iQuestionRepository.findByIdAndIsDisableFalse(questionId);
+				if (question == null) {
+					throw new ResourceNotFoundException();
+				}
 			}
-			ExerciseGameQuestion exerciseGameQuestion = null;
 			if (isExercise) {
 				Exercise exercise = iExerciseRepository.findByIdAndIsDisableFalse(exerciseId);
 				if (exercise == null) {
 					throw new ResourceNotFoundException();
 				}
-				exerciseGameQuestion = iExerciseGameQuestionRepository
-						.findByQuestionIdAndExerciseIdAndIsDisableFalse(questionId, exerciseId);
 			} else {
 				Game game = iGameRepository.findByIdAndIsDisableFalse(gameId);
 				if (game == null) {
 					throw new ResourceNotFoundException();
 				}
-				exerciseGameQuestion = iExerciseGameQuestionRepository
-						.findByQuestionIdAndGameIdAndIsDisableFalse(questionId, gameId);
-			}
-			if (exerciseGameQuestion == null) {
-				throw new ResourceNotFoundException();
 			}
 
-			deleteOneExerciseGameQuestion(exerciseGameQuestion.getId());
+			ExerciseGameQuestion exerciseGameQuestion = null;
+			for (long questionId : questionIds) {
+				if (isExercise) {
+					exerciseGameQuestion = iExerciseGameQuestionRepository
+							.findByQuestionIdAndExerciseIdAndIsDisableFalse(questionId, exerciseId);
+				} else {
+					exerciseGameQuestion = iExerciseGameQuestionRepository
+							.findByQuestionIdAndGameIdAndIsDisableFalse(questionId, gameId);
+				}
+				deleteOneExerciseGameQuestion(exerciseGameQuestion.getId());
+			}
 		} catch (Exception e) {
-			logger.error("DELETE: questionId = " + questionId + ", exerciseID = " + exerciseId + ", gameId = " + gameId
-					+ "! " + e.getMessage());
+			logger.error(
+					"DELETE: question in exerciseID = " + exerciseId + ", gameId = " + gameId + "! " + e.getMessage());
 			if (e instanceof ResourceNotFoundException) {
 
 				return "NOT FOUND!";

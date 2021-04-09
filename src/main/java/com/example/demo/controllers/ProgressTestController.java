@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.demo.dtos.ProgressTestDTO;
+import com.example.demo.dtos.ProgressTestResponseDTO;
 import com.example.demo.dtos.ProgressTestRequestDTO;
 import com.example.demo.services.IProgressTestService;
 
@@ -29,16 +29,28 @@ public class ProgressTestController {
 	@Autowired
 	private IProgressTestService iProgressTestService;
 
-	@GetMapping("/subject/{subjectId}/progressTest")
-	public ResponseEntity<List<ProgressTestDTO>> findBySubjectId(@PathVariable long subjectId) {
-		List<ProgressTestDTO> response = iProgressTestService.findBySubjectId(subjectId);
+	@GetMapping("/progressTest/{id}")
+	public ResponseEntity<?> findProgressTestById(@PathVariable long id) {
+		Object response = iProgressTestService.findById(id);
+		if (response.equals("NOT FOUND!")) {
+
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
+		if (response.equals("FIND FAIL!")) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
 
 		return ResponseEntity.ok(response);
 	}
 
-	@GetMapping("/progressTest/{id}")
-	public ResponseEntity<ProgressTestDTO> findProgressTestById(@PathVariable long id) {
-		ProgressTestDTO response = iProgressTestService.findById(id);
+	@GetMapping("/subject/{subjectId}/progressTest")
+	public ResponseEntity<List<ProgressTestResponseDTO>> findBySubjectId(@PathVariable long subjectId) {
+		List<ProgressTestResponseDTO> response = iProgressTestService.findBySubjectId(subjectId);
+		if (response == null) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
 
 		return ResponseEntity.ok(response);
 	}
@@ -53,10 +65,19 @@ public class ProgressTestController {
 			}
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
 		}
+
 		String response = iProgressTestService.createProgressTest(progressTestRequestDTO);
+		if (response.contains("NOT FOUND")) {
+
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
 		if (response.contains("FAIL")) {
 
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+		if (response.contains("EXISTED")) {
+
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 		}
 
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -73,10 +94,19 @@ public class ProgressTestController {
 			}
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
 		}
+
 		String response = iProgressTestService.updateProgressTest(id, progressTestRequestDTO);
+		if (response.contains("NOT FOUND")) {
+
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
 		if (response.contains("FAIL")) {
 
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+		if (response.contains("EXISTED")) {
+
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 		}
 
 		return ResponseEntity.ok(response);
@@ -85,6 +115,10 @@ public class ProgressTestController {
 	@PutMapping("progressTest/delete")
 	public ResponseEntity<String> deleteProgressTest(@RequestParam long id) {
 		String response = iProgressTestService.deleteProgressTest(id);
+		if (response.contains("NOT FOUND")) {
+
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
 		if (response.contains("FAIL")) {
 
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);

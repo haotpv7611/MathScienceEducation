@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.demo.dtos.ProgressTestDTO;
+import com.example.demo.dtos.ProgressTestResponseDTO;
 import com.example.demo.dtos.UnitRequestDTO;
 import com.example.demo.dtos.UnitResponseDTO;
 import com.example.demo.dtos.UnitViewDTO;
@@ -57,38 +57,49 @@ public class UnitServiceImpl implements IUnitService {
 
 	// done
 	@Override
-	public List<UnitResponseDTO> findBySubjectIdOrderByUnitNameAsc(long subjectId) {
-		// validate data input
-		Subject subject = iSubjectRepository.findByIdAndIsDisableFalse(subjectId);
-		if (subject == null) {
-			throw new ResourceNotFoundException();
-		}
-
-		// find all active entities and have subjectId = ?, sort acscending by unitName
-		List<Unit> unitList = iUnitRepository.findBySubjectIdAndIsDisableFalseOrderByUnitNameAsc(subjectId);
-		List<UnitResponseDTO> unitDTOList = new ArrayList<>();
-
-		// convert all entities to dtos and return
-		if (!unitList.isEmpty()) {
-			for (Unit unit : unitList) {
-				UnitResponseDTO unitResponseDTO = modelMapper.map(unit, UnitResponseDTO.class);
-				unitDTOList.add(unitResponseDTO);
+	public Object findById(long id) {
+		UnitResponseDTO unitResponseDTO = null;
+		try {
+			Unit unit = iUnitRepository.findByIdAndIsDisableFalse(id);
+			if (unit == null) {
+				throw new ResourceNotFoundException();
 			}
+			unitResponseDTO = modelMapper.map(unit, UnitResponseDTO.class);
+		} catch (Exception e) {
+			logger.error("FIND: unitId = " + id + "! " + e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
+
+				return "NOT FOUND!";
+			}
+
+			return "FIND FAIL!";
 		}
 
-		return unitDTOList;
+		return unitResponseDTO;
 	}
 
 	// done
 	@Override
-	public UnitResponseDTO findById(long id) {
-		Unit unit = iUnitRepository.findByIdAndIsDisableFalse(id);
-		if (unit == null) {
-			throw new ResourceNotFoundException();
-		}
-		UnitResponseDTO unitResponseDTO = modelMapper.map(unit, UnitResponseDTO.class);
+	public List<UnitResponseDTO> findBySubjectIdOrderByUnitNameAsc(long subjectId) {
+		List<UnitResponseDTO> unitDTOList = new ArrayList<>();
+		try {
+			// find all active entities and have subjectId = ?, sort acscending by unitName
+			List<Unit> unitList = iUnitRepository.findBySubjectIdAndIsDisableFalseOrderByUnitNameAsc(subjectId);
 
-		return unitResponseDTO;
+			// convert all entities to dtos and return
+			if (!unitList.isEmpty()) {
+				for (Unit unit : unitList) {
+					UnitResponseDTO unitResponseDTO = modelMapper.map(unit, UnitResponseDTO.class);
+					unitDTOList.add(unitResponseDTO);
+				}
+			}
+		} catch (Exception e) {
+			logger.error("FIND: all unit by subjectId = " + subjectId + "! " + e.getMessage());
+
+			return null;
+		}
+
+		return unitDTOList;
 	}
 
 	// not done
@@ -96,7 +107,7 @@ public class UnitServiceImpl implements IUnitService {
 	public List<UnitViewDTO> showUnitViewBySubjectId(long subjectId) {
 		// 1. get list unitDTO and progressTestDTO by subjectId
 		List<UnitResponseDTO> unitDTOList = findBySubjectIdOrderByUnitNameAsc(subjectId);
-		List<ProgressTestDTO> progressTestDTOList = iProgressTestService.findBySubjectId(subjectId);
+		List<ProgressTestResponseDTO> progressTestDTOList = iProgressTestService.findBySubjectId(subjectId);
 
 		List<UnitViewDTO> unitViewDTOList = new ArrayList<>();
 
@@ -142,7 +153,7 @@ public class UnitServiceImpl implements IUnitService {
 			Subject subject = iSubjectRepository.findByIdAndIsDisableFalse(subjectId);
 			if (subject == null) {
 				throw new ResourceNotFoundException();
-			}			
+			}
 			if (iUnitRepository.findBySubjectIdAndUnitNameAndIsDisableFalse(subjectId, unitName) != null) {
 
 				return "EXISTED";
@@ -153,7 +164,11 @@ public class UnitServiceImpl implements IUnitService {
 			unit.setDisable(false);
 			iUnitRepository.save(unit);
 		} catch (Exception e) {
-			logger.error(e.getMessage());
+			logger.error("CREATE: unitName = " + unitName + " in subjectId =  " + subjectId + "! " + e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
+
+				return "NOT FOUND!";
+			}
 
 			return "CREATE FAIL!";
 		}
@@ -180,8 +195,7 @@ public class UnitServiceImpl implements IUnitService {
 			}
 
 			if (unit.getUnitName() != unitName) {
-				if (iUnitRepository.findBySubjectIdAndUnitNameAndIsDisableFalse(subjectId,
-						unitName) != null) {
+				if (iUnitRepository.findBySubjectIdAndUnitNameAndIsDisableFalse(subjectId, unitName) != null) {
 					return "EXISTED";
 				}
 			}
@@ -191,7 +205,11 @@ public class UnitServiceImpl implements IUnitService {
 			unit.setDescription(description);
 			iUnitRepository.save(unit);
 		} catch (Exception e) {
-			logger.error(e.getMessage());
+			logger.error("UPDATE: unitId = " + id + "! " + e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
+
+				return "NOT FOUND!";
+			}
 
 			return "UPDATE FAIL!";
 		}
@@ -204,7 +222,11 @@ public class UnitServiceImpl implements IUnitService {
 		try {
 			deleteOneUnit(id);
 		} catch (Exception e) {
-			logger.error(e.getMessage());
+			logger.error("DELETE: unitId = " + id + "! " + e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
+
+				return "NOT FOUND!";
+			}
 
 			return "DELETE FAIL!";
 		}

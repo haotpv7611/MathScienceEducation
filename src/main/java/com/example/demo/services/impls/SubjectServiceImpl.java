@@ -93,7 +93,7 @@ public class SubjectServiceImpl implements ISubjectService {
 				}
 			}
 		} catch (Exception e) {
-			logger.error("FIND: subject by gradeId = " + gradeId + "! " + e.getMessage());
+			logger.error("FIND: all subject by gradeId = " + gradeId + "! " + e.getMessage());
 
 			return null;
 		}

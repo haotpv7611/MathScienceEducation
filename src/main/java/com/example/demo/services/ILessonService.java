@@ -7,9 +7,9 @@ import com.example.demo.dtos.LessonRequestDTO;
 
 public interface ILessonService {
 
-	List<LessonResponseDTO> findByUnitIdOrderByLessonNameAsc(long unitId);
+	Object findById(long id);
 
-	LessonResponseDTO findById(long id);
+	List<LessonResponseDTO> findByUnitIdOrderByLessonNameAsc(long unitId);
 
 	String createLesson(LessonRequestDTO lessonRequestDTO);
 

@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.demo.dtos.ExerciseDTO;
+import com.example.demo.dtos.ExerciseResponseDTO;
 import com.example.demo.dtos.ExerciseRequestDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.Exercise;
@@ -42,41 +42,43 @@ public class ExerciseServiceImpl implements IExerciseService {
 	private ModelMapper modelMapper;
 
 	@Override
-	public List<ExerciseDTO> findByLessonIdOrderByExerciseNameAsc(long lessonId) {
-		Lesson lesson = iLessonRepository.findByIdAndIsDisableFalse(lessonId);
-		if (lesson == null) {
-			throw new ResourceNotFoundException();
-		}
-
-		List<Exercise> exerciseList = iExerciseRepository
-				.findByLessonIdAndIsDisableFalseOrderByExerciseNameAsc(lessonId);
-		List<ExerciseDTO> exerciseDTOList = new ArrayList<>();
-		if (!exerciseList.isEmpty()) {
-			for (Exercise exercise : exerciseList) {
-				exerciseDTOList.add(modelMapper.map(exercise, ExerciseDTO.class));
+	public List<ExerciseResponseDTO> findByLessonIdOrderByExerciseNameAsc(long lessonId) {
+		List<ExerciseResponseDTO> exerciseResponseDTOList = new ArrayList<>();
+		try {
+			List<Exercise> exerciseList = iExerciseRepository
+					.findByLessonIdAndIsDisableFalseOrderByExerciseNameAsc(lessonId);
+			if (!exerciseList.isEmpty()) {
+				for (Exercise exercise : exerciseList) {
+					exerciseResponseDTOList.add(modelMapper.map(exercise, ExerciseResponseDTO.class));
+				}
 			}
+		} catch (Exception e) {
+			logger.error("FIND: all exercise by lessonId = " + lessonId + "! " + e.getMessage());
+
+			return null;
 		}
 
-		return exerciseDTOList;
+		return exerciseResponseDTOList;
 	}
 
 	@Override
-	public List<ExerciseDTO> findByProgressTestIdOrderByExerciseNameAsc(long progressTestId) {
-		ProgressTest progressTest = iProgressTestRepository.findByIdAndIsDisableFalse(progressTestId);
-		if (progressTest == null) {
-			throw new ResourceNotFoundException();
-		}
-
-		List<Exercise> exerciseList = iExerciseRepository
-				.findByProgressTestIdAndIsDisableFalseOrderByExerciseNameAsc(progressTestId);
-		List<ExerciseDTO> exerciseDTOList = new ArrayList<>();
-		if (!exerciseList.isEmpty()) {
-			for (Exercise exercise : exerciseList) {
-				exerciseDTOList.add(modelMapper.map(exercise, ExerciseDTO.class));
+	public List<ExerciseResponseDTO> findByProgressTestIdOrderByExerciseNameAsc(long progressTestId) {
+		List<ExerciseResponseDTO> exerciseResponseDTOList = new ArrayList<>();
+		try {
+			List<Exercise> exerciseList = iExerciseRepository
+					.findByProgressTestIdAndIsDisableFalseOrderByExerciseNameAsc(progressTestId);
+			if (!exerciseList.isEmpty()) {
+				for (Exercise exercise : exerciseList) {
+					exerciseResponseDTOList.add(modelMapper.map(exercise, ExerciseResponseDTO.class));
+				}
 			}
+		} catch (Exception e) {
+			logger.error("FIND: all exercise by progressTestId = " + progressTestId + "! " + e.getMessage());
+
+			return null;
 		}
 
-		return exerciseDTOList;
+		return exerciseResponseDTOList;
 	}
 
 	// done ok
@@ -109,7 +111,12 @@ public class ExerciseServiceImpl implements IExerciseService {
 			}
 			iExerciseRepository.save(exercise);
 		} catch (Exception e) {
-			logger.error(e.getMessage());
+			logger.error("CREATE: exerciseName = " + exerciseName + " in lessonId =  " + lessonId
+					+ " in progressTestId =  " + progressTestId + "! " + e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
+
+				return "NOT FOUND!";
+			}
 
 			return "CREATE FAIL!";
 		}
@@ -161,7 +168,11 @@ public class ExerciseServiceImpl implements IExerciseService {
 			exercise.setDescription(description);
 			iExerciseRepository.save(exercise);
 		} catch (Exception e) {
-			logger.error(e.getMessage());
+			logger.error("UPDATE: exerciseId = " + id + "! " + e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
+
+				return "NOT FOUND!";
+			}
 
 			return "UPDATE FAIL!";
 		}
@@ -175,7 +186,11 @@ public class ExerciseServiceImpl implements IExerciseService {
 		try {
 			deleteOneExercise(id);
 		} catch (Exception e) {
-			logger.error(e.getMessage());
+			logger.error("DELETE: exerciseId = " + id + "! " + e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
+
+				return "NOT FOUND!";
+			}
 
 			return "DELETE FAIL!";
 		}
@@ -188,6 +203,7 @@ public class ExerciseServiceImpl implements IExerciseService {
 	@Transactional
 	public void deleteOneExercise(long id) {
 		try {
+			// validate exerciseId
 			Exercise exercise = iExerciseRepository.findByIdAndIsDisableFalse(id);
 			if (exercise == null) {
 				throw new ResourceNotFoundException();

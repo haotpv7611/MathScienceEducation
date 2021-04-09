@@ -52,14 +52,43 @@ public class LessonServiceImpl implements ILessonService {
 
 	// done
 	@Override
-	public List<LessonResponseDTO> findByUnitIdOrderByLessonNameAsc(long unitId) {
-		List<Lesson> lessonList = iLessonRepository.findByUnitIdAndIsDisableFalseOrderByLessonNameAsc(unitId);
-		List<LessonResponseDTO> lessonResponseDTOList = new ArrayList<>();
-		if (!lessonList.isEmpty()) {
-			for (Lesson lesson : lessonList) {
-				LessonResponseDTO lessonResponseDTO = modelMapper.map(lesson, LessonResponseDTO.class);
-				lessonResponseDTOList.add(lessonResponseDTO);
+	public Object findById(long id) {
+		LessonResponseDTO lessonResponseDTO = null;
+		try {
+			Lesson lesson = iLessonRepository.findByIdAndIsDisableFalse(id);
+			if (lesson == null) {
+				throw new ResourceNotFoundException();
 			}
+			lessonResponseDTO = modelMapper.map(lesson, LessonResponseDTO.class);
+		} catch (Exception e) {
+			logger.error("FIND: lessonId = " + id + "! " + e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
+
+				return "NOT FOUND!";
+			}
+
+			return "FIND FAIL!";
+		}
+
+		return lessonResponseDTO;
+	}
+
+	// done
+	@Override
+	public List<LessonResponseDTO> findByUnitIdOrderByLessonNameAsc(long unitId) {
+		List<LessonResponseDTO> lessonResponseDTOList = new ArrayList<>();
+		try {
+			List<Lesson> lessonList = iLessonRepository.findByUnitIdAndIsDisableFalseOrderByLessonNameAsc(unitId);
+			if (!lessonList.isEmpty()) {
+				for (Lesson lesson : lessonList) {
+					LessonResponseDTO lessonResponseDTO = modelMapper.map(lesson, LessonResponseDTO.class);
+					lessonResponseDTOList.add(lessonResponseDTO);
+				}
+			}
+		} catch (Exception e) {
+			logger.error("FIND: all lesson by unitId = " + unitId + "! " + e.getMessage());
+
+			return null;
 		}
 
 		return lessonResponseDTOList;
@@ -67,27 +96,16 @@ public class LessonServiceImpl implements ILessonService {
 
 	// done
 	@Override
-	public LessonResponseDTO findById(long id) {
-		Lesson lesson = iLessonRepository.findByIdAndIsDisableFalse(id);
-		if (lesson == null) {
-			throw new ResourceNotFoundException();
-		}
-		LessonResponseDTO lessonResponseDTO = modelMapper.map(lesson, LessonResponseDTO.class);
-
-		return lessonResponseDTO;
-	}
-
-	// done
-	@Override
 	public String createLesson(LessonRequestDTO lessonRequestDTO) {
+		long unitId = lessonRequestDTO.getUnitId();
+		String lessonName = lessonRequestDTO.getLessonName();
+
 		try {
 			// validate unitId and check lessonName existed
-			long unitId = lessonRequestDTO.getUnitId();
 			Unit unit = iUnitRepository.findByIdAndIsDisableFalse(unitId);
 			if (unit == null) {
 				throw new ResourceNotFoundException();
 			}
-			String lessonName = lessonRequestDTO.getLessonName();
 			if (iLessonRepository.findByUnitIdAndLessonNameIgnoreCaseAndIsDisableFalse(unitId, lessonName) != null) {
 
 				return "EXISTED";
@@ -97,7 +115,11 @@ public class LessonServiceImpl implements ILessonService {
 			lesson.setDisable(false);
 			iLessonRepository.save(lesson);
 		} catch (Exception e) {
-			logger.error(e.getMessage());
+			logger.error("CREATE: lessonName = " + lessonName + " in unitId =  " + unitId + "! " + e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
+
+				return "NOT FOUND!";
+			}
 
 			return "CREATE FAIL!";
 		}
@@ -107,10 +129,10 @@ public class LessonServiceImpl implements ILessonService {
 
 	// done
 	@Override
-	public String updateLesson(long id, LessonRequestDTO lessonRequestDTO) {		
+	public String updateLesson(long id, LessonRequestDTO lessonRequestDTO) {
 		String lessonName = lessonRequestDTO.getLessonName();
 		String lessonUrl = lessonRequestDTO.getLessonUrl();
-		
+
 		try {
 			// validate lessonId, unitId and check lessonName existed
 			Lesson lesson = iLessonRepository.findByIdAndIsDisableFalse(id);
@@ -134,7 +156,11 @@ public class LessonServiceImpl implements ILessonService {
 			lesson.setLessonUrl(lessonUrl);
 			iLessonRepository.save(lesson);
 		} catch (Exception e) {
-			logger.error(e.getMessage());
+			logger.error("UPDATE: lessonId = " + id + "! " + e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
+
+				return "NOT FOUND!";
+			}
 
 			return "UPDATE FAIL!";
 		}
@@ -148,7 +174,11 @@ public class LessonServiceImpl implements ILessonService {
 		try {
 			deleteOneLesson(id);
 		} catch (Exception e) {
-			logger.error(e.getMessage());
+			logger.error("DELETE: lessonId = " + id + "! " + e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
+
+				return "NOT FOUND!";
+			}
 
 			return "DELETE FAIL!";
 		}

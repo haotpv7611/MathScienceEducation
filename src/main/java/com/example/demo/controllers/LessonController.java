@@ -29,16 +29,28 @@ public class LessonController {
 	@Autowired
 	ILessonService iLessonService;
 
-	@GetMapping("/unit/{unitId}/lessons")
-	public ResponseEntity<List<LessonResponseDTO>> findLessonByUnitId(@PathVariable long unitId) {
-		List<LessonResponseDTO> response = iLessonService.findByUnitIdOrderByLessonNameAsc(unitId);
+	@GetMapping("/lesson/{id}")
+	public ResponseEntity<?> findLessonById(@PathVariable long id) {
+		Object response = iLessonService.findById(id);
+		if (response.equals("NOT FOUND!")) {
+
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
+		if (response.equals("FIND FAIL!")) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
 
 		return ResponseEntity.ok(response);
 	}
 
-	@GetMapping("/lesson/{id}")
-	public ResponseEntity<LessonResponseDTO> findLessonById(@PathVariable long id) {
-		LessonResponseDTO response = iLessonService.findById(id);
+	@GetMapping("/unit/{unitId}/lessons")
+	public ResponseEntity<List<LessonResponseDTO>> findLessonByUnitId(@PathVariable long unitId) {
+		List<LessonResponseDTO> response = iLessonService.findByUnitIdOrderByLessonNameAsc(unitId);
+		if (response == null) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
 
 		return ResponseEntity.ok(response);
 	}
@@ -54,9 +66,17 @@ public class LessonController {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
 		}
 		String response = iLessonService.createLesson(lessonRequestDTO);
+		if (response.contains("NOT FOUND")) {
+
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
 		if (response.contains("FAIL")) {
 
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+		if (response.contains("EXISTED")) {
+
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 		}
 
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -73,9 +93,17 @@ public class LessonController {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
 		}
 		String response = iLessonService.updateLesson(id, lessonRequestDTO);
+		if (response.contains("NOT FOUND")) {
+
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
 		if (response.contains("FAIL")) {
 
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+		if (response.contains("EXISTED")) {
+
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 		}
 
 		return ResponseEntity.ok(response);
@@ -85,6 +113,10 @@ public class LessonController {
 	@PutMapping("/lesson")
 	public ResponseEntity<String> deleteLesson(@RequestParam long id) {
 		String response = iLessonService.deleteLesson(id);
+		if (response.contains("NOT FOUND")) {
+
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
 		if (response.contains("FAIL")) {
 
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);

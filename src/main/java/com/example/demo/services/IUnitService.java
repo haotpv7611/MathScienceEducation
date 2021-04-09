@@ -7,9 +7,10 @@ import com.example.demo.dtos.UnitResponseDTO;
 import com.example.demo.dtos.UnitViewDTO;
 
 public interface IUnitService {
-	List<UnitResponseDTO> findBySubjectIdOrderByUnitNameAsc(long subjectId);
 
-	UnitResponseDTO findById(long id);
+	Object findById(long id);
+
+	List<UnitResponseDTO> findBySubjectIdOrderByUnitNameAsc(long subjectId);
 
 	List<UnitViewDTO> showUnitViewBySubjectId(long subjectId);
 
@@ -18,6 +19,6 @@ public interface IUnitService {
 	String updateUnit(long id, UnitRequestDTO unitRequestDTO);
 
 	String deleteUnit(long id);
-	
+
 	void deleteOneUnit(long id);
 }

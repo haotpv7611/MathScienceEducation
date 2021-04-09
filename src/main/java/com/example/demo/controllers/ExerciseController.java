@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.demo.dtos.ExerciseDTO;
+import com.example.demo.dtos.ExerciseResponseDTO;
 import com.example.demo.dtos.ExerciseRequestDTO;
 import com.example.demo.services.IExerciseService;
 
@@ -30,16 +30,25 @@ public class ExerciseController {
 	IExerciseService iExerciseService;
 
 	@GetMapping("/lesson/{lessonId}/exercises")
-	public ResponseEntity<List<ExerciseDTO>> findByLessonIdOrderByExerciseNameAsc(@PathVariable long lessonId) {
-		List<ExerciseDTO> response = iExerciseService.findByLessonIdOrderByExerciseNameAsc(lessonId);
+	public ResponseEntity<List<ExerciseResponseDTO>> findByLessonIdOrderByExerciseNameAsc(@PathVariable long lessonId) {
+		List<ExerciseResponseDTO> response = iExerciseService.findByLessonIdOrderByExerciseNameAsc(lessonId);
+		if (response == null) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
 
 		return ResponseEntity.ok(response);
 	}
 
 	@GetMapping("/progressTest/{progressTestId}/exercises")
-	public ResponseEntity<List<ExerciseDTO>> findByProgressTestIdOrderByExerciseNameAsc(
+	public ResponseEntity<List<ExerciseResponseDTO>> findByProgressTestIdOrderByExerciseNameAsc(
 			@PathVariable long progressTestId) {
-		List<ExerciseDTO> response = iExerciseService.findByProgressTestIdOrderByExerciseNameAsc(progressTestId);
+		List<ExerciseResponseDTO> response = iExerciseService
+				.findByProgressTestIdOrderByExerciseNameAsc(progressTestId);
+		if (response == null) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
 
 		return ResponseEntity.ok(response);
 	}
@@ -55,9 +64,17 @@ public class ExerciseController {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
 		}
 		String response = iExerciseService.createExercise(exerciseRequestDTO);
+		if (response.contains("NOT FOUND")) {
+
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
 		if (response.contains("FAIL")) {
 
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+		if (response.contains("EXISTED")) {
+
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 		}
 
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -73,10 +90,19 @@ public class ExerciseController {
 			}
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
 		}
+
 		String response = iExerciseService.updateExercise(id, exerciseRequestDTO);
+		if (response.contains("NOT FOUND")) {
+
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
 		if (response.contains("FAIL")) {
 
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+		if (response.contains("EXISTED")) {
+
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 		}
 
 		return ResponseEntity.ok(response);
@@ -85,6 +111,10 @@ public class ExerciseController {
 	@PutMapping("/exercise/delete")
 	public ResponseEntity<String> deleteExercise(@RequestParam long id) {
 		String response = iExerciseService.deleteExercise(id);
+		if (response.contains("NOT FOUND")) {
+
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
 		if (response.contains("FAIL")) {
 
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
