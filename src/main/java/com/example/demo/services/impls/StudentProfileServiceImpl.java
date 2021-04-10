@@ -83,30 +83,27 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				// get all grade linked
 				List<SchoolGrade> schoolGradeList = iSchoolGradeRepository.findBySchoolIdAndStatusNot(schoolId,
 						DELETE_STATUS);
+
 				if (!schoolGradeList.isEmpty()) {
-					System.out.println("schoolGrade" + schoolGradeList.size());
+//					System.out.println("schoolGrade" + schoolGradeList.size());
 					List<Classes> classesList = new ArrayList<>();
 					for (SchoolGrade schoolGrade : schoolGradeList) {
-						classesList.addAll(schoolGrade.getClassList());
-						
-//						schoolGradeDTO = modelMapper.map(schoolGrade, SchoolGradeDTO.class);
-//
-//						// get all class
-//						classResponseDTOList.addAll(iClassService.findBySchoolGradeId(schoolGradeDTO));
-//						System.out.println(classResponseDTOList.size());
+
+						classesList.addAll(iClassRepository.findBySchoolGradeIdAndStatusNotOrderByStatusAscClassNameAsc(
+								schoolGrade.getId(), DELETE_STATUS));
+
 					}
+
 					if (!classesList.isEmpty()) {
 						for (Classes classes : classesList) {
 							// get all student in class
-//							System.out.println("cl re: " + classResponseDTO.getId());
-//							Classes classes = modelMapper.map(classResponseDTO, Classes.class);
-//							System.out.println("Class: " + classes.getId());
-//							System.out.println("sg: " + classes.getSchoolGrade());
+
 							Grade grade = classes.getSchoolGrade().getGrade();
 
 							int gradeName = grade.getGradeName();
 							studentResponseDTOList
 									.addAll(findStudentByClassedId(classes.getId(), schoolName, gradeName));
+
 						}
 					}
 
@@ -193,7 +190,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 		for (Classes classes2 : classesList) {
 			StudentProfile studentProfile = null;
 			if (!classes2.getClassName().equalsIgnoreCase("PENDING")
-					&& !classes.getClassName().equalsIgnoreCase("DELETED")) {
+					&& !classes.getClassName().equalsIgnoreCase(DELETE_STATUS)) {
 				studentProfile = iStudentProfileRepository
 						.findFirstByClassesIdAndStatusLikeOrderByStudentCountDesc(classes2.getId(), "ACTIVE");
 			}
