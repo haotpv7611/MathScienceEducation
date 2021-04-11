@@ -30,8 +30,9 @@ public class ExerciseController {
 	IExerciseService iExerciseService;
 
 	@GetMapping("/lesson/{lessonId}/exercises")
-	public ResponseEntity<List<ExerciseResponseDTO>> findByLessonIdOrderByExerciseNameAsc(@PathVariable long lessonId) {
-		List<ExerciseResponseDTO> response = iExerciseService.findByLessonIdOrderByExerciseNameAsc(lessonId);
+	public ResponseEntity<List<ExerciseResponseDTO>> findByLessonIdOrderByExerciseNameAsc(@PathVariable long lessonId,
+			@RequestParam long accountId) {
+		List<ExerciseResponseDTO> response = iExerciseService.findByLessonIdOrderByExerciseNameAsc(lessonId, accountId);
 		if (response == null) {
 
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
@@ -42,9 +43,9 @@ public class ExerciseController {
 
 	@GetMapping("/progressTest/{progressTestId}/exercises")
 	public ResponseEntity<List<ExerciseResponseDTO>> findByProgressTestIdOrderByExerciseNameAsc(
-			@PathVariable long progressTestId) {
-		List<ExerciseResponseDTO> response = iExerciseService
-				.findByProgressTestIdOrderByExerciseNameAsc(progressTestId);
+			@PathVariable long progressTestId, @RequestParam long accountId) {
+		List<ExerciseResponseDTO> response = iExerciseService.findByProgressTestIdOrderByExerciseNameAsc(progressTestId,
+				accountId);
 		if (response == null) {
 
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);

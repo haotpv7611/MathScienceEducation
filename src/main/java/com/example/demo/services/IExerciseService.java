@@ -7,9 +7,9 @@ import com.example.demo.dtos.ExerciseRequestDTO;
 
 public interface IExerciseService {
 
-	List<ExerciseResponseDTO> findByLessonIdOrderByExerciseNameAsc(long lessonId);
+	List<ExerciseResponseDTO> findByLessonIdOrderByExerciseNameAsc(long lessonId, long accountId);
 
-	List<ExerciseResponseDTO> findByProgressTestIdOrderByExerciseNameAsc(long progressTestId);
+	List<ExerciseResponseDTO> findByProgressTestIdOrderByExerciseNameAsc(long progressTestId, long accountId);
 
 	String createExercise(ExerciseRequestDTO exerciseRequestDTO);
 

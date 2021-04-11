@@ -2,11 +2,9 @@ package com.example.demo.dtos;
 
 public class ExerciseResponseDTO {
 	private long id;
-	private String exerciseName;	
+	private String exerciseName;
 	private String description;
-//	private long lessonId;
-//	private long progressTestId;
-//	private boolean isProgressTest;
+	private boolean isDone;
 
 	public String getDescription() {
 		return description;
@@ -32,34 +30,18 @@ public class ExerciseResponseDTO {
 		this.exerciseName = exerciseName;
 	}
 
-//	public long getLessonId() {
-//		return lessonId;
-//	}
-//
-//	public void setLessonId(long lessonId) {
-//		this.lessonId = lessonId;
-//	}
-//
-//	public long getProgressTestId() {
-//		return progressTestId;
-//	}
-//
-//	public void setProgressTestId(long progressTestId) {
-//		this.progressTestId = progressTestId;
-//	}
-//
-//	/**
-//	 * @return the isProgressTest
-//	 */
-//	public boolean isProgressTest() {
-//		return isProgressTest;
-//	}
-//
-//	/**
-//	 * @param isProgressTest the isProgressTest to set
-//	 */
-//	public void setProgressTest(boolean isProgressTest) {
-//		this.isProgressTest = isProgressTest;
-//	}
+	/**
+	 * @return the isDone
+	 */
+	public boolean isDone() {
+		return isDone;
+	}
+
+	/**
+	 * @param isDone the isDone to set
+	 */
+	public void setDone(boolean isDone) {
+		this.isDone = isDone;
+	}
 
 }

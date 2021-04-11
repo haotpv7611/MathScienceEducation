@@ -12,7 +12,7 @@ public interface IUnitService {
 
 	List<UnitResponseDTO> findBySubjectIdOrderByUnitNameAsc(long subjectId);
 
-	List<UnitViewDTO> showUnitViewBySubjectId(long subjectId);
+	List<UnitViewDTO> showUnitViewBySubjectId(long subjectId, long accountId);
 
 	String createUnit(UnitRequestDTO unitRequestDTO);
 

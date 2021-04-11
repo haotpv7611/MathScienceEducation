@@ -14,9 +14,11 @@ import com.example.demo.dtos.ExerciseResponseDTO;
 import com.example.demo.dtos.ExerciseRequestDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.Exercise;
+import com.example.demo.models.ExerciseTaken;
 import com.example.demo.models.Lesson;
 import com.example.demo.models.ProgressTest;
 import com.example.demo.repositories.IExerciseRepository;
+import com.example.demo.repositories.IExerciseTakenRepository;
 import com.example.demo.repositories.ILessonRepository;
 import com.example.demo.repositories.IProgressTestRepository;
 import com.example.demo.services.IExerciseGameQuestionService;
@@ -37,19 +39,27 @@ public class ExerciseServiceImpl implements IExerciseService {
 
 	@Autowired
 	ILessonRepository iLessonRepository;
+	
+	@Autowired
+	IExerciseTakenRepository iExerciseTakenRepository;
 
 	@Autowired
 	private ModelMapper modelMapper;
 
 	@Override
-	public List<ExerciseResponseDTO> findByLessonIdOrderByExerciseNameAsc(long lessonId) {
+	public List<ExerciseResponseDTO> findByLessonIdOrderByExerciseNameAsc(long lessonId, long accountId) {
 		List<ExerciseResponseDTO> exerciseResponseDTOList = new ArrayList<>();
 		try {
 			List<Exercise> exerciseList = iExerciseRepository
 					.findByLessonIdAndIsDisableFalseOrderByExerciseNameAsc(lessonId);
 			if (!exerciseList.isEmpty()) {
 				for (Exercise exercise : exerciseList) {
-					exerciseResponseDTOList.add(modelMapper.map(exercise, ExerciseResponseDTO.class));
+					ExerciseResponseDTO exerciseResponseDTO = modelMapper.map(exercise, ExerciseResponseDTO.class);
+					List<ExerciseTaken> exerciseTakenList = iExerciseTakenRepository.findByExerciseIdAndAccountId(exercise.getId(), accountId);
+					if (!exerciseTakenList.isEmpty()) {
+						exerciseResponseDTO.setDone(true);
+					}
+					exerciseResponseDTOList.add(exerciseResponseDTO);
 				}
 			}
 		} catch (Exception e) {
@@ -62,14 +72,19 @@ public class ExerciseServiceImpl implements IExerciseService {
 	}
 
 	@Override
-	public List<ExerciseResponseDTO> findByProgressTestIdOrderByExerciseNameAsc(long progressTestId) {
+	public List<ExerciseResponseDTO> findByProgressTestIdOrderByExerciseNameAsc(long progressTestId, long accountId) {
 		List<ExerciseResponseDTO> exerciseResponseDTOList = new ArrayList<>();
 		try {
 			List<Exercise> exerciseList = iExerciseRepository
 					.findByProgressTestIdAndIsDisableFalseOrderByExerciseNameAsc(progressTestId);
 			if (!exerciseList.isEmpty()) {
 				for (Exercise exercise : exerciseList) {
-					exerciseResponseDTOList.add(modelMapper.map(exercise, ExerciseResponseDTO.class));
+					ExerciseResponseDTO exerciseResponseDTO = modelMapper.map(exercise, ExerciseResponseDTO.class);
+					List<ExerciseTaken> exerciseTakenList = iExerciseTakenRepository.findByExerciseIdAndAccountId(exercise.getId(), accountId);
+					if (!exerciseTakenList.isEmpty()) {
+						exerciseResponseDTO.setDone(true);
+					}
+					exerciseResponseDTOList.add(exerciseResponseDTO);
 				}
 			}
 		} catch (Exception e) {

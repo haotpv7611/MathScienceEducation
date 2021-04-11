@@ -15,14 +15,17 @@ import com.example.demo.dtos.UnitRequestDTO;
 import com.example.demo.dtos.UnitResponseDTO;
 import com.example.demo.dtos.UnitViewDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
+import com.example.demo.models.Exercise;
 import com.example.demo.models.Lesson;
 import com.example.demo.models.Question;
 import com.example.demo.models.Subject;
 import com.example.demo.models.Unit;
+import com.example.demo.repositories.IExerciseRepository;
 import com.example.demo.repositories.ILessonRepository;
 import com.example.demo.repositories.IQuestionRepository;
 import com.example.demo.repositories.ISubjectRepository;
 import com.example.demo.repositories.IUnitRepository;
+import com.example.demo.services.IExerciseTakenService;
 import com.example.demo.services.ILessonService;
 import com.example.demo.services.IProgressTestService;
 import com.example.demo.services.IQuestionService;
@@ -51,6 +54,12 @@ public class UnitServiceImpl implements IUnitService {
 
 	@Autowired
 	private IProgressTestService iProgressTestService;
+
+	@Autowired
+	private IExerciseRepository iExerciseRepository;
+
+	@Autowired
+	private IExerciseTakenService iExerciseTakenService;
 
 	@Autowired
 	private ModelMapper modelMapper;
@@ -104,7 +113,7 @@ public class UnitServiceImpl implements IUnitService {
 
 	// not done
 	@Override
-	public List<UnitViewDTO> showUnitViewBySubjectId(long subjectId) {
+	public List<UnitViewDTO> showUnitViewBySubjectId(long subjectId, long accountId) {
 		// 1. get list unitDTO and progressTestDTO by subjectId
 		List<UnitResponseDTO> unitDTOList = findBySubjectIdOrderByUnitNameAsc(subjectId);
 		List<ProgressTestResponseDTO> progressTestDTOList = iProgressTestService.findBySubjectId(subjectId);
@@ -120,8 +129,24 @@ public class UnitServiceImpl implements IUnitService {
 			for (int i = 0; i < unitDTOList.size(); i++) {
 				unitDTOListSplit.add(unitDTOList.get(i));
 				for (int j = 0; j < progressTestDTOList.size(); j++) {
+					ProgressTestResponseDTO progressTestResponseDTO = progressTestDTOList.get(i);
+
+					List<Exercise> exerciseList = iExerciseRepository
+							.findByProgressTestIdAndIsDisableFalse(progressTestResponseDTO.getId());
+					int countNotDone = 0;
+					if (!exerciseList.isEmpty()) {
+
+						for (Exercise exercise : exerciseList) {
+							countNotDone += iExerciseTakenService.countExerciseNotDone(accountId, exercise.getId());
+						}
+					}
+					progressTestResponseDTO.setDone(true);
+					if (countNotDone != 0) {
+						progressTestResponseDTO.setDone(false);
+					}
+
 					if (progressTestDTOList.get(j).getUnitAfterId() == unitDTOList.get(i).getId()) {
-						UnitViewDTO unitViewDTO = new UnitViewDTO(unitDTOListSplit, progressTestDTOList.get(j));
+						UnitViewDTO unitViewDTO = new UnitViewDTO(unitDTOListSplit, progressTestResponseDTO);
 						unitViewDTOList.add(unitViewDTO);
 						progressTestDTOList.remove(j);
 						unitDTOListSplit = new ArrayList<>();
@@ -230,7 +255,7 @@ public class UnitServiceImpl implements IUnitService {
 
 			return "DELETE FAIL!";
 		}
-		
+
 		return "DELETE SUCCESS!";
 	}
 

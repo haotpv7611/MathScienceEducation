@@ -59,8 +59,8 @@ public class UnitController {
 	}
 
 	@GetMapping("/subject/{subjectId}/unitView")
-	public ResponseEntity<List<UnitViewDTO>> showUnitViewBySubjectId(@PathVariable long subjectId) {
-		List<UnitViewDTO> response = iUnitService.showUnitViewBySubjectId(subjectId);
+	public ResponseEntity<List<UnitViewDTO>> showUnitViewBySubjectId(@PathVariable long subjectId, @RequestParam long accountId) {
+		List<UnitViewDTO> response = iUnitService.showUnitViewBySubjectId(subjectId, accountId);
 		if (response.isEmpty()) {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 		}

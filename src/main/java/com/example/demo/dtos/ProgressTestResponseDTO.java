@@ -5,6 +5,7 @@ public class ProgressTestResponseDTO {
 	private String progressTestName;
 	private long unitAfterId;
 	private String description;
+	private boolean isDone;
 
 	public String getDescription() {
 		return description;
@@ -55,4 +56,19 @@ public class ProgressTestResponseDTO {
 	public void setUnitAfterId(long unitAfterId) {
 		this.unitAfterId = unitAfterId;
 	}
+
+	/**
+	 * @return the isDone
+	 */
+	public boolean isDone() {
+		return isDone;
+	}
+
+	/**
+	 * @param isDone the isDone to set
+	 */
+	public void setDone(boolean isDone) {
+		this.isDone = isDone;
+	}
+
 }
