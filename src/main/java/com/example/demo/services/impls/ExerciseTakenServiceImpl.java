@@ -1,5 +1,7 @@
 package com.example.demo.services.impls;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.modelmapper.ModelMapper;
@@ -9,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.dtos.ExerciseTakenRequestDTO;
+import com.example.demo.dtos.ExerciseTakenResponseDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.Account;
 import com.example.demo.models.Exercise;
@@ -35,6 +38,33 @@ public class ExerciseTakenServiceImpl implements IExerciseTakenService {
 
 	@Autowired
 	ModelMapper modelMapper;
+	
+	@Override
+	public String findTakenObjectById(long id) {
+		String takenObject = null;
+		ExerciseTaken exerciseTaken = iExerciseTakenRepository.findById(id).orElseThrow();
+		takenObject = exerciseTaken.getTakenObject();
+		return takenObject;
+	}
+
+	@Override
+	public List<ExerciseTakenResponseDTO> findAllByExerciseId(long exerciseId, long accountId) {
+		List<ExerciseTakenResponseDTO> exerciseTakenResponseDTOList = new ArrayList<>();
+		List<ExerciseTaken> exerciseTakenList = iExerciseTakenRepository.findByExerciseIdAndAccountId(exerciseId,
+				accountId);
+
+		if (!exerciseTakenList.isEmpty()) {
+			for (ExerciseTaken exerciseTaken : exerciseTakenList) {
+				long id = exerciseTaken.getId();
+				float score = exerciseTaken.getMark();
+				LocalDateTime createdDate = exerciseTaken.getCreatedDate();
+				ExerciseTakenResponseDTO exerciseTakenResponseDTO = new ExerciseTakenResponseDTO(id, score,
+						createdDate);
+				exerciseTakenResponseDTOList.add(exerciseTakenResponseDTO);
+			}
+		}
+		return exerciseTakenResponseDTOList;
+	}
 
 	@Override
 	public String doExercise(ExerciseTakenRequestDTO exerciseTakenRequestDTO) {
@@ -65,13 +95,13 @@ public class ExerciseTakenServiceImpl implements IExerciseTakenService {
 
 		return "DO SUCCESS!";
 	}
-	
-	
+
 	@Override
 	public int countExerciseNotDone(long accountId, long exerciseId) {
 		int countNotDone = 0;
 		try {
-			List<ExerciseTaken> exerciseTakenList = iExerciseTakenRepository.findByExerciseIdAndAccountId(exerciseId, accountId);
+			List<ExerciseTaken> exerciseTakenList = iExerciseTakenRepository.findByExerciseIdAndAccountId(exerciseId,
+					accountId);
 			if (exerciseTakenList.isEmpty()) {
 				countNotDone = 1;
 			}

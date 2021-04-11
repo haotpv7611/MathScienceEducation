@@ -5,23 +5,33 @@ import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 public class ExerciseTakenResponseDTO {
-	private long exerciseId;
+	private long id;
 	private String score;
 	@JsonFormat(pattern = "dd-MMM-yyyy HH:mm")
 	private LocalDateTime createdDate;
 
-	/**
-	 * @return the exerciseId
-	 */
-	public long getExerciseId() {
-		return exerciseId;
+	public ExerciseTakenResponseDTO() {
+	}
+
+	public ExerciseTakenResponseDTO(long id, float score, LocalDateTime createdDate) {
+		super();
+		this.id = id;
+		this.score = score + "/10";
+		this.createdDate = createdDate;
 	}
 
 	/**
-	 * @param exerciseId the exerciseId to set
+	 * @return the id
 	 */
-	public void setExerciseId(long exerciseId) {
-		this.exerciseId = exerciseId;
+	public long getId() {
+		return id;
+	}
+
+	/**
+	 * @param id the id to set
+	 */
+	public void setId(long id) {
+		this.id = id;
 	}
 
 	/**

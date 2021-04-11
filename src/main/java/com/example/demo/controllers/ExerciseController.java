@@ -10,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -18,8 +17,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.demo.dtos.ExerciseResponseDTO;
 import com.example.demo.dtos.ExerciseRequestDTO;
+import com.example.demo.dtos.ExerciseResponseDTO;
 import com.example.demo.services.IExerciseService;
 
 @CrossOrigin
@@ -29,7 +28,7 @@ public class ExerciseController {
 	@Autowired
 	IExerciseService iExerciseService;
 
-	@GetMapping("/lesson/{lessonId}/exercises")
+	@PostMapping("/lesson/{lessonId}/exercises")
 	public ResponseEntity<List<ExerciseResponseDTO>> findByLessonIdOrderByExerciseNameAsc(@PathVariable long lessonId,
 			@RequestParam long accountId) {
 		List<ExerciseResponseDTO> response = iExerciseService.findByLessonIdOrderByExerciseNameAsc(lessonId, accountId);
@@ -41,7 +40,7 @@ public class ExerciseController {
 		return ResponseEntity.ok(response);
 	}
 
-	@GetMapping("/progressTest/{progressTestId}/exercises")
+	@PostMapping("/progressTest/{progressTestId}/exercises")
 	public ResponseEntity<List<ExerciseResponseDTO>> findByProgressTestIdOrderByExerciseNameAsc(
 			@PathVariable long progressTestId, @RequestParam long accountId) {
 		List<ExerciseResponseDTO> response = iExerciseService.findByProgressTestIdOrderByExerciseNameAsc(progressTestId,

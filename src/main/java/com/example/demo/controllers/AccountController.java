@@ -30,7 +30,7 @@ public class AccountController {
 	@Autowired
 	ImportStudentService importStudentService;
 
-	@GetMapping
+	@PostMapping
 	public void getData(@RequestParam MultipartFile file, @RequestParam long gradeId, @RequestParam long schoolId)
 			throws IOException, ParseException {
 //		accountServiceImpl.readData(file, gradeId, schoolId);

@@ -8,8 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.demo.dtos.StudentResponseDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.Account;
+import com.example.demo.models.StudentProfile;
 import com.example.demo.repositories.IAccountRepository;
 import com.example.demo.services.IAccountService;
 import com.example.demo.services.IClassService;
@@ -77,6 +79,8 @@ public class AccountServiceImpl implements IAccountService{
 		
 
 	}
+	
+	
 
 	@Override
 	public String createAccount(String username, String password, String firstName, String lastName) {

@@ -1,7 +1,5 @@
 package com.example.demo.dtos;
 
-import java.time.LocalDate;
-
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.Length;

@@ -18,7 +18,6 @@ import com.example.demo.repositories.IExerciseRepository;
 import com.example.demo.repositories.IExerciseTakenRepository;
 import com.example.demo.repositories.ILessonRepository;
 import com.example.demo.repositories.IUnitRepository;
-import com.example.demo.services.IExerciseTakenService;
 import com.example.demo.services.IScoreService;
 
 @Service
@@ -32,8 +31,7 @@ public class ScoreServiceImpl implements IScoreService {
 	@Autowired
 	private IExerciseRepository iExerciseRepository;
 
-	@Autowired
-	private IExerciseTakenService iExerciseTakenService;
+
 
 	@Autowired
 	private IExerciseTakenRepository iExerciseTakenRepository;

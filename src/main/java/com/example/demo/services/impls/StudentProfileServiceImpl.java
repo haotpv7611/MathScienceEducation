@@ -57,6 +57,12 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 
 	@Autowired
 	ModelMapper modelMapper;
+	
+//	public StudentResponseDTO findStudentByAccountId(long accountId) {
+//		StudentProfile studentProfile = iStudentProfileRepository.findByAccountIdAndStatus(accountId, "ACTIVE");
+//		
+//		
+//	}
 
 	@Override
 	public List<StudentResponseDTO> findStudentByListId(List<Long> ids) {
