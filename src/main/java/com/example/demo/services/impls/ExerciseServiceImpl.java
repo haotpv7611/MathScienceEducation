@@ -39,7 +39,7 @@ public class ExerciseServiceImpl implements IExerciseService {
 
 	@Autowired
 	ILessonRepository iLessonRepository;
-	
+
 	@Autowired
 	IExerciseTakenRepository iExerciseTakenRepository;
 
@@ -47,7 +47,7 @@ public class ExerciseServiceImpl implements IExerciseService {
 	private ModelMapper modelMapper;
 
 	@Override
-	public List<ExerciseResponseDTO> findByLessonIdOrderByExerciseNameAsc(long lessonId, long accountId) {
+	public List<ExerciseResponseDTO> findByLessonIdOrderByExerciseNameAsc(long lessonId) {
 		List<ExerciseResponseDTO> exerciseResponseDTOList = new ArrayList<>();
 		try {
 			List<Exercise> exerciseList = iExerciseRepository
@@ -55,7 +55,29 @@ public class ExerciseServiceImpl implements IExerciseService {
 			if (!exerciseList.isEmpty()) {
 				for (Exercise exercise : exerciseList) {
 					ExerciseResponseDTO exerciseResponseDTO = modelMapper.map(exercise, ExerciseResponseDTO.class);
-					List<ExerciseTaken> exerciseTakenList = iExerciseTakenRepository.findByExerciseIdAndAccountId(exercise.getId(), accountId);
+					exerciseResponseDTOList.add(exerciseResponseDTO);
+				}
+			}
+		} catch (Exception e) {
+			logger.error("FIND: all exercise by lessonId = " + lessonId + "! " + e.getMessage());
+
+			return null;
+		}
+
+		return exerciseResponseDTOList;
+	}
+
+	@Override
+	public List<ExerciseResponseDTO> findByLessonIdStudentView(long lessonId, long accountId) {
+		List<ExerciseResponseDTO> exerciseResponseDTOList = new ArrayList<>();
+		try {
+			List<Exercise> exerciseList = iExerciseRepository
+					.findByLessonIdAndIsDisableFalseOrderByExerciseNameAsc(lessonId);
+			if (!exerciseList.isEmpty()) {
+				for (Exercise exercise : exerciseList) {
+					ExerciseResponseDTO exerciseResponseDTO = modelMapper.map(exercise, ExerciseResponseDTO.class);
+					List<ExerciseTaken> exerciseTakenList = iExerciseTakenRepository
+							.findByExerciseIdAndAccountId(exercise.getId(), accountId);
 					if (!exerciseTakenList.isEmpty()) {
 						exerciseResponseDTO.setDone(true);
 					}
@@ -72,7 +94,28 @@ public class ExerciseServiceImpl implements IExerciseService {
 	}
 
 	@Override
-	public List<ExerciseResponseDTO> findByProgressTestIdOrderByExerciseNameAsc(long progressTestId, long accountId) {
+	public List<ExerciseResponseDTO> findByProgressTestIdOrderByExerciseNameAsc(long progressTestId) {
+		List<ExerciseResponseDTO> exerciseResponseDTOList = new ArrayList<>();
+		try {
+			List<Exercise> exerciseList = iExerciseRepository
+					.findByProgressTestIdAndIsDisableFalseOrderByExerciseNameAsc(progressTestId);
+			if (!exerciseList.isEmpty()) {
+				for (Exercise exercise : exerciseList) {
+					ExerciseResponseDTO exerciseResponseDTO = modelMapper.map(exercise, ExerciseResponseDTO.class);					
+					exerciseResponseDTOList.add(exerciseResponseDTO);
+				}
+			}
+		} catch (Exception e) {
+			logger.error("FIND: all exercise by progressTestId = " + progressTestId + "! " + e.getMessage());
+
+			return null;
+		}
+
+		return exerciseResponseDTOList;
+	}
+	
+	@Override
+	public List<ExerciseResponseDTO> findByProgressTestIdStudentView(long progressTestId, long accountId) {
 		List<ExerciseResponseDTO> exerciseResponseDTOList = new ArrayList<>();
 		try {
 			List<Exercise> exerciseList = iExerciseRepository
@@ -80,7 +123,8 @@ public class ExerciseServiceImpl implements IExerciseService {
 			if (!exerciseList.isEmpty()) {
 				for (Exercise exercise : exerciseList) {
 					ExerciseResponseDTO exerciseResponseDTO = modelMapper.map(exercise, ExerciseResponseDTO.class);
-					List<ExerciseTaken> exerciseTakenList = iExerciseTakenRepository.findByExerciseIdAndAccountId(exercise.getId(), accountId);
+					List<ExerciseTaken> exerciseTakenList = iExerciseTakenRepository
+							.findByExerciseIdAndAccountId(exercise.getId(), accountId);
 					if (!exerciseTakenList.isEmpty()) {
 						exerciseResponseDTO.setDone(true);
 					}

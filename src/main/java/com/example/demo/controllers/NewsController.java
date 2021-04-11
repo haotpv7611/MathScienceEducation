@@ -53,7 +53,7 @@ public class NewsController {
 	}
 
 	//both
-	@PostMapping("/all")
+	@GetMapping("/all")
 	public ResponseEntity<List<NewsResponseDTO>> findAllOrderByCreateDateDesc(@RequestParam boolean isStudent) {
 		List<NewsResponseDTO> response = inewsService.findAllNewsOrderByCreatedDateDesc(isStudent);
 

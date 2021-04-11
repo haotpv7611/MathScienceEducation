@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -28,10 +29,9 @@ public class ExerciseController {
 	@Autowired
 	IExerciseService iExerciseService;
 
-	@PostMapping("/lesson/{lessonId}/exercises")
-	public ResponseEntity<List<ExerciseResponseDTO>> findByLessonIdOrderByExerciseNameAsc(@PathVariable long lessonId,
-			@RequestParam long accountId) {
-		List<ExerciseResponseDTO> response = iExerciseService.findByLessonIdOrderByExerciseNameAsc(lessonId, accountId);
+	@GetMapping("/lesson/{lessonId}/exercises")
+	public ResponseEntity<List<ExerciseResponseDTO>> findByLessonIdOrderByExerciseNameAsc(@PathVariable long lessonId) {
+		List<ExerciseResponseDTO> response = iExerciseService.findByLessonIdOrderByExerciseNameAsc(lessonId);
 		if (response == null) {
 
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
@@ -40,10 +40,35 @@ public class ExerciseController {
 		return ResponseEntity.ok(response);
 	}
 
-	@PostMapping("/progressTest/{progressTestId}/exercises")
+	@PostMapping("/lesson/{lessonId}/exercises/student")
+	public ResponseEntity<List<ExerciseResponseDTO>> findByLessonIdStudentView(@PathVariable long lessonId,
+			@RequestParam long accountId) {
+		List<ExerciseResponseDTO> response = iExerciseService.findByLessonIdStudentView(lessonId, accountId);
+		if (response == null) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+
+		return ResponseEntity.ok(response);
+	}
+
+	@GetMapping("/progressTest/{progressTestId}/exercises")
 	public ResponseEntity<List<ExerciseResponseDTO>> findByProgressTestIdOrderByExerciseNameAsc(
-			@PathVariable long progressTestId, @RequestParam long accountId) {
-		List<ExerciseResponseDTO> response = iExerciseService.findByProgressTestIdOrderByExerciseNameAsc(progressTestId,
+			@PathVariable long progressTestId) {
+		List<ExerciseResponseDTO> response = iExerciseService
+				.findByProgressTestIdOrderByExerciseNameAsc(progressTestId);
+		if (response == null) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+
+		return ResponseEntity.ok(response);
+	}
+
+	@PostMapping("/progressTest/{progressTestId}/exercises/student")
+	public ResponseEntity<List<ExerciseResponseDTO>> findByProgressTestIdStudentView(@PathVariable long progressTestId,
+			@RequestParam long accountId) {
+		List<ExerciseResponseDTO> response = iExerciseService.findByProgressTestIdStudentView(progressTestId,
 				accountId);
 		if (response == null) {
 
