@@ -3,6 +3,7 @@ package com.example.demo.models;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
 import javax.persistence.GeneratedValue;
@@ -24,7 +25,7 @@ public class Account {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
-
+	@Column(unique = true)
 	private String username;
 	private String password;
 

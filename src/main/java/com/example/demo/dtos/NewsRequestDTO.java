@@ -5,7 +5,6 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.Length;
 
 public class NewsRequestDTO {
-
 	@NotNull(message = "NewsTitle must be not null!")
 	@Length(max = 100, message = "NewsTitle length must be less than 100!")
 	private String newsTitle;

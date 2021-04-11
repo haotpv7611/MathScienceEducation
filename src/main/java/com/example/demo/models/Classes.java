@@ -26,7 +26,6 @@ public class Classes {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
 	private String className;
-
 	private String status;
 
 	@ManyToOne

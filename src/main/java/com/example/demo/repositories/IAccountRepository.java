@@ -14,5 +14,6 @@ public interface IAccountRepository extends JpaRepository<Account, Long> {
 	Account findByUsernameAndStatusNot(String username, String status);
 	Account findByIdAndStatusNot(long id, String status);
 //	boolean loginForTest(String username, String password);
-
+	
+	Account findByUsernameAndPasswordAndStatus(String username, String password, String status);
 }

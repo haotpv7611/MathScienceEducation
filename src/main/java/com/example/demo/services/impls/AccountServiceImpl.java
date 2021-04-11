@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.Account;
 import com.example.demo.repositories.IAccountRepository;
 import com.example.demo.services.IAccountService;
@@ -93,5 +94,28 @@ public class AccountServiceImpl implements IAccountService{
 		account.setStatus("ACTIVE");
 		iAccountRepository.save(account);
 		return null;
+	}
+	
+	public void changeStatusOneAccount(long id) {
+		try {
+			Account account = iAccountRepository.findByIdAndStatusNot(id, "DELETED");
+			if (account == null) {
+				throw new ResourceNotFoundException();
+			}
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+	}
+	
+	public long login(String username, String password) {
+		Account account = iAccountRepository.findByUsernameAndPasswordAndStatus(username, password, "ACTIVE");
+		if (account != null) {
+			
+			return account.getId();
+		}else {
+			
+			return 0;
+		}
+		
 	}
 }
