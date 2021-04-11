@@ -42,7 +42,7 @@ public class ExerciseTakenServiceImpl implements IExerciseTakenService {
 	@Override
 	public String findTakenObjectById(long id) {
 		String takenObject = null;
-		ExerciseTaken exerciseTaken = iExerciseTakenRepository.findById(id).orElseThrow();
+		ExerciseTaken exerciseTaken = iExerciseTakenRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
 		takenObject = exerciseTaken.getTakenObject();
 		return takenObject;
 	}
