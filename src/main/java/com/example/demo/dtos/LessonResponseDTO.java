@@ -4,8 +4,8 @@ public class LessonResponseDTO {
 	private long id;
 	private String lessonName;
 	private String lessonUrl;
+	private int unitName;
 
-//	private long unitId;
 	public long getId() {
 		return id;
 	}
@@ -29,14 +29,19 @@ public class LessonResponseDTO {
 	public void setLessonUrl(String lessonUrl) {
 		this.lessonUrl = lessonUrl;
 	}
-//	public long getUnitId() {
-//		return unitId;
-//	}
-//	public void setUnitId(long unitId) {
-//		this.unitId = unitId;
-//	}
-//	public LessonDTO() {
-//		
-//	}
+
+	/**
+	 * @return the unitName
+	 */
+	public int getUnitName() {
+		return unitName;
+	}
+
+	/**
+	 * @param unitName the unitName to set
+	 */
+	public void setUnitName(int unitName) {
+		this.unitName = unitName;
+	}
 
 }

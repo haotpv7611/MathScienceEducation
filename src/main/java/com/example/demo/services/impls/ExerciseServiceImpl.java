@@ -10,8 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.demo.dtos.ExerciseResponseDTO;
 import com.example.demo.dtos.ExerciseRequestDTO;
+import com.example.demo.dtos.ExerciseResponseDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.Exercise;
 import com.example.demo.models.ExerciseTaken;
@@ -75,13 +75,17 @@ public class ExerciseServiceImpl implements IExerciseService {
 					.findByLessonIdAndIsDisableFalseOrderByExerciseNameAsc(lessonId);
 			if (!exerciseList.isEmpty()) {
 				for (Exercise exercise : exerciseList) {
-					ExerciseResponseDTO exerciseResponseDTO = modelMapper.map(exercise, ExerciseResponseDTO.class);
-					List<ExerciseTaken> exerciseTakenList = iExerciseTakenRepository
-							.findByExerciseIdAndAccountId(exercise.getId(), accountId);
-					if (!exerciseTakenList.isEmpty()) {
-						exerciseResponseDTO.setDone(true);
+					List<Long> questionIdList = iExerciseGameQuestionService
+							.findAllQuestionIdByExerciseId(exercise.getId());
+					if (!questionIdList.isEmpty()) {
+						ExerciseResponseDTO exerciseResponseDTO = modelMapper.map(exercise, ExerciseResponseDTO.class);
+						List<ExerciseTaken> exerciseTakenList = iExerciseTakenRepository
+								.findByExerciseIdAndAccountId(exercise.getId(), accountId);
+						if (!exerciseTakenList.isEmpty()) {
+							exerciseResponseDTO.setDone(true);
+						}
+						exerciseResponseDTOList.add(exerciseResponseDTO);
 					}
-					exerciseResponseDTOList.add(exerciseResponseDTO);
 				}
 			}
 		} catch (Exception e) {
@@ -101,7 +105,7 @@ public class ExerciseServiceImpl implements IExerciseService {
 					.findByProgressTestIdAndIsDisableFalseOrderByExerciseNameAsc(progressTestId);
 			if (!exerciseList.isEmpty()) {
 				for (Exercise exercise : exerciseList) {
-					ExerciseResponseDTO exerciseResponseDTO = modelMapper.map(exercise, ExerciseResponseDTO.class);					
+					ExerciseResponseDTO exerciseResponseDTO = modelMapper.map(exercise, ExerciseResponseDTO.class);
 					exerciseResponseDTOList.add(exerciseResponseDTO);
 				}
 			}
@@ -113,7 +117,7 @@ public class ExerciseServiceImpl implements IExerciseService {
 
 		return exerciseResponseDTOList;
 	}
-	
+
 	@Override
 	public List<ExerciseResponseDTO> findByProgressTestIdStudentView(long progressTestId, long accountId) {
 		List<ExerciseResponseDTO> exerciseResponseDTOList = new ArrayList<>();
@@ -122,13 +126,17 @@ public class ExerciseServiceImpl implements IExerciseService {
 					.findByProgressTestIdAndIsDisableFalseOrderByExerciseNameAsc(progressTestId);
 			if (!exerciseList.isEmpty()) {
 				for (Exercise exercise : exerciseList) {
-					ExerciseResponseDTO exerciseResponseDTO = modelMapper.map(exercise, ExerciseResponseDTO.class);
-					List<ExerciseTaken> exerciseTakenList = iExerciseTakenRepository
-							.findByExerciseIdAndAccountId(exercise.getId(), accountId);
-					if (!exerciseTakenList.isEmpty()) {
-						exerciseResponseDTO.setDone(true);
+					List<Long> questionIdList = iExerciseGameQuestionService
+							.findAllQuestionIdByExerciseId(exercise.getId());
+					if (!questionIdList.isEmpty()) {
+						ExerciseResponseDTO exerciseResponseDTO = modelMapper.map(exercise, ExerciseResponseDTO.class);
+						List<ExerciseTaken> exerciseTakenList = iExerciseTakenRepository
+								.findByExerciseIdAndAccountId(exercise.getId(), accountId);
+						if (!exerciseTakenList.isEmpty()) {
+							exerciseResponseDTO.setDone(true);
+						}
+						exerciseResponseDTOList.add(exerciseResponseDTO);
 					}
-					exerciseResponseDTOList.add(exerciseResponseDTO);
 				}
 			}
 		} catch (Exception e) {

@@ -76,12 +76,20 @@ public class LessonServiceImpl implements ILessonService {
 	// done
 	@Override
 	public List<LessonResponseDTO> findByUnitIdOrderByLessonNameAsc(long unitId) {
+
 		List<LessonResponseDTO> lessonResponseDTOList = new ArrayList<>();
 		try {
 			List<Lesson> lessonList = iLessonRepository.findByUnitIdAndIsDisableFalseOrderByLessonNameAsc(unitId);
 			if (!lessonList.isEmpty()) {
+				Unit unit = iUnitRepository.findByIdAndIsDisableFalse(unitId);
+				int unitName = 0;
+				if (unit != null) {
+					unitName = unit.getUnitName();
+				}
+
 				for (Lesson lesson : lessonList) {
 					LessonResponseDTO lessonResponseDTO = modelMapper.map(lesson, LessonResponseDTO.class);
+					lessonResponseDTO.setUnitName(unitName);
 					lessonResponseDTOList.add(lessonResponseDTO);
 				}
 			}

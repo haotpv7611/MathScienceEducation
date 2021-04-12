@@ -68,8 +68,12 @@ public class GameServiceImpl implements IGameService {
 
 			if (!gameList.isEmpty()) {
 				for (Game game : gameList) {
-					GameResponseDTO gameResponseDTO = modelMapper.map(game, GameResponseDTO.class);
-					gameResponseDTOList.add(gameResponseDTO);
+					List<Long> questionIdList = iExerciseGameQuestionService
+							.findAllQuestionIdByGameId(game.getId());
+					if (!questionIdList.isEmpty()) {
+						GameResponseDTO gameResponseDTO = modelMapper.map(game, GameResponseDTO.class);
+						gameResponseDTOList.add(gameResponseDTO);
+					}
 				}
 			}
 		} catch (Exception e) {

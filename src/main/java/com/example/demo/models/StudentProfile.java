@@ -71,6 +71,19 @@ public class StudentProfile {
 		this.classes = classes;
 	}
 
+	public StudentProfile(String dOB, String gender, String parentName, String parentPhone, String status,
+			long studentCount, Account account, Classes classes) {
+		super();
+		DOB = dOB;
+		this.gender = gender;
+		this.parentName = parentName;
+		this.parentPhone = parentPhone;
+		this.status = status;
+		this.studentCount = studentCount;
+		this.account = account;
+		this.classes = classes;
+	}
+
 	/**
 	 * @return the dOB
 	 */

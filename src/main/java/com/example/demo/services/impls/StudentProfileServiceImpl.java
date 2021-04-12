@@ -1,8 +1,6 @@
 package com.example.demo.services.impls;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import org.modelmapper.ModelMapper;
@@ -228,7 +226,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 			}
 			studentCount++;
 		}
-
+		System.out.println(studentCount);
 		String username = generateUsername(schoolCode, gradeName, studentCount);
 		String firstName = studentRequestDTO.getFirtName();
 		String lastName = studentRequestDTO.getLastName();
@@ -239,13 +237,14 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 		String gender = studentRequestDTO.getGender();
 		String parentName = studentRequestDTO.getParentName();
 		String parentPhone = studentRequestDTO.getParentPhone();
-		studentProfile = new StudentProfile(DoB, gender, parentName, parentPhone, account, classes);
+		studentProfile = new StudentProfile(DoB, gender, parentName, parentPhone, "ACTIVE", studentCount, account, classes);
 		iStudentProfileRepository.save(studentProfile);
 
 		return "CREATE SUCCESS !";
 	}
 
-	public String changeStatus(ListIdAndStatusDTO listIdAndStatusDTO) {
+	@Override
+	public String changeStatusStudent(ListIdAndStatusDTO listIdAndStatusDTO) {
 		List<Long> ids = listIdAndStatusDTO.getIds();
 		String status = listIdAndStatusDTO.getStatus();
 		for (long accountId : ids) {

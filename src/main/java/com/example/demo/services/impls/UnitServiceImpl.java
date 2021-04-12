@@ -117,12 +117,16 @@ public class UnitServiceImpl implements IUnitService {
 		// 1. get list unitDTO and progressTestDTO by subjectId
 		List<UnitResponseDTO> unitDTOList = findBySubjectIdOrderByUnitNameAsc(subjectId);
 		List<ProgressTestResponseDTO> progressTestDTOList = iProgressTestService.findBySubjectId(subjectId);
-		System.out.println("unit size: " + unitDTOList.size());
-		System.out.println("progressTest size: " + progressTestDTOList.size());
 
 		List<UnitViewDTO> unitViewDTOList = new ArrayList<>();
 
 		if (!unitDTOList.isEmpty()) {
+			Subject subject = iSubjectRepository.findByIdAndIsDisableFalse(subjectId);
+			String subjectName = "";
+			if (subject != null) {
+				subjectName = subject.getSubjectName();
+			}
+
 			List<UnitResponseDTO> unitDTOListSplit = new ArrayList<>();
 
 			// 2. split list unitDTO into small lists by progresTest unitAfterId
@@ -130,25 +134,11 @@ public class UnitServiceImpl implements IUnitService {
 			// 4. add all unitViewDTO into unitViewDTOList
 			for (int i = 0; i < unitDTOList.size(); i++) {
 				unitDTOListSplit.add(unitDTOList.get(i));
-				
+
 				for (int j = 0; j < progressTestDTOList.size(); j++) {
-//					ProgressTestResponseDTO progressTestResponseDTO = progressTestDTOList.get(j);					
-//					List<Exercise> exerciseList = iExerciseRepository
-//							.findByProgressTestIdAndIsDisableFalse(progressTestResponseDTO.getId());
-//					int countNotDone = 0;
-//					if (!exerciseList.isEmpty()) {
-//
-//						for (Exercise exercise : exerciseList) {
-//							countNotDone += iExerciseTakenService.countExerciseNotDone(accountId, exercise.getId());
-//						}
-//					}
-//					progressTestResponseDTO.setDone(true);
-//					if (countNotDone != 0) {
-//						progressTestResponseDTO.setDone(false);
-//					}
 
 					if (progressTestDTOList.get(j).getUnitAfterId() == unitDTOList.get(i).getId()) {
-						ProgressTestResponseDTO progressTestResponseDTO = progressTestDTOList.get(j);				
+						ProgressTestResponseDTO progressTestResponseDTO = progressTestDTOList.get(j);
 						List<Exercise> exerciseList = iExerciseRepository
 								.findByProgressTestIdAndIsDisableFalse(progressTestResponseDTO.getId());
 						int countNotDone = 0;
@@ -162,8 +152,9 @@ public class UnitServiceImpl implements IUnitService {
 						if (countNotDone != 0) {
 							progressTestResponseDTO.setDone(false);
 						}
-						
-						UnitViewDTO unitViewDTO = new UnitViewDTO(unitDTOListSplit, progressTestResponseDTO);
+
+						UnitViewDTO unitViewDTO = new UnitViewDTO(subjectName, unitDTOListSplit,
+								progressTestResponseDTO);
 						unitViewDTOList.add(unitViewDTO);
 						progressTestDTOList.remove(j);
 						unitDTOListSplit = new ArrayList<>();
@@ -176,7 +167,7 @@ public class UnitServiceImpl implements IUnitService {
 			// 5. if list unitDTO split more than progressTestDTO, set unitViewDTO with
 			// progressTestDTO is null
 			if (!unitDTOListSplit.isEmpty()) {
-				UnitViewDTO unitViewDTO = new UnitViewDTO(unitDTOListSplit, null);
+				UnitViewDTO unitViewDTO = new UnitViewDTO(subjectName, unitDTOListSplit, null);
 				unitViewDTOList.add(unitViewDTO);
 			}
 		}

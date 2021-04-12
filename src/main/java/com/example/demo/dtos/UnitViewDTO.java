@@ -3,16 +3,32 @@ package com.example.demo.dtos;
 import java.util.List;
 
 public class UnitViewDTO {
-	List<UnitResponseDTO> unit;
-	ProgressTestResponseDTO progressTest;
+	private String subjectName;
+	private List<UnitResponseDTO> unit;
+	private ProgressTestResponseDTO progressTest;
 
 	public UnitViewDTO() {
 	}
 
-	public UnitViewDTO(List<UnitResponseDTO> unit, ProgressTestResponseDTO progressTest) {
+	public UnitViewDTO(String subjectName, List<UnitResponseDTO> unit, ProgressTestResponseDTO progressTest) {
 		super();
+		this.subjectName = subjectName;
 		this.unit = unit;
 		this.progressTest = progressTest;
+	}
+
+	/**
+	 * @return the subjectName
+	 */
+	public String getSubjectName() {
+		return subjectName;
+	}
+
+	/**
+	 * @param subjectName the subjectName to set
+	 */
+	public void setSubjectName(String subjectName) {
+		this.subjectName = subjectName;
 	}
 
 	/**
