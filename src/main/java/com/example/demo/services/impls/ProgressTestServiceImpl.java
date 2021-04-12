@@ -130,10 +130,6 @@ public class ProgressTestServiceImpl implements IProgressTestService {
 			if (progressTest == null) {
 				throw new ResourceNotFoundException();
 			}
-			Subject subject = iSubjectRepository.findByIdAndIsDisableFalse(subjectId);
-			if (subject == null) {
-				throw new ResourceNotFoundException();
-			}
 
 			if (!progressTest.getProgressTestName().equalsIgnoreCase(progressTestName)) {
 				if (iProgressTestRepository.findBySubjectIdAndProgressTestNameAndIsDisableFalse(subjectId,

@@ -260,14 +260,14 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 		List<Long> ids = listIdAndStatusDTO.getIds();
 		String status = listIdAndStatusDTO.getStatus();
 		for (long id : ids) {
-			StudentProfile studentProfile = iStudentProfileRepository.findByIdAndStatus(id, "ACTIVE");
+			StudentProfile studentProfile = iStudentProfileRepository.findByIdAndStatusNot(id, DELETE_STATUS);
 			if (studentProfile == null) {
 				throw new ResourceNotFoundException();
 			}
 		}
 
 		for (long id : ids) {
-			StudentProfile studentProfile = iStudentProfileRepository.findByIdAndStatus(id, "ACTIVE");
+			StudentProfile studentProfile = iStudentProfileRepository.findByIdAndStatusNot(id, DELETE_STATUS);
 			Account account = studentProfile.getAccount();
 
 			if (status.equals(DELETE_STATUS)) {
@@ -297,7 +297,9 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 			}
 			studentProfile.setStatus(status);
 			iStudentProfileRepository.save(studentProfile);
-
+			
+			System.out.println(account.getId());
+			System.out.println(status);
 			account.setStatus(status);
 			iAccountRepository.save(account);
 		}
