@@ -70,6 +70,9 @@ public class QuestionServiceImpl implements IQuestionService {
 
 	@Autowired
 	private IExerciseGameQuestionRepository iExerciseGameQuestionRepository;
+	
+//	@Autowired
+//	private IExerciseGameQuestionService iExerciseGameQuestionService;
 
 //	@Autowired
 //	private IGameRepository iGameRepository;
@@ -612,6 +615,14 @@ public class QuestionServiceImpl implements IQuestionService {
 			List<OptionQuestion> optionQuestions = iOptionQuestionRepository.findByQuestionIdAndIsDisableFalse(id);
 			for (OptionQuestion optionQuestion : optionQuestions) {
 				iOptionsService.deleteOptionQuestion(optionQuestion.getId());
+			}
+			
+			List<ExerciseGameQuestion> exerciseGameQuestionList = iExerciseGameQuestionRepository.findByQuestionIdAndIsDisableFalse(id);
+			if (!exerciseGameQuestionList.isEmpty()) {
+				for (ExerciseGameQuestion exerciseGameQuestion : exerciseGameQuestionList) {
+					exerciseGameQuestion.setDisable(true);
+					iExerciseGameQuestionRepository.save(exerciseGameQuestion);
+				}
 			}
 
 			// last: delete question

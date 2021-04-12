@@ -10,6 +10,8 @@ public interface IGameService {
 	Object findGameById(long id);
 
 	List<GameResponseDTO> findAllByLessonId(long lessonId);
+	
+	List<GameResponseDTO> findAllByLessonIdStudentView(long lessonId);
 
 	String updateGame(long id, GameRequestDTO gameRequestDTO);
 

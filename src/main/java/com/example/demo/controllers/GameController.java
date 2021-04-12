@@ -53,6 +53,17 @@ public class GameController {
 
 		return ResponseEntity.ok(response);
 	}
+	
+	@GetMapping("/lesson/{lessonId}/game/student")
+	public ResponseEntity<List<GameResponseDTO>> findAllByLessonIdStudentView(@PathVariable long lessonId) {
+		List<GameResponseDTO> response = iGameService.findAllByLessonIdStudentView(lessonId);
+		if (response == null) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+
+		return ResponseEntity.ok(response);
+	}
 
 	@PostMapping("/game")
 	public ResponseEntity<String> createGame(@Valid @RequestBody GameRequestDTO gameRequestDTO,

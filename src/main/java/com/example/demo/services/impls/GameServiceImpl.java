@@ -72,6 +72,27 @@ public class GameServiceImpl implements IGameService {
 
 			if (!gameList.isEmpty()) {
 				for (Game game : gameList) {
+					GameResponseDTO gameResponseDTO = modelMapper.map(game, GameResponseDTO.class);
+					gameResponseDTOList.add(gameResponseDTO);
+				}
+			}
+		} catch (Exception e) {
+			logger.error("FIND: all game by lessonId = " + lessonId + "! " + e.getMessage());
+
+			return null;
+		}
+
+		return gameResponseDTOList;
+	}
+
+	@Override
+	public List<GameResponseDTO> findAllByLessonIdStudentView(long lessonId) {
+		List<GameResponseDTO> gameResponseDTOList = new ArrayList<>();
+		try {
+			List<Game> gameList = iGameRepository.findByLessonIdAndIsDisableFalse(lessonId);
+
+			if (!gameList.isEmpty()) {
+				for (Game game : gameList) {
 					List<ExerciseGameQuestion> exerciseGameQuestionList = iExerciseGameQuestionRepository
 							.findByGameIdAndIsDisableFalse(game.getId());
 
