@@ -56,9 +56,9 @@ public class ExerciseTakenServiceImpl implements IExerciseTakenService {
 		if (!exerciseTakenList.isEmpty()) {
 			for (ExerciseTaken exerciseTaken : exerciseTakenList) {
 				long id = exerciseTaken.getId();
-				float score = exerciseTaken.getMark();
+				float totalScore = exerciseTaken.getTotalScore();
 				LocalDateTime createdDate = exerciseTaken.getCreatedDate();
-				ExerciseTakenResponseDTO exerciseTakenResponseDTO = new ExerciseTakenResponseDTO(id, score,
+				ExerciseTakenResponseDTO exerciseTakenResponseDTO = new ExerciseTakenResponseDTO(id, totalScore,
 						createdDate);
 				exerciseTakenResponseDTOList.add(exerciseTakenResponseDTO);
 			}

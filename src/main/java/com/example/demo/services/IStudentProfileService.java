@@ -7,6 +7,8 @@ import com.example.demo.dtos.StudentResponseDTO;
 
 public interface IStudentProfileService {
 
+	StudentResponseDTO findStudentByAccountId(long accountId);
+
 	List<StudentResponseDTO> findStudentByListId(List<Long> ids);
 
 	String createStudenProfile(StudentRequestDTO studentProfileRequestDTO);

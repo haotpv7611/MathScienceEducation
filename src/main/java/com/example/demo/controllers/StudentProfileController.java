@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,6 +25,13 @@ import com.example.demo.services.IStudentProfileService;
 public class StudentProfileController {
 	@Autowired
 	IStudentProfileService iStudentProfileService;
+	
+	@GetMapping("/student/{accountId}")
+	public ResponseEntity<StudentResponseDTO> findStudentByAccountId(@PathVariable long accountId){
+		StudentResponseDTO response = iStudentProfileService.findStudentByAccountId(accountId);
+		
+		return ResponseEntity.ok(response);
+	}
 
 	@PostMapping("/student/all")
 	public ResponseEntity<List<StudentResponseDTO>> findStudentByListId(@RequestBody List<Long> ids) {

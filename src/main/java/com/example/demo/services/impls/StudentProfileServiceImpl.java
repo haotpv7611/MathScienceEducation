@@ -6,11 +6,14 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.dtos.ClassResponseDTO;
+import com.example.demo.dtos.ListIdAndStatusDTO;
 import com.example.demo.dtos.SchoolGradeDTO;
 import com.example.demo.dtos.StudentRequestDTO;
 import com.example.demo.dtos.StudentResponseDTO;
@@ -32,8 +35,12 @@ import com.example.demo.services.IStudentProfileService;
 
 @Service
 public class StudentProfileServiceImpl implements IStudentProfileService {
+	Logger logger = LoggerFactory.getLogger(StudentProfileServiceImpl.class);
 
 	private final String DELETE_STATUS = "DELETED";
+	private final String PENDING_STATUS = "PENDING";
+	private final String DEFAULT_PASSWORD = "abc123456";
+	private final int STUDENT_ROLE = 3;
 
 	@Autowired
 	ISchoolRepository iSchoolRepository;
@@ -57,12 +64,31 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 
 	@Autowired
 	ModelMapper modelMapper;
-	
-//	public StudentResponseDTO findStudentByAccountId(long accountId) {
-//		StudentProfile studentProfile = iStudentProfileRepository.findByAccountIdAndStatus(accountId, "ACTIVE");
-//		
-//		
-//	}
+
+	@Override
+	public StudentResponseDTO findStudentByAccountId(long accountId) {
+		StudentResponseDTO studentResponseDTO = new StudentResponseDTO();
+		try {
+			Account account = iAccountRepository.findByIdAndStatus(accountId, "ACTIVE");
+			System.out.println(account);
+			if (account != null) {
+				StudentProfile studentProfile = account.getStudentProfile();
+				String className = studentProfile.getClasses().getClassName();
+				String schoolName = studentProfile.getClasses().getSchoolGrade().getSchool().getSchoolName();
+
+				studentResponseDTO.setFirstName(account.getFirstName());
+				studentResponseDTO.setLastName(account.getLastName());
+				studentResponseDTO.setClassName(className);
+				studentResponseDTO.setSchoolName(schoolName);
+			}
+		} catch (Exception e) {
+			logger.error("FIND: student by accountId = " + accountId + "! " + e.getMessage());
+
+			return null;
+		}
+
+		return studentResponseDTO;
+	}
 
 	@Override
 	public List<StudentResponseDTO> findStudentByListId(List<Long> ids) {
@@ -165,74 +191,86 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 		return studentResponseDTOList;
 	}
 
+//classId --> schoolGradeId --> gradeName --> schoolCode
+//schoolGradeId --> all className != pending --> all student active or inactive --> count max + 1
 	@Override
 	@Transactional
 	public String createStudenProfile(StudentRequestDTO studentRequestDTO) {
-
 		long classId = studentRequestDTO.getClassId();
 		Classes classes = iClassRepository.findByIdAndStatusNot(classId, DELETE_STATUS);
-		if (classes == null) {
-			throw new ResourceNotFoundException();
-		}
-		// create account before
+		int gradeName = classes.getSchoolGrade().getGrade().getGradeName();
+		String schoolCode = classes.getSchoolGrade().getSchool().getSchoolCode()
+				+ classes.getSchoolGrade().getSchool().getSchoolCount();
 
-		long schoolId = studentRequestDTO.getSchoolId();
-		School school = iSchoolRepository.findByIdAndStatusNot(schoolId, DELETE_STATUS);
-		if (school == null) {
-			throw new ResourceNotFoundException();
-		}
-
-		long gradeId = studentRequestDTO.getGradeId();
-		Grade grade = iGradeRepository.findById(gradeId).orElseThrow(() -> new ResourceNotFoundException());
-
-		String schoolCode = school.getSchoolCode() + school.getSchoolCount();
-		int gradeName = grade.getGradeName();
-
-		SchoolGrade schoolGrade = iSchoolGradeRepository.findByGradeIdAndSchoolIdAndStatusNot(gradeId, schoolId,
-				DELETE_STATUS);
+		List<Classes> classesList = classes.getSchoolGrade().getClassList();
 		List<StudentProfile> studentProfileList = new ArrayList<>();
-		List<Classes> classesList = schoolGrade.getClassList();
+		if (!classesList.isEmpty()) {
+			for (Classes classes2 : classesList) {
+				if (classes2.getStatus().equals("PENDING")) {
+					classesList.remove(classes2);
+				} else {
+					StudentProfile studentProfile = iStudentProfileRepository
+							.findFirstByClassesIdAndStatusLikeOrderByStudentCountDesc(classes2.getId(), "ACTIVE");
 
-		for (Classes classes2 : classesList) {
-			StudentProfile studentProfile = null;
-			if (!classes2.getClassName().equalsIgnoreCase("PENDING")
-					&& !classes.getClassName().equalsIgnoreCase(DELETE_STATUS)) {
-				studentProfile = iStudentProfileRepository
-						.findFirstByClassesIdAndStatusLikeOrderByStudentCountDesc(classes2.getId(), "ACTIVE");
+					if (studentProfile != null) {
+						studentProfileList.add(studentProfile);
+					}
+				}
 			}
-			studentProfileList.add(studentProfile);
 		}
 		StudentProfile studentProfile = null;
-		if (!studentProfileList.isEmpty()) {
-			studentProfile = Collections.max(studentProfileList, Comparator.comparing(s -> s.getStudentCount()));
-		}
 		long studentCount = 1;
-		if (studentProfile != null) {
-			studentCount = studentProfile.getStudentCount() + 1;
+		if (!studentProfileList.isEmpty()) {
+			for (StudentProfile studentProfile2 : studentProfileList) {
+				if (studentProfile2.getStudentCount() > studentCount) {
+					studentCount = studentProfile2.getStudentCount();
+				}
+			}
+			studentCount++;
 		}
 
-		Account account = new Account();
-		account.setFirstName(studentRequestDTO.getFirtName());
-		account.setLastName(studentRequestDTO.getLastName());
 		String username = generateUsername(schoolCode, gradeName, studentCount);
-		account.setUsername(username);
-		account.setPassword(username);
-		account.setRoleId(3);
-		account.setStatus("ACTIVE");
-
+		String firstName = studentRequestDTO.getFirtName();
+		String lastName = studentRequestDTO.getLastName();
+		Account account = new Account(username, DEFAULT_PASSWORD, firstName, lastName, STUDENT_ROLE, "ACTIVE");
 		iAccountRepository.save(account);
 
-		studentProfile = new StudentProfile(studentRequestDTO.getDoB(), studentRequestDTO.getGender(),
-				studentRequestDTO.getParentName(), studentRequestDTO.getParentPhone(), account, classes);
-		studentProfile.setStudentCount(studentCount);
-		studentProfile.setStatus("ACTIVE");
-//		if (accountId != 0) {
-//
-//		}
-
+		String DoB = studentRequestDTO.getDoB();
+		String gender = studentRequestDTO.getGender();
+		String parentName = studentRequestDTO.getParentName();
+		String parentPhone = studentRequestDTO.getParentPhone();
+		studentProfile = new StudentProfile(DoB, gender, parentName, parentPhone, account, classes);
 		iStudentProfileRepository.save(studentProfile);
 
 		return "CREATE SUCCESS !";
+	}
+
+	public String changeStatus(ListIdAndStatusDTO listIdAndStatusDTO) {
+		List<Long> ids = listIdAndStatusDTO.getIds();
+		String status = listIdAndStatusDTO.getStatus();
+		for (long accountId : ids) {
+			Account account = iAccountRepository.findByIdAndStatusNot(accountId, DELETE_STATUS);
+			if (account == null) {
+				throw new ResourceNotFoundException();
+			}
+			Classes defaultClass = iClassRepository.findById(0L).orElseThrow(() -> new ResourceNotFoundException());
+			StudentProfile studentProfile = account.getStudentProfile();
+			studentProfile.setStatus(status);
+			studentProfile.setClasses(defaultClass);
+			studentProfile.setStudentCount(defaultClass.getStudentProfileList().size() + 1);
+
+			if (status.equals(DELETE_STATUS)) {
+				String username = "DEL" + String.format("%05d", defaultClass.getStudentProfileList().size() + 1);
+				account.setUsername(username);
+			}
+			if (status.equals(PENDING_STATUS)) {
+				String username = "PEND" + String.format("%05d", defaultClass.getStudentProfileList().size() + 1);
+				account.setUsername(username);
+			}
+			account.setStatus(status);
+		}
+		
+		return "CHANGE SUCCESS!";
 	}
 
 	private String generateUsername(String schoolCode, int gradeName, long studentCount) {

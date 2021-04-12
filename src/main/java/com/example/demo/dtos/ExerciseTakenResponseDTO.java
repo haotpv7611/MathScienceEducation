@@ -6,17 +6,17 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 public class ExerciseTakenResponseDTO {
 	private long id;
-	private String score;
+	private String totalScore;
 	@JsonFormat(pattern = "dd-MMM-yyyy HH:mm")
 	private LocalDateTime createdDate;
 
 	public ExerciseTakenResponseDTO() {
 	}
 
-	public ExerciseTakenResponseDTO(long id, float score, LocalDateTime createdDate) {
+	public ExerciseTakenResponseDTO(long id, float totalScore, LocalDateTime createdDate) {
 		super();
 		this.id = id;
-		this.score = score + "/10";
+		this.totalScore = totalScore + "/10";
 		this.createdDate = createdDate;
 	}
 
@@ -37,15 +37,15 @@ public class ExerciseTakenResponseDTO {
 	/**
 	 * @return the score
 	 */
-	public String getScore() {
-		return score;
+	public String getTotalScore() {
+		return totalScore;
 	}
 
 	/**
 	 * @param score the score to set
 	 */
-	public void setScore(String score) {
-		this.score = score;
+	public void setTotalScore(String totalScore) {
+		this.totalScore = totalScore;
 	}
 
 	/**

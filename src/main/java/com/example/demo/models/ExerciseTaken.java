@@ -21,7 +21,7 @@ public class ExerciseTaken {
 	private long id;
 	private long accountId;
 	private long exerciseId;
-	private float mark;
+	private float totalScore;
 	private String takenObject;
 
 	@CreatedDate
@@ -70,15 +70,15 @@ public class ExerciseTaken {
 	/**
 	 * @return the mark
 	 */
-	public float getMark() {
-		return mark;
+	public float getTotalScore() {
+		return totalScore;
 	}
 
 	/**
 	 * @param mark the mark to set
 	 */
-	public void setMark(float mark) {
-		this.mark = mark;
+	public void setMark(float totalScore) {
+		this.totalScore = totalScore;
 	}
 
 	/**

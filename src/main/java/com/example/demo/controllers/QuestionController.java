@@ -27,7 +27,7 @@ public class QuestionController {
 	@Autowired
 	private IQuestionService iQuestionService;
 
-	@PostMapping("/question/{id}")
+	@GetMapping("/question/{id}")
 	public ResponseEntity<?> findQuestionById(@PathVariable long id, @RequestParam String questionType) {
 		Object response = iQuestionService.findQuestionById(id, questionType);
 		if (response.equals("NOT FOUND!")) {
@@ -50,7 +50,7 @@ public class QuestionController {
 //		return ResponseEntity.status(HttpStatus.OK).body(response);
 //	}
 
-	@PostMapping("exerciseOrGame/{id}/questions")
+	@GetMapping("exerciseOrGame/{id}/questions")
 	public ResponseEntity<List<QuestionResponseDTO>> findQuestionByExerciseIdRoleAdmin(@PathVariable long id,
 			@RequestParam boolean isExericse) {
 		List<QuestionResponseDTO> response = iQuestionService.findQuestionByExerciseIdOrGameId(id, isExericse);
@@ -62,7 +62,7 @@ public class QuestionController {
 		return ResponseEntity.ok(response);
 	}
 
-	@PostMapping("/unit/{unitId}/questions")
+	@GetMapping("/unit/{unitId}/questions")
 	public ResponseEntity<List<QuestionResponseDTO>> findAllByUnitId(@PathVariable long unitId,
 			@RequestParam boolean isExercise) {
 		List<QuestionResponseDTO> response = iQuestionService.findAllByUnitId(unitId, isExercise);
