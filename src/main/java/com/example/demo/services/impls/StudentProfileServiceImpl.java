@@ -67,7 +67,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 	public StudentResponseDTO findStudentById(long id) {
 		StudentResponseDTO studentResponseDTO = new StudentResponseDTO();
 		try {
-			StudentProfile studentProfile = iStudentProfileRepository.findByIdAndStatus(id, "ACTIVE");
+			StudentProfile studentProfile = iStudentProfileRepository.findByIdAndStatusNot(id, DELETE_STATUS);
 			if (studentProfile == null) {
 				throw new ResourceNotFoundException();
 			}	
