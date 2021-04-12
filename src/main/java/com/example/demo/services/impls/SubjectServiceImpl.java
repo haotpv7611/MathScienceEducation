@@ -31,8 +31,9 @@ import com.example.demo.utils.Util;
 public class SubjectServiceImpl implements ISubjectService {
 	Logger logger = LoggerFactory.getLogger(SubjectServiceImpl.class);
 
+	private final int SUBJECT_NAME_MAX_LENGTH = 20;
 	private final int DESCRIPTION_MAX_LENGTH = 50;
-	private final int SUBJECTNAME_MAX_LENGTH = 20;
+	
 	@Autowired
 	ISubjectRepository iSubjectRepository;
 
@@ -108,7 +109,7 @@ public class SubjectServiceImpl implements ISubjectService {
 			throws SizeLimitExceededException, IOException {
 		try {
 			// validate data input
-			String error = Util.validateRequiredString(subjectName, SUBJECTNAME_MAX_LENGTH,
+			String error = Util.validateRequiredString(subjectName, SUBJECT_NAME_MAX_LENGTH,
 					"\nSubjectName is invalid!");
 			error += Util.validateRequiredFile(file, "image", "\nFile is invalid!",
 					"\nNot supported this file type for image!");
@@ -153,7 +154,7 @@ public class SubjectServiceImpl implements ISubjectService {
 				throw new ResourceNotFoundException();
 			}
 			iGradeRepository.findById(gradeId).orElseThrow(() -> new ResourceNotFoundException());
-			String error = Util.validateRequiredString(subjectName, SUBJECTNAME_MAX_LENGTH,
+			String error = Util.validateRequiredString(subjectName, SUBJECT_NAME_MAX_LENGTH,
 					"\nSubjectName is invalid!");
 			error += Util.validateFile(file, "image", "\nNot supported this file type for image!");
 			error += Util.validateString(description, DESCRIPTION_MAX_LENGTH, "\nDescription is invalid!");

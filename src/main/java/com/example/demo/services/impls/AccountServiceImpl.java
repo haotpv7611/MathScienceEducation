@@ -17,17 +17,17 @@ import com.example.demo.services.IAccountService;
 import com.example.demo.services.IClassService;
 
 @Service
-public class AccountServiceImpl implements IAccountService{
+public class AccountServiceImpl implements IAccountService {
 
 	@Autowired
 	private IClassService iClassService;
-	
+
 	@Autowired
 	private IAccountRepository iAccountRepository;
 
 	public void readData(MultipartFile file, long gradeId, long schoolId) throws IOException {
 		Workbook workbook = new XSSFWorkbook(file.getInputStream());
-		
+
 		int numberOfSheets = workbook.getNumberOfSheets();
 		System.out.println(numberOfSheets);
 //		List<ClassResponseDTO> classList = iClassService.findBySchoolGradeId(gradeId, schoolId);
@@ -57,9 +57,6 @@ public class AccountServiceImpl implements IAccountService{
 //					
 //				}
 //			}
-			
-			
-
 
 //			
 //			int numberOfRow = sheet.getPhysicalNumberOfRows();
@@ -75,20 +72,15 @@ public class AccountServiceImpl implements IAccountService{
 //			
 //		}
 
-		
-		
-
 	}
-	
-	
 
 	@Override
 	public String createAccount(String username, String password, String firstName, String lastName) {
 		Account checkUsername = iAccountRepository.findByUsernameAndStatusNot(username, "DELETED");
 		if (checkUsername != null) {
-			
+
 			return "EXISTED";
-		}		
+		}
 		Account account = new Account();
 		account.setUsername(username);
 		account.setPassword(password);
@@ -99,27 +91,16 @@ public class AccountServiceImpl implements IAccountService{
 		iAccountRepository.save(account);
 		return null;
 	}
-	
-	public void changeStatusOneAccount(long id) {
-		try {
-			Account account = iAccountRepository.findByIdAndStatusNot(id, "DELETED");
-			if (account == null) {
-				throw new ResourceNotFoundException();
-			}
-		} catch (Exception e) {
-			// TODO: handle exception
-		}
-	}
-	
+
 	public long login(String username, String password) {
 		Account account = iAccountRepository.findByUsernameAndPasswordAndStatus(username, password, "ACTIVE");
+		System.out.println(account);
 		if (account != null) {
-			
+			System.out.println(account.getId());
 			return account.getId();
-		}else {
-			
+		} else {
+
 			return 0;
 		}
-		
 	}
 }
