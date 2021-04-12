@@ -21,16 +21,17 @@ import com.example.demo.dtos.QuestionExerciseViewDTO;
 import com.example.demo.dtos.QuestionOptionResponseDTO;
 import com.example.demo.dtos.QuestionResponseDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
+import com.example.demo.models.ExerciseGameQuestion;
 import com.example.demo.models.OptionQuestion;
 import com.example.demo.models.Question;
 import com.example.demo.models.QuestionType;
 import com.example.demo.models.Unit;
+import com.example.demo.repositories.IExerciseGameQuestionRepository;
 import com.example.demo.repositories.IExerciseRepository;
 import com.example.demo.repositories.IOptionQuestionRepository;
 import com.example.demo.repositories.IQuestionRepository;
 import com.example.demo.repositories.IQuestionTypeRepository;
 import com.example.demo.repositories.IUnitRepository;
-import com.example.demo.services.IExerciseGameQuestionService;
 import com.example.demo.services.IOptionQuestionService;
 import com.example.demo.services.IQuestionService;
 import com.example.demo.utils.Util;
@@ -45,9 +46,6 @@ public class QuestionServiceImpl implements IQuestionService {
 
 	@Autowired
 	private IQuestionRepository iQuestionRepository;
-
-	@Autowired
-	private IExerciseGameQuestionService iExerciseGameQuestionService;
 
 	@Autowired
 	private FirebaseService firebaseService;
@@ -69,6 +67,9 @@ public class QuestionServiceImpl implements IQuestionService {
 
 	@Autowired
 	IExerciseRepository iExerciseRepository;
+
+	@Autowired
+	private IExerciseGameQuestionRepository iExerciseGameQuestionRepository;
 
 //	@Autowired
 //	private IGameRepository iGameRepository;
@@ -161,19 +162,23 @@ public class QuestionServiceImpl implements IQuestionService {
 	// done ok
 	@Override
 	public List<QuestionResponseDTO> findQuestionByExerciseIdOrGameId(long id, boolean isExercise) {
-		List<Long> ids = null;
+//		List<Long> ids = null;
+		List<ExerciseGameQuestion> exerciseGameQuestionList = null;
 		List<QuestionResponseDTO> questionResponseDTOList = new ArrayList<>();
 
 		try {
 			if (isExercise) {
-				ids = iExerciseGameQuestionService.findAllQuestionIdByExerciseId(id);
+				exerciseGameQuestionList = iExerciseGameQuestionRepository.findByExerciseIdAndIsDisableFalse(id);
+//				ids = iExerciseGameQuestionService.findAllQuestionIdByExerciseId(id);
 			} else {
-				ids = iExerciseGameQuestionService.findAllQuestionIdByGameId(id);
+				exerciseGameQuestionList = iExerciseGameQuestionRepository.findByGameIdAndIsDisableFalse(id);
+//				ids = iExerciseGameQuestionService.findAllQuestionIdByGameId(id);
 			}
 
-			if (!ids.isEmpty()) {
-				for (int i = 0; i < ids.size(); i++) {
-					Question question = iQuestionRepository.findByIdAndIsDisableFalse(ids.get(i));
+			if (!exerciseGameQuestionList.isEmpty()) {
+				for (int i = 0; i < exerciseGameQuestionList.size(); i++) {
+					Question question = iQuestionRepository
+							.findByIdAndIsDisableFalse(exerciseGameQuestionList.get(i).getQuestionId());
 					QuestionResponseDTO questionResponseDTO = modelMapper.map(question, QuestionResponseDTO.class);
 					questionResponseDTO.setQuestionType(question.getQuestionType().getDescription());
 					questionResponseDTOList.add(questionResponseDTO);
@@ -224,7 +229,13 @@ public class QuestionServiceImpl implements IQuestionService {
 		List<QuestionExerciseViewDTO> questionExerciseViewDTOList = new ArrayList<>();
 		try {
 			// get list questionId by exerciseGame
-			List<Long> questionIdList = iExerciseGameQuestionService.findAllQuestionIdByExerciseId(exerciseId);
+			List<ExerciseGameQuestion> exerciseGameQuestionList = iExerciseGameQuestionRepository
+					.findByExerciseIdAndIsDisableFalse(exerciseId);
+			List<Long> questionIdList = new ArrayList<>();
+			if (!exerciseGameQuestionList.isEmpty())
+				for (ExerciseGameQuestion exerciseGameQuestion : exerciseGameQuestionList) {
+					questionIdList.add(exerciseGameQuestion.getQuestionId());
+				}
 
 			if (!questionIdList.isEmpty()) {
 				List<Question> questionList = iQuestionRepository.findByIsDisableFalseAndIdIn(questionIdList);

@@ -14,9 +14,11 @@ import com.example.demo.dtos.ExerciseRequestDTO;
 import com.example.demo.dtos.ExerciseResponseDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.Exercise;
+import com.example.demo.models.ExerciseGameQuestion;
 import com.example.demo.models.ExerciseTaken;
 import com.example.demo.models.Lesson;
 import com.example.demo.models.ProgressTest;
+import com.example.demo.repositories.IExerciseGameQuestionRepository;
 import com.example.demo.repositories.IExerciseRepository;
 import com.example.demo.repositories.IExerciseTakenRepository;
 import com.example.demo.repositories.ILessonRepository;
@@ -33,6 +35,9 @@ public class ExerciseServiceImpl implements IExerciseService {
 
 	@Autowired
 	private IExerciseGameQuestionService iExerciseGameQuestionService;
+
+	@Autowired
+	private IExerciseGameQuestionRepository iExerciseGameQuestionRepository;
 
 	@Autowired
 	private IProgressTestRepository iProgressTestRepository;
@@ -75,9 +80,12 @@ public class ExerciseServiceImpl implements IExerciseService {
 					.findByLessonIdAndIsDisableFalseOrderByExerciseNameAsc(lessonId);
 			if (!exerciseList.isEmpty()) {
 				for (Exercise exercise : exerciseList) {
-					List<Long> questionIdList = iExerciseGameQuestionService
-							.findAllQuestionIdByExerciseId(exercise.getId());
-					if (!questionIdList.isEmpty()) {
+//					List<Long> questionIdList = iExerciseGameQuestionService
+//							.findAllQuestionIdByExerciseId(exercise.getId());
+
+					List<ExerciseGameQuestion> exerciseGameQuestionList = iExerciseGameQuestionRepository
+							.findByExerciseIdAndIsDisableFalse(exercise.getId());
+					if (!exerciseGameQuestionList.isEmpty()) {
 						ExerciseResponseDTO exerciseResponseDTO = modelMapper.map(exercise, ExerciseResponseDTO.class);
 						List<ExerciseTaken> exerciseTakenList = iExerciseTakenRepository
 								.findByExerciseIdAndAccountId(exercise.getId(), accountId);
@@ -126,9 +134,12 @@ public class ExerciseServiceImpl implements IExerciseService {
 					.findByProgressTestIdAndIsDisableFalseOrderByExerciseNameAsc(progressTestId);
 			if (!exerciseList.isEmpty()) {
 				for (Exercise exercise : exerciseList) {
-					List<Long> questionIdList = iExerciseGameQuestionService
-							.findAllQuestionIdByExerciseId(exercise.getId());
-					if (!questionIdList.isEmpty()) {
+//					List<Long> questionIdList = iExerciseGameQuestionService
+//							.findAllQuestionIdByExerciseId(exercise.getId());
+
+					List<ExerciseGameQuestion> exerciseGameQuestionList = iExerciseGameQuestionRepository
+							.findByExerciseIdAndIsDisableFalse(exercise.getId());
+					if (!exerciseGameQuestionList.isEmpty()) {
 						ExerciseResponseDTO exerciseResponseDTO = modelMapper.map(exercise, ExerciseResponseDTO.class);
 						List<ExerciseTaken> exerciseTakenList = iExerciseTakenRepository
 								.findByExerciseIdAndAccountId(exercise.getId(), accountId);
@@ -276,7 +287,16 @@ public class ExerciseServiceImpl implements IExerciseService {
 				throw new ResourceNotFoundException();
 			}
 
-			List<Long> exerciseQuestionIdList = iExerciseGameQuestionService.findAllQuestionIdByExerciseId(id);
+//			List<Long> exerciseQuestionIdList = iExerciseGameQuestionService.findAllQuestionIdByExerciseId(id);
+
+			List<ExerciseGameQuestion> exerciseGameQuestionList = iExerciseGameQuestionRepository
+					.findByExerciseIdAndIsDisableFalse(exercise.getId());
+			List<Long> exerciseQuestionIdList = new ArrayList<>();
+			if (!exerciseGameQuestionList.isEmpty()) {
+				for (ExerciseGameQuestion exerciseGameQuestion : exerciseGameQuestionList) {
+					exerciseQuestionIdList.add(exerciseGameQuestion.getExerciseId());
+				}
+			}
 			if (!exerciseQuestionIdList.isEmpty()) {
 				for (Long exerciseQuestionId : exerciseQuestionIdList) {
 					iExerciseGameQuestionService.deleteOneExerciseGameQuestion(exerciseQuestionId);

@@ -13,8 +13,10 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.demo.dtos.GameRequestDTO;
 import com.example.demo.dtos.GameResponseDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
+import com.example.demo.models.ExerciseGameQuestion;
 import com.example.demo.models.Game;
 import com.example.demo.models.Lesson;
+import com.example.demo.repositories.IExerciseGameQuestionRepository;
 import com.example.demo.repositories.IGameRepository;
 import com.example.demo.repositories.ILessonRepository;
 import com.example.demo.services.IExerciseGameQuestionService;
@@ -35,6 +37,8 @@ public class GameServiceImpl implements IGameService {
 
 	@Autowired
 	private IExerciseGameQuestionService iExerciseGameQuestionService;
+
+	private IExerciseGameQuestionRepository iExerciseGameQuestionRepository;
 
 	// done
 	@Override
@@ -68,9 +72,10 @@ public class GameServiceImpl implements IGameService {
 
 			if (!gameList.isEmpty()) {
 				for (Game game : gameList) {
-					List<Long> questionIdList = iExerciseGameQuestionService
-							.findAllQuestionIdByGameId(game.getId());
-					if (!questionIdList.isEmpty()) {
+					List<ExerciseGameQuestion> exerciseGameQuestionList = iExerciseGameQuestionRepository
+							.findByGameIdAndIsDisableFalse(game.getId());
+
+					if (!exerciseGameQuestionList.isEmpty()) {
 						GameResponseDTO gameResponseDTO = modelMapper.map(game, GameResponseDTO.class);
 						gameResponseDTOList.add(gameResponseDTO);
 					}
@@ -179,10 +184,12 @@ public class GameServiceImpl implements IGameService {
 				throw new ResourceNotFoundException();
 			}
 
-			List<Long> gameQuestionIdList = iExerciseGameQuestionService.findAllQuestionIdByGameId(id);
-			if (!gameQuestionIdList.isEmpty()) {
-				for (long gameQuestionId : gameQuestionIdList) {
-					iExerciseGameQuestionService.deleteOneExerciseGameQuestion(gameQuestionId);
+//			List<Long> gameQuestionIdList = iExerciseGameQuestionService.findAllQuestionIdByGameId(id);
+			List<ExerciseGameQuestion> exerciseGameQuestionList = iExerciseGameQuestionRepository
+					.findByGameIdAndIsDisableFalse(game.getId());
+			if (!exerciseGameQuestionList.isEmpty()) {
+				for (ExerciseGameQuestion exerciseGameQuestion : exerciseGameQuestionList) {
+					iExerciseGameQuestionService.deleteOneExerciseGameQuestion(exerciseGameQuestion.getGameId());
 				}
 			}
 			game.setDisable(true);

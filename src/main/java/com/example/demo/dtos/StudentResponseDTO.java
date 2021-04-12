@@ -6,10 +6,13 @@ public class StudentResponseDTO {
 	private String firstName;
 	private String lastName;
 	private String schoolName;
-	private String gender;
 	private int gradeName;
 	private String className;
-	
+	private String DoB;
+	private String gender;
+	private String parentName;
+	private String parentPhone;
+
 	private String status;
 
 	/**
@@ -136,6 +139,48 @@ public class StudentResponseDTO {
 	 */
 	public void setStatus(String status) {
 		this.status = status;
+	}
+
+	/**
+	 * @return the parentName
+	 */
+	public String getParentName() {
+		return parentName;
+	}
+
+	/**
+	 * @param parentName the parentName to set
+	 */
+	public void setParentName(String parentName) {
+		this.parentName = parentName;
+	}
+
+	/**
+	 * @return the parentPhone
+	 */
+	public String getParentPhone() {
+		return parentPhone;
+	}
+
+	/**
+	 * @param parentPhone the parentPhone to set
+	 */
+	public void setParentPhone(String parentPhone) {
+		this.parentPhone = parentPhone;
+	}
+
+	/**
+	 * @return the doB
+	 */
+	public String getDoB() {
+		return DoB;
+	}
+
+	/**
+	 * @param doB the doB to set
+	 */
+	public void setDoB(String doB) {
+		DoB = doB;
 	}
 
 }

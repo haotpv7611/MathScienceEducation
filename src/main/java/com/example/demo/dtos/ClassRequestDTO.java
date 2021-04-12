@@ -11,6 +11,18 @@ public class ClassRequestDTO {
 	@Length(max = 50, message = "ClassName length must be less than 50!")
 	private String className;
 
+	public ClassRequestDTO() {
+		// TODO Auto-generated constructor stub
+	}
+
+	public ClassRequestDTO(long gradeId, long schoolId,
+			@NotNull(message = "ClassName must be not null!") @Length(max = 50, message = "ClassName length must be less than 50!") String className) {
+		super();
+		this.gradeId = gradeId;
+		this.schoolId = schoolId;
+		this.className = className;
+	}
+
 	/**
 	 * @return the gradeId
 	 */

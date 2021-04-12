@@ -28,9 +28,9 @@ public class StudentProfileController {
 	@Autowired
 	IStudentProfileService iStudentProfileService;
 	
-	@GetMapping("/student/{accountId}")
-	public ResponseEntity<StudentResponseDTO> findStudentByAccountId(@PathVariable long accountId){
-		StudentResponseDTO response = iStudentProfileService.findStudentByAccountId(accountId);
+	@GetMapping("/student/{id}")
+	public ResponseEntity<StudentResponseDTO> findStudentById(@PathVariable long id){
+		StudentResponseDTO response = iStudentProfileService.findStudentById(id);
 		
 		return ResponseEntity.ok(response);
 	}

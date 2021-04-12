@@ -17,9 +17,11 @@ public interface IExerciseGameQuestionRepository extends JpaRepository<ExerciseG
 
 	@Query(value = "SELECT questionId FROM ExerciseGameQuestion WHERE exerciseId = ?1 and isDisable = false")
 	List<Long> findAllQuestionIdByExerciseId(long exerciseId);
+	List<ExerciseGameQuestion> findByExerciseIdAndIsDisableFalse(long exerciseId);
 	
 	@Query(value = "SELECT questionId FROM ExerciseGameQuestion WHERE gameId = ?1 and isDisable = false")
 	List<Long> findAllQuestionIdByGameId(long gameId);
+	List<ExerciseGameQuestion> findByGameIdAndIsDisableFalse(long exerciseId);
 	
 	ExerciseGameQuestion findByIdAndIsDisableFalse(long id);
 	

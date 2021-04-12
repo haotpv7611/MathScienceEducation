@@ -8,11 +8,13 @@ import com.example.demo.dtos.StudentResponseDTO;
 
 public interface IStudentProfileService {
 
-	StudentResponseDTO findStudentByAccountId(long accountId);
+	StudentResponseDTO findStudentById(long accountId);
 
 	List<StudentResponseDTO> findStudentByListId(List<Long> ids);
 
 	String createStudenProfile(StudentRequestDTO studentProfileRequestDTO);
+	
+	String updateStudent(long id, StudentRequestDTO studentProfileRequestDTO);
 	
 	String changeStatusStudent(ListIdAndStatusDTO listIdAndStatusDTO);
 }

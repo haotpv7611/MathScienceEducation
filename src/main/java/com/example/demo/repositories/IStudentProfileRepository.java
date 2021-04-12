@@ -10,7 +10,7 @@ import com.example.demo.models.StudentProfile;
 @Repository
 public interface IStudentProfileRepository extends JpaRepository<StudentProfile, Long> {
 
-	StudentProfile findByAccountIdAndStatus(long accountId, String status);
+	StudentProfile findByIdAndStatus(long accountId, String status);
 
 	List<StudentProfile> findByClassesIdAndStatusNot(long classId, String status);
 

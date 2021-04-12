@@ -63,17 +63,17 @@ public class ExerciseGameQuestionServiceImpl implements IExerciseGameQuestionSer
 //		return listGameQuestionExercise;
 //	}
 
-	@Override
-	public List<Long> findAllQuestionIdByExerciseId(long exerciseId) {
+//	@Override
+//	public List<Long> findAllQuestionIdByExerciseId(long exerciseId) {
+//
+//		return iExerciseGameQuestionRepository.findAllQuestionIdByExerciseId(exerciseId);
+//	}
 
-		return iExerciseGameQuestionRepository.findAllQuestionIdByExerciseId(exerciseId);
-	}
-
-	@Override
-	public List<Long> findAllQuestionIdByGameId(long gameId) {
-
-		return iExerciseGameQuestionRepository.findAllQuestionIdByGameId(gameId);
-	}
+//	@Override
+//	public List<Long> findAllQuestionIdByGameId(long gameId) {
+//
+//		return iExerciseGameQuestionRepository.findAllQuestionIdByGameId(gameId);
+//	}
 
 	// done ok
 	@Override

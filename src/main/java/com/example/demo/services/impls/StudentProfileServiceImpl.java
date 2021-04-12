@@ -64,23 +64,26 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 	ModelMapper modelMapper;
 
 	@Override
-	public StudentResponseDTO findStudentByAccountId(long accountId) {
+	public StudentResponseDTO findStudentById(long id) {
 		StudentResponseDTO studentResponseDTO = new StudentResponseDTO();
 		try {
-			Account account = iAccountRepository.findByIdAndStatus(accountId, "ACTIVE");
-			System.out.println(account);
-			if (account != null) {
-				StudentProfile studentProfile = account.getStudentProfile();
-				String className = studentProfile.getClasses().getClassName();
-				String schoolName = studentProfile.getClasses().getSchoolGrade().getSchool().getSchoolName();
+			StudentProfile studentProfile = iStudentProfileRepository.findByIdAndStatus(id, "ACTIVE");
+			if (studentProfile == null) {
+				throw new ResourceNotFoundException();
+			}	
+			
+			Account account = studentProfile.getAccount();
+			String className = studentProfile.getClasses().getClassName();
+			String schoolName = studentProfile.getClasses().getSchoolGrade().getSchool().getSchoolName();
 
-				studentResponseDTO.setFirstName(account.getFirstName());
-				studentResponseDTO.setLastName(account.getLastName());
-				studentResponseDTO.setClassName(className);
-				studentResponseDTO.setSchoolName(schoolName);
-			}
+			studentResponseDTO = modelMapper.map(studentProfile, StudentResponseDTO.class);
+			studentResponseDTO.setFirstName(account.getFirstName());
+			studentResponseDTO.setLastName(account.getLastName());
+			studentResponseDTO.setClassName(className);
+			studentResponseDTO.setSchoolName(schoolName);
+
 		} catch (Exception e) {
-			logger.error("FIND: student by accountId = " + accountId + "! " + e.getMessage());
+			logger.error("FIND: student by studentId = " + id + "! " + e.getMessage());
 
 			return null;
 		}
@@ -179,6 +182,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 		for (StudentProfile studentProfile : studentProfileList) {
 			Account account = studentProfile.getAccount();
 			StudentResponseDTO studentResponseDTO = modelMapper.map(account, StudentResponseDTO.class);
+			studentResponseDTO.setId(studentProfile.getId());
 			studentResponseDTO.setSchoolName(schoolName);
 			studentResponseDTO.setGradeName(gradeName);
 			studentResponseDTO.setClassName(className);
@@ -237,38 +241,67 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 		String gender = studentRequestDTO.getGender();
 		String parentName = studentRequestDTO.getParentName();
 		String parentPhone = studentRequestDTO.getParentPhone();
-		studentProfile = new StudentProfile(DoB, gender, parentName, parentPhone, "ACTIVE", studentCount, account, classes);
+		studentProfile = new StudentProfile(DoB, gender, parentName, parentPhone, "ACTIVE", studentCount, account,
+				classes);
 		iStudentProfileRepository.save(studentProfile);
 
 		return "CREATE SUCCESS !";
 	}
 
 	@Override
+	public String updateStudent(long id, StudentRequestDTO studentProfileRequestDTO) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	@Transactional
 	public String changeStatusStudent(ListIdAndStatusDTO listIdAndStatusDTO) {
 		List<Long> ids = listIdAndStatusDTO.getIds();
 		String status = listIdAndStatusDTO.getStatus();
-		for (long accountId : ids) {
-			Account account = iAccountRepository.findByIdAndStatusNot(accountId, DELETE_STATUS);
-			if (account == null) {
+		for (long id : ids) {
+			StudentProfile studentProfile = iStudentProfileRepository.findByIdAndStatus(id, "ACTIVE");
+			if (studentProfile == null) {
 				throw new ResourceNotFoundException();
 			}
-			Classes defaultClass = iClassRepository.findById(0L).orElseThrow(() -> new ResourceNotFoundException());
-			StudentProfile studentProfile = account.getStudentProfile();
-			studentProfile.setStatus(status);
-			studentProfile.setClasses(defaultClass);
-			studentProfile.setStudentCount(defaultClass.getStudentProfileList().size() + 1);
+		}
+
+		for (long id : ids) {
+			StudentProfile studentProfile = iStudentProfileRepository.findByIdAndStatus(id, "ACTIVE");
+			Account account = studentProfile.getAccount();
 
 			if (status.equals(DELETE_STATUS)) {
-				String username = "DEL" + String.format("%05d", defaultClass.getStudentProfileList().size() + 1);
+				Classes deleteClass = iClassRepository.findById(0L).orElseThrow(() -> new ResourceNotFoundException());
+				studentProfile.setClasses(deleteClass);
+				studentProfile.setStudentCount(deleteClass.getStudentProfileList().size() + 1);
+
+				String username = "DEL" + String.format("%05d", deleteClass.getStudentProfileList().size() + 1);
 				account.setUsername(username);
 			}
 			if (status.equals(PENDING_STATUS)) {
-				String username = "PEND" + String.format("%05d", defaultClass.getStudentProfileList().size() + 1);
+				SchoolGrade schoolGrade = studentProfile.getClasses().getSchoolGrade();
+				Classes pendingClass = iClassRepository.findBySchoolGradeIdAndClassName(schoolGrade.getId(),
+						PENDING_STATUS);
+				if (pendingClass == null) {
+					pendingClass = new Classes();
+					pendingClass.setClassName(PENDING_STATUS);
+					pendingClass.setSchoolGrade(schoolGrade);
+					pendingClass.setStatus(PENDING_STATUS);
+					iClassRepository.save(pendingClass);
+				}
+				studentProfile.setClasses(pendingClass);
+				studentProfile.setStudentCount(pendingClass.getStudentProfileList().size() + 1);
+
+				String username = "PEND" + String.format("%05d", pendingClass.getStudentProfileList().size() + 1);
 				account.setUsername(username);
 			}
+			studentProfile.setStatus(status);
+			iStudentProfileRepository.save(studentProfile);
+
 			account.setStatus(status);
+			iAccountRepository.save(account);
 		}
-		
+
 		return "CHANGE SUCCESS!";
 	}
 
