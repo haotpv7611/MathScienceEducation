@@ -15,5 +15,5 @@ public interface ILessonRepository extends JpaRepository<Lesson, Long> {
 
 	Lesson findByIdAndIsDisableFalse(long id);
 	
-	Lesson findByUnitIdAndLessonNameIgnoreCaseAndIsDisableFalse(long id, String lessonName);
+	Lesson findByUnitIdAndLessonNameAndIsDisableFalse(long id, int lessonName);
 }

@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +24,9 @@ import com.example.demo.services.IScoreService;
 
 @Service
 public class ScoreServiceImpl implements IScoreService {
+	Logger logger = LoggerFactory.getLogger(ScoreServiceImpl.class);
+
+	private final String DELETED_STATUS = "DELETED";
 	@Autowired
 	private IUnitRepository iUnitRepository;
 
@@ -59,12 +64,12 @@ public class ScoreServiceImpl implements IScoreService {
 				lessonList.addAll(iLessonRepository.findByUnitIdAndIsDisableFalse(unitId));
 				if (!lessonList.isEmpty()) {
 					for (Lesson lesson : lessonList) {
-						String lessonName = lesson.getLessonName();
+						int lessonName = lesson.getLessonName();
 						List<ExerciseResponseDTO> exerciseResponseDTOList = new ArrayList<>();
 
 						List<Exercise> exerciseList = new ArrayList<>();
 						long lessonId = lesson.getId();
-						exerciseList.addAll(iExerciseRepository.findByLessonIdAndIsDisableFalse(lessonId));
+						exerciseList.addAll(iExerciseRepository.findByLessonIdAndStatusNot(lessonId, DELETED_STATUS));
 						totalExericse += exerciseList.size();
 
 						for (Exercise exercise : exerciseList) {

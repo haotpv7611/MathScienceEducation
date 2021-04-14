@@ -21,7 +21,7 @@ public class Lesson {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
-	private String lessonName;
+	private int lessonName;
 	private String lessonUrl;
 	private long unitId;
 	private boolean isDisable;
@@ -78,11 +78,11 @@ public class Lesson {
 		this.modifiedBy = modifiedBy;
 	}
 
-	public String getLessonName() {
+	public int getLessonName() {
 		return lessonName;
 	}
 
-	public void setLessonName(String lessonName) {
+	public void setLessonName(int lessonName) {
 		this.lessonName = lessonName;
 	}
 

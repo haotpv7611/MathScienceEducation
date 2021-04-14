@@ -9,9 +9,9 @@ import com.example.demo.models.Game;
 
 @Repository
 public interface IGameRepository extends JpaRepository<Game, Long> {
-	List<Game> findByLessonIdAndIsDisableFalse(long lessonId);
+	List<Game> findByLessonIdAndStatusNot(long lessonId, String status);
 
-	Game findByIdAndIsDisableFalse(long id);
+	Game findByIdAndStatusNot(long id, String status);
 
-	Game findByLessonIdAndGameNameAndIsDisableFalse(long lessonId, String gameName);
+	Game findByLessonIdAndGameNameAndStatusNot(long lessonId, int gameName, String status);
 }

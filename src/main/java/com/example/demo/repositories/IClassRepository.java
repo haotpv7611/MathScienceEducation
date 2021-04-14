@@ -14,4 +14,6 @@ public interface IClassRepository extends JpaRepository<Classes, Long> {
 	Classes findByIdAndStatusNot(long id, String status);
 	
 	Classes findBySchoolGradeIdAndClassName(long schoolGradeId, String className);
+	
+	List<Classes> findBySchoolGradeIdAndStatusNot(long schoolGradeId, String status);
 }

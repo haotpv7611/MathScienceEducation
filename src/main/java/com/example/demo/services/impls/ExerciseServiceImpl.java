@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.dtos.ExerciseRequestDTO;
 import com.example.demo.dtos.ExerciseResponseDTO;
+import com.example.demo.dtos.IdAndStatusDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.Exercise;
 import com.example.demo.models.ExerciseGameQuestion;
@@ -29,6 +30,9 @@ import com.example.demo.services.IExerciseService;
 @Service
 public class ExerciseServiceImpl implements IExerciseService {
 	Logger logger = LoggerFactory.getLogger(ExerciseServiceImpl.class);
+
+	private final String INACTIVE_STATUS = "INACTIVE";
+	private final String DELETED_STATUS = "DELETED";
 
 	@Autowired
 	private IExerciseRepository iExerciseRepository;
@@ -55,8 +59,8 @@ public class ExerciseServiceImpl implements IExerciseService {
 	public List<ExerciseResponseDTO> findByLessonIdOrderByExerciseNameAsc(long lessonId) {
 		List<ExerciseResponseDTO> exerciseResponseDTOList = new ArrayList<>();
 		try {
-			List<Exercise> exerciseList = iExerciseRepository
-					.findByLessonIdAndIsDisableFalseOrderByExerciseNameAsc(lessonId);
+			List<Exercise> exerciseList = iExerciseRepository.findByLessonIdAndStatusNotOrderByExerciseNameAsc(lessonId,
+					DELETED_STATUS);
 			if (!exerciseList.isEmpty()) {
 				for (Exercise exercise : exerciseList) {
 					ExerciseResponseDTO exerciseResponseDTO = modelMapper.map(exercise, ExerciseResponseDTO.class);
@@ -76,13 +80,10 @@ public class ExerciseServiceImpl implements IExerciseService {
 	public List<ExerciseResponseDTO> findByLessonIdStudentView(long lessonId, long accountId) {
 		List<ExerciseResponseDTO> exerciseResponseDTOList = new ArrayList<>();
 		try {
-			List<Exercise> exerciseList = iExerciseRepository
-					.findByLessonIdAndIsDisableFalseOrderByExerciseNameAsc(lessonId);
+			List<Exercise> exerciseList = iExerciseRepository.findByLessonIdAndStatusNotOrderByExerciseNameAsc(lessonId,
+					DELETED_STATUS);
 			if (!exerciseList.isEmpty()) {
 				for (Exercise exercise : exerciseList) {
-//					List<Long> questionIdList = iExerciseGameQuestionService
-//							.findAllQuestionIdByExerciseId(exercise.getId());
-
 					List<ExerciseGameQuestion> exerciseGameQuestionList = iExerciseGameQuestionRepository
 							.findByExerciseIdAndIsDisableFalse(exercise.getId());
 					if (!exerciseGameQuestionList.isEmpty()) {
@@ -110,7 +111,7 @@ public class ExerciseServiceImpl implements IExerciseService {
 		List<ExerciseResponseDTO> exerciseResponseDTOList = new ArrayList<>();
 		try {
 			List<Exercise> exerciseList = iExerciseRepository
-					.findByProgressTestIdAndIsDisableFalseOrderByExerciseNameAsc(progressTestId);
+					.findByProgressTestIdAndStatusNotOrderByExerciseNameAsc(progressTestId, DELETED_STATUS);
 			if (!exerciseList.isEmpty()) {
 				for (Exercise exercise : exerciseList) {
 					ExerciseResponseDTO exerciseResponseDTO = modelMapper.map(exercise, ExerciseResponseDTO.class);
@@ -131,12 +132,9 @@ public class ExerciseServiceImpl implements IExerciseService {
 		List<ExerciseResponseDTO> exerciseResponseDTOList = new ArrayList<>();
 		try {
 			List<Exercise> exerciseList = iExerciseRepository
-					.findByProgressTestIdAndIsDisableFalseOrderByExerciseNameAsc(progressTestId);
+					.findByProgressTestIdAndStatusNotOrderByExerciseNameAsc(progressTestId, DELETED_STATUS);
 			if (!exerciseList.isEmpty()) {
 				for (Exercise exercise : exerciseList) {
-//					List<Long> questionIdList = iExerciseGameQuestionService
-//							.findAllQuestionIdByExerciseId(exercise.getId());
-
 					List<ExerciseGameQuestion> exerciseGameQuestionList = iExerciseGameQuestionRepository
 							.findByExerciseIdAndIsDisableFalse(exercise.getId());
 					if (!exerciseGameQuestionList.isEmpty()) {
@@ -165,7 +163,7 @@ public class ExerciseServiceImpl implements IExerciseService {
 		boolean isProgressTest = exerciseRequestDTO.isProgressTest();
 		long lessonId = exerciseRequestDTO.getLessonId();
 		long progressTestId = exerciseRequestDTO.getProgressTestId();
-		String exerciseName = exerciseRequestDTO.getExerciseName();
+		int exerciseName = exerciseRequestDTO.getExerciseName();
 		String description = exerciseRequestDTO.getDescription();
 
 		try {
@@ -183,9 +181,9 @@ public class ExerciseServiceImpl implements IExerciseService {
 
 			Exercise exercise = null;
 			if (isProgressTest) {
-				exercise = new Exercise(exerciseName, description, 0, progressTestId, isProgressTest, false);
+				exercise = new Exercise(exerciseName, description, 0, progressTestId, isProgressTest, INACTIVE_STATUS);
 			} else {
-				exercise = new Exercise(exerciseName, description, lessonId, 0, isProgressTest, false);
+				exercise = new Exercise(exerciseName, description, lessonId, 0, isProgressTest, INACTIVE_STATUS);
 			}
 			iExerciseRepository.save(exercise);
 		} catch (Exception e) {
@@ -208,12 +206,12 @@ public class ExerciseServiceImpl implements IExerciseService {
 		boolean isProgressTest = exerciseRequestDTO.isProgressTest();
 		long progressTestId = exerciseRequestDTO.getProgressTestId();
 		long lessonId = exerciseRequestDTO.getLessonId();
-		String exerciseName = exerciseRequestDTO.getExerciseName();
+		int exerciseName = exerciseRequestDTO.getExerciseName();
 		String description = exerciseRequestDTO.getDescription();
 
 		try {
 			// validate exerciseId and check exerciseName existed
-			Exercise exercise = iExerciseRepository.findByIdAndIsDisableFalse(id);
+			Exercise exercise = iExerciseRepository.findByIdAndStatusNot(id, DELETED_STATUS);
 			if (exercise == null) {
 				throw new ResourceNotFoundException();
 			}
@@ -229,15 +227,15 @@ public class ExerciseServiceImpl implements IExerciseService {
 				}
 			}
 
-			if (!exercise.getExerciseName().equalsIgnoreCase(exerciseName)) {
+			if (exercise.getExerciseName() != exerciseName) {
 				if (isProgressTest) {
-					if (iExerciseRepository.findByProgressTestIdAndExerciseNameAndIsDisableFalse(progressTestId,
-							exerciseName) != null) {
+					if (iExerciseRepository.findByProgressTestIdAndExerciseNameAndStatusNot(progressTestId,
+							exerciseName, DELETED_STATUS) != null) {
 						return "EXISTED";
 					}
 				} else {
-					if (iExerciseRepository.findByLessonIdAndExerciseNameAndIsDisableFalse(lessonId,
-							exerciseName) != null) {
+					if (iExerciseRepository.findByLessonIdAndExerciseNameAndStatusNot(lessonId,
+							exerciseName, DELETED_STATUS) != null) {
 						return "EXISTED";
 					}
 				}
@@ -260,11 +258,11 @@ public class ExerciseServiceImpl implements IExerciseService {
 
 	// done ok
 	@Override
-	public String deleteExercise(long id) {
+	public String changeExerciseStatus(IdAndStatusDTO idAndStatusDTO) {
 		try {
-			deleteOneExercise(id);
+			changeExerciseStatus(idAndStatusDTO);
 		} catch (Exception e) {
-			logger.error("DELETE: exerciseId = " + id + "! " + e.getMessage());
+			logger.error("DELETE: exerciseId = " + idAndStatusDTO.getId() + "! " + e.getMessage());
 			if (e instanceof ResourceNotFoundException) {
 
 				return "NOT FOUND!";
@@ -279,15 +277,15 @@ public class ExerciseServiceImpl implements IExerciseService {
 	// done ok
 	@Override
 	@Transactional
-	public void deleteOneExercise(long id) {
+	public void changeStatusOne(IdAndStatusDTO idAndStatusDTO) {
+		long id = idAndStatusDTO.getId();
+		String status = idAndStatusDTO.getStatus();
 		try {
 			// validate exerciseId
-			Exercise exercise = iExerciseRepository.findByIdAndIsDisableFalse(id);
+			Exercise exercise = iExerciseRepository.findByIdAndStatusNot(id, DELETED_STATUS);
 			if (exercise == null) {
 				throw new ResourceNotFoundException();
 			}
-
-//			List<Long> exerciseQuestionIdList = iExerciseGameQuestionService.findAllQuestionIdByExerciseId(id);
 
 			List<ExerciseGameQuestion> exerciseGameQuestionList = iExerciseGameQuestionRepository
 					.findByExerciseIdAndIsDisableFalse(exercise.getId());
@@ -302,7 +300,7 @@ public class ExerciseServiceImpl implements IExerciseService {
 					iExerciseGameQuestionService.deleteOneExerciseGameQuestion(exerciseQuestionId);
 				}
 			}
-			exercise.setDisable(true);
+			exercise.setStatus(status);			
 			iExerciseRepository.save(exercise);
 		} catch (Exception e) {
 			throw e;

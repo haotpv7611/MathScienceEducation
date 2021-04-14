@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.dtos.GameRequestDTO;
 import com.example.demo.dtos.GameResponseDTO;
+import com.example.demo.dtos.IdAndStatusDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.ExerciseGameQuestion;
 import com.example.demo.models.Game;
@@ -25,6 +26,9 @@ import com.example.demo.services.IGameService;
 @Service
 public class GameServiceImpl implements IGameService {
 	Logger logger = LoggerFactory.getLogger(GameServiceImpl.class);
+
+	private final String INACTIVE_STATUS = "INACTIVE";
+	private final String DELETED_STATUS = "DELETED";
 
 	@Autowired
 	IGameRepository iGameRepository;
@@ -45,7 +49,7 @@ public class GameServiceImpl implements IGameService {
 	public Object findGameById(long id) {
 		GameResponseDTO gameResponseDTO = null;
 		try {
-			Game game = iGameRepository.findByIdAndIsDisableFalse(id);
+			Game game = iGameRepository.findByIdAndStatusNot(id, DELETED_STATUS);
 			if (game == null) {
 				throw new ResourceNotFoundException();
 			}
@@ -68,7 +72,7 @@ public class GameServiceImpl implements IGameService {
 	public List<GameResponseDTO> findAllByLessonId(long lessonId) {
 		List<GameResponseDTO> gameResponseDTOList = new ArrayList<>();
 		try {
-			List<Game> gameList = iGameRepository.findByLessonIdAndIsDisableFalse(lessonId);
+			List<Game> gameList = iGameRepository.findByLessonIdAndStatusNot(lessonId, DELETED_STATUS);
 
 			if (!gameList.isEmpty()) {
 				for (Game game : gameList) {
@@ -89,7 +93,7 @@ public class GameServiceImpl implements IGameService {
 	public List<GameResponseDTO> findAllByLessonIdStudentView(long lessonId) {
 		List<GameResponseDTO> gameResponseDTOList = new ArrayList<>();
 		try {
-			List<Game> gameList = iGameRepository.findByLessonIdAndIsDisableFalse(lessonId);
+			List<Game> gameList = iGameRepository.findByLessonIdAndStatusNot(lessonId, DELETED_STATUS);
 
 			if (!gameList.isEmpty()) {
 				for (Game game : gameList) {
@@ -113,7 +117,7 @@ public class GameServiceImpl implements IGameService {
 
 	@Override
 	public String createGame(GameRequestDTO gameRequestDTO) {
-		String gameName = gameRequestDTO.getGameName();
+		int gameName = gameRequestDTO.getGameName();
 		long lessonId = gameRequestDTO.getLessonId();
 
 		try {
@@ -122,10 +126,11 @@ public class GameServiceImpl implements IGameService {
 			if (lesson == null) {
 				throw new ResourceNotFoundException();
 			}
-			if (iGameRepository.findByLessonIdAndGameNameAndIsDisableFalse(lessonId, gameName) != null) {
+			if (iGameRepository.findByLessonIdAndGameNameAndStatusNot(lessonId, gameName, DELETED_STATUS) != null) {
 				return "EXISTED";
 			}
 			Game game = modelMapper.map(gameRequestDTO, Game.class);
+			game.setStatus(INACTIVE_STATUS);
 			iGameRepository.save(game);
 		} catch (Exception e) {
 			logger.error("CREATE: gameName = " + gameName + " in lessonId =  " + lessonId + "! " + e.getMessage());
@@ -142,7 +147,7 @@ public class GameServiceImpl implements IGameService {
 
 	@Override
 	public String updateGame(long id, GameRequestDTO gameRequestDTO) {
-		String gameNameDTO = gameRequestDTO.getGameName();
+		int gameNameDTO = gameRequestDTO.getGameName();
 		long lessonId = gameRequestDTO.getLessonId();
 
 		try {
@@ -151,12 +156,12 @@ public class GameServiceImpl implements IGameService {
 			if (lesson == null) {
 				throw new ResourceNotFoundException();
 			}
-			Game game = iGameRepository.findByIdAndIsDisableFalse(id);
+			Game game = iGameRepository.findByIdAndStatusNot(id, DELETED_STATUS);
 			if (game == null) {
 				throw new ResourceNotFoundException();
 			}
-			if (!game.getGameName().equalsIgnoreCase(gameNameDTO)) {
-				if (iGameRepository.findByLessonIdAndGameNameAndIsDisableFalse(lessonId, gameNameDTO) != null) {
+			if (game.getGameName() != gameNameDTO) {
+				if (iGameRepository.findByLessonIdAndGameNameAndStatusNot(lessonId, gameNameDTO, DELETED_STATUS) != null) {
 
 					return "EXISTED";
 				}
@@ -179,11 +184,11 @@ public class GameServiceImpl implements IGameService {
 	}
 
 	@Override
-	public String deleteGame(long id) {
+	public String changeGameStatus(IdAndStatusDTO idAndStatusDTO) {
 		try {
-			deleteOneGame(id);
+			changeStatusOne(idAndStatusDTO);
 		} catch (Exception e) {
-			logger.error("DELETE: gameId = " + id + "! " + e.getMessage());
+			logger.error("DELETE: gameId = " + idAndStatusDTO.getId() + "! " + e.getMessage());
 			if (e instanceof ResourceNotFoundException) {
 
 				return "NOT FOUND!";
@@ -197,10 +202,12 @@ public class GameServiceImpl implements IGameService {
 
 	@Override
 	@Transactional
-	public void deleteOneGame(long id) {
+	public void changeStatusOne(IdAndStatusDTO idAndStatusDTO) {
+		long id = idAndStatusDTO.getId();
+		String status = idAndStatusDTO.getStatus();
 		try {
 			// validate gameId
-			Game game = iGameRepository.findByIdAndIsDisableFalse(id);
+			Game game = iGameRepository.findByIdAndStatusNot(id, DELETED_STATUS);
 			if (game == null) {
 				throw new ResourceNotFoundException();
 			}
@@ -213,7 +220,7 @@ public class GameServiceImpl implements IGameService {
 					iExerciseGameQuestionService.deleteOneExerciseGameQuestion(exerciseGameQuestion.getGameId());
 				}
 			}
-			game.setDisable(true);
+			game.setStatus(status);;
 			iGameRepository.save(game);
 		} catch (Exception e) {
 			throw e;

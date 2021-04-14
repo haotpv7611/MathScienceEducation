@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.dtos.LessonResponseDTO;
+import com.example.demo.dtos.IdAndStatusDTO;
 import com.example.demo.dtos.LessonRequestDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.Exercise;
@@ -28,6 +29,8 @@ import com.example.demo.services.ILessonService;
 @Service
 public class LessonServiceImpl implements ILessonService {
 	Logger logger = LoggerFactory.getLogger(LessonServiceImpl.class);
+
+	private final String DELETED_STATUS = "DELETED";
 
 	@Autowired
 	ILessonRepository iLessonRepository;
@@ -106,7 +109,7 @@ public class LessonServiceImpl implements ILessonService {
 	@Override
 	public String createLesson(LessonRequestDTO lessonRequestDTO) {
 		long unitId = lessonRequestDTO.getUnitId();
-		String lessonName = lessonRequestDTO.getLessonName();
+		int lessonName = lessonRequestDTO.getLessonName();
 
 		try {
 			// validate unitId and check lessonName existed
@@ -114,7 +117,7 @@ public class LessonServiceImpl implements ILessonService {
 			if (unit == null) {
 				throw new ResourceNotFoundException();
 			}
-			if (iLessonRepository.findByUnitIdAndLessonNameIgnoreCaseAndIsDisableFalse(unitId, lessonName) != null) {
+			if (iLessonRepository.findByUnitIdAndLessonNameAndIsDisableFalse(unitId, lessonName) != null) {
 
 				return "EXISTED";
 			}
@@ -138,7 +141,7 @@ public class LessonServiceImpl implements ILessonService {
 	// done
 	@Override
 	public String updateLesson(long id, LessonRequestDTO lessonRequestDTO) {
-		String lessonName = lessonRequestDTO.getLessonName();
+		int lessonName = lessonRequestDTO.getLessonName();
 		String lessonUrl = lessonRequestDTO.getLessonUrl();
 
 		try {
@@ -152,8 +155,8 @@ public class LessonServiceImpl implements ILessonService {
 			if (unit == null) {
 				throw new ResourceNotFoundException();
 			}
-			if (!lesson.getLessonName().equalsIgnoreCase(lessonName)) {
-				if (iLessonRepository.findByUnitIdAndLessonNameIgnoreCaseAndIsDisableFalse(unitId,
+			if (lesson.getLessonName() != lessonName) {
+				if (iLessonRepository.findByUnitIdAndLessonNameAndIsDisableFalse(unitId,
 						lessonName) != null) {
 
 					return "EXISTED";
@@ -204,16 +207,18 @@ public class LessonServiceImpl implements ILessonService {
 				throw new ResourceNotFoundException();
 			}
 
-			List<Exercise> exerciseList = iExerciseRepository.findByLessonIdAndIsDisableFalse(id);
+			List<Exercise> exerciseList = iExerciseRepository.findByLessonIdAndStatusNot(id, DELETED_STATUS);
 			if (!exerciseList.isEmpty()) {
 				for (Exercise exercise : exerciseList) {
-					iExerciseService.deleteOneExercise(exercise.getId());
+					IdAndStatusDTO idAndStatusDTO = new IdAndStatusDTO(exercise.getId(), DELETED_STATUS);
+					iExerciseService.changeStatusOne(idAndStatusDTO);
 				}
 			}
-			List<Game> gameList = iGameRepository.findByLessonIdAndIsDisableFalse(id);
+			List<Game> gameList = iGameRepository.findByLessonIdAndStatusNot(id, DELETED_STATUS);
 			if (!gameList.isEmpty()) {
 				for (Game game : gameList) {
-					iGameService.deleteOneGame(game.getId());
+					IdAndStatusDTO idAndStatusDTO = new IdAndStatusDTO(game.getId(), DELETED_STATUS);
+					iGameService.changeStatusOne(idAndStatusDTO);
 				}
 			}
 

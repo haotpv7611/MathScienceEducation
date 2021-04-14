@@ -3,15 +3,14 @@ package com.example.demo.dtos;
 public class StudentResponseDTO {
 	private long id;
 	private String username;
-	private String firstName;
-	private String lastName;
+	private String fullName;
 	private String schoolName;
 	private int gradeName;
 	private String className;
 	private String DoB;
 	private String gender;
 	private String parentName;
-	private String parentPhone;
+	private String contact;
 
 	private String status;
 
@@ -30,31 +29,17 @@ public class StudentResponseDTO {
 	}
 
 	/**
-	 * @return the firstName
+	 * @return the fullName
 	 */
-	public String getFirstName() {
-		return firstName;
+	public String getFullName() {
+		return fullName;
 	}
 
 	/**
-	 * @param firstName the firstName to set
+	 * @param fullName the fullName to set
 	 */
-	public void setFirstName(String firstName) {
-		this.firstName = firstName;
-	}
-
-	/**
-	 * @return the lastName
-	 */
-	public String getLastName() {
-		return lastName;
-	}
-
-	/**
-	 * @param lastName the lastName to set
-	 */
-	public void setLastName(String lastName) {
-		this.lastName = lastName;
+	public void setFullName(String fullName) {
+		this.fullName = fullName;
 	}
 
 	/**
@@ -156,17 +141,17 @@ public class StudentResponseDTO {
 	}
 
 	/**
-	 * @return the parentPhone
+	 * @return the contact
 	 */
-	public String getParentPhone() {
-		return parentPhone;
+	public String getContact() {
+		return contact;
 	}
 
 	/**
-	 * @param parentPhone the parentPhone to set
+	 * @param contact the contact to set
 	 */
-	public void setParentPhone(String parentPhone) {
-		this.parentPhone = parentPhone;
+	public void setContact(String contact) {
+		this.contact = contact;
 	}
 
 	/**

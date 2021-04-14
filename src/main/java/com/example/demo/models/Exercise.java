@@ -21,12 +21,12 @@ public class Exercise {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
-	private String exerciseName;
+	private int exerciseName;
 	private String description;
 	private long lessonId;
 	private long progressTestId;
 	private boolean isProgressTest;
-	private boolean isDisable;
+	private String status;
 
 	@CreatedDate
 	private LocalDateTime createdDate;
@@ -56,11 +56,11 @@ public class Exercise {
 		this.description = description;
 	}
 
-	public String getExerciseName() {
+	public int getExerciseName() {
 		return exerciseName;
 	}
 
-	public void setExerciseName(String exerciseName) {
+	public void setExerciseName(int exerciseName) {
 		this.exerciseName = exerciseName;
 	}
 
@@ -120,12 +120,18 @@ public class Exercise {
 		this.isProgressTest = isProgressTest;
 	}
 
-	public boolean isDisable() {
-		return isDisable;
+	/**
+	 * @return the status
+	 */
+	public String getStatus() {
+		return status;
 	}
 
-	public void setDisable(boolean isDisable) {
-		this.isDisable = isDisable;
+	/**
+	 * @param status the status to set
+	 */
+	public void setStatus(String status) {
+		this.status = status;
 	}
 
 	public long getId() {
@@ -136,15 +142,15 @@ public class Exercise {
 
 	}
 
-	public Exercise(String exerciseName, String description, long lessonId, long progressTestId, boolean isProgressTest,
-			boolean isDisable) {
+	public Exercise(int exerciseName, String description, long lessonId, long progressTestId, boolean isProgressTest,
+			String status) {
 		super();
 		this.exerciseName = exerciseName;
 		this.description = description;
 		this.lessonId = lessonId;
 		this.progressTestId = progressTestId;
 		this.isProgressTest = isProgressTest;
-		this.isDisable = isDisable;
+		this.status = status;
 	}
 
 }

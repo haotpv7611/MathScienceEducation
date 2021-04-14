@@ -3,13 +3,13 @@ package com.example.demo.dtos;
 import java.util.List;
 
 public class LessonScoreViewDTO {
-	private String lessonName;
+	private int lessonName;
 	private List<ExerciseResponseDTO> exerciseResponseDTOList;
 
 	public LessonScoreViewDTO() {
 	}
 
-	public LessonScoreViewDTO(String lessonName, List<ExerciseResponseDTO> exerciseResponseDTOList) {
+	public LessonScoreViewDTO(int lessonName, List<ExerciseResponseDTO> exerciseResponseDTOList) {
 		super();
 		this.lessonName = lessonName;
 		this.exerciseResponseDTOList = exerciseResponseDTOList;
@@ -18,14 +18,14 @@ public class LessonScoreViewDTO {
 	/**
 	 * @return the lessonName
 	 */
-	public String getLessonName() {
+	public int getLessonName() {
 		return lessonName;
 	}
 
 	/**
 	 * @param lessonName the lessonName to set
 	 */
-	public void setLessonName(String lessonName) {
+	public void setLessonName(int lessonName) {
 		this.lessonName = lessonName;
 	}
 

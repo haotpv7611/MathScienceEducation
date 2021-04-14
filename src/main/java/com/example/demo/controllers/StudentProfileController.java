@@ -1,5 +1,6 @@
 package com.example.demo.controllers;
 
+import java.io.IOException;
 import java.util.List;
 
 import javax.validation.Valid;
@@ -63,15 +64,9 @@ public class StudentProfileController {
 	}
 
 	@PostMapping("/student/import")
-	public ResponseEntity<String> importStudent(@RequestParam MultipartFile file) {
-//		if (bindingResult.hasErrors()) {
-//			String error = "";
-//			for (ObjectError object : bindingResult.getAllErrors()) {
-//				error += "\n" + object.getDefaultMessage();
-//			}
-//
-//			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
-//		}
+	public ResponseEntity<String> importStudent(@RequestParam MultipartFile file, @RequestParam long schoolId, @RequestParam long gradeId) throws IOException{
+//		System.out.println(file.getContentType());
+//		iStudentProfileService.testImport(file, schoolId, gradeId);
 		return ResponseEntity.status(HttpStatus.CREATED).body(null);
 	}
 

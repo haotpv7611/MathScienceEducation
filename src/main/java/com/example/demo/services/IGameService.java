@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.example.demo.dtos.GameRequestDTO;
 import com.example.demo.dtos.GameResponseDTO;
+import com.example.demo.dtos.IdAndStatusDTO;
 
 public interface IGameService {
 
@@ -17,7 +18,7 @@ public interface IGameService {
 
 	String createGame(GameRequestDTO gameRequestDTO);
 
-	String deleteGame(long id);
+	String changeGameStatus(IdAndStatusDTO idAndStatusDTO);
 
-	void deleteOneGame(long id);
+	void changeStatusOne(IdAndStatusDTO idAndStatusDTO);
 }

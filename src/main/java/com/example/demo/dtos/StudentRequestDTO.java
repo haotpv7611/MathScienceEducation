@@ -8,12 +8,10 @@ public class StudentRequestDTO {
 //	private long schoolId;
 //	private long gradeId;
 	private long classId;
-	@NotNull(message = "FirstName must be not null!")
-	@Length(max = 30, message = "FirstName length must be less than 30!")
-	private String firtName;
-	@NotNull(message = "LastName must be not null!")
-	@Length(max = 50, message = "LastName length must be less than 50!")
-	private String lastName;
+	@NotNull(message = "FullName must be not null!")
+	@Length(max = 30, message = "FullName length must be less than 30!")
+	private String fullName;
+
 	private String DoB;
 	@NotNull(message = "Gender must be not null!")
 	@Length(max = 10, message = "Gender length must be less than 10!")
@@ -23,7 +21,7 @@ public class StudentRequestDTO {
 	private String parentName;
 	@NotNull(message = "ParentPhone must be not null!")
 	@Length(max = 50, message = "ParentPhone length must be less than 50!")
-	private String parentPhone;
+	private String contact;
 
 //	/**
 //	 * @return the schoolId
@@ -53,6 +51,24 @@ public class StudentRequestDTO {
 //		this.gradeId = gradeId;
 //	}
 
+	public StudentRequestDTO() {
+	}
+
+	public StudentRequestDTO(long classId,
+			@NotNull(message = "FullName must be not null!") @Length(max = 30, message = "FullName length must be less than 30!") String fullName,
+			String doB,
+			@NotNull(message = "Gender must be not null!") @Length(max = 10, message = "Gender length must be less than 10!") String gender,
+			@NotNull(message = "ParentName must be not null!") @Length(max = 50, message = "ParentName length must be less than 50!") String parentName,
+			@NotNull(message = "ParentPhone must be not null!") @Length(max = 50, message = "ParentPhone length must be less than 50!") String contact) {
+		super();
+		this.classId = classId;
+		this.fullName = fullName;
+		DoB = doB;
+		this.gender = gender;
+		this.parentName = parentName;
+		this.contact = contact;
+	}
+
 	/**
 	 * @return the classId
 	 */
@@ -68,31 +84,17 @@ public class StudentRequestDTO {
 	}
 
 	/**
-	 * @return the firtName
+	 * @return the fullName
 	 */
-	public String getFirtName() {
-		return firtName;
+	public String getFullName() {
+		return fullName;
 	}
 
 	/**
-	 * @param firtName the firtName to set
+	 * @param fullName the fullName to set
 	 */
-	public void setFirtName(String firtName) {
-		this.firtName = firtName;
-	}
-
-	/**
-	 * @return the lastName
-	 */
-	public String getLastName() {
-		return lastName;
-	}
-
-	/**
-	 * @param lastName the lastName to set
-	 */
-	public void setLastName(String lastName) {
-		this.lastName = lastName;
+	public void setFullName(String fullName) {
+		this.fullName = fullName;
 	}
 
 	/**
@@ -138,17 +140,17 @@ public class StudentRequestDTO {
 	}
 
 	/**
-	 * @return the parentPhone
+	 * @return the contact
 	 */
-	public String getParentPhone() {
-		return parentPhone;
+	public String getContact() {
+		return contact;
 	}
 
 	/**
-	 * @param parentPhone the parentPhone to set
+	 * @param contact the contact to set
 	 */
-	public void setParentPhone(String parentPhone) {
-		this.parentPhone = parentPhone;
+	public void setContact(String contact) {
+		this.contact = contact;
 	}
 
 }

@@ -26,6 +26,7 @@ public class ExerciseTakenServiceImpl implements IExerciseTakenService {
 	Logger logger = LoggerFactory.getLogger(ExerciseTakenServiceImpl.class);
 
 	private final String ACTIVE_STATUS = "ACTIVE";
+	private final String DELETED_STATUS = "DELETED";
 
 	@Autowired
 	IExerciseTakenRepository iExerciseTakenRepository;
@@ -76,7 +77,7 @@ public class ExerciseTakenServiceImpl implements IExerciseTakenService {
 			if (account == null) {
 				throw new ResourceNotFoundException();
 			}
-			Exercise exercise = iExerciseRepository.findByIdAndIsDisableFalse(exerciseId);
+			Exercise exercise = iExerciseRepository.findByIdAndStatusNot(exerciseId, DELETED_STATUS);
 			if (exercise == null) {
 				throw new ResourceNotFoundException();
 			}

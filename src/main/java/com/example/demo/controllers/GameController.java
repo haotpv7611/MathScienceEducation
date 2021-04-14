@@ -15,11 +15,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dtos.GameRequestDTO;
 import com.example.demo.dtos.GameResponseDTO;
+import com.example.demo.dtos.IdAndStatusDTO;
 import com.example.demo.services.IGameService;
 
 @CrossOrigin
@@ -124,8 +124,8 @@ public class GameController {
 	}
 
 	@PutMapping("/game")
-	public ResponseEntity<String> deleteGame(@RequestParam long id) {
-		String response = iGameService.deleteGame(id);
+	public ResponseEntity<String> deleteGame(@RequestBody IdAndStatusDTO idAndStatusDTO) {
+		String response = iGameService.changeGameStatus(idAndStatusDTO);
 		if (response.contains("NOT FOUND")) {
 
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);

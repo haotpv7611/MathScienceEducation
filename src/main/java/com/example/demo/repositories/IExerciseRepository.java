@@ -10,17 +10,17 @@ import com.example.demo.models.Exercise;
 @Repository
 public interface IExerciseRepository extends JpaRepository<Exercise, Long> {
 
-	List<Exercise> findByLessonIdAndIsDisableFalse(long lessonId);
+	List<Exercise> findByLessonIdAndStatusNot(long lessonId, String status);
 
-	List<Exercise> findByLessonIdAndIsDisableFalseOrderByExerciseNameAsc(long lessonId);
+	List<Exercise> findByLessonIdAndStatusNotOrderByExerciseNameAsc(long lessonId, String status);
 
-	List<Exercise> findByProgressTestIdAndIsDisableFalse(long progressTestId);
+	List<Exercise> findByProgressTestIdAndStatusNot(long progressTestId, String status);
 
-	List<Exercise> findByProgressTestIdAndIsDisableFalseOrderByExerciseNameAsc(long progressTestId);
+	List<Exercise> findByProgressTestIdAndStatusNotOrderByExerciseNameAsc(long progressTestId, String status);
 
-	Exercise findByIdAndIsDisableFalse(long id);
+	Exercise findByIdAndStatusNot(long id, String status);
 
-	Exercise findByLessonIdAndExerciseNameAndIsDisableFalse(long lessonId, String exerciseName);
+	Exercise findByLessonIdAndExerciseNameAndStatusNot(long lessonId, int exerciseName, String status);
 
-	Exercise findByProgressTestIdAndExerciseNameAndIsDisableFalse(long progressTestId, String exerciseName);
+	Exercise findByProgressTestIdAndExerciseNameAndStatusNot(long progressTestId, int exerciseName, String status);
 }

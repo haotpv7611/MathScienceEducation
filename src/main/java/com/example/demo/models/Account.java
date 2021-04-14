@@ -28,9 +28,7 @@ public class Account {
 	@Column(unique = true)
 	private String username;
 	private String password;
-
-	private String firstName;
-	private String lastName;
+	private String fullName;
 	private int roleId;
 
 	@CreatedDate
@@ -42,7 +40,7 @@ public class Account {
 //	@LastModifiedBy
 	private String modifiedBy;
 	private String status;
-	
+
 	@PrePersist
 	public void onCreate() {
 		this.createdDate = LocalDateTime.now(ZoneId.of("UTC+7"));
@@ -61,12 +59,11 @@ public class Account {
 
 	}
 
-	public Account(String username, String password, String firstName, String lastName, int roleId, String status) {
+	public Account(String username, String password, String fullName, int roleId, String status) {
 		super();
 		this.username = username;
 		this.password = password;
-		this.firstName = firstName;
-		this.lastName = lastName;
+		this.fullName = fullName;
 		this.roleId = roleId;
 		this.status = status;
 	}
@@ -92,29 +89,15 @@ public class Account {
 	/**
 	 * @return the firstName
 	 */
-	public String getFirstName() {
-		return firstName;
+	public String getFullName() {
+		return fullName;
 	}
 
 	/**
 	 * @param firstName the firstName to set
 	 */
-	public void setFirstName(String firstName) {
-		this.firstName = firstName;
-	}
-
-	/**
-	 * @return the lastName
-	 */
-	public String getLastName() {
-		return lastName;
-	}
-
-	/**
-	 * @param lastName the lastName to set
-	 */
-	public void setLastName(String lastName) {
-		this.lastName = lastName;
+	public void setFullName(String fullName) {
+		this.fullName = fullName;
 	}
 
 	/**

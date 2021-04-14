@@ -111,15 +111,15 @@ public class ImportStudentService {
 				String totalStudent = String.format("%03d", (countStudent + 1)).substring(0, 3);
 				System.out.println(totalStudent);
 				String username = schoolCode + gradeName + totalStudent;
-				Account account = new Account(username, "123456", firstName, lastName, 3, "ACTIVE");
-				Account newAccount = iAccountRepository.save(account);
-				
-				System.out.println("104: " + account.getId());
+//				Account account = new Account(username, "123456", firstName, lastName, 3, "ACTIVE");
+//				Account newAccount = iAccountRepository.save(account);
+//				
+//				System.out.println("104: " + account.getId());
 
-				StudentProfile studentProfile = new StudentProfile(DOB, gender, parentName, parentPhone,
-						newAccount, classes);
-				studentProfile.setStatus("ACTIVE");
-				iStudentProfileRepository.save(studentProfile);
+//				StudentProfile studentProfile = new StudentProfile(DOB, gender, parentName, parentPhone,
+//						newAccount, classes);
+//				studentProfile.setStatus("ACTIVE");
+//				iStudentProfileRepository.save(studentProfile);
 
 			}
 

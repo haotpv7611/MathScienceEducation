@@ -3,6 +3,7 @@ package com.example.demo.services;
 import java.util.List;
 
 import com.example.demo.dtos.ExerciseResponseDTO;
+import com.example.demo.dtos.IdAndStatusDTO;
 import com.example.demo.dtos.ExerciseRequestDTO;
 
 public interface IExerciseService {
@@ -19,7 +20,7 @@ public interface IExerciseService {
 
 	String updateExercise(long id, ExerciseRequestDTO exerciseRequestDTO);
 
-	String deleteExercise(long id);
+	String changeExerciseStatus(IdAndStatusDTO idAndStatusDTO);
 
-	void deleteOneExercise(long id);
+	void changeStatusOne(IdAndStatusDTO idAndStatusDTO);
 }

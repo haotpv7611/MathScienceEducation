@@ -35,6 +35,8 @@ import com.example.demo.services.IUnitService;
 public class UnitServiceImpl implements IUnitService {
 	Logger logger = LoggerFactory.getLogger(UnitServiceImpl.class);
 
+	private final String DELETED_STATUS = "DELETED";
+
 	@Autowired
 	private IUnitRepository iUnitRepository;
 
@@ -140,7 +142,7 @@ public class UnitServiceImpl implements IUnitService {
 					if (progressTestDTOList.get(j).getUnitAfterId() == unitDTOList.get(i).getId()) {
 						ProgressTestResponseDTO progressTestResponseDTO = progressTestDTOList.get(j);
 						List<Exercise> exerciseList = iExerciseRepository
-								.findByProgressTestIdAndIsDisableFalse(progressTestResponseDTO.getId());
+								.findByProgressTestIdAndStatusNot(progressTestResponseDTO.getId(), DELETED_STATUS);
 						int countNotDone = 0;
 						if (!exerciseList.isEmpty()) {
 

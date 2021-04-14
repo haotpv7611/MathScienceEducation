@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.dtos.ProgressTestResponseDTO;
+import com.example.demo.dtos.IdAndStatusDTO;
 import com.example.demo.dtos.ProgressTestRequestDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.Exercise;
@@ -25,6 +26,8 @@ import com.example.demo.services.IProgressTestService;
 @Service
 public class ProgressTestServiceImpl implements IProgressTestService {
 	Logger logger = LoggerFactory.getLogger(ProgressTestServiceImpl.class);
+
+	private final String DELETED_STATUS = "DELETED";
 
 	@Autowired
 	private IProgressTestRepository iProgressTestRepository;
@@ -180,10 +183,11 @@ public class ProgressTestServiceImpl implements IProgressTestService {
 			if (progressTest == null) {
 				throw new ResourceNotFoundException();
 			}
-			List<Exercise> exerciseList = iExerciseRepository.findByProgressTestIdAndIsDisableFalse(id);
+			List<Exercise> exerciseList = iExerciseRepository.findByProgressTestIdAndStatusNot(id, DELETED_STATUS);
 			if (!exerciseList.isEmpty()) {
 				for (Exercise exercise : exerciseList) {
-					iExerciseService.deleteOneExercise(exercise.getId());
+					IdAndStatusDTO idAndStatusDTO = new IdAndStatusDTO(exercise.getId(), DELETED_STATUS);
+					iExerciseService.changeStatusOne(idAndStatusDTO);
 				}
 			}
 			progressTest.setDisable(true);

@@ -21,10 +21,10 @@ public class Game {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
-	private String gameName;
+	private int gameName;
 	private String description;
 	private long lessonId;
-	private boolean isDisable;
+	private String status;
 
 	@CreatedDate
 	private LocalDateTime createdDate;
@@ -48,14 +48,14 @@ public class Game {
 	/**
 	 * @return the gameName
 	 */
-	public String getGameName() {
+	public int getGameName() {
 		return gameName;
 	}
 
 	/**
 	 * @param gameName the gameName to set
 	 */
-	public void setGameName(String gameName) {
+	public void setGameName(int gameName) {
 		this.gameName = gameName;
 	}
 
@@ -144,17 +144,17 @@ public class Game {
 	}
 
 	/**
-	 * @return the isDisable
+	 * @return the status
 	 */
-	public boolean isDisable() {
-		return isDisable;
+	public String getStatus() {
+		return status;
 	}
 
 	/**
-	 * @param isDisable the isDisable to set
+	 * @param status the status to set
 	 */
-	public void setDisable(boolean isDisable) {
-		this.isDisable = isDisable;
+	public void setStatus(String status) {
+		this.status = status;
 	}
 
 	/**

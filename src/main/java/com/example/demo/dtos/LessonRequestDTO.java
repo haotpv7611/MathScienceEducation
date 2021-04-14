@@ -2,21 +2,18 @@ package com.example.demo.dtos;
 
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.validator.constraints.Length;
-
 public class LessonRequestDTO {
-	@NotNull(message = "Lesson Name Must Be Not Null !")
-	@Length(max = 20, message = "Lesson Name length must be less than 20!")
-	private String lessonName;
+	
+	private int lessonName;
 	@NotNull(message = "Lesson URL Must Be Not Null !")
 	private String lessonUrl;
 	private long unitId;
 
-	public String getLessonName() {
+	public int getLessonName() {
 		return lessonName;
 	}
 
-	public void setLessonName(String lessonName) {
+	public void setLessonName(int lessonName) {
 		this.lessonName = lessonName;
 	}
 

@@ -23,6 +23,8 @@ import com.example.demo.services.IExerciseGameQuestionService;
 @Service
 public class ExerciseGameQuestionServiceImpl implements IExerciseGameQuestionService {
 	Logger logger = LoggerFactory.getLogger(ExerciseGameQuestionServiceImpl.class);
+	
+	private final String DELETED_STATUS = "DELETED";
 
 	@Autowired
 	private IExerciseGameQuestionRepository iExerciseGameQuestionRepository;
@@ -93,7 +95,7 @@ public class ExerciseGameQuestionServiceImpl implements IExerciseGameQuestionSer
 				}
 			}
 			if (isExercise) {
-				Exercise exercise = iExerciseRepository.findByIdAndIsDisableFalse(exerciseId);
+				Exercise exercise = iExerciseRepository.findByIdAndStatusNot(exerciseId, DELETED_STATUS);
 				if (exercise == null) {
 					throw new ResourceNotFoundException();
 				}
@@ -104,7 +106,7 @@ public class ExerciseGameQuestionServiceImpl implements IExerciseGameQuestionSer
 					}
 				}
 			} else {
-				Game game = iGameRepository.findByIdAndIsDisableFalse(gameId);
+				Game game = iGameRepository.findByIdAndStatusNot(gameId, DELETED_STATUS);
 				if (game == null) {
 					throw new ResourceNotFoundException();
 				}
@@ -156,12 +158,12 @@ public class ExerciseGameQuestionServiceImpl implements IExerciseGameQuestionSer
 				}
 			}
 			if (isExercise) {
-				Exercise exercise = iExerciseRepository.findByIdAndIsDisableFalse(exerciseId);
+				Exercise exercise = iExerciseRepository.findByIdAndStatusNot(exerciseId, DELETED_STATUS);
 				if (exercise == null) {
 					throw new ResourceNotFoundException();
 				}
 			} else {
-				Game game = iGameRepository.findByIdAndIsDisableFalse(gameId);
+				Game game = iGameRepository.findByIdAndStatusNot(gameId, DELETED_STATUS);
 				if (game == null) {
 					throw new ResourceNotFoundException();
 				}

@@ -54,6 +54,16 @@ public class Classes {
 		this.modifiedDate = LocalDateTime.now(ZoneId.of("UTC+7"));
 	}
 
+	public Classes() {
+	}
+
+	public Classes(String className, String status, SchoolGrade schoolGrade) {
+		super();
+		this.className = className;
+		this.status = status;
+		this.schoolGrade = schoolGrade;
+	}
+
 	/**
 	 * @return the className
 	 */

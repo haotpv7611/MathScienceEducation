@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dtos.ExerciseRequestDTO;
 import com.example.demo.dtos.ExerciseResponseDTO;
+import com.example.demo.dtos.IdAndStatusDTO;
 import com.example.demo.services.IExerciseService;
 
 @CrossOrigin
@@ -134,8 +135,8 @@ public class ExerciseController {
 	}
 
 	@PutMapping("/exercise/delete")
-	public ResponseEntity<String> deleteExercise(@RequestParam long id) {
-		String response = iExerciseService.deleteExercise(id);
+	public ResponseEntity<String> deleteExercise(@RequestBody IdAndStatusDTO idAndStatusDTO) {
+		String response = iExerciseService.changeExerciseStatus(idAndStatusDTO);
 		if (response.contains("NOT FOUND")) {
 
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);

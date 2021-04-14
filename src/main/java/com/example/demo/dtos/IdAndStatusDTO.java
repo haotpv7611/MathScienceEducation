@@ -4,6 +4,15 @@ public class IdAndStatusDTO {
 	private long id;
 	private String status;
 
+	public IdAndStatusDTO() {
+	}
+
+	public IdAndStatusDTO(long id, String status) {
+		super();
+		this.id = id;
+		this.status = status;
+	}
+
 	/**
 	 * @return the id
 	 */

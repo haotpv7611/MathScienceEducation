@@ -3,7 +3,7 @@ package com.example.demo.dtos;
 public class GameResponseDTO {
 
 	private long id;
-	private String gameName;
+	private int gameName;
 	private String description;
 
 	/**
@@ -23,14 +23,14 @@ public class GameResponseDTO {
 	/**
 	 * @return the gameName
 	 */
-	public String getGameName() {
+	public int getGameName() {
 		return gameName;
 	}
 
 	/**
 	 * @param gameName the gameName to set
 	 */
-	public void setGameName(String gameName) {
+	public void setGameName(int gameName) {
 		this.gameName = gameName;
 	}
 

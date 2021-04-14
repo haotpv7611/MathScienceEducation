@@ -27,7 +27,7 @@ public class StudentProfile {
 	private String DOB;
 	private String gender;
 	private String parentName;
-	private String parentPhone;
+	private String contact;
 
 	@CreatedDate
 	private LocalDateTime createdDate;
@@ -60,24 +60,24 @@ public class StudentProfile {
 	public StudentProfile() {
 	}
 
-	public StudentProfile(String dOB, String gender, String parentName, String parentPhone, Account account,
+	public StudentProfile(String dOB, String gender, String parentName, String contact, Account account,
 			Classes classes) {
 		super();
 		DOB = dOB;
 		this.gender = gender;
 		this.parentName = parentName;
-		this.parentPhone = parentPhone;
+		this.contact = contact;
 		this.account = account;
 		this.classes = classes;
 	}
 
-	public StudentProfile(String dOB, String gender, String parentName, String parentPhone, String status,
+	public StudentProfile(String dOB, String gender, String parentName, String contact, String status,
 			long studentCount, Account account, Classes classes) {
 		super();
 		DOB = dOB;
 		this.gender = gender;
 		this.parentName = parentName;
-		this.parentPhone = parentPhone;
+		this.contact = contact;
 		this.status = status;
 		this.studentCount = studentCount;
 		this.account = account;
@@ -113,17 +113,17 @@ public class StudentProfile {
 	}
 
 	/**
-	 * @return the parentPhone
+	 * @return the contact
 	 */
-	public String getParentPhone() {
-		return parentPhone;
+	public String getContact() {
+		return contact;
 	}
 
 	/**
-	 * @param parentPhone the parentPhone to set
+	 * @param contact the contact to set
 	 */
-	public void setParentPhone(String parentPhone) {
-		this.parentPhone = parentPhone;
+	public void setContact(String contact) {
+		this.contact = contact;
 	}
 
 	/**
