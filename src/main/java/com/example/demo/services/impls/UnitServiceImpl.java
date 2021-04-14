@@ -17,11 +17,13 @@ import com.example.demo.dtos.UnitViewDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.Exercise;
 import com.example.demo.models.Lesson;
+import com.example.demo.models.ProgressTest;
 import com.example.demo.models.Question;
 import com.example.demo.models.Subject;
 import com.example.demo.models.Unit;
 import com.example.demo.repositories.IExerciseRepository;
 import com.example.demo.repositories.ILessonRepository;
+import com.example.demo.repositories.IProgressTestRepository;
 import com.example.demo.repositories.IQuestionRepository;
 import com.example.demo.repositories.ISubjectRepository;
 import com.example.demo.repositories.IUnitRepository;
@@ -58,6 +60,9 @@ public class UnitServiceImpl implements IUnitService {
 	private IProgressTestService iProgressTestService;
 
 	@Autowired
+	private IProgressTestRepository iProgressTestRepository;
+
+	@Autowired
 	private IExerciseRepository iExerciseRepository;
 
 	@Autowired
@@ -91,7 +96,7 @@ public class UnitServiceImpl implements IUnitService {
 
 	// done
 	@Override
-	public List<UnitResponseDTO> findBySubjectIdOrderByUnitNameAsc(long subjectId) {
+	public List<UnitResponseDTO> findBySubjectId(long subjectId) {
 		List<UnitResponseDTO> unitDTOList = new ArrayList<>();
 		try {
 			// find all active entities and have subjectId = ?, sort acscending by unitName
@@ -113,11 +118,38 @@ public class UnitServiceImpl implements IUnitService {
 		return unitDTOList;
 	}
 
+	@Override
+	public List<UnitResponseDTO> findAllUnitAfterIdsBySubjectId(long subjectId) {
+		List<UnitResponseDTO> unitResponseDTOList = new ArrayList<>();
+		try {
+			List<Unit> unitList = iUnitRepository.findBySubjectIdAndIsDisableFalse(subjectId);
+			List<ProgressTest> progressTestList = iProgressTestRepository.findBySubjectIdAndIsDisableFalse(subjectId);
+			if (!unitList.isEmpty() && !progressTestList.isEmpty()) {
+				List<Long> unitAfterIdList = new ArrayList<>();
+				for (ProgressTest progressTest : progressTestList) {
+					unitAfterIdList.add(progressTest.getUnitAfterId());
+				}
+				for (Unit unit : unitList) {
+					if (!unitAfterIdList.contains(unit.getId())) {
+						UnitResponseDTO unitResponseDTO = modelMapper.map(unit, UnitResponseDTO.class);
+						unitResponseDTOList.add(unitResponseDTO);
+					}
+				}
+			}
+		} catch (Exception e) {
+			logger.error("FIND: all unit by subjectId = " + subjectId + "! " + e.getMessage());
+
+			return null;
+		}
+
+		return unitResponseDTOList;
+	}
+
 	// not done
 	@Override
 	public List<UnitViewDTO> showUnitViewBySubjectId(long subjectId, long accountId) {
 		// 1. get list unitDTO and progressTestDTO by subjectId
-		List<UnitResponseDTO> unitDTOList = findBySubjectIdOrderByUnitNameAsc(subjectId);
+		List<UnitResponseDTO> unitDTOList = findBySubjectId(subjectId);
 		List<ProgressTestResponseDTO> progressTestDTOList = iProgressTestService.findBySubjectId(subjectId);
 
 		List<UnitViewDTO> unitViewDTOList = new ArrayList<>();

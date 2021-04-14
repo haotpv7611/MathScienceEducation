@@ -13,13 +13,14 @@ public class QuestionOptionResponseDTO {
 	private String questionAudioUrl;
 	private float score;
 	private long unitId;
+	private List<Object> optionQuestionDTOList;
+
 	@JsonFormat(pattern = "dd-MM-yyyy HH:mm")
 	private LocalDateTime createdDate;
 	private String createdBy;
 	@JsonFormat(pattern = "dd-MM-yyyy HH:mm")
 	private LocalDateTime modifiedDate;
 	private String modifiedBy;
-	private List<Object> optionQuestionDTOList;
 
 	/**
 	 * @return the id

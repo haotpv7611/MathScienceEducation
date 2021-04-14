@@ -7,13 +7,14 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 public class ClassResponseDTO {
 	private long id;
 	private String className;
+	private String status;
+
 	@JsonFormat(pattern = "dd-MM-yyyy HH:mm")
 	private LocalDateTime createdDate;
 	private String createdBy;
 	@JsonFormat(pattern = "dd-MM-yyyy HH:mm")
 	private LocalDateTime modifiedDate;
 	private String modifiedBy;
-	private String status;
 
 	/**
 	 * @return the id

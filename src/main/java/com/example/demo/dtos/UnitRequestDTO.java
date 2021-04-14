@@ -1,10 +1,12 @@
 package com.example.demo.dtos;
 
+import javax.validation.constraints.Min;
+
 import org.hibernate.validator.constraints.Length;
 
 public class UnitRequestDTO {
-
 	private long subjectId;
+	@Min(value = 1, message = "Unit Name must be greater than 0!")
 	private int unitName;
 	@Length(max = 50, message = "Description length must be less than 50")
 	private String description;

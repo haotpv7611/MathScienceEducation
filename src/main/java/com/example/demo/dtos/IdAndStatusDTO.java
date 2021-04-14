@@ -1,7 +1,13 @@
 package com.example.demo.dtos;
 
+import javax.validation.constraints.NotNull;
+
+import org.hibernate.validator.constraints.Length;
+
 public class IdAndStatusDTO {
 	private long id;
+	@NotNull(message = "Status must be not null!")
+	@Length(max = 10, message = "Status length must be less than 10!")
 	private String status;
 
 	public IdAndStatusDTO() {

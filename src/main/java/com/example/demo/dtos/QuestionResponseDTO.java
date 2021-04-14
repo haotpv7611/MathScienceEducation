@@ -13,6 +13,7 @@ public class QuestionResponseDTO {
 	private float score;
 	private long unitId;
 	private String questionType;
+	
 	@JsonFormat(pattern = "dd-MM-yyyy HH:mm")
 	private LocalDateTime createdDate;
 	private String createdBy;

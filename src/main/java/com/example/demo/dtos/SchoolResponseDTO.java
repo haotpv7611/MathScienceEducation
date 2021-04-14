@@ -11,13 +11,14 @@ public class SchoolResponseDTO {
 	private String schoolDistrict;
 	private String schoolCode;
 	private String schoolLevel;
+	private String status;
+
 	@JsonFormat(pattern = "dd-MM-yyyy HH:mm")
 	private LocalDateTime createdDate;
 	private String createdBy;
 	@JsonFormat(pattern = "dd-MM-yyyy HH:mm")
 	private LocalDateTime modifiedDate;
 	private String modifiedBy;
-	private String status;
 
 	public SchoolResponseDTO() {
 

@@ -10,7 +10,9 @@ public interface IUnitService {
 
 	Object findById(long id);
 
-	List<UnitResponseDTO> findBySubjectIdOrderByUnitNameAsc(long subjectId);
+	List<UnitResponseDTO> findBySubjectId(long subjectId);
+
+	List<UnitResponseDTO> findAllUnitAfterIdsBySubjectId(long subjectId);
 
 	List<UnitViewDTO> showUnitViewBySubjectId(long subjectId, long accountId);
 

@@ -5,10 +5,11 @@ import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 public class BannerImageDTO {
-
 	private long id;
 	private String description;
 	private String imageUrl;
+	private long accountId;
+	private String status;
 
 	@JsonFormat(pattern = "dd-MM-yyyy HH:mm")
 	private LocalDateTime createdDate;
@@ -16,9 +17,6 @@ public class BannerImageDTO {
 	@JsonFormat(pattern = "dd-MM-yyyy HH:mm")
 	private LocalDateTime modifiedDate;
 	private String modifiedBy;
-
-	private long accountId;
-	private String status;
 
 	public long getId() {
 		return id;

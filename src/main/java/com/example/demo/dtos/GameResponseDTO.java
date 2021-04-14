@@ -1,7 +1,6 @@
 package com.example.demo.dtos;
 
 public class GameResponseDTO {
-
 	private long id;
 	private int gameName;
 	private String description;

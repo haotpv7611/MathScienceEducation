@@ -48,8 +48,19 @@ public class UnitController {
 
 	// done
 	@GetMapping("/subject/{subjectId}/units")
-	public ResponseEntity<List<UnitResponseDTO>> findBySubjectIdOrderByUnitNameAsc(@PathVariable long subjectId) {
-		List<UnitResponseDTO> response = iUnitService.findBySubjectIdOrderByUnitNameAsc(subjectId);
+	public ResponseEntity<List<UnitResponseDTO>> findBySubjectId(@PathVariable long subjectId) {
+		List<UnitResponseDTO> response = iUnitService.findBySubjectId(subjectId);
+		if (response == null) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+
+		return ResponseEntity.ok(response);
+	}
+	
+	@GetMapping("/subject/{subjectId}/unitAterIds")
+	public ResponseEntity<List<UnitResponseDTO>> findAllUnitAfterIdsBySubjectId(@PathVariable long subjectId) {
+		List<UnitResponseDTO> response = iUnitService.findAllUnitAfterIdsBySubjectId(subjectId);
 		if (response == null) {
 
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);

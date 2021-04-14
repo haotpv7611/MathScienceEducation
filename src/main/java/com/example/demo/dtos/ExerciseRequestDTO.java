@@ -1,13 +1,15 @@
 package com.example.demo.dtos;
 
+import javax.validation.constraints.Min;
+
 import org.hibernate.validator.constraints.Length;
 
 public class ExerciseRequestDTO {
-	
+	@Min(value = 1, message = "Exercise Name must be greater than 0!")
 	private int exerciseName;
 	private long lessonId;
 	private long progressTestId;
-	@Length(max = 50, message = "Description lenght must be less than 50 !")
+	@Length(max = 50, message = "Description lenght must be less than 50!")
 	private String description;
 	private boolean isProgressTest;
 

@@ -5,21 +5,16 @@ import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 public class NewsResponseDTO {
-
 	private long id;
 	private String newsTitle;
 	private String shortDescription;
 	private String newsContent;
+	private long accountId;
+	private boolean isDisable;
 
 	@JsonFormat(pattern = "dd-MM-yyyy HH:mm")
 	private LocalDateTime createdDate;
 	private String createdBy;
-//	@JsonFormat(pattern = "dd-MM-yyyy HH:mm")
-//	private LocalDateTime modifiedDate;
-//	private String modifiedBy;
-
-	private boolean isDisable;
-	private long accountId;
 
 	public NewsResponseDTO() {
 	}
@@ -124,23 +119,6 @@ public class NewsResponseDTO {
 		this.createdBy = createdBy;
 	}
 
-//	/**
-//	 * @return the modifiedDate
-//	 */
-//	public LocalDateTime getModifiedDate() {
-//		return modifiedDate;
-//	}
-//
-//	/**
-//	 * @param modifiedDate the modifiedDate to set
-//	 */
-//	public void setModifiedDate(LocalDateTime modifiedDate) {
-//		this.modifiedDate = modifiedDate;
-//	}
-//
-//	/**
-//	 * @return the isDisable
-//	 */
 	public boolean isDisable() {
 		return isDisable;
 	}
@@ -165,19 +143,5 @@ public class NewsResponseDTO {
 	public void setAccountId(long accountId) {
 		this.accountId = accountId;
 	}
-
-//	/**
-//	 * @return the modifiedBy
-//	 */
-//	public String getModifiedBy() {
-//		return modifiedBy;
-//	}
-//
-//	/**
-//	 * @param modifiedBy the modifiedBy to set
-//	 */
-//	public void setModifiedBy(String modifiedBy) {
-//		this.modifiedBy = modifiedBy;
-//	}
 
 }

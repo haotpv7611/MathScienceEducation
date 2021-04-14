@@ -1,11 +1,9 @@
 package com.example.demo.dtos;
 
 public class SubjectResponseDTO {
-
 	private long id;
 	private String subjectName;
 	private String imageUrl;
-//	private long gradeId;
 	private String description;
 
 	public String getDescription() {

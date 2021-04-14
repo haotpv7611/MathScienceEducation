@@ -5,63 +5,34 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.Length;
 
 public class StudentRequestDTO {
-//	private long schoolId;
-//	private long gradeId;
-	private long classId;
-	@NotNull(message = "FullName must be not null!")
-	@Length(max = 30, message = "FullName length must be less than 30!")
-	private String fullName;
 
+	@NotNull(message = "DoB must be not null!")
+	@Length(max = 20, message = "DoB length must be less than 20!")
 	private String DoB;
 	@NotNull(message = "Gender must be not null!")
 	@Length(max = 10, message = "Gender length must be less than 10!")
 	private String gender;
-	@NotNull(message = "ParentName must be not null!")
 	@Length(max = 50, message = "ParentName length must be less than 50!")
 	private String parentName;
-	@NotNull(message = "ParentPhone must be not null!")
-	@Length(max = 50, message = "ParentPhone length must be less than 50!")
+	@NotNull(message = "Contact must be not null!")
+	@Length(max = 100, message = "Contact length must be less than 100!")
 	private String contact;
-
-//	/**
-//	 * @return the schoolId
-//	 */
-//	public long getSchoolId() {
-//		return schoolId;
-//	}
-//
-//	/**
-//	 * @param schoolId the schoolId to set
-//	 */
-//	public void setSchoolId(long schoolId) {
-//		this.schoolId = schoolId;
-//	}
-//
-//	/**
-//	 * @return the gradeId
-//	 */
-//	public long getGradeId() {
-//		return gradeId;
-//	}
-//
-//	/**
-//	 * @param gradeId the gradeId to set
-//	 */
-//	public void setGradeId(long gradeId) {
-//		this.gradeId = gradeId;
-//	}
+	private long classesId;
+	@NotNull(message = "FullName must be not null!")
+	@Length(max = 50, message = "FullName length must be less than 50!")
+	private String fullName;
 
 	public StudentRequestDTO() {
 	}
 
-	public StudentRequestDTO(long classId,
+	public StudentRequestDTO(long classesId,
 			@NotNull(message = "FullName must be not null!") @Length(max = 30, message = "FullName length must be less than 30!") String fullName,
 			String doB,
 			@NotNull(message = "Gender must be not null!") @Length(max = 10, message = "Gender length must be less than 10!") String gender,
 			@NotNull(message = "ParentName must be not null!") @Length(max = 50, message = "ParentName length must be less than 50!") String parentName,
 			@NotNull(message = "ParentPhone must be not null!") @Length(max = 50, message = "ParentPhone length must be less than 50!") String contact) {
 		super();
-		this.classId = classId;
+		this.classesId = classesId;
 		this.fullName = fullName;
 		DoB = doB;
 		this.gender = gender;
@@ -70,17 +41,17 @@ public class StudentRequestDTO {
 	}
 
 	/**
-	 * @return the classId
+	 * @return the classesId
 	 */
-	public long getClassId() {
-		return classId;
+	public long getClassesId() {
+		return classesId;
 	}
 
 	/**
-	 * @param classId the classId to set
+	 * @param classesId the classesId to set
 	 */
-	public void setClassId(long classId) {
-		this.classId = classId;
+	public void setClassesId(long classesId) {
+		this.classesId = classesId;
 	}
 
 	/**

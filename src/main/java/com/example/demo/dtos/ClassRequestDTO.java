@@ -8,15 +8,14 @@ public class ClassRequestDTO {
 	private long gradeId;
 	private long schoolId;
 	@NotNull(message = "ClassName must be not null!")
-	@Length(max = 50, message = "ClassName length must be less than 50!")
+	@Length(max = 20, message = "ClassName length must be less than 20!")
 	private String className;
 
 	public ClassRequestDTO() {
-		// TODO Auto-generated constructor stub
 	}
 
 	public ClassRequestDTO(long gradeId, long schoolId,
-			@NotNull(message = "ClassName must be not null!") @Length(max = 50, message = "ClassName length must be less than 50!") String className) {
+			@NotNull(message = "ClassName must be not null!") @Length(max = 20, message = "ClassName length must be less than 20!") String className) {
 		super();
 		this.gradeId = gradeId;
 		this.schoolId = schoolId;

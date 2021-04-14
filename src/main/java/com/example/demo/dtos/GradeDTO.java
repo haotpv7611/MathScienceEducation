@@ -1,7 +1,6 @@
 package com.example.demo.dtos;
 
 public class GradeDTO implements Comparable<GradeDTO> {
-
 	private long id;
 	private int gradeName;
 

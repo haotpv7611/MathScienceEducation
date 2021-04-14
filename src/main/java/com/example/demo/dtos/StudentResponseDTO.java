@@ -11,7 +11,6 @@ public class StudentResponseDTO {
 	private String gender;
 	private String parentName;
 	private String contact;
-
 	private String status;
 
 	/**

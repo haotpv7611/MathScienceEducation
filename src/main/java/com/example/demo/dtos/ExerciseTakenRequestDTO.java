@@ -1,9 +1,12 @@
 package com.example.demo.dtos;
 
+import javax.validation.constraints.Min;
+
 public class ExerciseTakenRequestDTO {
 	private long accountId;
 	private long exerciseId;
-	private float mark;
+	@Min(value = 0, message = "Total Score must be greater than 0!")
+	private float totalScore;
 	private String takenObject;
 
 	/**
@@ -37,15 +40,15 @@ public class ExerciseTakenRequestDTO {
 	/**
 	 * @return the mark
 	 */
-	public float getMark() {
-		return mark;
+	public float getTotalScore() {
+		return totalScore;
 	}
 
 	/**
 	 * @param mark the mark to set
 	 */
-	public void setMark(float mark) {
-		this.mark = mark;
+	public void setTotalScore(float totalScore) {
+		this.totalScore = totalScore;
 	}
 
 	/**

@@ -5,7 +5,7 @@ import java.util.List;
 import javax.validation.constraints.NotEmpty;
 
 public class ExerciseGameQuestionRequestDTO {
-	@NotEmpty(message = "QuestionId must not null")
+	@NotEmpty(message = "List QuestionId must not empty")
 	private List<Long> questionIds;
 	private long exerciseId;
 	private long gameId;

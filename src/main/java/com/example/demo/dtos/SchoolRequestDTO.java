@@ -5,7 +5,6 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.Length;
 
 public class SchoolRequestDTO {
-
 	@NotNull(message = "SchoolName must be not null!")
 	@Length(max = 50, message = "SchoolName length must be less than 50!")
 	private String schoolName;

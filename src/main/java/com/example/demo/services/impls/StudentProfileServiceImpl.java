@@ -211,7 +211,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 	@Override
 	@Transactional
 	public String createStudenProfile(StudentRequestDTO studentRequestDTO) {
-		long classId = studentRequestDTO.getClassId();
+		long classId = studentRequestDTO.getClassesId();
 		Classes classes = iClassRepository.findByIdAndStatusNot(classId, DELETE_STATUS);
 		int gradeName = classes.getSchoolGrade().getGrade().getGradeName();
 		String schoolCode = classes.getSchoolGrade().getSchool().getSchoolCode()
