@@ -273,7 +273,7 @@ public class ExerciseServiceImpl implements IExerciseService {
 	@Override
 	public String changeExerciseStatus(IdAndStatusDTO idAndStatusDTO) {
 		try {
-			changeExerciseStatus(idAndStatusDTO);
+			changeStatusOne(idAndStatusDTO);
 		} catch (Exception e) {
 			logger.error("DELETE: exerciseId = " + idAndStatusDTO.getId() + "! " + e.getMessage());
 			if (e instanceof ResourceNotFoundException) {
