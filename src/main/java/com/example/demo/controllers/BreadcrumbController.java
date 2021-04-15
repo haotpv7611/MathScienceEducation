@@ -18,7 +18,7 @@ import com.example.demo.services.IUnitService;
 
 @CrossOrigin
 @RestController
-@RequestMapping("/breadcrumb ")
+@RequestMapping("/breadcrumb")
 public class BreadcrumbController {
 	@Autowired
 	private IClassService iClassService;
