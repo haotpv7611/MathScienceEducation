@@ -4,6 +4,7 @@ public class ProgressTestResponseDTO {
 	private long id;
 	private String progressTestName;
 	private long unitAfterId;
+	private int unitAfterName;
 	private String description;
 	private boolean isDone;
 
@@ -55,6 +56,20 @@ public class ProgressTestResponseDTO {
 	 */
 	public void setUnitAfterId(long unitAfterId) {
 		this.unitAfterId = unitAfterId;
+	}
+
+	/**
+	 * @return the unitAfterName
+	 */
+	public int getUnitAfterName() {
+		return unitAfterName;
+	}
+
+	/**
+	 * @param unitAfterName the unitAfterName to set
+	 */
+	public void setUnitAfterName(int unitAfterName) {
+		this.unitAfterName = unitAfterName;
 	}
 
 	/**

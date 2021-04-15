@@ -17,9 +17,11 @@ import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.Exercise;
 import com.example.demo.models.ProgressTest;
 import com.example.demo.models.Subject;
+import com.example.demo.models.Unit;
 import com.example.demo.repositories.IExerciseRepository;
 import com.example.demo.repositories.IProgressTestRepository;
 import com.example.demo.repositories.ISubjectRepository;
+import com.example.demo.repositories.IUnitRepository;
 import com.example.demo.services.IExerciseService;
 import com.example.demo.services.IProgressTestService;
 
@@ -43,6 +45,9 @@ public class ProgressTestServiceImpl implements IProgressTestService {
 
 	@Autowired
 	private IExerciseRepository iExerciseRepository;
+	
+	@Autowired
+	private IUnitRepository iUnitRepository;
 
 	@Override
 	public Object findById(long id) {
@@ -74,6 +79,8 @@ public class ProgressTestServiceImpl implements IProgressTestService {
 				for (ProgressTest progressTest : progressTestList) {
 					ProgressTestResponseDTO progressTestDTO = modelMapper.map(progressTest,
 							ProgressTestResponseDTO.class);
+					Unit unit = iUnitRepository.findByIdAndIsDisableFalse(progressTest.getUnitAfterId());
+					progressTestDTO.setUnitAfterName(unit.getUnitName());
 					progressTestResponseDTOList.add(progressTestDTO);
 				}
 			}
