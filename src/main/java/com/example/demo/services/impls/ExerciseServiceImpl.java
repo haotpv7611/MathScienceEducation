@@ -1,7 +1,9 @@
 package com.example.demo.services.impls;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
@@ -155,6 +157,17 @@ public class ExerciseServiceImpl implements IExerciseService {
 		}
 
 		return exerciseResponseDTOList;
+	}
+	
+	@Override
+	public Map<Long, Integer> findAllExercise() {
+		Map<Long, Integer> exerciseMap = new HashMap<>();
+		List<Exercise> exerciseList = iExerciseRepository.findByStatusNot(DELETED_STATUS);
+		for (Exercise exercise : exerciseList) {
+			exerciseMap.put(exercise.getId(), exercise.getExerciseName());
+		}
+
+		return exerciseMap;
 	}
 
 	// done ok

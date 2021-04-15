@@ -1,7 +1,9 @@
 package com.example.demo.services.impls;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
@@ -103,6 +105,17 @@ public class LessonServiceImpl implements ILessonService {
 		}
 
 		return lessonResponseDTOList;
+	}
+	
+	@Override
+	public Map<Long, Integer> findAllLesson() {
+		Map<Long, Integer> lessonMap = new HashMap<>();
+		List<Lesson> unitList = iLessonRepository.findByIsDisableFalse();
+		for (Lesson lesson : unitList) {
+			lessonMap.put(lesson.getId(), lesson.getLessonName());
+		}
+
+		return lessonMap;
 	}
 
 	// done

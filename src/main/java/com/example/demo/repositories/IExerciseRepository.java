@@ -9,6 +9,8 @@ import com.example.demo.models.Exercise;
 
 @Repository
 public interface IExerciseRepository extends JpaRepository<Exercise, Long> {
+	
+	List<Exercise> findByStatusNot(String status);
 
 	List<Exercise> findByLessonIdAndStatusNot(long lessonId, String status);
 

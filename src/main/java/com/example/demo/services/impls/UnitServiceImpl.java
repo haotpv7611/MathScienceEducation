@@ -1,7 +1,9 @@
 package com.example.demo.services.impls;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
@@ -207,6 +209,17 @@ public class UnitServiceImpl implements IUnitService {
 		}
 
 		return unitViewDTOList;
+	}
+
+	@Override
+	public Map<Long, Integer> findAllUnit() {
+		Map<Long, Integer> unitMap = new HashMap<>();
+		List<Unit> unitList = iUnitRepository.findByIsDisableFalse();
+		for (Unit unit : unitList) {
+			unitMap.put(unit.getId(), unit.getUnitName());
+		}
+
+		return unitMap;
 	}
 
 	// done

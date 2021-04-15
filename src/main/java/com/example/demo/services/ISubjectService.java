@@ -2,6 +2,7 @@ package com.example.demo.services;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException;
 import org.springframework.web.multipart.MultipartFile;
@@ -14,6 +15,8 @@ public interface ISubjectService {
 
 	// show view all subject both roles
 	public List<SubjectResponseDTO> findSubjectByGradeId(long gradeId);
+
+	Map<Long, String> findAllSubject();
 
 	String createSubject(String subjectName, MultipartFile file, String description, long gradeId)
 			throws SizeLimitExceededException, IOException;

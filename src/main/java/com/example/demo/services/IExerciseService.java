@@ -1,6 +1,7 @@
 package com.example.demo.services;
 
 import java.util.List;
+import java.util.Map;
 
 import com.example.demo.dtos.ExerciseResponseDTO;
 import com.example.demo.dtos.IdAndStatusDTO;
@@ -13,8 +14,10 @@ public interface IExerciseService {
 	List<ExerciseResponseDTO> findByLessonIdStudentView(long lessonId, long accountId);
 
 	List<ExerciseResponseDTO> findByProgressTestIdOrderByExerciseNameAsc(long progressTestId);
-	
+
 	List<ExerciseResponseDTO> findByProgressTestIdStudentView(long progressTestId, long accountId);
+
+	Map<Long, Integer> findAllExercise();
 
 	String createExercise(ExerciseRequestDTO exerciseRequestDTO);
 

@@ -1,7 +1,9 @@
 package com.example.demo.services.impls;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
@@ -113,6 +115,17 @@ public class GameServiceImpl implements IGameService {
 		}
 
 		return gameResponseDTOList;
+	}
+	
+	@Override
+	public Map<Long, Integer> findAllGame() {
+		Map<Long, Integer> gameMap = new HashMap<>();
+		List<Game> gameList = iGameRepository.findByStatusNot(DELETED_STATUS);
+		for (Game game : gameList) {
+			gameMap.put(game.getId(), game.getGameName());
+		}
+
+		return gameMap;
 	}
 
 	@Override

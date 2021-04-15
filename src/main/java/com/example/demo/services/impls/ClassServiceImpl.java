@@ -1,7 +1,9 @@
 package com.example.demo.services.impls;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +23,7 @@ import com.example.demo.services.IClassService;
 
 @Service
 public class ClassServiceImpl implements IClassService{
+	private final String DELETED_STATUS = "DELETED";
 	
 	@Autowired
 	ISchoolGradeRepository iSchoolGradeRepository;
@@ -50,7 +53,18 @@ public class ClassServiceImpl implements IClassService{
 		
 		return classResponseDTOList;
 	}
-
+	
+	
+	@Override
+	public Map<Long, String> findAllClass(){
+		Map<Long, String> classesMap = new HashMap<>();
+		List<Classes> classesList = iClassRepository.findByStatusNot(DELETED_STATUS);
+		for (Classes classes : classesList) {
+			classesMap.put(classes.getId(), classes.getClassName());
+		}
+		
+		return classesMap;
+	}
 
 	@Override
 	public String createClass( ClassRequestDTO classRequestDTO) {

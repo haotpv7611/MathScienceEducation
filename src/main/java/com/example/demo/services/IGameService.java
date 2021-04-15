@@ -1,6 +1,7 @@
 package com.example.demo.services;
 
 import java.util.List;
+import java.util.Map;
 
 import com.example.demo.dtos.GameRequestDTO;
 import com.example.demo.dtos.GameResponseDTO;
@@ -13,6 +14,8 @@ public interface IGameService {
 	List<GameResponseDTO> findAllByLessonId(long lessonId);
 	
 	List<GameResponseDTO> findAllByLessonIdStudentView(long lessonId);
+	
+	Map<Long, Integer> findAllGame();
 
 	String updateGame(long id, GameRequestDTO gameRequestDTO);
 

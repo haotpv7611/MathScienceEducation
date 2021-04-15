@@ -2,7 +2,9 @@ package com.example.demo.services.impls;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException;
 import org.modelmapper.ModelMapper;
@@ -100,6 +102,17 @@ public class SubjectServiceImpl implements ISubjectService {
 		}
 
 		return subjectResponseDTOList;
+	}
+	
+	@Override
+	public Map<Long, String> findAllSubject(){
+		Map<Long, String> subjectMap = new HashMap<>();
+		List<Subject> subjectList = iSubjectRepository.findByIsDisableFalse();
+		for (Subject subject : subjectList) {
+			subjectMap.put(subject.getId(), subject.getSubjectName());
+		}
+		
+		return subjectMap;
 	}
 
 	// done ok

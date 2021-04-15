@@ -13,6 +13,8 @@ public interface IUnitRepository extends JpaRepository<Unit, Long> {
 	List<Unit> findBySubjectIdAndIsDisableFalseOrderByUnitNameAsc(long subjectId);
 	
 	List<Unit> findBySubjectIdAndIsDisableFalse(long subjectId);
+	
+	List<Unit> findByIsDisableFalse();
 
 	Unit findByIdAndIsDisableFalse(long id);
 

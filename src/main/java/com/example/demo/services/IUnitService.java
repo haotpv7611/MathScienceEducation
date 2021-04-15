@@ -1,6 +1,7 @@
 package com.example.demo.services;
 
 import java.util.List;
+import java.util.Map;
 
 import com.example.demo.dtos.UnitRequestDTO;
 import com.example.demo.dtos.UnitResponseDTO;
@@ -15,6 +16,8 @@ public interface IUnitService {
 	List<UnitResponseDTO> findAllUnitAfterIdsBySubjectId(long subjectId);
 
 	List<UnitViewDTO> showUnitViewBySubjectId(long subjectId, long accountId);
+	
+	Map<Long, Integer> findAllUnit();
 
 	String createUnit(UnitRequestDTO unitRequestDTO);
 

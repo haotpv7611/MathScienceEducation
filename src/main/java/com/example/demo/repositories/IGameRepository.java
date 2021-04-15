@@ -9,6 +9,9 @@ import com.example.demo.models.Game;
 
 @Repository
 public interface IGameRepository extends JpaRepository<Game, Long> {
+
+	List<Game> findByStatusNot(String status);
+
 	List<Game> findByLessonIdAndStatusNot(long lessonId, String status);
 
 	Game findByIdAndStatusNot(long id, String status);

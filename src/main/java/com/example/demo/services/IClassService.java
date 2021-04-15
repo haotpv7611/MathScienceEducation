@@ -1,6 +1,7 @@
 package com.example.demo.services;
 
 import java.util.List;
+import java.util.Map;
 
 import com.example.demo.dtos.ClassRequestDTO;
 import com.example.demo.dtos.ClassResponseDTO;
@@ -13,4 +14,6 @@ public interface IClassService {
 	String createClass(ClassRequestDTO classRequestDTO);
 
 	String changeStatusClass(ListIdAndStatusDTO listIdAndStatusDTO);
+	
+	Map<Long, String> findAllClass();
 }
