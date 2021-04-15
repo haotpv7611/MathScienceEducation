@@ -22,6 +22,13 @@ public class ScoreResponseDTO {
 	}
 
 	/**
+	 * @param unitName the unitName to set
+	 */
+	public void setUnitName(String unitName) {
+		this.unitName = unitName;
+	}
+
+	/**
 	 * @return the process
 	 */
 	public String getProcess() {

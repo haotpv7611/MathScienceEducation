@@ -15,10 +15,12 @@ import com.example.demo.dtos.ScoreResponseDTO;
 import com.example.demo.models.Exercise;
 import com.example.demo.models.ExerciseTaken;
 import com.example.demo.models.Lesson;
+import com.example.demo.models.ProgressTest;
 import com.example.demo.models.Unit;
 import com.example.demo.repositories.IExerciseRepository;
 import com.example.demo.repositories.IExerciseTakenRepository;
 import com.example.demo.repositories.ILessonRepository;
+import com.example.demo.repositories.IProgressTestRepository;
 import com.example.demo.repositories.IUnitRepository;
 import com.example.demo.services.IScoreService;
 
@@ -36,10 +38,11 @@ public class ScoreServiceImpl implements IScoreService {
 	@Autowired
 	private IExerciseRepository iExerciseRepository;
 
-
-
 	@Autowired
 	private IExerciseTakenRepository iExerciseTakenRepository;
+
+	@Autowired
+	private IProgressTestRepository iProgressTestRepository;
 
 	@Autowired
 	private ModelMapper modelMapper;
@@ -50,8 +53,10 @@ public class ScoreServiceImpl implements IScoreService {
 	public List<ScoreResponseDTO> findAllExerciseScoreBySubjectId(long subjectId, long accountId) {
 		List<ScoreResponseDTO> scoreResponseDTOList = new ArrayList<>();
 		List<Unit> unitList = iUnitRepository.findBySubjectIdAndIsDisableFalseOrderByUnitNameAsc(subjectId);
+		List<ProgressTest> progressTestList = iProgressTestRepository.findBySubjectIdAndIsDisableFalse(subjectId);
 		if (!unitList.isEmpty()) {
 			for (Unit unit : unitList) {
+
 				int unitName = unit.getUnitName();
 				// no exercise exited
 				String process = "N/A";
@@ -101,6 +106,49 @@ public class ScoreServiceImpl implements IScoreService {
 				scoreResponseDTO.setProcess(process);
 				scoreResponseDTO.setLessonScoreViewDTOList(lessonScoreViewDTOList);
 				scoreResponseDTOList.add(scoreResponseDTO);
+
+				if (!progressTestList.isEmpty()) {
+					List<ExerciseResponseDTO> exerciseResponseDTOList = new ArrayList<>();
+					for (int i = 0; i < progressTestList.size(); i++) {
+						if (progressTestList.get(i).getUnitAfterId() == unit.getId()) {
+							List<Exercise> exerciseList = new ArrayList<>();
+							long progressTestId = progressTestList.get(i).getId();
+
+							// get all exercise by progress id
+							exerciseList.addAll(iExerciseRepository.findByProgressTestIdAndStatusNot(progressTestId,
+									DELETED_STATUS));
+							totalExericse = 0 + exerciseList.size();
+
+							for (Exercise exercise : exerciseList) {
+								ExerciseResponseDTO exerciseResponseDTO = modelMapper.map(exercise,
+										ExerciseResponseDTO.class);
+								List<ExerciseTaken> exerciseTakenList = iExerciseTakenRepository
+										.findByExerciseIdAndAccountId(exercise.getId(), accountId);
+								if (!exerciseTakenList.isEmpty()) {
+									exerciseResponseDTO.setDone(true);
+								} else {
+									countNotDone++;
+								}
+								exerciseResponseDTOList.add(exerciseResponseDTO);
+							}
+
+							LessonScoreViewDTO lessonScoreViewDTO = new LessonScoreViewDTO(0, exerciseResponseDTOList);
+							lessonScoreViewDTOList.add(lessonScoreViewDTO);
+
+							if (totalExericse > 0) {
+								double percentDone = (totalExericse - countNotDone) * 100 / totalExericse;
+								process = (int) Math.round(percentDone) + "%";
+							}
+
+							scoreResponseDTO = new ScoreResponseDTO();
+							scoreResponseDTO.setUnitName(progressTestList.get(i).getProgressTestName());
+							scoreResponseDTO.setProcess(process);
+							scoreResponseDTO.setLessonScoreViewDTOList(lessonScoreViewDTOList);
+							scoreResponseDTOList.add(scoreResponseDTO);
+							break;
+						}
+					}
+				}
 			}
 		}
 
