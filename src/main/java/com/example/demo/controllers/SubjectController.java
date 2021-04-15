@@ -42,7 +42,7 @@ public class SubjectController {
 	}
 
 	@GetMapping("/grade/{gradeId}/subjects")
-	public ResponseEntity<List<SubjectResponseDTO>> findSubjectByGradeId(@PathVariable long gradeId) {
+	public ResponseEntity<List<SubjectResponseDTO>> findSubjectByGradeId(@PathVariable int gradeId) {
 		List<SubjectResponseDTO> response = iSubjectService.findSubjectByGradeId(gradeId);
 		if (response == null) {
 
@@ -55,7 +55,7 @@ public class SubjectController {
 	@PostMapping("/subject")
 	public ResponseEntity<String> createSubject(@RequestParam String subjectName,
 			@RequestParam MultipartFile multipartFile, @RequestParam(required = false) String description,
-			@RequestParam long gradeId) throws SizeLimitExceededException, IOException {
+			@RequestParam int gradeId) throws SizeLimitExceededException, IOException {
 		String response = iSubjectService.createSubject(subjectName, multipartFile, description, gradeId);
 		if (response.contains("NOT FOUND")) {
 
@@ -76,7 +76,7 @@ public class SubjectController {
 	@PutMapping("/subject/{id}")
 	public ResponseEntity<String> updateSubject(@PathVariable long id, @RequestParam String subjectName,
 			@RequestParam(required = false) MultipartFile multipartFile,
-			@RequestParam(required = false) String description, @RequestParam long gradeId)
+			@RequestParam(required = false) String description, @RequestParam int gradeId)
 			throws SizeLimitExceededException, IOException {
 		String response = iSubjectService.updateSubject(id, subjectName, multipartFile, description, gradeId);
 		if (response.contains("NOT FOUND")) {

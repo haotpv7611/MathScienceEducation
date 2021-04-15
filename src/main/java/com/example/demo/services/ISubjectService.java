@@ -14,14 +14,14 @@ public interface ISubjectService {
 	Object findById(long id);
 
 	// show view all subject both roles
-	public List<SubjectResponseDTO> findSubjectByGradeId(long gradeId);
+	public List<SubjectResponseDTO> findSubjectByGradeId(int gradeId);
 
 	Map<Long, String> findAllSubject();
 
-	String createSubject(String subjectName, MultipartFile file, String description, long gradeId)
+	String createSubject(String subjectName, MultipartFile file, String description, int gradeId)
 			throws SizeLimitExceededException, IOException;
 
-	String updateSubject(long id, String subjectName, MultipartFile file, String description, long gradeId)
+	String updateSubject(long id, String subjectName, MultipartFile file, String description, int gradeId)
 			throws SizeLimitExceededException, IOException;
 
 	String deleteSubject(long id);

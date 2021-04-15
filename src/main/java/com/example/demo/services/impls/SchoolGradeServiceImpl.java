@@ -37,7 +37,7 @@ public class SchoolGradeServiceImpl implements ISchoolGradeService {
 	ModelMapper modelMapper;
 
 	@Override
-	public List<SchoolResponseDTO> findSchoolLinkedByGradeId(long gradeId) {
+	public List<SchoolResponseDTO> findSchoolLinkedByGradeId(int gradeId) {
 		List<SchoolGrade> schoolGradeList = iSchoolGradeRepository.findByGradeIdAndStatusNotOrderByStatusAsc(gradeId,
 				"DELETED");
 		List<SchoolResponseDTO> schoolResponseDTOList = new ArrayList<>();
@@ -60,7 +60,7 @@ public class SchoolGradeServiceImpl implements ISchoolGradeService {
 	//done
 	@Override
 	public String linkGradeAndSchool(SchoolGradeDTO schoolGradeDTO) {
-		long gradeId = schoolGradeDTO.getGradeId();
+		int gradeId = schoolGradeDTO.getGradeId();
 		long schoolId = schoolGradeDTO.getSchoolId();
 		Grade grade = iGradeRepository.findById(gradeId).orElseThrow(() -> new ResourceNotFoundException());
 		School school = iSchoolRepository.findByIdAndStatusNot(schoolId, "DELETED");
@@ -85,7 +85,7 @@ public class SchoolGradeServiceImpl implements ISchoolGradeService {
 //	 add function active
 	@Override
 	public String changeStatusGradeAndSchool(ListIdAndStatusDTO listIdAndStatusDTO) {
-		long gradeId = listIdAndStatusDTO.getIds().get(0);
+		int gradeId = Math.toIntExact(listIdAndStatusDTO.getIds().get(0));
 		long schoolId = listIdAndStatusDTO.getIds().get(1);
 		iGradeRepository.findById(gradeId).orElseThrow(() -> new ResourceNotFoundException());
 

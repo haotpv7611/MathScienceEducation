@@ -5,7 +5,7 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.Length;
 
 public class ClassRequestDTO {
-	private long gradeId;
+	private int gradeId;
 	private long schoolId;
 	@NotNull(message = "ClassName must be not null!")
 	@Length(max = 20, message = "ClassName length must be less than 20!")
@@ -14,7 +14,7 @@ public class ClassRequestDTO {
 	public ClassRequestDTO() {
 	}
 
-	public ClassRequestDTO(long gradeId, long schoolId,
+	public ClassRequestDTO(int gradeId, long schoolId,
 			@NotNull(message = "ClassName must be not null!") @Length(max = 20, message = "ClassName length must be less than 20!") String className) {
 		super();
 		this.gradeId = gradeId;
@@ -25,14 +25,14 @@ public class ClassRequestDTO {
 	/**
 	 * @return the gradeId
 	 */
-	public long getGradeId() {
+	public int getGradeId() {
 		return gradeId;
 	}
 
 	/**
 	 * @param gradeId the gradeId to set
 	 */
-	public void setGradeId(long gradeId) {
+	public void setGradeId(int gradeId) {
 		this.gradeId = gradeId;
 	}
 

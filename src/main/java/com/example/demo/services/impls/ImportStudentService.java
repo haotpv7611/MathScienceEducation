@@ -56,7 +56,7 @@ public class ImportStudentService {
 	@Autowired
 	IStudentProfileRepository iStudentProfileRepository;
 
-	public void importStudent(MultipartFile file, long gradeId, long schoolId) throws IOException, ParseException {
+	public void importStudent(MultipartFile file, int gradeId, long schoolId) throws IOException, ParseException {
 		SchoolGrade schoolGrade = iSchoolGradeRepository.findByGradeIdAndSchoolIdAndStatusNot(gradeId, schoolId, "DELETED");
 		
 		if (schoolGrade == null) {

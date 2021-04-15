@@ -11,11 +11,11 @@ import com.example.demo.models.SchoolGrade;
 @Repository
 public interface ISchoolGradeRepository extends JpaRepository<SchoolGrade, Long> {
 
-	List<SchoolResponseDTO> findSchoolLinkedByGradeId(long gradeId);
+	List<SchoolResponseDTO> findSchoolLinkedByGradeId(int gradeId);
 
-	List<SchoolGrade> findByGradeIdAndStatusNotOrderByStatusAsc(long gradeId, String status);
+	List<SchoolGrade> findByGradeIdAndStatusNotOrderByStatusAsc(int gradeId, String status);
 
-	SchoolGrade findByGradeIdAndSchoolIdAndStatusNot(long gradeId, long schoolId, String status);
+	SchoolGrade findByGradeIdAndSchoolIdAndStatusNot(int gradeId, long schoolId, String status);
 	
 	List<SchoolGrade> findBySchoolIdAndStatusNot(long schoolId, String status);
 }

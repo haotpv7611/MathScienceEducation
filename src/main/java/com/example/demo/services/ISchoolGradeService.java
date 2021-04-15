@@ -12,7 +12,7 @@ public interface ISchoolGradeService {
 
 	String changeStatusGradeAndSchool(ListIdAndStatusDTO listIdAndStatusDTO);
 
-	List<SchoolResponseDTO> findSchoolLinkedByGradeId(long gradeId);
+	List<SchoolResponseDTO> findSchoolLinkedByGradeId(int gradeId);
 	
 	List<GradeDTO> findGradeLinkedBySchoolId(long schoolId);
 }

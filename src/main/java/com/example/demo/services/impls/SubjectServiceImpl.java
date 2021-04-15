@@ -85,7 +85,7 @@ public class SubjectServiceImpl implements ISubjectService {
 
 	// done ok
 	@Override
-	public List<SubjectResponseDTO> findSubjectByGradeId(long gradeId) {
+	public List<SubjectResponseDTO> findSubjectByGradeId(int gradeId) {
 		List<SubjectResponseDTO> subjectResponseDTOList = new ArrayList<>();
 		try {
 			// find all subjects and return
@@ -118,7 +118,7 @@ public class SubjectServiceImpl implements ISubjectService {
 	// done ok
 	@Override
 	@Transactional
-	public String createSubject(String subjectName, MultipartFile file, String description, long gradeId)
+	public String createSubject(String subjectName, MultipartFile file, String description, int gradeId)
 			throws SizeLimitExceededException, IOException {
 		try {
 			// validate data input
@@ -158,7 +158,7 @@ public class SubjectServiceImpl implements ISubjectService {
 	// done ok
 	@Override
 	@Transactional
-	public String updateSubject(long id, String subjectName, MultipartFile file, String description, long gradeId)
+	public String updateSubject(long id, String subjectName, MultipartFile file, String description, int gradeId)
 			throws SizeLimitExceededException, IOException {
 		try {
 			// validate data input

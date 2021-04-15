@@ -2,12 +2,12 @@ package com.example.demo.dtos;
 
 public class SchoolGradeDTO {
 	private long schoolId;
-	private long gradeId;
+	private int gradeId;
 
 	public SchoolGradeDTO() {
 	}
 
-	public SchoolGradeDTO(long schoolId, long gradeId) {
+	public SchoolGradeDTO(long schoolId, int gradeId) {
 		super();
 		this.schoolId = schoolId;
 		this.gradeId = gradeId;
@@ -30,14 +30,14 @@ public class SchoolGradeDTO {
 	/**
 	 * @return the gradeId
 	 */
-	public long getGradeId() {
+	public int getGradeId() {
 		return gradeId;
 	}
 
 	/**
 	 * @param gradeId the gradeId to set
 	 */
-	public void setGradeId(long gradeId) {
+	public void setGradeId(int gradeId) {
 		this.gradeId = gradeId;
 	}
 

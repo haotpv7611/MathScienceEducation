@@ -6,7 +6,6 @@ import java.text.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -31,7 +30,7 @@ public class AccountController {
 	ImportStudentService importStudentService;
 
 	@PostMapping
-	public void getData(@RequestParam MultipartFile file, @RequestParam long gradeId, @RequestParam long schoolId)
+	public void getData(@RequestParam MultipartFile file, @RequestParam int gradeId, @RequestParam long schoolId)
 			throws IOException, ParseException {
 //		accountServiceImpl.readData(file, gradeId, schoolId);
 		importStudentService.importStudent(file, gradeId, schoolId);

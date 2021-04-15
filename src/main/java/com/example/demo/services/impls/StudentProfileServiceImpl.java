@@ -107,7 +107,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 	@Override
 	public List<StudentResponseDTO> findStudentByListId(List<Long> ids) {
 		long schoolId = ids.get(0);
-		long gradeId = ids.get(1);
+		int gradeId = Math.toIntExact(ids.get(1));
 		long classId = ids.get(2);
 
 		List<StudentResponseDTO> studentResponseDTOList = new ArrayList<>();
@@ -257,13 +257,27 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 		StudentProfile studentProfile = new StudentProfile(DoB, gender, parentName, contact, "ACTIVE", studentCount, account, classes);
 		iStudentProfileRepository.save(studentProfile);
 
-		return "CREATE SUCCESS !";
+		return "CREATE SUCCESS!";
 	}
 
 	@Override
+	@Transactional
 	public String updateStudent(long id, StudentRequestDTO studentProfileRequestDTO) {
-
-		return null;
+		StudentProfile studentProfile = iStudentProfileRepository.findByIdAndStatusNot(id, DELETE_STATUS);
+		if (studentProfile == null) {
+			throw new ResourceNotFoundException();
+		}
+		
+		studentProfile.setDOB(studentProfileRequestDTO.getDoB());
+		studentProfile.setGender(studentProfileRequestDTO.getGender());
+		studentProfile.setParentName(studentProfileRequestDTO.getParentName());		
+		studentProfile.setContact(studentProfileRequestDTO.getContact());
+		iStudentProfileRepository.save(studentProfile);
+		
+		Account account = studentProfile.getAccount();
+		account.setFullName(studentProfileRequestDTO.getFullName());
+		iAccountRepository.save(account);
+		return "UPDATE SUCCESS!";
 	}
 
 	@Override
@@ -328,7 +342,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 
 	@Override
 	@Transactional
-	public String importStudent(MultipartFile file, long schoolId, long gradeId) throws IOException {
+	public String importStudent(MultipartFile file, long schoolId, int gradeId) throws IOException {
 		// open file
 		Workbook workbook = new XSSFWorkbook(file.getInputStream());
 		SchoolGrade schoolGrade = iSchoolGradeRepository.findByGradeIdAndSchoolIdAndStatusNot(gradeId, schoolId,
@@ -389,7 +403,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 	}
 
 	@Override
-	public String validateStudentFile(MultipartFile file, long schoolId, long gradeId) throws IOException {
+	public String validateStudentFile(MultipartFile file, long schoolId, int gradeId) throws IOException {
 		// open file
 		Workbook workbook = new XSSFWorkbook(file.getInputStream());
 

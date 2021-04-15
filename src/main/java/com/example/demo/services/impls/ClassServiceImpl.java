@@ -37,7 +37,7 @@ public class ClassServiceImpl implements IClassService{
 
 	@Override
 	public List<ClassResponseDTO> findBySchoolGradeId(SchoolGradeDTO schoolGradeDTO) {	
-		long gradeId = schoolGradeDTO.getGradeId();
+		int gradeId = schoolGradeDTO.getGradeId();
 		long schoolId = schoolGradeDTO.getSchoolId();
 		SchoolGrade schoolGrade = iSchoolGradeRepository.findByGradeIdAndSchoolIdAndStatusNot(gradeId, schoolId, "DELETED");
 		if (schoolGrade == null) {
@@ -68,7 +68,7 @@ public class ClassServiceImpl implements IClassService{
 
 	@Override
 	public String createClass( ClassRequestDTO classRequestDTO) {
-		long gradeId = classRequestDTO.getGradeId();
+		int gradeId = classRequestDTO.getGradeId();
 		long schoolId = classRequestDTO.getSchoolId();
 		SchoolGrade schoolGrade = iSchoolGradeRepository.findByGradeIdAndSchoolIdAndStatusNot(gradeId, schoolId, "DELETED");
 		if (schoolGrade == null) {

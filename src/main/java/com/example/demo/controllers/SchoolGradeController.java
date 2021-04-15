@@ -27,7 +27,7 @@ public class SchoolGradeController {
 	ISchoolGradeService iSchoolGradeService;
 	
 	@GetMapping("/grade/{gradeId}/school")
-	public ResponseEntity<List<SchoolResponseDTO>> findSchoolByGradeId(@PathVariable long gradeId) {
+	public ResponseEntity<List<SchoolResponseDTO>> findSchoolByGradeId(@PathVariable int gradeId) {
 		List<SchoolResponseDTO> response = iSchoolGradeService.findSchoolLinkedByGradeId(gradeId);
 		
 		return ResponseEntity.ok(response);

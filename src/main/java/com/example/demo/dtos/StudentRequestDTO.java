@@ -5,13 +5,13 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.Length;
 
 public class StudentRequestDTO {
-
 	@NotNull(message = "DoB must be not null!")
 	@Length(max = 20, message = "DoB length must be less than 20!")
 	private String DoB;
 	@NotNull(message = "Gender must be not null!")
 	@Length(max = 10, message = "Gender length must be less than 10!")
 	private String gender;
+	@NotNull(message = "ParentName must be not null!")
 	@Length(max = 50, message = "ParentName length must be less than 50!")
 	private String parentName;
 	@NotNull(message = "Contact must be not null!")
