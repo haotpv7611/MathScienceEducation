@@ -13,17 +13,15 @@ public interface IUnitService {
 
 	List<UnitResponseDTO> findBySubjectId(long subjectId);
 
-	List<UnitResponseDTO> findAllUnitAfterIdsBySubjectId(long subjectId);
+	Map<Long, Integer> findAllUnitAfterIdsBySubjectId(long subjectId);
 
 	List<UnitViewDTO> showUnitViewBySubjectId(long subjectId, long accountId);
-	
+
 	Map<Long, Integer> findAllUnit();
 
 	String createUnit(UnitRequestDTO unitRequestDTO);
 
 	String updateUnit(long id, UnitRequestDTO unitRequestDTO);
-
-	String deleteUnit(long id);
 
 	void deleteOneUnit(long id);
 }

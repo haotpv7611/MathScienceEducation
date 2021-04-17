@@ -38,7 +38,6 @@ import com.example.demo.services.IUnitService;
 @Service
 public class UnitServiceImpl implements IUnitService {
 	Logger logger = LoggerFactory.getLogger(UnitServiceImpl.class);
-
 	private final String DELETED_STATUS = "DELETED";
 
 	@Autowired
@@ -103,8 +102,6 @@ public class UnitServiceImpl implements IUnitService {
 		try {
 			// find all active entities and have subjectId = ?, sort acscending by unitName
 			List<Unit> unitList = iUnitRepository.findBySubjectIdAndIsDisableFalseOrderByUnitNameAsc(subjectId);
-
-			// convert all entities to dtos and return
 			if (!unitList.isEmpty()) {
 				for (Unit unit : unitList) {
 					UnitResponseDTO unitResponseDTO = modelMapper.map(unit, UnitResponseDTO.class);
@@ -121,30 +118,33 @@ public class UnitServiceImpl implements IUnitService {
 	}
 
 	@Override
-	public List<UnitResponseDTO> findAllUnitAfterIdsBySubjectId(long subjectId) {
-		List<UnitResponseDTO> unitResponseDTOList = new ArrayList<>();
+	public Map<Long, Integer> findAllUnitAfterIdsBySubjectId(long subjectId) {
+		Map<Long, Integer> unitAfterMap = new HashMap<>();
 		try {
+			// find all unit by gradeID
 			List<Unit> unitList = iUnitRepository.findBySubjectIdAndIsDisableFalse(subjectId);
-			List<ProgressTest> progressTestList = iProgressTestRepository.findBySubjectIdAndIsDisableFalse(subjectId);
-			if (!unitList.isEmpty() && !progressTestList.isEmpty()) {
-				List<Long> unitAfterIdList = new ArrayList<>();
-				for (ProgressTest progressTest : progressTestList) {
-					unitAfterIdList.add(progressTest.getUnitAfterId());
-				}
+			if (!unitList.isEmpty()) {
 				for (Unit unit : unitList) {
-					if (!unitAfterIdList.contains(unit.getId())) {
-						UnitResponseDTO unitResponseDTO = modelMapper.map(unit, UnitResponseDTO.class);
-						unitResponseDTOList.add(unitResponseDTO);
+					unitAfterMap.put(unit.getId(), unit.getUnitName());
+				}
+
+				List<ProgressTest> progressTestList = iProgressTestRepository
+						.findBySubjectIdAndIsDisableFalse(subjectId);
+				if (progressTestList.isEmpty()) {
+					for (ProgressTest progressTest : progressTestList) {
+						if (unitAfterMap.containsKey(progressTest.getUnitAfterId())) {
+							unitAfterMap.remove(progressTest.getUnitAfterId());
+						}
 					}
 				}
 			}
 		} catch (Exception e) {
-			logger.error("FIND: all unit by subjectId = " + subjectId + "! " + e.getMessage());
+			logger.error("FIND: all unitAfter by subjectId = " + subjectId + "! " + e.getMessage());
 
 			return null;
 		}
 
-		return unitResponseDTOList;
+		return unitAfterMap;
 	}
 
 	// not done
@@ -214,9 +214,13 @@ public class UnitServiceImpl implements IUnitService {
 	@Override
 	public Map<Long, Integer> findAllUnit() {
 		Map<Long, Integer> unitMap = new HashMap<>();
-		List<Unit> unitList = iUnitRepository.findByIsDisableFalse();
-		for (Unit unit : unitList) {
-			unitMap.put(unit.getId(), unit.getUnitName());
+		try {
+			List<Unit> unitList = iUnitRepository.findByIsDisableFalse();
+			for (Unit unit : unitList) {
+				unitMap.put(unit.getId(), unit.getUnitName());
+			}
+		} catch (Exception e) {
+			logger.error("Find all unit! " + e.getMessage());
 		}
 
 		return unitMap;
@@ -269,11 +273,6 @@ public class UnitServiceImpl implements IUnitService {
 			if (unit == null) {
 				throw new ResourceNotFoundException();
 			}
-			Subject subject = iSubjectRepository.findByIdAndIsDisableFalse(subjectId);
-			if (subject == null) {
-				throw new ResourceNotFoundException();
-			}
-
 			if (unit.getUnitName() != unitName) {
 				if (iUnitRepository.findBySubjectIdAndUnitNameAndIsDisableFalse(subjectId, unitName) != null) {
 					return "EXISTED";
@@ -295,23 +294,6 @@ public class UnitServiceImpl implements IUnitService {
 		}
 
 		return "UPDATE SUCCESS!";
-	}
-
-	@Override
-	public String deleteUnit(long id) {
-		try {
-			deleteOneUnit(id);
-		} catch (Exception e) {
-			logger.error("DELETE: unitId = " + id + "! " + e.getMessage());
-			if (e instanceof ResourceNotFoundException) {
-
-				return "NOT FOUND!";
-			}
-
-			return "DELETE FAIL!";
-		}
-
-		return "DELETE SUCCESS!";
 	}
 
 	@Override
@@ -340,6 +322,7 @@ public class UnitServiceImpl implements IUnitService {
 			unit.setDisable(true);
 			iUnitRepository.save(unit);
 		} catch (Exception e) {
+			logger.error("DELETE: unitId = " + id + "! " + e.getMessage());
 			throw e;
 		}
 	}

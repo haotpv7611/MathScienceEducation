@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dtos.LessonResponseDTO;
+import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.dtos.LessonRequestDTO;
 import com.example.demo.services.ILessonService;
 
@@ -112,17 +113,17 @@ public class LessonController {
 
 	@PutMapping("/lesson")
 	public ResponseEntity<String> deleteLesson(@RequestParam long id) {
-		String response = iLessonService.deleteLesson(id);
-		if (response.contains("NOT FOUND")) {
+		try {
+			iLessonService.deleteOneLesson(id);
 
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+			return ResponseEntity.ok("DELETE SUCCESS!");
+		} catch (Exception e) {
+			if (e instanceof ResourceNotFoundException) {
+
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).body("NOT FOUND");
+			}
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("DELETE FAIL!");
 		}
-		if (response.contains("FAIL")) {
-
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-		}
-
-		return ResponseEntity.ok(response);
-
 	}
 }

@@ -31,7 +31,6 @@ import com.example.demo.services.ILessonService;
 @Service
 public class LessonServiceImpl implements ILessonService {
 	Logger logger = LoggerFactory.getLogger(LessonServiceImpl.class);
-
 	private final String DELETED_STATUS = "DELETED";
 
 	@Autowired
@@ -81,20 +80,12 @@ public class LessonServiceImpl implements ILessonService {
 	// done
 	@Override
 	public List<LessonResponseDTO> findByUnitIdOrderByLessonNameAsc(long unitId) {
-
 		List<LessonResponseDTO> lessonResponseDTOList = new ArrayList<>();
 		try {
 			List<Lesson> lessonList = iLessonRepository.findByUnitIdAndIsDisableFalseOrderByLessonNameAsc(unitId);
 			if (!lessonList.isEmpty()) {
-				Unit unit = iUnitRepository.findByIdAndIsDisableFalse(unitId);
-				int unitName = 0;
-				if (unit != null) {
-					unitName = unit.getUnitName();
-				}
-
 				for (Lesson lesson : lessonList) {
 					LessonResponseDTO lessonResponseDTO = modelMapper.map(lesson, LessonResponseDTO.class);
-					lessonResponseDTO.setUnitName(unitName);
 					lessonResponseDTOList.add(lessonResponseDTO);
 				}
 			}
@@ -106,13 +97,18 @@ public class LessonServiceImpl implements ILessonService {
 
 		return lessonResponseDTOList;
 	}
-	
+
 	@Override
 	public Map<Long, Integer> findAllLesson() {
 		Map<Long, Integer> lessonMap = new HashMap<>();
-		List<Lesson> unitList = iLessonRepository.findByIsDisableFalse();
-		for (Lesson lesson : unitList) {
-			lessonMap.put(lesson.getId(), lesson.getLessonName());
+		try {
+
+			List<Lesson> unitList = iLessonRepository.findByIsDisableFalse();
+			for (Lesson lesson : unitList) {
+				lessonMap.put(lesson.getId(), lesson.getLessonName());
+			}
+		} catch (Exception e) {
+			logger.error("Find all lessons! " + e.getMessage());
 		}
 
 		return lessonMap;
@@ -164,13 +160,8 @@ public class LessonServiceImpl implements ILessonService {
 				throw new ResourceNotFoundException();
 			}
 			long unitId = lessonRequestDTO.getUnitId();
-			Unit unit = iUnitRepository.findByIdAndIsDisableFalse(unitId);
-			if (unit == null) {
-				throw new ResourceNotFoundException();
-			}
 			if (lesson.getLessonName() != lessonName) {
-				if (iLessonRepository.findByUnitIdAndLessonNameAndIsDisableFalse(unitId,
-						lessonName) != null) {
+				if (iLessonRepository.findByUnitIdAndLessonNameAndIsDisableFalse(unitId, lessonName) != null) {
 
 					return "EXISTED";
 				}
@@ -191,23 +182,6 @@ public class LessonServiceImpl implements ILessonService {
 
 		return "UPDATE SUCCESS!";
 
-	}
-
-	@Override
-	public String deleteLesson(long id) {
-		try {
-			deleteOneLesson(id);
-		} catch (Exception e) {
-			logger.error("DELETE: lessonId = " + id + "! " + e.getMessage());
-			if (e instanceof ResourceNotFoundException) {
-
-				return "NOT FOUND!";
-			}
-
-			return "DELETE FAIL!";
-		}
-
-		return "DELETE SUCCESS!";
 	}
 
 	@Override
@@ -238,6 +212,7 @@ public class LessonServiceImpl implements ILessonService {
 			lesson.setDisable(true);
 			iLessonRepository.save(lesson);
 		} catch (Exception e) {
+			logger.error("DELETE: lessonId = " + id + "! " + e.getMessage());
 			throw e;
 		}
 	}

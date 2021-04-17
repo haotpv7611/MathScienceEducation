@@ -147,24 +147,8 @@ public class Question {
 		return id;
 	}
 
-//	public Question(long id, String questionTitle, String description, String questionImageUrl, String questionAudioUrl,
-//			float score, int questionTypeId, LocalDateTime createdDate, String createdBy, LocalDateTime modifiedDate,
-//			String modifiedBy, boolean isDisable, long unitId) {
-//		super();
-//		this.id = id;
-//		this.questionTitle = questionTitle;
-//		this.description = description;
-//		this.questionImageUrl = questionImageUrl;
-//		this.questionAudioUrl = questionAudioUrl;
-//		this.score = score;
-//		this.questionTypeId = questionTypeId;
-//		this.createdDate = createdDate;
-//		this.createdBy = createdBy;
-//		this.modifiedDate = modifiedDate;
-//		this.modifiedBy = modifiedBy;
-//		this.isDisable = isDisable;
-//		this.unitId = unitId;
-//	}
+	public Question() {
+	}
 
 	public Question(String questionTitle, String description, float score, long unitId, boolean isDisable) {
 		super();
@@ -173,9 +157,6 @@ public class Question {
 		this.score = score;
 		this.unitId = unitId;
 		this.isDisable = isDisable;
-	}
-
-	public Question() {
 	}
 
 	/**

@@ -1,6 +1,7 @@
 package com.example.demo.controllers;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.validation.Valid;
 
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.demo.dtos.UnitResponseDTO;
 import com.example.demo.dtos.UnitRequestDTO;
 import com.example.demo.dtos.UnitViewDTO;
+import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.services.IUnitService;
 
 @CrossOrigin
@@ -30,9 +32,8 @@ public class UnitController {
 	@Autowired
 	private IUnitService iUnitService;
 
-	// done
 	@GetMapping("/unit/{id}")
-	public ResponseEntity<?> findUnitById(@PathVariable long id) {
+	public ResponseEntity<Object> findUnitById(@PathVariable long id) {
 		Object response = iUnitService.findById(id);
 		if (response.equals("NOT FOUND!")) {
 
@@ -46,7 +47,6 @@ public class UnitController {
 		return ResponseEntity.ok(response);
 	}
 
-	// done
 	@GetMapping("/subject/{subjectId}/units")
 	public ResponseEntity<List<UnitResponseDTO>> findBySubjectId(@PathVariable long subjectId) {
 		List<UnitResponseDTO> response = iUnitService.findBySubjectId(subjectId);
@@ -57,10 +57,10 @@ public class UnitController {
 
 		return ResponseEntity.ok(response);
 	}
-	
+
 	@GetMapping("/subject/{subjectId}/unitAterIds")
-	public ResponseEntity<List<UnitResponseDTO>> findAllUnitAfterIdsBySubjectId(@PathVariable long subjectId) {
-		List<UnitResponseDTO> response = iUnitService.findAllUnitAfterIdsBySubjectId(subjectId);
+	public ResponseEntity<Map<Long, Integer>> findAllUnitAfterIdsBySubjectId(@PathVariable long subjectId) {
+		Map<Long, Integer> response = iUnitService.findAllUnitAfterIdsBySubjectId(subjectId);
 		if (response == null) {
 
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
@@ -70,17 +70,17 @@ public class UnitController {
 	}
 
 	@PostMapping("/subject/{subjectId}/unitView")
-	public ResponseEntity<List<UnitViewDTO>> showUnitViewBySubjectId(@PathVariable long subjectId, @RequestParam long accountId) {
+	public ResponseEntity<List<UnitViewDTO>> showUnitViewBySubjectId(@PathVariable long subjectId,
+			@RequestParam long accountId) {
 		List<UnitViewDTO> response = iUnitService.showUnitViewBySubjectId(subjectId, accountId);
 		if (response.isEmpty()) {
-			
+
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 		}
-		
+
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 
-	// done
 	@PostMapping("/unit")
 	public ResponseEntity<String> createUnit(@Valid @RequestBody UnitRequestDTO unitRequestDTO,
 			BindingResult bindingResult) {
@@ -110,7 +110,6 @@ public class UnitController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 
-	// done
 	@PutMapping("/unit/{id}")
 	public ResponseEntity<String> updateUnit(@PathVariable long id, @Valid @RequestBody UnitRequestDTO unitRequestDTO,
 			BindingResult bindingResult) {
@@ -141,17 +140,17 @@ public class UnitController {
 
 	@PutMapping("unit/delete")
 	public ResponseEntity<String> deleteUnit(@RequestParam long id) {
-		String response = iUnitService.deleteUnit(id);
-		if (response.contains("NOT FOUND")) {
+		try {
+			iUnitService.deleteOneUnit(id);
 
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+			return ResponseEntity.ok("DELETE SUCCESS!");
+		} catch (Exception e) {
+			if (e instanceof ResourceNotFoundException) {
+
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).body("NOT FOUND");
+			}
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("DELETE FAIL!");
 		}
-		if (response.contains("FAIL")) {
-
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-		}
-
-		return ResponseEntity.ok(response);
-
 	}
 }

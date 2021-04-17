@@ -228,7 +228,7 @@ public class SubjectServiceImpl implements ISubjectService {
 			List<Unit> listUnitList = iUnitRepository.findBySubjectIdAndIsDisableFalse(id);
 			if (!listUnitList.isEmpty()) {
 				for (Unit unit : listUnitList) {
-					iUnitService.deleteUnit(unit.getId());
+					iUnitService.deleteOneUnit(unit.getId());
 				}
 			}
 			List<ProgressTest> progresssTestList = iProgressTestRepository.findBySubjectIdAndIsDisableFalse(id);
