@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.demo.dtos.OptionQuestionChooseDTO;
 import com.example.demo.dtos.OptionQuestionExerciseDTO;
 import com.example.demo.dtos.OptionQuestionFillDTO;
 import com.example.demo.dtos.OptionQuestionGameDTO;
@@ -26,14 +27,11 @@ import com.example.demo.dtos.QuestionOptionResponseDTO;
 import com.example.demo.dtos.QuestionResponseDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.ExerciseGameQuestion;
-import com.example.demo.models.Game;
 import com.example.demo.models.OptionQuestion;
 import com.example.demo.models.Question;
 import com.example.demo.models.QuestionType;
 import com.example.demo.models.Unit;
 import com.example.demo.repositories.IExerciseGameQuestionRepository;
-import com.example.demo.repositories.IExerciseRepository;
-import com.example.demo.repositories.IGameRepository;
 import com.example.demo.repositories.IOptionQuestionRepository;
 import com.example.demo.repositories.IQuestionRepository;
 import com.example.demo.repositories.IQuestionTypeRepository;
@@ -42,9 +40,6 @@ import com.example.demo.services.IFirebaseService;
 import com.example.demo.services.IOptionQuestionService;
 import com.example.demo.services.IQuestionService;
 import com.example.demo.utils.Util;
-import com.google.common.collect.ContiguousSet;
-import com.google.common.collect.DiscreteDomain;
-import com.google.common.collect.Range;
 
 @Service
 public class QuestionServiceImpl implements IQuestionService {
@@ -309,7 +304,8 @@ public class QuestionServiceImpl implements IQuestionService {
 				List<OptionQuestion> optionQuestionList = iOptionQuestionRepository
 						.findByQuestionIdAndIsDisableFalse(question.getId());
 				if (!optionQuestionList.isEmpty()) {
-					if (question.getQuestionType().getDescription().equals("SWAP")) {
+					String questionType = question.getQuestionType().getDescription();
+					if (questionType.equals("SWAP") || questionType.equals("MATCH")) {
 						List<Integer> integerList = IntStream.rangeClosed(0, optionQuestionList.size() - 1).boxed()
 								.collect(Collectors.toList());
 						Collections.shuffle(integerList);
@@ -323,18 +319,20 @@ public class QuestionServiceImpl implements IQuestionService {
 							optionQuestionGameDTOList.add(optionQuestionGameDTO);
 						}
 					}
-					if (question.getQuestionType().getDescription().equals("SWAP") || question.getQuestionType().getDescription().equals("MATCH")) {
-						List<Integer> integerList = IntStream.rangeClosed(0, optionQuestionList.size() - 1).boxed()
-								.collect(Collectors.toList());
-						Collections.shuffle(integerList);
-
+					if (questionType.equals("CHOOSE")) {
+						List<String> optionImageUrlList = new ArrayList<>();
+						for (OptionQuestion optionQuestion : optionQuestionList) {
+							optionImageUrlList.add(optionQuestion.getOptionImageUrl());
+						}
 						for (int i = 0; i < optionQuestionList.size(); i++) {
-							System.out.println("optionId: " + optionQuestionList.get(i).getId());
-							OptionQuestionGameDTO optionQuestionGameDTO = modelMapper.map(optionQuestionList.get(i),
-									OptionQuestionGameDTO.class);
-							optionQuestionGameDTO
-									.setWrongOptionText(optionQuestionList.get(integerList.get(i)).getOptionText());
-							optionQuestionGameDTOList.add(optionQuestionGameDTO);
+							OptionQuestionChooseDTO optionQuestionChooseDTO = new OptionQuestionChooseDTO();
+							optionQuestionChooseDTO.setId(optionQuestionList.get(i).getId());
+							optionQuestionChooseDTO.setOptionText(optionQuestionList.get(i).getOptionText());
+							Collections.shuffle(optionImageUrlList);
+							Collections.swap(optionImageUrlList, 0, optionImageUrlList.indexOf(optionQuestionList.get(i).getOptionImageUrl()));
+							
+							optionQuestionChooseDTO.setOptionImageUrlList(optionImageUrlList);
+							optionQuestionGameDTOList.add(optionQuestionChooseDTO);
 						}
 					}
 
@@ -348,16 +346,6 @@ public class QuestionServiceImpl implements IQuestionService {
 		}
 		return questionGameViewDTOList;
 
-//		Game game = iGameRepository.findByIdAndIsDisableFalse(gameId);
-//		if (game == null) {
-//			throw new ResourceNotFoundException();
-//		}
-//		List<Long> questionIdList = iExerciseGameQuestionService.findAllQuestionIdByGameId(gameId);
-//		List<QuestionExerciseViewDTO> questionViewDTOList = new ArrayList<>();
-////		generateQuestionView(questionIdList, questionViewDTOList);
-//		return null;
-
-		// not done
 	}
 
 	// done ok
