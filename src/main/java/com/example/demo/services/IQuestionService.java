@@ -22,7 +22,7 @@ public interface IQuestionService {
 	// show list question and option in role student (do exercise)
 	List<QuestionExerciseViewDTO> findQuestionByExerciseId(long exerciseId);
 
-//	List<QuestionExerciseViewDTO> showQuestionByGameId(long gameId);
+	List<Object> findQuestionByGameId(long gameId);
 
 	String createExerciseQuestion(MultipartFile imageFile, MultipartFile audioFile, String questionTitle,
 			String description, float score, String questionType, long unitId, List<String> optionTextList,

@@ -4,6 +4,7 @@ public class OptionQuestionGameDTO {
 	private long id;
 	private String optionImageUrl;
 	private String optionText;
+	private String wrongOptionText;
 
 	/**
 	 * @return the id
@@ -45,6 +46,20 @@ public class OptionQuestionGameDTO {
 	 */
 	public void setOptionText(String optionText) {
 		this.optionText = optionText;
+	}
+
+	/**
+	 * @return the wrongOptionText
+	 */
+	public String getWrongOptionText() {
+		return wrongOptionText;
+	}
+
+	/**
+	 * @param wrongOptionText the wrongOptionText to set
+	 */
+	public void setWrongOptionText(String wrongOptionText) {
+		this.wrongOptionText = wrongOptionText;
 	}
 
 }

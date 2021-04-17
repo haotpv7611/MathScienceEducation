@@ -3,7 +3,10 @@ package com.example.demo.services.impls;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException;
 import org.modelmapper.ModelMapper;
@@ -18,16 +21,19 @@ import com.example.demo.dtos.OptionQuestionExerciseDTO;
 import com.example.demo.dtos.OptionQuestionFillDTO;
 import com.example.demo.dtos.OptionQuestionGameDTO;
 import com.example.demo.dtos.QuestionExerciseViewDTO;
+import com.example.demo.dtos.QuestionGameViewDTO;
 import com.example.demo.dtos.QuestionOptionResponseDTO;
 import com.example.demo.dtos.QuestionResponseDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.ExerciseGameQuestion;
+import com.example.demo.models.Game;
 import com.example.demo.models.OptionQuestion;
 import com.example.demo.models.Question;
 import com.example.demo.models.QuestionType;
 import com.example.demo.models.Unit;
 import com.example.demo.repositories.IExerciseGameQuestionRepository;
 import com.example.demo.repositories.IExerciseRepository;
+import com.example.demo.repositories.IGameRepository;
 import com.example.demo.repositories.IOptionQuestionRepository;
 import com.example.demo.repositories.IQuestionRepository;
 import com.example.demo.repositories.IQuestionTypeRepository;
@@ -36,6 +42,9 @@ import com.example.demo.services.IFirebaseService;
 import com.example.demo.services.IOptionQuestionService;
 import com.example.demo.services.IQuestionService;
 import com.example.demo.utils.Util;
+import com.google.common.collect.ContiguousSet;
+import com.google.common.collect.DiscreteDomain;
+import com.google.common.collect.Range;
 
 @Service
 public class QuestionServiceImpl implements IQuestionService {
@@ -66,12 +75,15 @@ public class QuestionServiceImpl implements IQuestionService {
 	@Autowired
 	private IOptionQuestionRepository iOptionQuestionRepository;
 
-	@Autowired
-	IExerciseRepository iExerciseRepository;
+//	@Autowired
+//	private IExerciseRepository iExerciseRepository;
+//	
+//	@Autowired
+//	private IGameRepository iGameRepository;
 
 	@Autowired
 	private IExerciseGameQuestionRepository iExerciseGameQuestionRepository;
-	
+
 //	@Autowired
 //	private IExerciseGameQuestionService iExerciseGameQuestionService;
 
@@ -236,10 +248,11 @@ public class QuestionServiceImpl implements IQuestionService {
 			List<ExerciseGameQuestion> exerciseGameQuestionList = iExerciseGameQuestionRepository
 					.findByExerciseIdAndIsDisableFalse(exerciseId);
 			List<Long> questionIdList = new ArrayList<>();
-			if (!exerciseGameQuestionList.isEmpty())
+			if (!exerciseGameQuestionList.isEmpty()) {
 				for (ExerciseGameQuestion exerciseGameQuestion : exerciseGameQuestionList) {
 					questionIdList.add(exerciseGameQuestion.getQuestionId());
 				}
+			}
 
 			if (!questionIdList.isEmpty()) {
 				List<Question> questionList = iQuestionRepository.findByIsDisableFalseAndIdIn(questionIdList);
@@ -266,8 +279,75 @@ public class QuestionServiceImpl implements IQuestionService {
 		return questionExerciseViewDTOList;
 	}
 
-//	@Override
-//	public List<QuestionExerciseViewDTO> showQuestionByGameId(long gameId) {
+	// gameId --> listQuestion
+
+	@Override
+	public List<Object> findQuestionByGameId(long gameId) {
+		List<Object> questionGameViewDTOList = new ArrayList<>();
+
+		List<ExerciseGameQuestion> exerciseGameQuestionList = iExerciseGameQuestionRepository
+				.findByGameIdAndIsDisableFalse(gameId);
+		System.out.println("exerciseGameQuestionList: " + exerciseGameQuestionList.size());
+
+		// find all question in game
+		List<Question> questionList = new ArrayList<>();
+
+		if (!exerciseGameQuestionList.isEmpty()) {
+			for (ExerciseGameQuestion exerciseGameQuestion : exerciseGameQuestionList) {
+				Question question = iQuestionRepository.findByIdAndIsDisableFalse(exerciseGameQuestion.getQuestionId());
+				questionList.add(question);
+			}
+
+		}
+		System.out.println("questionList: " + questionList.size());
+		if (!questionList.isEmpty()) {
+			for (Question question : questionList) {
+				System.out.println(
+						"questionId: " + question.getId() + " type: " + question.getQuestionType().getDescription());
+				// find all option by questionId
+				List<Object> optionQuestionGameDTOList = new ArrayList<>();
+				List<OptionQuestion> optionQuestionList = iOptionQuestionRepository
+						.findByQuestionIdAndIsDisableFalse(question.getId());
+				if (!optionQuestionList.isEmpty()) {
+					if (question.getQuestionType().getDescription().equals("SWAP")) {
+						List<Integer> integerList = IntStream.rangeClosed(0, optionQuestionList.size() - 1).boxed()
+								.collect(Collectors.toList());
+						Collections.shuffle(integerList);
+
+						for (int i = 0; i < optionQuestionList.size(); i++) {
+							System.out.println("optionId: " + optionQuestionList.get(i).getId());
+							OptionQuestionGameDTO optionQuestionGameDTO = modelMapper.map(optionQuestionList.get(i),
+									OptionQuestionGameDTO.class);
+							optionQuestionGameDTO
+									.setWrongOptionText(optionQuestionList.get(integerList.get(i)).getOptionText());
+							optionQuestionGameDTOList.add(optionQuestionGameDTO);
+						}
+					}
+					if (question.getQuestionType().getDescription().equals("SWAP") || question.getQuestionType().getDescription().equals("MATCH")) {
+						List<Integer> integerList = IntStream.rangeClosed(0, optionQuestionList.size() - 1).boxed()
+								.collect(Collectors.toList());
+						Collections.shuffle(integerList);
+
+						for (int i = 0; i < optionQuestionList.size(); i++) {
+							System.out.println("optionId: " + optionQuestionList.get(i).getId());
+							OptionQuestionGameDTO optionQuestionGameDTO = modelMapper.map(optionQuestionList.get(i),
+									OptionQuestionGameDTO.class);
+							optionQuestionGameDTO
+									.setWrongOptionText(optionQuestionList.get(integerList.get(i)).getOptionText());
+							optionQuestionGameDTOList.add(optionQuestionGameDTO);
+						}
+					}
+
+					QuestionGameViewDTO questionGameViewDTO = new QuestionGameViewDTO();
+					questionGameViewDTO.setQuestionType(question.getQuestionType().getDescription());
+					questionGameViewDTO.setQuestionTitle(question.getQuestionTitle());
+					questionGameViewDTO.setOptionQuestion(optionQuestionGameDTOList);
+					questionGameViewDTOList.add(questionGameViewDTO);
+				}
+			}
+		}
+		return questionGameViewDTOList;
+
 //		Game game = iGameRepository.findByIdAndIsDisableFalse(gameId);
 //		if (game == null) {
 //			throw new ResourceNotFoundException();
@@ -276,9 +356,9 @@ public class QuestionServiceImpl implements IQuestionService {
 //		List<QuestionExerciseViewDTO> questionViewDTOList = new ArrayList<>();
 ////		generateQuestionView(questionIdList, questionViewDTOList);
 //		return null;
-//
-//		// not done
-//	}
+
+		// not done
+	}
 
 	// done ok
 	@Override
@@ -617,8 +697,9 @@ public class QuestionServiceImpl implements IQuestionService {
 			for (OptionQuestion optionQuestion : optionQuestions) {
 				iOptionsService.deleteOptionQuestion(optionQuestion.getId());
 			}
-			
-			List<ExerciseGameQuestion> exerciseGameQuestionList = iExerciseGameQuestionRepository.findByQuestionIdAndIsDisableFalse(id);
+
+			List<ExerciseGameQuestion> exerciseGameQuestionList = iExerciseGameQuestionRepository
+					.findByQuestionIdAndIsDisableFalse(id);
 			if (!exerciseGameQuestionList.isEmpty()) {
 				for (ExerciseGameQuestion exerciseGameQuestion : exerciseGameQuestionList) {
 					exerciseGameQuestion.setDisable(true);
