@@ -38,12 +38,4 @@ public class SubjectResponseDTO {
 		this.imageUrl = imageUrl;
 	}
 
-//	public long getGradeId() {
-//		return gradeId;
-//	}
-//
-//	public void setGradeId(long gradeId) {
-//		this.gradeId = gradeId;
-//	}
-
 }

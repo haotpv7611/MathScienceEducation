@@ -24,7 +24,7 @@ public class Subject {
 	private String subjectName;
 	private String imageUrl;
 	private String description;
-	private long gradeId;
+	private int gradeId;
 	private boolean isDisable;
 
 	@CreatedDate
@@ -50,7 +50,7 @@ public class Subject {
 	public Subject() {
 	}
 
-	public Subject(String subjectName, long gradeId, boolean isDisable, String description) {
+	public Subject(String subjectName, int gradeId, boolean isDisable, String description) {
 		super();
 		this.subjectName = subjectName;
 		this.gradeId = gradeId;
@@ -114,11 +114,11 @@ public class Subject {
 		this.imageUrl = imageUrl;
 	}
 
-	public long getGradeId() {
+	public int getGradeId() {
 		return gradeId;
 	}
 
-	public void setGradeId(long gradeId) {
+	public void setGradeId(int gradeId) {
 		this.gradeId = gradeId;
 	}
 
