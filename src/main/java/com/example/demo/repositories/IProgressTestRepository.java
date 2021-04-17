@@ -9,11 +9,10 @@ import com.example.demo.models.ProgressTest;
 
 @Repository
 public interface IProgressTestRepository extends JpaRepository<ProgressTest, Long> {
-	List<ProgressTest> findBySubjectIdAndIsDisableFalse(long subjectId);
-
-//	List<ProgressTest> findBySubjectId(long subjectId);
 
 	ProgressTest findByIdAndIsDisableFalse(long id);
-	
-	ProgressTest findBySubjectIdAndProgressTestNameAndIsDisableFalse(long subjectId, String progressTestName);
+
+	ProgressTest findBySubjectIdAndProgressTestNameIgnoreCaseAndIsDisableFalse(long subjectId, String progressTestName);
+
+	List<ProgressTest> findBySubjectIdAndIsDisableFalse(long subjectId);
 }

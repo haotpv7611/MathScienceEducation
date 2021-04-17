@@ -67,7 +67,7 @@ public class SubjectServiceImpl implements ISubjectService {
 			}
 			subjectResponseDTO = modelMapper.map(subject, SubjectResponseDTO.class);
 		} catch (Exception e) {
-			logger.error("FIND: subjectId = " + id + "! " + e.getMessage());
+			logger.error("Find subject by id = " + id + "! " + e.getMessage());
 			if (e instanceof ResourceNotFoundException) {
 
 				return "NOT FOUND!";
@@ -92,7 +92,7 @@ public class SubjectServiceImpl implements ISubjectService {
 				}
 			}
 		} catch (Exception e) {
-			logger.error("FIND: all subject by gradeId = " + gradeId + "! " + e.getMessage());
+			logger.error("Find all subjects by gradeId = " + gradeId + "! " + e.getMessage());
 
 			return null;
 		}
@@ -101,7 +101,7 @@ public class SubjectServiceImpl implements ISubjectService {
 	}
 
 	@Override
-	public Map<Long, String> findAllSubjects() {
+	public Map<Long, String> findAllSubject() {
 		Map<Long, String> subjectMap = new HashMap<>();
 		try {
 			List<Subject> subjectList = iSubjectRepository.findByIsDisableFalse();

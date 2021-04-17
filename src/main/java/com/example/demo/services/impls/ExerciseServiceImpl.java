@@ -32,7 +32,6 @@ import com.example.demo.services.IExerciseService;
 @Service
 public class ExerciseServiceImpl implements IExerciseService {
 	Logger logger = LoggerFactory.getLogger(ExerciseServiceImpl.class);
-
 	private final String INACTIVE_STATUS = "INACTIVE";
 	private final String DELETED_STATUS = "DELETED";
 
@@ -57,6 +56,7 @@ public class ExerciseServiceImpl implements IExerciseService {
 	@Autowired
 	private ModelMapper modelMapper;
 
+	// should modify find by lesson --> lesson or progressTest
 	@Override
 	public List<ExerciseResponseDTO> findByLessonIdOrderByExerciseNameAsc(long lessonId) {
 		List<ExerciseResponseDTO> exerciseResponseDTOList = new ArrayList<>();
@@ -70,7 +70,7 @@ public class ExerciseServiceImpl implements IExerciseService {
 				}
 			}
 		} catch (Exception e) {
-			logger.error("FIND: all exercise by lessonId = " + lessonId + "! " + e.getMessage());
+			logger.error("Find all exercises by lessonId = " + lessonId + "! " + e.getMessage());
 
 			return null;
 		}
@@ -78,20 +78,27 @@ public class ExerciseServiceImpl implements IExerciseService {
 		return exerciseResponseDTOList;
 	}
 
+	// should modify find by lesson student view --> lesson or progressTest student
+	// view
 	@Override
 	public List<ExerciseResponseDTO> findByLessonIdStudentView(long lessonId, long accountId) {
 		List<ExerciseResponseDTO> exerciseResponseDTOList = new ArrayList<>();
 		try {
+			// find all exercise
 			List<Exercise> exerciseList = iExerciseRepository.findByLessonIdAndStatusNotOrderByExerciseNameAsc(lessonId,
 					DELETED_STATUS);
 			if (!exerciseList.isEmpty()) {
 				for (Exercise exercise : exerciseList) {
+					// check have question in exercise
+					// if not have, not display for student
 					List<ExerciseGameQuestion> exerciseGameQuestionList = iExerciseGameQuestionRepository
 							.findByExerciseIdAndIsDisableFalse(exercise.getId());
 					if (!exerciseGameQuestionList.isEmpty()) {
 						ExerciseResponseDTO exerciseResponseDTO = modelMapper.map(exercise, ExerciseResponseDTO.class);
+						// check exercise isTaken
 						List<ExerciseTaken> exerciseTakenList = iExerciseTakenRepository
 								.findByExerciseIdAndAccountId(exercise.getId(), accountId);
+						exerciseResponseDTO.setDone(false);
 						if (!exerciseTakenList.isEmpty()) {
 							exerciseResponseDTO.setDone(true);
 						}
@@ -100,7 +107,7 @@ public class ExerciseServiceImpl implements IExerciseService {
 				}
 			}
 		} catch (Exception e) {
-			logger.error("FIND: all exercise by lessonId = " + lessonId + "! " + e.getMessage());
+			logger.error("Find all exercises student view by lessonId = " + lessonId + "! " + e.getMessage());
 
 			return null;
 		}
@@ -121,7 +128,7 @@ public class ExerciseServiceImpl implements IExerciseService {
 				}
 			}
 		} catch (Exception e) {
-			logger.error("FIND: all exercise by progressTestId = " + progressTestId + "! " + e.getMessage());
+			logger.error("Find all exercises by progressTestId = " + progressTestId + "! " + e.getMessage());
 
 			return null;
 		}
@@ -133,14 +140,18 @@ public class ExerciseServiceImpl implements IExerciseService {
 	public List<ExerciseResponseDTO> findByProgressTestIdStudentView(long progressTestId, long accountId) {
 		List<ExerciseResponseDTO> exerciseResponseDTOList = new ArrayList<>();
 		try {
+			// find all exercise
 			List<Exercise> exerciseList = iExerciseRepository
 					.findByProgressTestIdAndStatusNotOrderByExerciseNameAsc(progressTestId, DELETED_STATUS);
 			if (!exerciseList.isEmpty()) {
 				for (Exercise exercise : exerciseList) {
+					// check have question in exercise
+					// if not have, not display for student
 					List<ExerciseGameQuestion> exerciseGameQuestionList = iExerciseGameQuestionRepository
 							.findByExerciseIdAndIsDisableFalse(exercise.getId());
 					if (!exerciseGameQuestionList.isEmpty()) {
 						ExerciseResponseDTO exerciseResponseDTO = modelMapper.map(exercise, ExerciseResponseDTO.class);
+						// check exercise isTaken
 						List<ExerciseTaken> exerciseTakenList = iExerciseTakenRepository
 								.findByExerciseIdAndAccountId(exercise.getId(), accountId);
 						if (!exerciseTakenList.isEmpty()) {
@@ -151,7 +162,8 @@ public class ExerciseServiceImpl implements IExerciseService {
 				}
 			}
 		} catch (Exception e) {
-			logger.error("FIND: all exercise by progressTestId = " + progressTestId + "! " + e.getMessage());
+			logger.error(
+					"Find all exercises student view by progressTestId = " + progressTestId + "! " + e.getMessage());
 
 			return null;
 		}
@@ -162,15 +174,21 @@ public class ExerciseServiceImpl implements IExerciseService {
 	@Override
 	public Map<Long, Integer> findAllExercise() {
 		Map<Long, Integer> exerciseMap = new HashMap<>();
-		List<Exercise> exerciseList = iExerciseRepository.findByStatusNot(DELETED_STATUS);
-		for (Exercise exercise : exerciseList) {
-			exerciseMap.put(exercise.getId(), exercise.getExerciseName());
+		try {
+
+			List<Exercise> exerciseList = iExerciseRepository.findByStatusNot(DELETED_STATUS);
+			for (Exercise exercise : exerciseList) {
+				exerciseMap.put(exercise.getId(), exercise.getExerciseName());
+			}
+		} catch (Exception e) {
+			logger.error("Find all exercises! " + e.getMessage());
+
+			return null;
 		}
 
 		return exerciseMap;
 	}
 
-	// done ok
 	@Override
 	public String createExercise(ExerciseRequestDTO exerciseRequestDTO) {
 		boolean isProgressTest = exerciseRequestDTO.isProgressTest();
@@ -200,8 +218,13 @@ public class ExerciseServiceImpl implements IExerciseService {
 			}
 			iExerciseRepository.save(exercise);
 		} catch (Exception e) {
-			logger.error("CREATE: exerciseName = " + exerciseName + " in lessonId =  " + lessonId
-					+ ", in progressTestId =  " + progressTestId + "! " + e.getMessage());
+			if (isProgressTest) {
+				logger.error("Create exercise with name= " + exerciseName + ", in progressTestId =  " + progressTestId
+						+ "! " + e.getMessage());
+			} else {
+				logger.error("Create exercise with name= " + exerciseName + ", in lessonId =  " + lessonId + "! "
+						+ e.getMessage());
+			}
 			if (e instanceof ResourceNotFoundException) {
 
 				return "NOT FOUND!";
@@ -213,7 +236,6 @@ public class ExerciseServiceImpl implements IExerciseService {
 		return "CREATE SUCCESS!";
 	}
 
-	// done ok
 	@Override
 	public String updateExercise(long id, ExerciseRequestDTO exerciseRequestDTO) {
 		boolean isProgressTest = exerciseRequestDTO.isProgressTest();
@@ -228,27 +250,18 @@ public class ExerciseServiceImpl implements IExerciseService {
 			if (exercise == null) {
 				throw new ResourceNotFoundException();
 			}
-			if (isProgressTest) {
-				ProgressTest progressTest = iProgressTestRepository.findByIdAndIsDisableFalse(progressTestId);
-				if (progressTest == null) {
-					throw new ResourceNotFoundException();
-				}
-			} else {
-				Lesson lesson = iLessonRepository.findByIdAndIsDisableFalse(lessonId);
-				if (lesson == null) {
-					throw new ResourceNotFoundException();
-				}
-			}
 
 			if (exercise.getExerciseName() != exerciseName) {
 				if (isProgressTest) {
 					if (iExerciseRepository.findByProgressTestIdAndExerciseNameAndStatusNot(progressTestId,
 							exerciseName, DELETED_STATUS) != null) {
+
 						return "EXISTED";
 					}
 				} else {
 					if (iExerciseRepository.findByLessonIdAndExerciseNameAndStatusNot(lessonId, exerciseName,
 							DELETED_STATUS) != null) {
+
 						return "EXISTED";
 					}
 				}
@@ -257,7 +270,7 @@ public class ExerciseServiceImpl implements IExerciseService {
 			exercise.setDescription(description);
 			iExerciseRepository.save(exercise);
 		} catch (Exception e) {
-			logger.error("UPDATE: exerciseId = " + id + "! " + e.getMessage());
+			logger.error("Update exercise with id= " + id + "! " + e.getMessage());
 			if (e instanceof ResourceNotFoundException) {
 
 				return "NOT FOUND!";
@@ -269,28 +282,9 @@ public class ExerciseServiceImpl implements IExerciseService {
 		return "UPDATE SUCCESS!";
 	}
 
-	// done ok
-	@Override
-	public String changeExerciseStatus(IdAndStatusDTO idAndStatusDTO) {
-		try {
-			changeStatusOne(idAndStatusDTO);
-		} catch (Exception e) {
-			logger.error("DELETE: exerciseId = " + idAndStatusDTO.getId() + "! " + e.getMessage());
-			if (e instanceof ResourceNotFoundException) {
-
-				return "NOT FOUND!";
-			}
-
-			return "DELETE FAIL!";
-		}
-
-		return "DELETE SUCCESS!";
-	}
-
-	// done ok
 	@Override
 	@Transactional
-	public void changeStatusOne(IdAndStatusDTO idAndStatusDTO) {
+	public void changeOneExerciseStatus(IdAndStatusDTO idAndStatusDTO) {
 		long id = idAndStatusDTO.getId();
 		String status = idAndStatusDTO.getStatus();
 		try {
@@ -300,22 +294,17 @@ public class ExerciseServiceImpl implements IExerciseService {
 				throw new ResourceNotFoundException();
 			}
 
+			// if delete must delete question in exercise first
 			if (status.equals(DELETED_STATUS)) {
 				List<ExerciseGameQuestion> exerciseGameQuestionList = iExerciseGameQuestionRepository
 						.findByExerciseIdAndIsDisableFalse(exercise.getId());
-//			List<Long> exerciseQuestionIdList = new ArrayList<>();
 				if (!exerciseGameQuestionList.isEmpty()) {
 					for (ExerciseGameQuestion exerciseGameQuestion : exerciseGameQuestionList) {
 						iExerciseGameQuestionService.deleteOneExerciseGameQuestion(exerciseGameQuestion.getId());
-//					exerciseQuestionIdList.add(exerciseGameQuestion.getExerciseId());
 					}
 				}
 			}
-//			if (!exerciseQuestionIdList.isEmpty()) {
-//				for (Long exerciseQuestionId : exerciseQuestionIdList) {
-//					iExerciseGameQuestionService.deleteOneExerciseGameQuestion(exerciseQuestionId);
-//				}
-//			}
+
 			exercise.setStatus(status);
 			iExerciseRepository.save(exercise);
 		} catch (Exception e) {

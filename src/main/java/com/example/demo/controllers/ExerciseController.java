@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.demo.dtos.ExerciseRequestDTO;
 import com.example.demo.dtos.ExerciseResponseDTO;
 import com.example.demo.dtos.IdAndStatusDTO;
+import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.services.IExerciseService;
 
 @CrossOrigin
@@ -87,6 +88,7 @@ public class ExerciseController {
 			for (ObjectError object : bindingResult.getAllErrors()) {
 				error += "/n" + object.getDefaultMessage();
 			}
+
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
 		}
 		String response = iExerciseService.createExercise(exerciseRequestDTO);
@@ -114,6 +116,7 @@ public class ExerciseController {
 			for (ObjectError object : bindingResult.getAllErrors()) {
 				error += "/n" + object.getDefaultMessage();
 			}
+
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
 		}
 
@@ -135,17 +138,18 @@ public class ExerciseController {
 	}
 
 	@PutMapping("/exercise/delete")
-	public ResponseEntity<String> deleteExercise(@RequestBody IdAndStatusDTO idAndStatusDTO) {
-		String response = iExerciseService.changeExerciseStatus(idAndStatusDTO);
-		if (response.contains("NOT FOUND")) {
+	public ResponseEntity<String> changeExerciseStatus(@RequestBody IdAndStatusDTO idAndStatusDTO) {
+		try {
+			iExerciseService.changeOneExerciseStatus(idAndStatusDTO);
 
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+			return ResponseEntity.ok("DELETE SUCCESS!");
+		} catch (Exception e) {
+			if (e instanceof ResourceNotFoundException) {
+
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).body("NOT FOUND!");
+			}
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("DELETE FAIL!");
 		}
-		if (response.contains("FAIL")) {
-
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-		}
-
-		return ResponseEntity.ok(response);
 	}
 }

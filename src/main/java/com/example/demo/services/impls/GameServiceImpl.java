@@ -28,7 +28,6 @@ import com.example.demo.services.IGameService;
 @Service
 public class GameServiceImpl implements IGameService {
 	Logger logger = LoggerFactory.getLogger(GameServiceImpl.class);
-
 	private final String ACTIVE_STATUS = "ACTIVE";
 	private final String INACTIVE_STATUS = "INACTIVE";
 	private final String DELETED_STATUS = "DELETED";
@@ -59,7 +58,7 @@ public class GameServiceImpl implements IGameService {
 			}
 			gameResponseDTO = modelMapper.map(game, GameResponseDTO.class);
 		} catch (Exception e) {
-			logger.error("FIND: gameId = " + id + "! " + e.getMessage());
+			logger.error("Find game with id = " + id + "! " + e.getMessage());
 			if (e instanceof ResourceNotFoundException) {
 
 				return "NOT FOUND!";
@@ -71,13 +70,12 @@ public class GameServiceImpl implements IGameService {
 		return gameResponseDTO;
 	}
 
-	// done
+	// should modify find by lesson --> admin or student view
 	@Override
 	public List<GameResponseDTO> findAllByLessonId(long lessonId) {
 		List<GameResponseDTO> gameResponseDTOList = new ArrayList<>();
 		try {
 			List<Game> gameList = iGameRepository.findByLessonIdAndStatusNot(lessonId, DELETED_STATUS);
-
 			if (!gameList.isEmpty()) {
 				for (Game game : gameList) {
 					GameResponseDTO gameResponseDTO = modelMapper.map(game, GameResponseDTO.class);
@@ -85,7 +83,7 @@ public class GameServiceImpl implements IGameService {
 				}
 			}
 		} catch (Exception e) {
-			logger.error("FIND: all game by lessonId = " + lessonId + "! " + e.getMessage());
+			logger.error("Find all games by lessonId = " + lessonId + "! " + e.getMessage());
 
 			return null;
 		}
@@ -98,7 +96,6 @@ public class GameServiceImpl implements IGameService {
 		List<GameResponseDTO> gameResponseDTOList = new ArrayList<>();
 		try {
 			List<Game> gameList = iGameRepository.findByLessonIdAndStatusNot(lessonId, ACTIVE_STATUS);
-
 			if (!gameList.isEmpty()) {
 				for (Game game : gameList) {
 					List<ExerciseGameQuestion> exerciseGameQuestionList = iExerciseGameQuestionRepository
@@ -110,7 +107,7 @@ public class GameServiceImpl implements IGameService {
 				}
 			}
 		} catch (Exception e) {
-			logger.error("FIND: all game by lessonId = " + lessonId + "! " + e.getMessage());
+			logger.error("Find all games student view by lessonId = " + lessonId + "! " + e.getMessage());
 
 			return null;
 		}
@@ -121,9 +118,13 @@ public class GameServiceImpl implements IGameService {
 	@Override
 	public Map<Long, Integer> findAllGame() {
 		Map<Long, Integer> gameMap = new HashMap<>();
-		List<Game> gameList = iGameRepository.findByStatusNot(DELETED_STATUS);
-		for (Game game : gameList) {
-			gameMap.put(game.getId(), game.getGameName());
+		try {
+			List<Game> gameList = iGameRepository.findByStatusNot(DELETED_STATUS);
+			for (Game game : gameList) {
+				gameMap.put(game.getId(), game.getGameName());
+			}
+		} catch (Exception e) {
+			logger.error("Find all games! " + e.getMessage());
 		}
 
 		return gameMap;
@@ -141,13 +142,14 @@ public class GameServiceImpl implements IGameService {
 				throw new ResourceNotFoundException();
 			}
 			if (iGameRepository.findByLessonIdAndGameNameAndStatusNot(lessonId, gameName, DELETED_STATUS) != null) {
+
 				return "EXISTED";
 			}
 			Game game = modelMapper.map(gameRequestDTO, Game.class);
 			game.setStatus(INACTIVE_STATUS);
 			iGameRepository.save(game);
 		} catch (Exception e) {
-			logger.error("CREATE: gameName = " + gameName + " in lessonId =  " + lessonId + "! " + e.getMessage());
+			logger.error("Create game with name = " + gameName + " in lessonId =  " + lessonId + "! " + e.getMessage());
 			if (e instanceof ResourceNotFoundException) {
 
 				return "NOT FOUND!";
@@ -161,32 +163,27 @@ public class GameServiceImpl implements IGameService {
 
 	@Override
 	public String updateGame(long id, GameRequestDTO gameRequestDTO) {
-		int gameNameDTO = gameRequestDTO.getGameName();
+		int gameName = gameRequestDTO.getGameName();
 		long lessonId = gameRequestDTO.getLessonId();
 
 		try {
-			// validate gameId, lessonId and check gameName existed
-			Lesson lesson = iLessonRepository.findByIdAndIsDisableFalse(lessonId);
-			if (lesson == null) {
-				throw new ResourceNotFoundException();
-			}
+			// validate gameId and check gameName existed
 			Game game = iGameRepository.findByIdAndStatusNot(id, DELETED_STATUS);
 			if (game == null) {
 				throw new ResourceNotFoundException();
 			}
-			if (game.getGameName() != gameNameDTO) {
-				if (iGameRepository.findByLessonIdAndGameNameAndStatusNot(lessonId, gameNameDTO,
-						DELETED_STATUS) != null) {
+			if (game.getGameName() != gameName) {
+				if (iGameRepository.findByLessonIdAndGameNameAndStatusNot(lessonId, gameName, DELETED_STATUS) != null) {
 
 					return "EXISTED";
 				}
 			}
 
-			game.setGameName(gameNameDTO);
+			game.setGameName(gameName);
 			game.setDescription(gameRequestDTO.getDescription());
 			iGameRepository.save(game);
 		} catch (Exception e) {
-			logger.error("UPDATE: gameId = " + id + "! " + e.getMessage());
+			logger.error("Update game with id = " + id + "! " + e.getMessage());
 			if (e instanceof ResourceNotFoundException) {
 
 				return "NOT FOUND!";
@@ -199,25 +196,8 @@ public class GameServiceImpl implements IGameService {
 	}
 
 	@Override
-	public String changeGameStatus(IdAndStatusDTO idAndStatusDTO) {
-		try {
-			changeStatusOne(idAndStatusDTO);
-		} catch (Exception e) {
-			logger.error("DELETE: gameId = " + idAndStatusDTO.getId() + "! " + e.getMessage());
-			if (e instanceof ResourceNotFoundException) {
-
-				return "NOT FOUND!";
-			}
-
-			return "DELETE FAIL!";
-		}
-
-		return "DELETE SUCESS!";
-	}
-
-	@Override
 	@Transactional
-	public void changeStatusOne(IdAndStatusDTO idAndStatusDTO) {
+	public void changeOneGameStatus(IdAndStatusDTO idAndStatusDTO) {
 		long id = idAndStatusDTO.getId();
 		String status = idAndStatusDTO.getStatus();
 		try {
@@ -227,7 +207,7 @@ public class GameServiceImpl implements IGameService {
 				throw new ResourceNotFoundException();
 			}
 
-//			List<Long> gameQuestionIdList = iExerciseGameQuestionService.findAllQuestionIdByGameId(id);
+			// if delete must delete question in exercise first
 			if (status.equals(DELETED_STATUS)) {
 				List<ExerciseGameQuestion> exerciseGameQuestionList = iExerciseGameQuestionRepository
 						.findByGameIdAndIsDisableFalse(id);

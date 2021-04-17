@@ -224,14 +224,14 @@ public class LessonServiceImpl implements ILessonService {
 			if (!exerciseList.isEmpty()) {
 				for (Exercise exercise : exerciseList) {
 					IdAndStatusDTO idAndStatusDTO = new IdAndStatusDTO(exercise.getId(), DELETED_STATUS);
-					iExerciseService.changeStatusOne(idAndStatusDTO);
+					iExerciseService.changeOneExerciseStatus(idAndStatusDTO);
 				}
 			}
 			List<Game> gameList = iGameRepository.findByLessonIdAndStatusNot(id, DELETED_STATUS);
 			if (!gameList.isEmpty()) {
 				for (Game game : gameList) {
 					IdAndStatusDTO idAndStatusDTO = new IdAndStatusDTO(game.getId(), DELETED_STATUS);
-					iGameService.changeStatusOne(idAndStatusDTO);
+					iGameService.changeOneGameStatus(idAndStatusDTO);
 				}
 			}
 

@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dtos.ProgressTestResponseDTO;
+import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.dtos.ProgressTestRequestDTO;
 import com.example.demo.services.IProgressTestService;
 
@@ -86,7 +87,6 @@ public class ProgressTestController {
 	@PutMapping("progressTest/{id}")
 	public ResponseEntity<String> updateProgressTest(@PathVariable long id,
 			@Valid @RequestBody ProgressTestRequestDTO progressTestRequestDTO, BindingResult bindingResult) {
-		System.out.println("start");
 		if (bindingResult.hasErrors()) {
 			String error = "";
 			for (ObjectError object : bindingResult.getAllErrors()) {
@@ -114,16 +114,27 @@ public class ProgressTestController {
 
 	@PutMapping("progressTest/delete")
 	public ResponseEntity<String> deleteProgressTest(@RequestParam long id) {
-		String response = iProgressTestService.deleteProgressTest(id);
-		if (response.contains("NOT FOUND")) {
+		try {
+			iProgressTestService.deleteOneProgressTest(id);
 
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+			return ResponseEntity.ok("DELETE SUCCESS!");
+		} catch (Exception e) {
+			if (e instanceof ResourceNotFoundException) {
+
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).body("NOT FOUND!");
+			}
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("DELETE FAIL!");
 		}
-		if (response.contains("FAIL")) {
 
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-		}
+//		if (response.contains("NOT FOUND")) {
+//
+//			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+//		}
+//		if (response.contains("FAIL")) {
+//
+//			return ;
+//		}
 
-		return ResponseEntity.ok(response);
 	}
 }

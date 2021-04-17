@@ -47,7 +47,7 @@ public class BreadcrumbController {
 
 	@GetMapping("/subject")
 	public ResponseEntity<Map<Long, String>> findAllSubjectBreadcrumb() {
-		Map<Long, String> response = iSubjectService.findAllSubjects();
+		Map<Long, String> response = iSubjectService.findAllSubject();
 
 		return ResponseEntity.ok(response);
 	}

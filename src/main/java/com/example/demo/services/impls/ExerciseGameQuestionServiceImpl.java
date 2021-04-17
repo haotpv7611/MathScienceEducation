@@ -23,7 +23,6 @@ import com.example.demo.services.IExerciseGameQuestionService;
 @Service
 public class ExerciseGameQuestionServiceImpl implements IExerciseGameQuestionService {
 	Logger logger = LoggerFactory.getLogger(ExerciseGameQuestionServiceImpl.class);
-	
 	private final String DELETED_STATUS = "DELETED";
 
 	@Autowired
@@ -37,45 +36,6 @@ public class ExerciseGameQuestionServiceImpl implements IExerciseGameQuestionSer
 
 	@Autowired
 	private IGameRepository iGameRepository;
-
-//
-//	@Override
-//	public List<ExerciseGameQuestionDTO> findAllQuestionByExerciseId1(long exerciseId) {
-//		List<ExerciseGameQuestion> list = iExerciseGameQuestionRepository.findByExerciseId(exerciseId);
-//		List<ExerciseGameQuestionDTO> listGameQuestionExercise = new ArrayList<>();
-//		for (ExerciseGameQuestion exerciseGameQuestion : list) {
-//			ExerciseGameQuestionDTO exerciseGameQuestionDTO = modelMapper.map(exerciseGameQuestion,
-//					ExerciseGameQuestionDTO.class);
-//			listGameQuestionExercise.add(exerciseGameQuestionDTO);
-//		}
-//		return listGameQuestionExercise;
-//	}
-//
-//	@Override
-//	public List<ExerciseGameQuestionDTO> findAllQuestionByGameId1(long gameId) {
-//
-//		List<ExerciseGameQuestion> list = iExerciseGameQuestionRepository.findByGameId(gameId);
-//		List<ExerciseGameQuestionDTO> listGameQuestionExercise = new ArrayList<>();
-//		for (ExerciseGameQuestion exerciseGameQuestion : list) {
-//			ExerciseGameQuestionDTO exerciseGameQuestionDTO = modelMapper.map(exerciseGameQuestion,
-//					ExerciseGameQuestionDTO.class);
-//			listGameQuestionExercise.add(exerciseGameQuestionDTO);
-//		}
-//
-//		return listGameQuestionExercise;
-//	}
-
-//	@Override
-//	public List<Long> findAllQuestionIdByExerciseId(long exerciseId) {
-//
-//		return iExerciseGameQuestionRepository.findAllQuestionIdByExerciseId(exerciseId);
-//	}
-
-//	@Override
-//	public List<Long> findAllQuestionIdByGameId(long gameId) {
-//
-//		return iExerciseGameQuestionRepository.findAllQuestionIdByGameId(gameId);
-//	}
 
 	// done ok
 	@Override
@@ -102,6 +62,7 @@ public class ExerciseGameQuestionServiceImpl implements IExerciseGameQuestionSer
 				for (long questionId : questionIds) {
 					if (iExerciseGameQuestionRepository.findByQuestionIdAndExerciseIdAndIsDisableFalse(questionId,
 							exerciseId) != null) {
+
 						return "EXISTED";
 					}
 				}
@@ -113,6 +74,7 @@ public class ExerciseGameQuestionServiceImpl implements IExerciseGameQuestionSer
 				for (long questionId : questionIds) {
 					if (iExerciseGameQuestionRepository.findByQuestionIdAndGameIdAndIsDisableFalse(questionId,
 							gameId) != null) {
+
 						return "EXISTED";
 					}
 				}
@@ -129,7 +91,13 @@ public class ExerciseGameQuestionServiceImpl implements IExerciseGameQuestionSer
 				iExerciseGameQuestionRepository.save(exerciseGameQuestion);
 			}
 		} catch (Exception e) {
-			logger.error("ADD: question in exerciseId = " + exerciseId + ", gameId = " + gameId + "!" + e.getMessage());
+			if (isExercise) {
+				logger.error("Add list questionIds = " + questionIds.toString() + ", in exerciseId = " + exerciseId
+						+ e.getMessage());
+			} else {
+				logger.error("Add list questionIds = " + questionIds.toString() + ", in gameId = " + gameId + "!"
+						+ e.getMessage());
+			}
 			if (e instanceof ResourceNotFoundException) {
 
 				return "NOT FOUND!";
@@ -139,10 +107,11 @@ public class ExerciseGameQuestionServiceImpl implements IExerciseGameQuestionSer
 		}
 
 		return "ADD SUCCESS!";
+
 	}
 
-	// done ok
 	@Override
+	@Transactional
 	public String deleteExerciseOrGameQuestion(ExerciseGameQuestionRequestDTO exerciseGameQuestionRequestDTO) {
 		boolean isExercise = exerciseGameQuestionRequestDTO.isExercise();
 		List<Long> questionIds = exerciseGameQuestionRequestDTO.getQuestionIds();
@@ -154,17 +123,6 @@ public class ExerciseGameQuestionServiceImpl implements IExerciseGameQuestionSer
 			for (long questionId : questionIds) {
 				Question question = iQuestionRepository.findByIdAndIsDisableFalse(questionId);
 				if (question == null) {
-					throw new ResourceNotFoundException();
-				}
-			}
-			if (isExercise) {
-				Exercise exercise = iExerciseRepository.findByIdAndStatusNot(exerciseId, DELETED_STATUS);
-				if (exercise == null) {
-					throw new ResourceNotFoundException();
-				}
-			} else {
-				Game game = iGameRepository.findByIdAndStatusNot(gameId, DELETED_STATUS);
-				if (game == null) {
 					throw new ResourceNotFoundException();
 				}
 			}
@@ -181,8 +139,7 @@ public class ExerciseGameQuestionServiceImpl implements IExerciseGameQuestionSer
 				deleteOneExerciseGameQuestion(exerciseGameQuestion.getId());
 			}
 		} catch (Exception e) {
-			logger.error(
-					"DELETE: question in exerciseID = " + exerciseId + ", gameId = " + gameId + "! " + e.getMessage());
+			logger.error("Delete list questionIds = " + questionIds.toString() + "! " + e.getMessage());
 			if (e instanceof ResourceNotFoundException) {
 
 				return "NOT FOUND!";
@@ -194,28 +151,19 @@ public class ExerciseGameQuestionServiceImpl implements IExerciseGameQuestionSer
 		return "DELETE SUCCESS!";
 	}
 
-	// done ok
 	@Override
 	public void deleteOneExerciseGameQuestion(long id) {
 		try {
 			ExerciseGameQuestion exerciseGameQuestion = iExerciseGameQuestionRepository.findByIdAndIsDisableFalse(id);
-			System.out.println("delete: " + id);
 			if (exerciseGameQuestion == null) {
 				throw new ResourceNotFoundException();
 			}
 			exerciseGameQuestion.setDisable(true);
 			iExerciseGameQuestionRepository.save(exerciseGameQuestion);
 		} catch (Exception e) {
+			logger.error("Delete exerciseGameQuestion with id = " + id + "! " + e.getMessage());
 			throw e;
 		}
 	}
-	
-//	@Override
-//	public List<ExerciseGameQuestion> findAllByGameId(long gameId){
-//		List<ExerciseGameQuestion> exerciseGameQuestionList = iExerciseGameQuestionRepository
-//				.findByGameIdAndIsDisableFalse(gameId);
-//		
-//		return exerciseGameQuestionList;
-//	}
 
 }

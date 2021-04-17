@@ -15,7 +15,7 @@ public interface IProgressTestService {
 
 	String updateProgressTest(long id, ProgressTestRequestDTO progressTestRequestDTO);
 
-	String deleteProgressTest(long id);
+//	String deleteProgressTest(long id);
 
 	void deleteOneProgressTest(long id);
 

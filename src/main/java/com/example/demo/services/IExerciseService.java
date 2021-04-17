@@ -23,7 +23,5 @@ public interface IExerciseService {
 
 	String updateExercise(long id, ExerciseRequestDTO exerciseRequestDTO);
 
-	String changeExerciseStatus(IdAndStatusDTO idAndStatusDTO);
-
-	void changeStatusOne(IdAndStatusDTO idAndStatusDTO);
+	void changeOneExerciseStatus(IdAndStatusDTO idAndStatusDTO);
 }

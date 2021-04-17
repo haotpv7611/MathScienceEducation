@@ -139,7 +139,6 @@ public class Exercise {
 	}
 
 	public Exercise() {
-
 	}
 
 	public Exercise(int exerciseName, String description, long lessonId, long progressTestId, boolean isProgressTest,

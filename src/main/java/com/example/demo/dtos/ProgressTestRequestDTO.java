@@ -1,6 +1,5 @@
 package com.example.demo.dtos;
 
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.Length;
@@ -9,7 +8,6 @@ public class ProgressTestRequestDTO {
 	@NotNull(message = "Progress Test Name must be not null !")
 	@Length(max = 20, message = "ProgressTest Name length must be less than 20!")
 	private String progressTestName;
-	@Min(value = 0, message = "Unit After must be greater than 0!")
 	private long unitAfterId;
 	private long subjectId;
 	@Length(max = 50, message = "Description lenght must be less than 50 !")

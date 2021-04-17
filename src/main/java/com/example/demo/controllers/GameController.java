@@ -21,9 +21,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.demo.dtos.GameRequestDTO;
 import com.example.demo.dtos.GameResponseDTO;
 import com.example.demo.dtos.IdAndStatusDTO;
-import com.example.demo.models.ExerciseGameQuestion;
+import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.repositories.IExerciseGameQuestionRepository;
-import com.example.demo.services.IExerciseGameQuestionService;
 import com.example.demo.services.IGameService;
 
 @CrossOrigin
@@ -31,15 +30,12 @@ import com.example.demo.services.IGameService;
 public class GameController {
 	@Autowired
 	IGameService iGameService;
-	
-	@Autowired
-	IExerciseGameQuestionService iExerciseGameQuestionService;
 
 	@Autowired
 	IExerciseGameQuestionRepository iExerciseGameQuestionRepository;
 
 	@GetMapping("/game/{id}")
-	public ResponseEntity<?> findOneById(@PathVariable long id) {
+	public ResponseEntity<Object> findOneById(@PathVariable long id) {
 		Object response = iGameService.findGameById(id);
 		if (response.equals("NOT FOUND!")) {
 
@@ -72,14 +68,6 @@ public class GameController {
 
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
 		}
-
-//		for (int i = 0; i < response.size(); i++) {
-//			List<ExerciseGameQuestion> exerciseGameQuestionList = iExerciseGameQuestionRepository
-//					.findByGameIdAndIsDisableFalse(response.get(i).getId());
-//			if (exerciseGameQuestionList.isEmpty()) {
-//				response.remove(response.get(i));
-//			}
-//		}
 
 		return ResponseEntity.ok(response);
 	}
@@ -144,26 +132,18 @@ public class GameController {
 
 	@PutMapping("/game")
 	@Transactional
-	public ResponseEntity<String> deleteGame(@RequestBody IdAndStatusDTO idAndStatusDTO) {
+	public ResponseEntity<String> changeGameStatus(@RequestBody IdAndStatusDTO idAndStatusDTO) {
+		try {
+			iGameService.changeOneGameStatus(idAndStatusDTO);
 
-		String response = iGameService.changeGameStatus(idAndStatusDTO);
-//		List<ExerciseGameQuestion> exerciseGameQuestionList = iExerciseGameQuestionRepository
-//				.findByGameIdAndIsDisableFalse(idAndStatusDTO.getId());
-//		if (!exerciseGameQuestionList.isEmpty()) {
-//			for (ExerciseGameQuestion exerciseGameQuestion : exerciseGameQuestionList) {
-//				iExerciseGameQuestionService.deleteOneExerciseGameQuestion(exerciseGameQuestion.getId());
-//			}
-//		}
+			return ResponseEntity.ok("DELETE SUCESS!");
+		} catch (Exception e) {
+			if (e instanceof ResourceNotFoundException) {
 
-		if (response.contains("NOT FOUND")) {
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).body("NOT FOUND");
+			}
 
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("DELETE FAIL!");
 		}
-		if (response.contains("FAIL")) {
-
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-		}
-
-		return ResponseEntity.ok(response);
 	}
 }

@@ -26,6 +26,7 @@ public class ExerciseGameQuestion {
 	private long gameId;
 	private boolean isExerciseQuestions;
 	private boolean isDisable;
+	
 	@CreatedDate
 	private LocalDateTime createdDate;
 //	@CreatedBy

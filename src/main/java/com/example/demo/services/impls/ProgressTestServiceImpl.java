@@ -28,7 +28,6 @@ import com.example.demo.services.IProgressTestService;
 @Service
 public class ProgressTestServiceImpl implements IProgressTestService {
 	Logger logger = LoggerFactory.getLogger(ProgressTestServiceImpl.class);
-
 	private final String DELETED_STATUS = "DELETED";
 
 	@Autowired
@@ -45,7 +44,7 @@ public class ProgressTestServiceImpl implements IProgressTestService {
 
 	@Autowired
 	private IExerciseRepository iExerciseRepository;
-	
+
 	@Autowired
 	private IUnitRepository iUnitRepository;
 
@@ -59,7 +58,7 @@ public class ProgressTestServiceImpl implements IProgressTestService {
 			}
 			progressTestResponseDTO = modelMapper.map(progressTest, ProgressTestResponseDTO.class);
 		} catch (Exception e) {
-			logger.error("FIND: progressTestId = " + id + "! " + e.getMessage());
+			logger.error("Find progressTest by id = " + id + "! " + e.getMessage());
 			if (e instanceof ResourceNotFoundException) {
 
 				return "NOT FOUND!";
@@ -67,6 +66,7 @@ public class ProgressTestServiceImpl implements IProgressTestService {
 
 			return "FIND FAIL!";
 		}
+
 		return progressTestResponseDTO;
 	}
 
@@ -77,15 +77,17 @@ public class ProgressTestServiceImpl implements IProgressTestService {
 			List<ProgressTest> progressTestList = iProgressTestRepository.findBySubjectIdAndIsDisableFalse(subjectId);
 			if (!progressTestList.isEmpty()) {
 				for (ProgressTest progressTest : progressTestList) {
+					long unitId = progressTest.getUnitAfterId();
+					Unit unit = iUnitRepository.findByIdAndIsDisableFalse(unitId);
+
 					ProgressTestResponseDTO progressTestDTO = modelMapper.map(progressTest,
 							ProgressTestResponseDTO.class);
-					Unit unit = iUnitRepository.findByIdAndIsDisableFalse(progressTest.getUnitAfterId());
 					progressTestDTO.setUnitAfterName(unit.getUnitName());
 					progressTestResponseDTOList.add(progressTestDTO);
 				}
 			}
 		} catch (Exception e) {
-			logger.error("FIND: all progressTest by subjectId = " + subjectId + "! " + e.getMessage());
+			logger.error("Find all progressTests by subjectId = " + subjectId + "! " + e.getMessage());
 
 			return null;
 		}
@@ -96,6 +98,7 @@ public class ProgressTestServiceImpl implements IProgressTestService {
 	@Override
 	public String createProgressTest(ProgressTestRequestDTO progressTestRequestDTO) {
 		long subjectId = progressTestRequestDTO.getSubjectId();
+		long unitId = progressTestRequestDTO.getUnitAfterId();
 		String progressTestName = progressTestRequestDTO.getProgressTestName();
 
 		try {
@@ -104,7 +107,12 @@ public class ProgressTestServiceImpl implements IProgressTestService {
 			if (subject == null) {
 				throw new ResourceNotFoundException();
 			}
-			if (iProgressTestRepository.findBySubjectIdAndProgressTestNameAndIsDisableFalse(subjectId,
+
+			Unit unit = iUnitRepository.findByIdAndIsDisableFalse(unitId);
+			if (unit == null) {
+				throw new ResourceNotFoundException();
+			}
+			if (iProgressTestRepository.findBySubjectIdAndProgressTestNameIgnoreCaseAndIsDisableFalse(subjectId,
 					progressTestName) != null) {
 
 				return "EXISTED";
@@ -114,8 +122,8 @@ public class ProgressTestServiceImpl implements IProgressTestService {
 			progressTest.setDisable(false);
 			iProgressTestRepository.save(progressTest);
 		} catch (Exception e) {
-			logger.error("CREATE: progressTestName = " + progressTestName + " in subjectId =  " + subjectId + "! "
-					+ e.getMessage());
+			logger.error("Create progressTest with name= " + progressTestName + ", in subjectId =  " + subjectId
+					+ " and unitAfterId =  " + unitId + "! " + e.getMessage());
 			if (e instanceof ResourceNotFoundException) {
 
 				return "NOT FOUND!";
@@ -132,7 +140,7 @@ public class ProgressTestServiceImpl implements IProgressTestService {
 		long subjectId = progressTestRequestDTO.getSubjectId();
 		String progressTestName = progressTestRequestDTO.getProgressTestName();
 		String description = progressTestRequestDTO.getDescription();
-		long unitAfterId = progressTestRequestDTO.getUnitAfterId();
+		long unitId = progressTestRequestDTO.getUnitAfterId();
 
 		try {
 			// validate progressTestId, subjectId and check getProgressTestName existed
@@ -140,19 +148,25 @@ public class ProgressTestServiceImpl implements IProgressTestService {
 			if (progressTest == null) {
 				throw new ResourceNotFoundException();
 			}
+			Unit unit = iUnitRepository.findByIdAndIsDisableFalse(unitId);
+			if (unit == null) {
+				throw new ResourceNotFoundException();
+			}
 
 			if (!progressTest.getProgressTestName().equalsIgnoreCase(progressTestName)) {
-				if (iProgressTestRepository.findBySubjectIdAndProgressTestNameAndIsDisableFalse(subjectId,
+				if (iProgressTestRepository.findBySubjectIdAndProgressTestNameIgnoreCaseAndIsDisableFalse(subjectId,
 						progressTestName) != null) {
+
 					return "EXISTED";
 				}
 			}
 			progressTest.setProgressTestName(progressTestName);
 			progressTest.setDescription(description);
-			progressTest.setUnitAfterId(unitAfterId);
+			progressTest.setUnitAfterId(unitId);
 			iProgressTestRepository.save(progressTest);
 		} catch (Exception e) {
-			logger.error("UPDATE: progressTestId = " + id + "! " + e.getMessage());
+			logger.error(
+					"Update progressTest with id = " + id + " and unitAfterId =  " + unitId + "! " + e.getMessage());
 			if (e instanceof ResourceNotFoundException) {
 
 				return "NOT FOUND!";
@@ -165,23 +179,6 @@ public class ProgressTestServiceImpl implements IProgressTestService {
 	}
 
 	@Override
-	public String deleteProgressTest(long id) {
-		try {
-			deleteOneProgressTest(id);
-		} catch (Exception e) {
-			logger.error("DELETE: progressTestId = " + id + "! " + e.getMessage());
-			if (e instanceof ResourceNotFoundException) {
-
-				return "NOT FOUND!";
-			}
-
-			return "DELETE FAIL!";
-		}
-
-		return "DELETE SUCCESS!";
-	}
-
-	@Override
 	@Transactional
 	public void deleteOneProgressTest(long id) {
 		try {
@@ -190,16 +187,19 @@ public class ProgressTestServiceImpl implements IProgressTestService {
 			if (progressTest == null) {
 				throw new ResourceNotFoundException();
 			}
+			// delete all exercise
 			List<Exercise> exerciseList = iExerciseRepository.findByProgressTestIdAndStatusNot(id, DELETED_STATUS);
 			if (!exerciseList.isEmpty()) {
 				for (Exercise exercise : exerciseList) {
 					IdAndStatusDTO idAndStatusDTO = new IdAndStatusDTO(exercise.getId(), DELETED_STATUS);
-					iExerciseService.changeStatusOne(idAndStatusDTO);
+					iExerciseService.changeOneExerciseStatus(idAndStatusDTO);
 				}
 			}
+			// delete progressTest
 			progressTest.setDisable(true);
 			iProgressTestRepository.save(progressTest);
 		} catch (Exception e) {
+			logger.error("Delete progressTest with id = " + id + "! " + e.getMessage());
 			throw e;
 		}
 	}
