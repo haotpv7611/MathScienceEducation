@@ -7,6 +7,7 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -20,6 +21,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.demo.dtos.GameRequestDTO;
 import com.example.demo.dtos.GameResponseDTO;
 import com.example.demo.dtos.IdAndStatusDTO;
+import com.example.demo.models.ExerciseGameQuestion;
+import com.example.demo.repositories.IExerciseGameQuestionRepository;
+import com.example.demo.services.IExerciseGameQuestionService;
 import com.example.demo.services.IGameService;
 
 @CrossOrigin
@@ -27,6 +31,12 @@ import com.example.demo.services.IGameService;
 public class GameController {
 	@Autowired
 	IGameService iGameService;
+	
+	@Autowired
+	IExerciseGameQuestionService iExerciseGameQuestionService;
+
+	@Autowired
+	IExerciseGameQuestionRepository iExerciseGameQuestionRepository;
 
 	@GetMapping("/game/{id}")
 	public ResponseEntity<?> findOneById(@PathVariable long id) {
@@ -53,14 +63,23 @@ public class GameController {
 
 		return ResponseEntity.ok(response);
 	}
-	
+
 	@GetMapping("/lesson/{lessonId}/game/student")
 	public ResponseEntity<List<GameResponseDTO>> findAllByLessonIdStudentView(@PathVariable long lessonId) {
 		List<GameResponseDTO> response = iGameService.findAllByLessonIdStudentView(lessonId);
+
 		if (response == null) {
 
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
 		}
+
+//		for (int i = 0; i < response.size(); i++) {
+//			List<ExerciseGameQuestion> exerciseGameQuestionList = iExerciseGameQuestionRepository
+//					.findByGameIdAndIsDisableFalse(response.get(i).getId());
+//			if (exerciseGameQuestionList.isEmpty()) {
+//				response.remove(response.get(i));
+//			}
+//		}
 
 		return ResponseEntity.ok(response);
 	}
@@ -76,7 +95,7 @@ public class GameController {
 
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
 		}
-		
+
 		String response = iGameService.createGame(gameRequestDTO);
 		if (response.contains("NOT FOUND")) {
 
@@ -105,7 +124,7 @@ public class GameController {
 
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
 		}
-		
+
 		String response = iGameService.updateGame(id, gameRequestDTO);
 		if (response.contains("NOT FOUND")) {
 
@@ -124,8 +143,18 @@ public class GameController {
 	}
 
 	@PutMapping("/game")
+	@Transactional
 	public ResponseEntity<String> deleteGame(@RequestBody IdAndStatusDTO idAndStatusDTO) {
+
 		String response = iGameService.changeGameStatus(idAndStatusDTO);
+//		List<ExerciseGameQuestion> exerciseGameQuestionList = iExerciseGameQuestionRepository
+//				.findByGameIdAndIsDisableFalse(idAndStatusDTO.getId());
+//		if (!exerciseGameQuestionList.isEmpty()) {
+//			for (ExerciseGameQuestion exerciseGameQuestion : exerciseGameQuestionList) {
+//				iExerciseGameQuestionService.deleteOneExerciseGameQuestion(exerciseGameQuestion.getId());
+//			}
+//		}
+
 		if (response.contains("NOT FOUND")) {
 
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);

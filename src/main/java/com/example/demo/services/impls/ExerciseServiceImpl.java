@@ -158,7 +158,7 @@ public class ExerciseServiceImpl implements IExerciseService {
 
 		return exerciseResponseDTOList;
 	}
-	
+
 	@Override
 	public Map<Long, Integer> findAllExercise() {
 		Map<Long, Integer> exerciseMap = new HashMap<>();
@@ -247,8 +247,8 @@ public class ExerciseServiceImpl implements IExerciseService {
 						return "EXISTED";
 					}
 				} else {
-					if (iExerciseRepository.findByLessonIdAndExerciseNameAndStatusNot(lessonId,
-							exerciseName, DELETED_STATUS) != null) {
+					if (iExerciseRepository.findByLessonIdAndExerciseNameAndStatusNot(lessonId, exerciseName,
+							DELETED_STATUS) != null) {
 						return "EXISTED";
 					}
 				}
@@ -300,20 +300,23 @@ public class ExerciseServiceImpl implements IExerciseService {
 				throw new ResourceNotFoundException();
 			}
 
-			List<ExerciseGameQuestion> exerciseGameQuestionList = iExerciseGameQuestionRepository
-					.findByExerciseIdAndIsDisableFalse(exercise.getId());
-			List<Long> exerciseQuestionIdList = new ArrayList<>();
-			if (!exerciseGameQuestionList.isEmpty()) {
-				for (ExerciseGameQuestion exerciseGameQuestion : exerciseGameQuestionList) {
-					exerciseQuestionIdList.add(exerciseGameQuestion.getExerciseId());
+			if (status.equals(DELETED_STATUS)) {
+				List<ExerciseGameQuestion> exerciseGameQuestionList = iExerciseGameQuestionRepository
+						.findByExerciseIdAndIsDisableFalse(exercise.getId());
+//			List<Long> exerciseQuestionIdList = new ArrayList<>();
+				if (!exerciseGameQuestionList.isEmpty()) {
+					for (ExerciseGameQuestion exerciseGameQuestion : exerciseGameQuestionList) {
+						iExerciseGameQuestionService.deleteOneExerciseGameQuestion(exerciseGameQuestion.getId());
+//					exerciseQuestionIdList.add(exerciseGameQuestion.getExerciseId());
+					}
 				}
 			}
-			if (!exerciseQuestionIdList.isEmpty()) {
-				for (Long exerciseQuestionId : exerciseQuestionIdList) {
-					iExerciseGameQuestionService.deleteOneExerciseGameQuestion(exerciseQuestionId);
-				}
-			}
-			exercise.setStatus(status);			
+//			if (!exerciseQuestionIdList.isEmpty()) {
+//				for (Long exerciseQuestionId : exerciseQuestionIdList) {
+//					iExerciseGameQuestionService.deleteOneExerciseGameQuestion(exerciseQuestionId);
+//				}
+//			}
+			exercise.setStatus(status);
 			iExerciseRepository.save(exercise);
 		} catch (Exception e) {
 			throw e;

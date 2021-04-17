@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.demo.dtos.GradeDTO;
+import com.example.demo.dtos.GradeResponseDTO;
 import com.example.demo.dtos.ListIdAndStatusDTO;
 import com.example.demo.dtos.SchoolGradeDTO;
 import com.example.demo.dtos.SchoolResponseDTO;
@@ -52,8 +52,8 @@ public class SchoolGradeController {
 	}
 	
 	@GetMapping("/grade/{schoolId}")
-	public ResponseEntity<List<GradeDTO>> findGradeBySchoolId(@PathVariable long schoolId) {
-		List<GradeDTO> response = iSchoolGradeService.findGradeLinkedBySchoolId(schoolId);
+	public ResponseEntity<List<GradeResponseDTO>> findGradeBySchoolId(@PathVariable long schoolId) {
+		List<GradeResponseDTO> response = iSchoolGradeService.findGradeLinkedBySchoolId(schoolId);
 		
 		return ResponseEntity.ok(response);
 	}

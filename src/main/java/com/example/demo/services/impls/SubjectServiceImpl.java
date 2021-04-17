@@ -24,18 +24,15 @@ import com.example.demo.repositories.IGradeRepository;
 import com.example.demo.repositories.IProgressTestRepository;
 import com.example.demo.repositories.ISubjectRepository;
 import com.example.demo.repositories.IUnitRepository;
+import com.example.demo.services.IFirebaseService;
 import com.example.demo.services.IProgressTestService;
 import com.example.demo.services.ISubjectService;
 import com.example.demo.services.IUnitService;
-import com.example.demo.utils.Util;
 
 @Service
 public class SubjectServiceImpl implements ISubjectService {
 	Logger logger = LoggerFactory.getLogger(SubjectServiceImpl.class);
 
-	private final int SUBJECT_NAME_MAX_LENGTH = 20;
-	private final int DESCRIPTION_MAX_LENGTH = 50;
-	
 	@Autowired
 	ISubjectRepository iSubjectRepository;
 
@@ -58,9 +55,8 @@ public class SubjectServiceImpl implements ISubjectService {
 	ModelMapper modelMapper;
 
 	@Autowired
-	FirebaseService firebaseService;
+	IFirebaseService iFirebaseService;
 
-	// done ok
 	@Override
 	public Object findById(long id) {
 		SubjectResponseDTO subjectResponseDTO = null;
@@ -83,16 +79,16 @@ public class SubjectServiceImpl implements ISubjectService {
 		return subjectResponseDTO;
 	}
 
-	// done ok
 	@Override
-	public List<SubjectResponseDTO> findSubjectByGradeId(int gradeId) {
+	public List<SubjectResponseDTO> findSubjectsByGradeId(int gradeId) {
 		List<SubjectResponseDTO> subjectResponseDTOList = new ArrayList<>();
 		try {
 			// find all subjects and return
 			List<Subject> subjectList = iSubjectRepository.findByGradeIdAndIsDisableFalse(gradeId);
 			if (!subjectList.isEmpty()) {
 				for (Subject subject : subjectList) {
-					subjectResponseDTOList.add(modelMapper.map(subject, SubjectResponseDTO.class));
+					SubjectResponseDTO subjectResponseDTO = modelMapper.map(subject, SubjectResponseDTO.class);
+					subjectResponseDTOList.add(subjectResponseDTO);
 				}
 			}
 		} catch (Exception e) {
@@ -103,15 +99,21 @@ public class SubjectServiceImpl implements ISubjectService {
 
 		return subjectResponseDTOList;
 	}
-	
+
 	@Override
-	public Map<Long, String> findAllSubject(){
+	public Map<Long, String> findAllSubjects() {
 		Map<Long, String> subjectMap = new HashMap<>();
-		List<Subject> subjectList = iSubjectRepository.findByIsDisableFalse();
-		for (Subject subject : subjectList) {
-			subjectMap.put(subject.getId(), subject.getSubjectName());
+		try {
+			List<Subject> subjectList = iSubjectRepository.findByIsDisableFalse();
+			for (Subject subject : subjectList) {
+				subjectMap.put(subject.getId(), subject.getSubjectName());
+			}
+		} catch (Exception e) {
+			logger.error("Find all subjects! " + e.getMessage());
+
+			return null;
 		}
-		
+
 		return subjectMap;
 	}
 
@@ -122,28 +124,30 @@ public class SubjectServiceImpl implements ISubjectService {
 			throws SizeLimitExceededException, IOException {
 		try {
 			// validate data input
-			String error = Util.validateRequiredString(subjectName, SUBJECT_NAME_MAX_LENGTH,
-					"\nSubjectName is invalid!");
-			error += Util.validateRequiredFile(file, "image", "\nFile is invalid!",
-					"\nNot supported this file type for image!");
-			error += Util.validateString(description, DESCRIPTION_MAX_LENGTH, "\nDescription is invalid!");
-			if (!error.isEmpty()) {
-				return error.trim();
-			}
-			iGradeRepository.findById(gradeId).orElseThrow(() -> new ResourceNotFoundException());
+//			String error = Util.validateRequiredString(subjectName, SUBJECT_NAME_MAX_LENGTH,
+//					"\nSubjectName is invalid!");
+//			error += Util.validateRequiredFile(file, "image", "\nFile is invalid!",
+//					"\nNot supported this file type for image!");
+//			error += Util.validateString(description, DESCRIPTION_MAX_LENGTH, "\nDescription is invalid!");
+//			if (!error.isEmpty()) {
+//				return error.trim();
+//			}
 
-			// find subjectName is existed in grade or not
+			// check subjectName existed in grade
+			iGradeRepository.findById(gradeId).orElseThrow(() -> new ResourceNotFoundException());
 			if (iSubjectRepository.findByGradeIdAndSubjectNameIgnoreCaseAndIsDisableFalse(gradeId,
 					subjectName) != null) {
+
 				return "EXISTED";
 			}
 
 			// save data and return
 			Subject subject = new Subject(subjectName, gradeId, false, description);
-			subject.setImageUrl(firebaseService.saveFile(file));
+			subject.setImageUrl(iFirebaseService.uploadFile(file));
 			iSubjectRepository.save(subject);
 		} catch (Exception e) {
-			logger.error("CREATE: subjectName = " + subjectName + " in gradeId =  " + gradeId + "! " + e.getMessage());
+			logger.error(
+					"Create subject with name= " + subjectName + ", in gradeId =  " + gradeId + "! " + e.getMessage());
 			if (e instanceof ResourceNotFoundException) {
 
 				return "NOT FOUND!";
@@ -166,16 +170,16 @@ public class SubjectServiceImpl implements ISubjectService {
 			if (subject == null) {
 				throw new ResourceNotFoundException();
 			}
-			iGradeRepository.findById(gradeId).orElseThrow(() -> new ResourceNotFoundException());
-			String error = Util.validateRequiredString(subjectName, SUBJECT_NAME_MAX_LENGTH,
-					"\nSubjectName is invalid!");
-			error += Util.validateFile(file, "image", "\nNot supported this file type for image!");
-			error += Util.validateString(description, DESCRIPTION_MAX_LENGTH, "\nDescription is invalid!");
-			if (!error.isEmpty()) {
-				return error.trim();
-			}
+//			iGradeRepository.findById(gradeId).orElseThrow(() -> new ResourceNotFoundException());
+//			String error = Util.validateRequiredString(subjectName, SUBJECT_NAME_MAX_LENGTH,
+//					"\nSubjectName is invalid!");
+//			error += Util.validateFile(file, "image", "\nNot supported this file type for image!");
+//			error += Util.validateString(description, DESCRIPTION_MAX_LENGTH, "\nDescription is invalid!");
+//			if (!error.isEmpty()) {
+//				return error.trim();
+//			}
 
-			// find subjectName is existed in grade or not
+			// check subjectName is existed in grade
 			if (!subject.getSubjectName().equals(subjectName)) {
 				if (iSubjectRepository.findByGradeIdAndSubjectNameIgnoreCaseAndIsDisableFalse(gradeId,
 						subjectName) != null) {
@@ -185,18 +189,20 @@ public class SubjectServiceImpl implements ISubjectService {
 			}
 
 			// save data and return
-			String subjectImageUrl = subject.getImageUrl();
 			subject.setSubjectName(subjectName);
+			String subjectImageUrl = subject.getImageUrl();
 			if (file != null) {
-				firebaseService.deleteFile(subjectImageUrl);
-				subject.setImageUrl(firebaseService.saveFile(file));
+				if (!file.isEmpty()) {
+					subject.setImageUrl(iFirebaseService.uploadFile(file));
+				}
 			}
 			if (description != null) {
 				subject.setDescription(description);
 			}
 			iSubjectRepository.save(subject);
+			iFirebaseService.deleteFile(subjectImageUrl);
 		} catch (Exception e) {
-			logger.error("UPDATE: subjectId = " + id + "! " + e.getMessage());
+			logger.error("Update subject with id = " + id + "! " + e.getMessage());
 			if (e instanceof ResourceNotFoundException) {
 
 				return "NOT FOUND!";
@@ -208,7 +214,6 @@ public class SubjectServiceImpl implements ISubjectService {
 		return "UPDATE SUCCESS!";
 	}
 
-	// done ok
 	@Override
 	@Transactional
 	public String deleteSubject(long id) {
@@ -219,6 +224,7 @@ public class SubjectServiceImpl implements ISubjectService {
 				throw new ResourceNotFoundException();
 			}
 
+			// delete all unit and progressTest
 			List<Unit> listUnitList = iUnitRepository.findBySubjectIdAndIsDisableFalse(id);
 			if (!listUnitList.isEmpty()) {
 				for (Unit unit : listUnitList) {
@@ -236,11 +242,9 @@ public class SubjectServiceImpl implements ISubjectService {
 			subject.setDisable(true);
 			subject.setImageUrl("DELETED");
 			iSubjectRepository.save(subject);
-			if (!subjectImageUrl.isEmpty()) {
-				firebaseService.deleteFile(subjectImageUrl);
-			}
+			iFirebaseService.deleteFile(subjectImageUrl);
 		} catch (Exception e) {
-			logger.error("DELETE: subjectId = " + id + "! " + e.getMessage());
+			logger.error("Delete subject with id = " + id + "! " + e.getMessage());
 			if (e instanceof ResourceNotFoundException) {
 
 				return "NOT FOUND!";

@@ -2,7 +2,7 @@ package com.example.demo.services;
 
 import java.util.List;
 
-import com.example.demo.dtos.GradeDTO;
+import com.example.demo.dtos.GradeResponseDTO;
 import com.example.demo.dtos.ListIdAndStatusDTO;
 import com.example.demo.dtos.SchoolGradeDTO;
 import com.example.demo.dtos.SchoolResponseDTO;
@@ -14,5 +14,5 @@ public interface ISchoolGradeService {
 
 	List<SchoolResponseDTO> findSchoolLinkedByGradeId(int gradeId);
 	
-	List<GradeDTO> findGradeLinkedBySchoolId(long schoolId);
+	List<GradeResponseDTO> findGradeLinkedBySchoolId(long schoolId);
 }

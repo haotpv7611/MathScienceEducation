@@ -1,14 +1,14 @@
 package com.example.demo.dtos;
 
-public class GradeDTO implements Comparable<GradeDTO> {
-	private long id;
+public class GradeResponseDTO implements Comparable<GradeResponseDTO> {
+	private int id;
 	private int gradeName;
 
-	public long getId() {
+	public int getId() {
 		return id;
 	}
 
-	public void setId(long id) {
+	public void setId(int id) {
 		this.id = id;
 	}
 
@@ -27,7 +27,7 @@ public class GradeDTO implements Comparable<GradeDTO> {
 	}
 
 	@Override
-	public int compareTo(GradeDTO o) {
+	public int compareTo(GradeResponseDTO o) {
 		if (gradeName == o.gradeName)
 			return 0;
 		else if (gradeName > o.gradeName)

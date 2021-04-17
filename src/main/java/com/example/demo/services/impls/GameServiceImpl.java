@@ -29,6 +29,7 @@ import com.example.demo.services.IGameService;
 public class GameServiceImpl implements IGameService {
 	Logger logger = LoggerFactory.getLogger(GameServiceImpl.class);
 
+	private final String ACTIVE_STATUS = "ACTIVE";
 	private final String INACTIVE_STATUS = "INACTIVE";
 	private final String DELETED_STATUS = "DELETED";
 
@@ -44,6 +45,7 @@ public class GameServiceImpl implements IGameService {
 	@Autowired
 	private IExerciseGameQuestionService iExerciseGameQuestionService;
 
+	@Autowired
 	private IExerciseGameQuestionRepository iExerciseGameQuestionRepository;
 
 	// done
@@ -95,13 +97,12 @@ public class GameServiceImpl implements IGameService {
 	public List<GameResponseDTO> findAllByLessonIdStudentView(long lessonId) {
 		List<GameResponseDTO> gameResponseDTOList = new ArrayList<>();
 		try {
-			List<Game> gameList = iGameRepository.findByLessonIdAndStatusNot(lessonId, DELETED_STATUS);
+			List<Game> gameList = iGameRepository.findByLessonIdAndStatusNot(lessonId, ACTIVE_STATUS);
 
 			if (!gameList.isEmpty()) {
 				for (Game game : gameList) {
 					List<ExerciseGameQuestion> exerciseGameQuestionList = iExerciseGameQuestionRepository
 							.findByGameIdAndIsDisableFalse(game.getId());
-
 					if (!exerciseGameQuestionList.isEmpty()) {
 						GameResponseDTO gameResponseDTO = modelMapper.map(game, GameResponseDTO.class);
 						gameResponseDTOList.add(gameResponseDTO);
@@ -116,7 +117,7 @@ public class GameServiceImpl implements IGameService {
 
 		return gameResponseDTOList;
 	}
-	
+
 	@Override
 	public Map<Long, Integer> findAllGame() {
 		Map<Long, Integer> gameMap = new HashMap<>();
@@ -174,7 +175,8 @@ public class GameServiceImpl implements IGameService {
 				throw new ResourceNotFoundException();
 			}
 			if (game.getGameName() != gameNameDTO) {
-				if (iGameRepository.findByLessonIdAndGameNameAndStatusNot(lessonId, gameNameDTO, DELETED_STATUS) != null) {
+				if (iGameRepository.findByLessonIdAndGameNameAndStatusNot(lessonId, gameNameDTO,
+						DELETED_STATUS) != null) {
 
 					return "EXISTED";
 				}
@@ -226,14 +228,16 @@ public class GameServiceImpl implements IGameService {
 			}
 
 //			List<Long> gameQuestionIdList = iExerciseGameQuestionService.findAllQuestionIdByGameId(id);
-			List<ExerciseGameQuestion> exerciseGameQuestionList = iExerciseGameQuestionRepository
-					.findByGameIdAndIsDisableFalse(game.getId());
-			if (!exerciseGameQuestionList.isEmpty()) {
-				for (ExerciseGameQuestion exerciseGameQuestion : exerciseGameQuestionList) {
-					iExerciseGameQuestionService.deleteOneExerciseGameQuestion(exerciseGameQuestion.getGameId());
+			if (status.equals(DELETED_STATUS)) {
+				List<ExerciseGameQuestion> exerciseGameQuestionList = iExerciseGameQuestionRepository
+						.findByGameIdAndIsDisableFalse(id);
+				if (!exerciseGameQuestionList.isEmpty()) {
+					for (ExerciseGameQuestion exerciseGameQuestion : exerciseGameQuestionList) {
+						iExerciseGameQuestionService.deleteOneExerciseGameQuestion(exerciseGameQuestion.getId());
+					}
 				}
 			}
-			game.setStatus(status);;
+			game.setStatus(status);
 			iGameRepository.save(game);
 		} catch (Exception e) {
 			throw e;

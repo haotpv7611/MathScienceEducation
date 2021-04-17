@@ -12,7 +12,7 @@ public interface IExerciseGameQuestionRepository extends JpaRepository<ExerciseG
 
 	List<ExerciseGameQuestion> findByExerciseIdAndIsDisableFalse(long exerciseId);
 
-	List<ExerciseGameQuestion> findByGameIdAndIsDisableFalse(long exerciseId);
+	List<ExerciseGameQuestion> findByGameIdAndIsDisableFalse(long gameId);
 	
 	List<ExerciseGameQuestion> findByQuestionIdAndIsDisableFalse(long questionId);
 
@@ -20,5 +20,5 @@ public interface IExerciseGameQuestionRepository extends JpaRepository<ExerciseG
 
 	ExerciseGameQuestion findByQuestionIdAndExerciseIdAndIsDisableFalse(long questionId, long exerciseId);
 
-	ExerciseGameQuestion findByQuestionIdAndGameIdAndIsDisableFalse(long questionId, long exerciseId);
+	ExerciseGameQuestion findByQuestionIdAndGameIdAndIsDisableFalse(long questionId, long gameId);
 }

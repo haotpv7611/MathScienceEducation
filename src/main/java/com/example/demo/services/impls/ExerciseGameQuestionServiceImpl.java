@@ -199,6 +199,7 @@ public class ExerciseGameQuestionServiceImpl implements IExerciseGameQuestionSer
 	public void deleteOneExerciseGameQuestion(long id) {
 		try {
 			ExerciseGameQuestion exerciseGameQuestion = iExerciseGameQuestionRepository.findByIdAndIsDisableFalse(id);
+			System.out.println("delete: " + id);
 			if (exerciseGameQuestion == null) {
 				throw new ResourceNotFoundException();
 			}
@@ -208,5 +209,13 @@ public class ExerciseGameQuestionServiceImpl implements IExerciseGameQuestionSer
 			throw e;
 		}
 	}
+	
+//	@Override
+//	public List<ExerciseGameQuestion> findAllByGameId(long gameId){
+//		List<ExerciseGameQuestion> exerciseGameQuestionList = iExerciseGameQuestionRepository
+//				.findByGameIdAndIsDisableFalse(gameId);
+//		
+//		return exerciseGameQuestionList;
+//	}
 
 }

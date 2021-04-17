@@ -14,9 +14,9 @@ public interface ISubjectService {
 	Object findById(long id);
 
 	// show view all subject both roles
-	public List<SubjectResponseDTO> findSubjectByGradeId(int gradeId);
+	public List<SubjectResponseDTO> findSubjectsByGradeId(int gradeId);
 
-	Map<Long, String> findAllSubject();
+	Map<Long, String> findAllSubjects();
 
 	String createSubject(String subjectName, MultipartFile file, String description, int gradeId)
 			throws SizeLimitExceededException, IOException;

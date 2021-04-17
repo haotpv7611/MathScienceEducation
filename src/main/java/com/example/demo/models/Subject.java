@@ -18,15 +18,15 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 public class Subject {
-
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
 	private String subjectName;
 	private String imageUrl;
+	private String description;
 	private long gradeId;
 	private boolean isDisable;
-	private String description;
+
 	@CreatedDate
 	private LocalDateTime createdDate;
 //	@CreatedBy

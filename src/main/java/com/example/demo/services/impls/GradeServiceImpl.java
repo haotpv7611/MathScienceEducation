@@ -4,17 +4,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import com.example.demo.dtos.GradeDTO;
+import com.example.demo.dtos.GradeResponseDTO;
 import com.example.demo.models.Grade;
 import com.example.demo.repositories.IGradeRepository;
 import com.example.demo.services.IGradeService;
 
 @Service
 public class GradeServiceImpl implements IGradeService {
+	Logger logger = LoggerFactory.getLogger(GradeServiceImpl.class);
 
 	@Autowired
 	IGradeRepository iGradeRepository;
@@ -23,17 +26,23 @@ public class GradeServiceImpl implements IGradeService {
 	private ModelMapper modelMapper;
 
 	@Override
-	public List<GradeDTO> findAllGrade() {
-		List<Grade> gradeList = iGradeRepository.findAll(Sort.by(Sort.Direction.ASC, "gradeName"));
-		List<GradeDTO> gradeDTOList = new ArrayList<>();
-		if (!gradeList.isEmpty()) {
-			for (Grade grade : gradeList) {
-				GradeDTO gradeDTO = modelMapper.map(grade, GradeDTO.class);
-				gradeDTOList.add(gradeDTO);
+	public List<GradeResponseDTO> findAllGrades() {
+		List<GradeResponseDTO> gradeResponseDTOList = new ArrayList<>();
+		try {
+			List<Grade> gradeList = iGradeRepository.findAll(Sort.by(Sort.Direction.ASC, "gradeName"));
+			if (!gradeList.isEmpty()) {
+				for (Grade grade : gradeList) {
+					GradeResponseDTO gradeResponseDTO = modelMapper.map(grade, GradeResponseDTO.class);
+					gradeResponseDTOList.add(gradeResponseDTO);
+				}
 			}
+		} catch (Exception e) {
+			logger.error("Find all grades! " + e.getMessage());
+
+			return null;
 		}
 
-		return gradeDTOList;
+		return gradeResponseDTOList;
 	}
 
 }

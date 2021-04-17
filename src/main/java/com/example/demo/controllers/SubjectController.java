@@ -18,10 +18,13 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.dtos.SubjectResponseDTO;
 import com.example.demo.services.ISubjectService;
+import com.example.demo.utils.Util;
 
 @CrossOrigin
 @RestController
 public class SubjectController {
+	private final int SUBJECT_NAME_MAX_LENGTH = 20;
+	private final int DESCRIPTION_MAX_LENGTH = 50;
 
 	@Autowired
 	ISubjectService iSubjectService;
@@ -42,8 +45,8 @@ public class SubjectController {
 	}
 
 	@GetMapping("/grade/{gradeId}/subjects")
-	public ResponseEntity<List<SubjectResponseDTO>> findSubjectByGradeId(@PathVariable int gradeId) {
-		List<SubjectResponseDTO> response = iSubjectService.findSubjectByGradeId(gradeId);
+	public ResponseEntity<List<SubjectResponseDTO>> findSubjectsByGradeId(@PathVariable int gradeId) {
+		List<SubjectResponseDTO> response = iSubjectService.findSubjectsByGradeId(gradeId);
 		if (response == null) {
 
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
@@ -56,6 +59,16 @@ public class SubjectController {
 	public ResponseEntity<String> createSubject(@RequestParam String subjectName,
 			@RequestParam MultipartFile multipartFile, @RequestParam(required = false) String description,
 			@RequestParam int gradeId) throws SizeLimitExceededException, IOException {
+		// validate data input
+		String error = Util.validateRequiredString(subjectName, SUBJECT_NAME_MAX_LENGTH, "\nSubjectName is invalid!");
+		error += Util.validateRequiredFile(multipartFile, "image", "\nFile is invalid!",
+				"\nNot supported this file type for image!");
+		error += Util.validateString(description, DESCRIPTION_MAX_LENGTH, "\nDescription is invalid!");
+		if (!error.isEmpty()) {
+
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
+		}
+
 		String response = iSubjectService.createSubject(subjectName, multipartFile, description, gradeId);
 		if (response.contains("NOT FOUND")) {
 
@@ -65,12 +78,9 @@ public class SubjectController {
 
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
 		}
-		if (response.contains("SUCCESS")) {
 
-			return ResponseEntity.status(HttpStatus.CREATED).body(response);
-		}
+		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
-		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 	}
 
 	@PutMapping("/subject/{id}")
@@ -78,6 +88,15 @@ public class SubjectController {
 			@RequestParam(required = false) MultipartFile multipartFile,
 			@RequestParam(required = false) String description, @RequestParam int gradeId)
 			throws SizeLimitExceededException, IOException {
+		// validate data input
+		String error = Util.validateRequiredString(subjectName, SUBJECT_NAME_MAX_LENGTH, "\nSubjectName is invalid!");
+		error += Util.validateFile(multipartFile, "image", "\nNot supported this file type for image!");
+		error += Util.validateString(description, DESCRIPTION_MAX_LENGTH, "\nDescription is invalid!");
+		if (!error.isEmpty()) {
+
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
+		}
+		
 		String response = iSubjectService.updateSubject(id, subjectName, multipartFile, description, gradeId);
 		if (response.contains("NOT FOUND")) {
 
@@ -87,12 +106,9 @@ public class SubjectController {
 
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
 		}
-		if (response.contains("SUCCESS")) {
 
-			return ResponseEntity.ok(response);
-		}
+		return ResponseEntity.ok(response);
 
-		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 	}
 
 	@PutMapping("subject/delete/{id}")

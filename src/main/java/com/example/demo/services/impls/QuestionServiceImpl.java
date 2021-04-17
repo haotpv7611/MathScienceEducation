@@ -32,6 +32,7 @@ import com.example.demo.repositories.IOptionQuestionRepository;
 import com.example.demo.repositories.IQuestionRepository;
 import com.example.demo.repositories.IQuestionTypeRepository;
 import com.example.demo.repositories.IUnitRepository;
+import com.example.demo.services.IFirebaseService;
 import com.example.demo.services.IOptionQuestionService;
 import com.example.demo.services.IQuestionService;
 import com.example.demo.utils.Util;
@@ -48,7 +49,7 @@ public class QuestionServiceImpl implements IQuestionService {
 	private IQuestionRepository iQuestionRepository;
 
 	@Autowired
-	private FirebaseService firebaseService;
+	private IFirebaseService iFirebaseService;
 
 	@Autowired
 	private ModelMapper modelMapper;
@@ -633,10 +634,10 @@ public class QuestionServiceImpl implements IQuestionService {
 			question.setQuestionAudioUrl(null);
 			iQuestionRepository.save(question);
 			if (questionImageUrl != null) {
-				firebaseService.deleteFile(questionImageUrl);
+				iFirebaseService.deleteFile(questionImageUrl);
 			}
 			if (questionAudioUrl != null) {
-				firebaseService.deleteFile(questionAudioUrl);
+				iFirebaseService.deleteFile(questionAudioUrl);
 			}
 		} catch (Exception e) {
 			throw e;
@@ -711,10 +712,10 @@ public class QuestionServiceImpl implements IQuestionService {
 				.orElseThrow(() -> new ResourceNotFoundException());
 		Question question = new Question(questionTitle, description, score, unitId, false);
 		if (imageFile != null) {
-			question.setQuestionImageUrl(firebaseService.saveFile(imageFile));
+			question.setQuestionImageUrl(iFirebaseService.uploadFile(imageFile));
 		}
 		if (audioFile != null) {
-			question.setQuestionAudioUrl(firebaseService.saveFile(audioFile));
+			question.setQuestionAudioUrl(iFirebaseService.uploadFile(audioFile));
 		}
 		question.setQuestionType(questionType);
 		iQuestionRepository.save(question);
@@ -732,12 +733,12 @@ public class QuestionServiceImpl implements IQuestionService {
 		String questionImageUrl = question.getQuestionImageUrl();
 		String questionAudioUrl = question.getQuestionAudioUrl();
 		if (imageFile != null) {
-			firebaseService.deleteFile(questionImageUrl);
-			question.setQuestionImageUrl(firebaseService.saveFile(imageFile));
+			iFirebaseService.deleteFile(questionImageUrl);
+			question.setQuestionImageUrl(iFirebaseService.uploadFile(imageFile));
 		}
 		if (audioFile != null) {
-			firebaseService.deleteFile(questionAudioUrl);
-			question.setQuestionAudioUrl(firebaseService.saveFile(audioFile));
+			iFirebaseService.deleteFile(questionAudioUrl);
+			question.setQuestionAudioUrl(iFirebaseService.uploadFile(audioFile));
 		}
 		iQuestionRepository.save(question);
 	}

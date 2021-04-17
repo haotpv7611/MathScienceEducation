@@ -19,6 +19,7 @@ import com.example.demo.models.BannerImage;
 import com.example.demo.repositories.IAccountRepository;
 import com.example.demo.repositories.IBannerImageRepository;
 import com.example.demo.services.IBannerImageService;
+import com.example.demo.services.IFirebaseService;
 
 @Service
 public class BannerImageServiceImpl implements IBannerImageService {
@@ -31,7 +32,7 @@ public class BannerImageServiceImpl implements IBannerImageService {
 	IAccountRepository iAccountRepository;
 
 	@Autowired
-	FirebaseService firebaseService;
+	IFirebaseService iFirebaseService;
 
 	@Autowired
 	ModelMapper modelMapper;
@@ -70,7 +71,7 @@ public class BannerImageServiceImpl implements IBannerImageService {
 		// 6. create new entity and return SUCCESS
 		BannerImage bannerImage = new BannerImage();
 		bannerImage.setDescription(description.trim());
-		bannerImage.setImageUrl(firebaseService.saveFile(file));
+		bannerImage.setImageUrl(iFirebaseService.uploadFile(file));
 		bannerImage.setStatus("ACTIVE");
 		bannerImage.setAccountId(accountId);
 		iBannerImageRepositoy.save(bannerImage);
@@ -175,7 +176,7 @@ public class BannerImageServiceImpl implements IBannerImageService {
 
 		bannerImage.setDescription(description.trim());
 		if (file != null) {
-			bannerImage.setImageUrl(firebaseService.saveFile(file));
+			bannerImage.setImageUrl(iFirebaseService.uploadFile(file));
 		}
 		iBannerImageRepositoy.save(bannerImage);
 

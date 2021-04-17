@@ -30,18 +30,4 @@ public class Grade {
 		return id;
 	}
 
-	/**
-	 * @return the schoolGrade
-	 */
-	public Set<SchoolGrade> getSchoolGrade() {
-		return schoolGrade;
-	}
-
-	/**
-	 * @param schoolGrade the schoolGrade to set
-	 */
-	public void setSchoolGrade(Set<SchoolGrade> schoolGrade) {
-		this.schoolGrade = schoolGrade;
-	}
-
 }

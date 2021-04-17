@@ -15,6 +15,7 @@ import com.example.demo.dtos.OptionQuestionExerciseDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.OptionQuestion;
 import com.example.demo.repositories.IOptionQuestionRepository;
+import com.example.demo.services.IFirebaseService;
 import com.example.demo.services.IOptionQuestionService;
 
 @Service
@@ -27,7 +28,7 @@ public class OptionQuestionServiceImpl implements IOptionQuestionService {
 	private ModelMapper modelMapper;
 
 	@Autowired
-	FirebaseService firebaseService;
+	IFirebaseService iFirebaseService;
 
 	// not ok about data response OptionQuestionDTO
 	@Override
@@ -84,7 +85,7 @@ public class OptionQuestionServiceImpl implements IOptionQuestionService {
 		OptionQuestion optionQuestion = new OptionQuestion(optionText, questionId, false);
 		try {
 			if (imageFile != null) {
-				optionQuestion.setOptionImageUrl(firebaseService.saveFile(imageFile));
+				optionQuestion.setOptionImageUrl(iFirebaseService.uploadFile(imageFile));
 			}
 			iOptionQuestionRepository.save(optionQuestion);
 		} catch (Exception e) {
@@ -144,12 +145,14 @@ public class OptionQuestionServiceImpl implements IOptionQuestionService {
 
 			// allow update optionText, optionImageUrl if not null and save data
 			optionQuestion.setOptionText(optionText);
+			String optionImageUrl = optionQuestion.getOptionImageUrl();
 			if (imageFile != null) {
-				String optionImageUrl = optionQuestion.getOptionImageUrl();
-				firebaseService.deleteFile(optionImageUrl);
-				optionQuestion.setOptionImageUrl(firebaseService.saveFile(imageFile));
+				if (!imageFile.isEmpty()) {
+					optionQuestion.setOptionImageUrl(iFirebaseService.uploadFile(imageFile));
+				}
 			}
 			iOptionQuestionRepository.save(optionQuestion);
+			iFirebaseService.deleteFile(optionImageUrl);
 		} catch (Exception e) {
 			throw e;
 		}
@@ -172,7 +175,7 @@ public class OptionQuestionServiceImpl implements IOptionQuestionService {
 			optionQuestion.setOptionImageUrl(null);
 			iOptionQuestionRepository.save(optionQuestion);
 			if (optionImageUrl != null) {
-				firebaseService.deleteFile(optionImageUrl);
+				iFirebaseService.deleteFile(optionImageUrl);
 			}
 		} catch (Exception e) {
 			throw e;

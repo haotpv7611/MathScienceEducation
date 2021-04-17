@@ -5,10 +5,12 @@ import java.util.Collections;
 import java.util.List;
 
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.example.demo.dtos.GradeDTO;
+import com.example.demo.dtos.GradeResponseDTO;
 import com.example.demo.dtos.ListIdAndStatusDTO;
 import com.example.demo.dtos.SchoolGradeDTO;
 import com.example.demo.dtos.SchoolResponseDTO;
@@ -23,6 +25,7 @@ import com.example.demo.services.ISchoolGradeService;
 
 @Service
 public class SchoolGradeServiceImpl implements ISchoolGradeService {
+	Logger logger = LoggerFactory.getLogger(SchoolGradeServiceImpl.class);
 
 	@Autowired
 	IGradeRepository iGradeRepository;
@@ -57,7 +60,7 @@ public class SchoolGradeServiceImpl implements ISchoolGradeService {
 		return schoolResponseDTOList;
 	}
 
-	//done
+	// done
 	@Override
 	public String linkGradeAndSchool(SchoolGradeDTO schoolGradeDTO) {
 		int gradeId = schoolGradeDTO.getGradeId();
@@ -67,8 +70,9 @@ public class SchoolGradeServiceImpl implements ISchoolGradeService {
 		if (school == null) {
 			throw new ResourceNotFoundException();
 		}
-		
-		SchoolGrade schoolGrade = iSchoolGradeRepository.findByGradeIdAndSchoolIdAndStatusNot(gradeId, schoolId, "DELETED");
+
+		SchoolGrade schoolGrade = iSchoolGradeRepository.findByGradeIdAndSchoolIdAndStatusNot(gradeId, schoolId,
+				"DELETED");
 		if (schoolGrade != null) {
 			return "EXISTED!";
 		}
@@ -102,29 +106,34 @@ public class SchoolGradeServiceImpl implements ISchoolGradeService {
 		String status = listIdAndStatusDTO.getStatus();
 		schoolGrade.setStatus(status);
 		iSchoolGradeRepository.save(schoolGrade);
-		
-		
-		//change status lower level
+
+		// change status lower level
 
 		return "CHANGE SUCCESS!";
 	}
 
-	//done
+	// done
 	@Override
-	public List<GradeDTO> findGradeLinkedBySchoolId(long schoolId) {
-		List<SchoolGrade> schoolGradeList = iSchoolGradeRepository.findBySchoolIdAndStatusNot(schoolId,
-				"DELETED");
-		List<GradeDTO> gradeDTOList = new ArrayList<>();
-
-		if (!schoolGradeList.isEmpty()) {
-			for (SchoolGrade schoolGrade : schoolGradeList) {
-				GradeDTO gradeDTO = (modelMapper.map(schoolGrade.getGrade(), GradeDTO.class));
-				gradeDTOList.add(gradeDTO);
+	public List<GradeResponseDTO> findGradeLinkedBySchoolId(long schoolId) {
+		List<GradeResponseDTO> gradeDTOList = new ArrayList<>();
+		try {
+			// find all schoolGrade active and get all grade
+			List<SchoolGrade> schoolGradeList = iSchoolGradeRepository.findBySchoolIdAndStatusNot(schoolId, "DELETED");			
+			if (!schoolGradeList.isEmpty()) {
+				for (SchoolGrade schoolGrade : schoolGradeList) {
+					Grade grade = schoolGrade.getGrade();
+					GradeResponseDTO gradeDTO = modelMapper.map(grade, GradeResponseDTO.class);
+					gradeDTOList.add(gradeDTO);
+				}
+				//sort by gradeName
+				Collections.sort(gradeDTOList);
 			}
+		} catch (Exception e) {
+			logger.error("Find grade linked by schoolId = " + schoolId + "! " + e.getMessage());
+
+			return null;
 		}
-		
-		Collections.sort(gradeDTOList);
-		
+
 		return gradeDTOList;
 	}
 }

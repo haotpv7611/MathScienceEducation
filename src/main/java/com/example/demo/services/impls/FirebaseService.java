@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.demo.services.IFirebaseService;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
@@ -20,7 +21,7 @@ import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 
 @Service
-public class FirebaseService {
+public class FirebaseService implements IFirebaseService {
 	private final String JSON_PATH = "mathscience-e425d-firebase-adminsdk-wml4d-9e17737d2d.json";
 	private final String PROJECT_ID = "mathscience-e425d";
 	private final String BUCKET_NAME = "mathscience-e425d.appspot.com";
@@ -45,18 +46,19 @@ public class FirebaseService {
 		}
 	}
 
-	public String saveFile(MultipartFile file) throws IOException, SizeLimitExceededException {
-		String error = "";
-
-		// 1. validate file is empty and file type only image and audio
-		if (file.isEmpty()) {
-			error = "File is invalid!";
-			return error;
-		}
-		if (!file.getContentType().contains("image") && !file.getContentType().contains("audio")) {
-			error = "Not supported this file type!";
-			return error;
-		}
+	@Override
+	public String uploadFile(MultipartFile file) throws IOException, SizeLimitExceededException {
+//		String error = "";
+//
+//		// 1. validate file is empty and file type only image and audio
+//		if (file.isEmpty()) {
+//			error = "File is invalid!";
+//			return error;
+//		}
+//		if (!file.getContentType().contains("image") && !file.getContentType().contains("audio")) {
+//			error = "Not supported this file type!";
+//			return error;
+//		}
 
 		// 2. generate new file name with random UUID + fileExtension
 		// 3. generate new token
@@ -73,21 +75,28 @@ public class FirebaseService {
 			folder = "audios";
 		}
 
-		// 5. mapping token and identify reference path on firebase to file
-		Map<String, String> map = new HashMap<>();
-		map.put("firebaseStorageDownloadTokens", token);
-		BlobId blobId = BlobId.of(BUCKET_NAME, folder + "/" + fileName);
+		String URL = null;
+		try {
+			// 5. mapping token and identify reference path on firebase to file
+			Map<String, String> map = new HashMap<>();
+			map.put("firebaseStorageDownloadTokens", token);
+			BlobId blobId = BlobId.of(BUCKET_NAME, folder + "/" + fileName);
 
-		// 6. create file with blodId, set fileName and token, set file type
-		BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setMetadata(map).setContentType(file.getContentType()).build();
-		storage.create(blobInfo, file.getBytes());
+			// 6. create file with blodId, set fileName and token, set file type
+			BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setMetadata(map).setContentType(file.getContentType())
+					.build();
+			storage.create(blobInfo, file.getBytes());
 
-		// 7. return URL
-		String URL = STORAGE_URL + folder + "%2F" + fileName + "?alt=media&token=" + token;
+			// 7. return URL
+			URL = STORAGE_URL + folder + "%2F" + fileName + "?alt=media&token=" + token;
+		} catch (Exception e) {
+			throw e;
+		}
 
 		return URL;
 	}
 
+	@Override
 	public void deleteFile(String fileUrl) {
 		if (!fileUrl.isEmpty()) {
 			// get storage folder store file
