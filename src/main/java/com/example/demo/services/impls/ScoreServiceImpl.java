@@ -111,6 +111,7 @@ public class ScoreServiceImpl implements IScoreService {
 			} else {
 				List<Lesson> lessonList = new ArrayList<>();
 				long unitId = entry.getValue();
+				unitName = "Unit" + entry.getKey();
 				lessonList.addAll(iLessonRepository.findByUnitIdAndIsDisableFalse(unitId));
 				if (!lessonList.isEmpty()) {
 					for (Lesson lesson : lessonList) {
@@ -150,7 +151,7 @@ public class ScoreServiceImpl implements IScoreService {
 			}
 
 			ScoreResponseDTO scoreResponseDTO = new ScoreResponseDTO();
-			scoreResponseDTO.setUnitName("Unit " + unitName);
+			scoreResponseDTO.setUnitName(unitName);
 			scoreResponseDTO.setProcess(process);
 			scoreResponseDTO.setLessonScoreViewDTOList(lessonScoreViewDTOList);
 			scoreResponseDTOList.add(scoreResponseDTO);
