@@ -1,10 +1,10 @@
 package com.example.demo.services.impls;
 
-import java.io.FileNotFoundException;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -13,18 +13,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.collections4.map.HashedMap;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellRange;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.ClientAnchor;
-import org.apache.poi.ss.usermodel.Comment;
-import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.DataFormatter;
-import org.apache.poi.ss.usermodel.DateUtil;
-import org.apache.poi.ss.usermodel.Drawing;
 import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
@@ -35,7 +32,6 @@ import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.RegionUtil;
-import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
@@ -54,6 +50,7 @@ import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.Account;
 import com.example.demo.models.Classes;
 import com.example.demo.models.Exercise;
+import com.example.demo.models.ExerciseTaken;
 import com.example.demo.models.Grade;
 import com.example.demo.models.Lesson;
 import com.example.demo.models.School;
@@ -64,6 +61,7 @@ import com.example.demo.models.Unit;
 import com.example.demo.repositories.IAccountRepository;
 import com.example.demo.repositories.IClassRepository;
 import com.example.demo.repositories.IExerciseRepository;
+import com.example.demo.repositories.IExerciseTakenRepository;
 import com.example.demo.repositories.IGradeRepository;
 import com.example.demo.repositories.ILessonRepository;
 import com.example.demo.repositories.ISchoolGradeRepository;
@@ -115,6 +113,9 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 
 	@Autowired
 	private IExerciseRepository iExerciseRepository;
+
+	@Autowired
+	private IExerciseTakenRepository iExerciseTakenRepository;
 
 	@Autowired
 	IClassService iClassService;
@@ -232,6 +233,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 			Account account = studentProfile.getAccount();
 			StudentResponseDTO studentResponseDTO = modelMapper.map(account, StudentResponseDTO.class);
 			studentResponseDTO.setId(studentProfile.getId());
+			studentResponseDTO.setStudentId("MJ" + String.format("%06d", studentProfile.getId()));
 			studentResponseDTO.setSchoolName(schoolName);
 			studentResponseDTO.setGradeName(gradeName);
 			studentResponseDTO.setClassName(className);
@@ -299,19 +301,22 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 					continue;
 				} else {
 					// get accountId user input
-					long accountId = 0;
+//					long accountId = 0;
+					long studentId = 0;
 					if (row.getCell(1) != null) {
 						if (row.getCell(1).getCellType() != CellType.BLANK) {
 							String studentCode = row.getCell(1).getStringCellValue();
-							accountId = Long.parseLong(studentCode.substring(2, studentCode.length()));
+//							accountId = Long.parseLong(studentCode.substring(2, studentCode.length()));
+							studentId = Long.parseLong(studentCode.substring(2, studentCode.length()));
 							System.out.println("run here");
-							System.out.println("accId: " + accountId);
+//							System.out.println("accId: " + accountId);
 						}
 					}
 
 					// if not existed --> create new
 					// else update username and classesId
-					if (accountId == 0) {
+//					if (accountId == 0) {
+					if (studentId == 0) {
 						System.out.println("error here");
 						String fullName = row.getCell(2).getStringCellValue();
 						SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-YYYY");
@@ -324,12 +329,17 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 								gender, parentName, contact);
 						createStudenProfile(studentRequestDTO);
 					} else {
-						Account account = iAccountRepository.findByIdAndStatusNot(accountId, "DELETED");
-						if (account == null) {
-							workbook.close();
-							throw new ResourceNotFoundException();
-						}
-
+						StudentProfile studentProfile = iStudentProfileRepository.findByIdAndStatusNot(studentId, DELETE_STATUS);
+//						if (studentProfile == null) {
+//							
+//						}
+//						Account account = iAccountRepository.findByIdAndStatusNot(accountId, "DELETED");
+//						if (account == null) {
+//							workbook.close();
+//							throw new ResourceNotFoundException();
+//						}
+						Account account = studentProfile.getAccount();
+						
 						String schoolCode = classes.getSchoolGrade().getSchool().getSchoolCode()
 								+ classes.getSchoolGrade().getSchool().getSchoolCount();
 						int gradeName = classes.getSchoolGrade().getGrade().getGradeName();
@@ -338,7 +348,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 						account.setUsername(username);
 						iAccountRepository.save(account);
 
-						StudentProfile studentProfile = account.getStudentProfile();
+//						StudentProfile studentProfile = account.getStudentProfile();
 						studentProfile.setClasses(classes);
 						studentProfile.setStudentCount(studentCount);
 						iStudentProfileRepository.save(studentProfile);
@@ -351,7 +361,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 		return "OK";
 	}
 
-	public void exportScore(long schoolId, int gradeId, long subjectId) throws IOException {
+	public void exportScore(long schoolId, int gradeId, long subjectId, HttpServletResponse httpServletResponse) throws IOException {
 		School school = iSchoolRepository.findByIdAndStatusNot(schoolId, DELETE_STATUS);
 		if (school == null) {
 			throw new ResourceNotFoundException();
@@ -384,7 +394,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 		List<Unit> unitList = iUnitRepository.findBySubjectIdAndIsDisableFalseOrderByUnitNameAsc(subjectId);
 		List<Exercise> exerciseList = new ArrayList<>();
 		Map<String, Integer> unitMap = new LinkedHashMap<>();
-		Map<String, Integer> lessonMap = new LinkedHashMap<>();
+		Map<Lesson, Integer> lessonMap = new LinkedHashMap<>();
 		if (!unitList.isEmpty()) {
 
 			for (Unit unit : unitList) {
@@ -395,30 +405,33 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 					for (Lesson lesson : lessonList) {
 						int exerciseSize = iExerciseRepository
 								.findByLessonIdAndStatusNotOrderByExerciseNameAsc(lesson.getId(), DELETE_STATUS).size();
+
 						if (exerciseSize > 0) {
 							exerciseList.addAll(iExerciseRepository
 									.findByLessonIdAndStatusNotOrderByExerciseNameAsc(lesson.getId(), DELETE_STATUS));
 							totalExercise += exerciseSize;
-							lessonMap.put("Lesson " + lesson.getLessonName(), exerciseSize);
+							System.out.println("lesson: " + lesson.getLessonName() + " - " + exerciseSize);
+							lessonMap.put(lesson, exerciseSize);
 						}
 					}
 
 					if (totalExercise > 0) {
+						System.out.println("unit: " + unit.getUnitName() + " - " + totalExercise);
 						unitMap.put("Unit " + unit.getUnitName(), totalExercise);
 					}
 				}
 			}
 		}
-		
-		
 
 		Workbook workbook = new XSSFWorkbook();
 		if (!classesList.isEmpty()) {
 			for (Classes classes : classesList) {
 				List<StudentProfile> studentProfileList = new ArrayList<>();
 				if (!classesList.isEmpty()) {
-					studentProfileList
-							.addAll(iStudentProfileRepository.findByClassesIdAndStatusNot(subjectId, subjectName));
+					if (!iStudentProfileRepository.findByClassesIdAndStatusNot(classes.getId(), subjectName).isEmpty()) {
+						studentProfileList
+								.addAll(iStudentProfileRepository.findByClassesIdAndStatusNot(classes.getId(), subjectName));
+					}
 				}
 
 				Sheet sheet = workbook.createSheet(classes.getClassName());
@@ -502,41 +515,115 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 					cell.setCellValue("Exercise " + exerciseList.get(i - 3).getExerciseName());
 				}
 				int beginColumn = 3;
-				for (Entry<String, Integer> entry : lessonMap.entrySet()) {
-					Cell cell = createArrangeCell(workbook, sheet, 8, 8, beginColumn,
-							beginColumn + entry.getValue() - 1, sheet.getRow(8), beginColumn, CellType.STRING,
-							HorizontalAlignment.CENTER, VerticalAlignment.CENTER, BorderStyle.THIN,
-							IndexedColors.BLACK.getIndex(), true, (short) 13);
-					beginColumn += entry.getValue();
-					cell.setCellValue(entry.getKey());
+				for (Map.Entry<Lesson, Integer> entry : lessonMap.entrySet()) {
+					System.out.println("begin: " + beginColumn);
+					System.out.println("end: " + (beginColumn + entry.getValue() - 1));
+					if (entry.getValue() > 1) {
+						Cell lessonCell = createArrangeCell(workbook, sheet, 8, 8, beginColumn,
+								beginColumn + entry.getValue() - 1, sheet.getRow(8), beginColumn, CellType.STRING,
+								HorizontalAlignment.CENTER, VerticalAlignment.CENTER, BorderStyle.THIN,
+								IndexedColors.BLACK.getIndex(), true, (short) 13);
+						beginColumn += entry.getValue();
+						lessonCell.setCellValue("Lesson " + entry.getKey().getLessonName());
+					} else {
+						Cell lessonCell = createOneCell(workbook, sheet.getRow(8), beginColumn, CellType.STRING,
+								HorizontalAlignment.CENTER, VerticalAlignment.CENTER, BorderStyle.THIN,
+								IndexedColors.BLACK.getIndex(), true, (short) 13);
+						beginColumn += entry.getValue();
+						lessonCell.setCellValue("Lesson " + entry.getKey().getLessonName());
+					}
 				}
 				beginColumn = 3;
 				for (Entry<String, Integer> entry : unitMap.entrySet()) {
-					Cell cell = createArrangeCell(workbook, sheet, 7, 7, beginColumn,
-							beginColumn + entry.getValue() - 1, sheet.getRow(7), beginColumn, CellType.STRING,
-							HorizontalAlignment.CENTER, VerticalAlignment.CENTER, BorderStyle.THIN,
-							IndexedColors.BLACK.getIndex(), true, (short) 13);
-					beginColumn += entry.getValue();
-					cell.setCellValue(entry.getKey());
+					if (entry.getValue() > 1) {
+						Cell unitCell = createArrangeCell(workbook, sheet, 7, 7, beginColumn,
+								beginColumn + entry.getValue() - 1, sheet.getRow(7), beginColumn, CellType.STRING,
+								HorizontalAlignment.CENTER, VerticalAlignment.CENTER, BorderStyle.THIN,
+								IndexedColors.BLACK.getIndex(), true, (short) 13);
+						beginColumn += entry.getValue();
+						unitCell.setCellValue(entry.getKey());
+					} else {
+						Cell unitCell = createOneCell(workbook, sheet.getRow(7), beginColumn, CellType.STRING,
+								HorizontalAlignment.CENTER, VerticalAlignment.CENTER, BorderStyle.THIN,
+								IndexedColors.BLACK.getIndex(), true, (short) 13);
+						beginColumn += entry.getValue();
+						unitCell.setCellValue(entry.getKey());
+					}
 				}
-				
-				for (int i = 0; i < studentProfileList.size(); i++) {
-					Cell noValueCell = createOneCell(workbook, sheet.getRow(i + 10), 0, CellType.STRING, HorizontalAlignment.CENTER, VerticalAlignment.CENTER, BorderStyle.THIN, IndexedColors.BLACK.getIndex(), false,(short) 13);
-					noValueCell.setCellValue(i + 1);
-					Cell studentIdValueCell = createOneCell(workbook, sheet.getRow(i + 10), 1, CellType.STRING, HorizontalAlignment.CENTER, VerticalAlignment.CENTER, BorderStyle.THIN, IndexedColors.BLACK.getIndex(), false,(short) 13);
-					studentIdValueCell.setCellValue("MJ" + String.format("%06d",  studentProfileList.get(i).getId()));
-					Cell fullNameValueCell = createOneCell(workbook, sheet.getRow(i + 10), 2, CellType.STRING, HorizontalAlignment.LEFT, VerticalAlignment.CENTER, BorderStyle.THIN, IndexedColors.BLACK.getIndex(), false,(short) 13);
-					fullNameValueCell.setCellValue(studentProfileList.get(i).getAccount().getFullName());
-				}
+				if (!studentProfileList.isEmpty()) {
+					for (int i = 0; i < studentProfileList.size(); i++) {
+						Cell noValueCell = createOneCell(workbook, sheet.getRow(i + 10), 0, CellType.STRING,
+								HorizontalAlignment.CENTER, VerticalAlignment.CENTER, BorderStyle.THIN,
+								IndexedColors.BLACK.getIndex(), false, (short) 13);
+						noValueCell.setCellValue(i + 1);
+						Cell studentIdValueCell = createOneCell(workbook, sheet.getRow(i + 10), 1, CellType.STRING,
+								HorizontalAlignment.CENTER, VerticalAlignment.CENTER, BorderStyle.THIN,
+								IndexedColors.BLACK.getIndex(), false, (short) 13);
+						studentIdValueCell
+								.setCellValue("MJ" + String.format("%06d", studentProfileList.get(i).getId()));
+						Cell fullNameValueCell = createOneCell(workbook, sheet.getRow(i + 10), 2, CellType.STRING,
+								HorizontalAlignment.LEFT, VerticalAlignment.CENTER, BorderStyle.THIN,
+								IndexedColors.BLACK.getIndex(), false, (short) 13);
+						fullNameValueCell.setCellValue(studentProfileList.get(i).getAccount().getFullName());
 
+						for (int j = 3; j < exerciseList.size() + 3; j++) {
+							List<ExerciseTaken> exerciseTakenList = iExerciseTakenRepository
+									.findByExerciseIdAndAccountId(exerciseList.get(j - 3).getId(),
+											studentProfileList.get(i).getAccount().getId());
+							String score = "Not yet!";
+							if (!exerciseTakenList.isEmpty()) {
+								float sumTotalScore = 0;
+								for (ExerciseTaken exerciseTaken : exerciseTakenList) {
+									sumTotalScore += exerciseTaken.getTotalScore();
+								}
+								score = String.format("%.1f", sumTotalScore / exerciseTakenList.size());
+							}
+
+							Cell exerciseValueCell = createOneCell(workbook, sheet.getRow(i + 10), j, CellType.STRING,
+									HorizontalAlignment.CENTER, VerticalAlignment.CENTER, BorderStyle.THIN,
+									IndexedColors.LIGHT_ORANGE.getIndex(), false, (short) 13);
+							exerciseValueCell.setCellValue(score);
+						}
+					}
+				}
 			}
 		}
 
 		FileOutputStream fileOut = new FileOutputStream("E:\\" + schoolName + "-" + gradeName + "-ScoreExport.xlsx");
 		workbook.write(fileOut);
 		fileOut.close();
+		
+		
+//		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+//		workbook.write(byteArrayOutputStream);		
+//		workbook.close();
+//		Map<String, ByteArrayInputStream> export = new HashedMap<>();
+//		export.put(schoolName + "-" + schoolCode + "-" + "Grade" + gradeName + "-ScoreExport.xlsx", new ByteArrayInputStream(byteArrayOutputStream.toByteArray()));
+		
+		
+//		String fileName = schoolName + "-" + schoolCode + "-" + "Grade" + gradeName + "-ScoreExport.xlsx";
+		ServletOutputStream outputStream = httpServletResponse.getOutputStream();
+		workbook.write(outputStream);
+		outputStream.close();
 		workbook.close();
-
+		
+//		return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+//		return fileName;
+	}
+	
+	@Override
+	public String generateFileNameExport(long schoolId, int gradeId, long subjectId) {
+		School school = iSchoolRepository.findByIdAndStatusNot(schoolId, DELETE_STATUS);
+		String schoolName = school.getSchoolName();
+		String schoolCode = school.getSchoolCode() + school.getSchoolCount();
+		Grade grade = iGradeRepository.findById(gradeId).orElseThrow(() -> new ResourceNotFoundException());
+		int gradeName = grade.getGradeName();
+		Subject subject = iSubjectRepository.findByIdAndIsDisableFalse(subjectId);
+		String subjectName = subject.getSubjectName();
+		
+		String fileName = schoolName + "-" + schoolCode + "-Gr" + gradeName + "-" + subjectName + "-ScoreExport.xlsx";
+		
+		return fileName;
 	}
 
 	private Cell createOneCell(Workbook workbook, Row row, int column, CellType cellType,

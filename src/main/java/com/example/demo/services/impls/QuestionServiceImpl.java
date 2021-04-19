@@ -333,7 +333,7 @@ public class QuestionServiceImpl implements IQuestionService {
 						for (OptionQuestion optionQuestion : optionQuestionList) {							
 							OptionQuestionFillDTO optionQuestionFillDTO = new OptionQuestionFillDTO();
 							optionQuestionFillDTO.setText(optionQuestion.getOptionText());
-							optionQuestionFillDTO.setOptionInputType(optionQuestionFillDTO.getOptionInputType());
+							optionQuestionFillDTO.setOptionInputType(optionQuestion.getOptionInputType());
 							optionQuestionGameDTOList.add(optionQuestionFillDTO);
 						}
 					}

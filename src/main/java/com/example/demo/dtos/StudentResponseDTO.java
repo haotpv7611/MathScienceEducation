@@ -2,6 +2,7 @@ package com.example.demo.dtos;
 
 public class StudentResponseDTO {
 	private long id;
+	private String studentId;
 	private String username;
 	private String fullName;
 	private String schoolName;
@@ -25,6 +26,20 @@ public class StudentResponseDTO {
 	 */
 	public void setId(long id) {
 		this.id = id;
+	}
+
+	/**
+	 * @return the studentId
+	 */
+	public String getStudentId() {
+		return studentId;
+	}
+
+	/**
+	 * @param studentId the studentId to set
+	 */
+	public void setStudentId(String studentId) {
+		this.studentId = studentId;
 	}
 
 	/**

@@ -3,6 +3,8 @@ package com.example.demo.services;
 import java.io.IOException;
 import java.util.List;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.dtos.ListIdAndStatusDTO;
@@ -24,6 +26,9 @@ public interface IStudentProfileService {
 	void validateStudentFile(MultipartFile file, long schoolId, int gradeId) throws IOException;
 
 	String importStudent(MultipartFile file, long schoolId, int gradeId) throws IOException;
+
+	void exportScore(long schoolId, int gradeId, long subjectId, HttpServletResponse httpServletResponse)
+			throws IOException;
 	
-	void exportScore(long schoolId, int gradeId, long subjectId) throws IOException ;
+	String generateFileNameExport(long schoolId, int gradeId, long subjectId);
 }

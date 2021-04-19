@@ -28,6 +28,7 @@ import com.example.demo.services.IGameService;
 @Service
 public class GameServiceImpl implements IGameService {
 	Logger logger = LoggerFactory.getLogger(GameServiceImpl.class);
+	private final String ACTIVE_STATUS = "ACTIVE";
 	private final String INACTIVE_STATUS = "INACTIVE";
 	private final String DELETED_STATUS = "DELETED";
 
@@ -94,7 +95,7 @@ public class GameServiceImpl implements IGameService {
 	public List<GameResponseDTO> findAllByLessonIdStudentView(long lessonId) {
 		List<GameResponseDTO> gameResponseDTOList = new ArrayList<>();
 		try {
-			List<Game> gameList = iGameRepository.findByLessonIdAndStatusNot(lessonId, DELETED_STATUS);
+			List<Game> gameList = iGameRepository.findByLessonIdAndStatusNot(lessonId, ACTIVE_STATUS);
 			if (!gameList.isEmpty()) {
 				for (Game game : gameList) {
 					List<ExerciseGameQuestion> exerciseGameQuestionList = iExerciseGameQuestionRepository
