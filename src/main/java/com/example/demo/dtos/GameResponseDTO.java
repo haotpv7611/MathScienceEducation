@@ -4,6 +4,7 @@ public class GameResponseDTO {
 	private long id;
 	private int gameName;
 	private String description;
+	private String status;
 
 	/**
 	 * @return the id
@@ -45,6 +46,20 @@ public class GameResponseDTO {
 	 */
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	/**
+	 * @return the status
+	 */
+	public String getStatus() {
+		return status;
+	}
+
+	/**
+	 * @param status the status to set
+	 */
+	public void setStatus(String status) {
+		this.status = status;
 	}
 
 }

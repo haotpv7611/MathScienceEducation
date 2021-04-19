@@ -5,6 +5,7 @@ public class ExerciseResponseDTO {
 	private String exerciseName;
 	private String description;
 	private boolean isDone;
+	private String status;
 
 	public String getDescription() {
 		return description;
@@ -42,6 +43,20 @@ public class ExerciseResponseDTO {
 	 */
 	public void setDone(boolean isDone) {
 		this.isDone = isDone;
+	}
+
+	/**
+	 * @return the status
+	 */
+	public String getStatus() {
+		return status;
+	}
+
+	/**
+	 * @param status the status to set
+	 */
+	public void setStatus(String status) {
+		this.status = status;
 	}
 
 }
