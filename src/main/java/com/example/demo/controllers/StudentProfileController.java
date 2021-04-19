@@ -70,6 +70,21 @@ public class StudentProfileController {
 				.body(iStudentProfileService.createStudenProfile(studentRequestDTO));
 	}
 	
+	@PostMapping("/student/{id}")
+	public ResponseEntity<String> createStudent(@PathVariable long id, @Valid @RequestBody StudentRequestDTO studentRequestDTO,
+			BindingResult bindingResult) {
+		if (bindingResult.hasErrors()) {
+			String error = "";
+			for (ObjectError object : bindingResult.getAllErrors()) {
+				error += "\n" + object.getDefaultMessage();
+			}
+
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
+		}
+		return ResponseEntity.status(HttpStatus.OK)
+				.body(iStudentProfileService.createStudenProfile(studentRequestDTO));
+	}
+	
 	@PostMapping("/student/validate")
 	public ResponseEntity<String> validateStudent(@RequestParam MultipartFile file, @RequestParam long schoolId, @RequestParam int gradeId) throws IOException{
 		iStudentProfileService.validateStudentFile(file, schoolId, gradeId);
@@ -84,7 +99,7 @@ public class StudentProfileController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 	
-	@PostMapping("/student/export")
+	@GetMapping("/student/export")
 	public void exportScore(HttpServletResponse response, @RequestParam long schoolId, @RequestParam int gradeId, @RequestParam long subjectId) throws IOException{
 		response.setContentType("application/octet-stream");
 		String headerKey = "Content-Disposition";
