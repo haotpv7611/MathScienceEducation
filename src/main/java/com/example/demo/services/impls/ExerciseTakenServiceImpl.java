@@ -61,7 +61,7 @@ public class ExerciseTakenServiceImpl implements IExerciseTakenService {
 				LocalDateTime createdDate = exerciseTaken.getCreatedDate();
 				ExerciseTakenResponseDTO exerciseTakenResponseDTO = new ExerciseTakenResponseDTO(id, totalScore,
 						createdDate);
-				Exercise exercise = iExerciseRepository.findByIdAndStatusNot(exerciseTaken.getId(), DELETED_STATUS);
+				Exercise exercise = iExerciseRepository.findByIdAndStatusNot(exerciseTaken.getExerciseId(), DELETED_STATUS);
 				exerciseTakenResponseDTO.setExerciseName("Exercise" + exercise.getExerciseName());
 				exerciseTakenResponseDTOList.add(exerciseTakenResponseDTO);
 			}

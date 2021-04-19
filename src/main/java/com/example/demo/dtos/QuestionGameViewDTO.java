@@ -5,6 +5,7 @@ import java.util.List;
 public class QuestionGameViewDTO {
 	private String questionType;
 	private String questionTitle;
+	private String questionImageUrl;
 	private List<Object> optionQuestion;
 
 	/**
@@ -33,6 +34,20 @@ public class QuestionGameViewDTO {
 	 */
 	public void setQuestionTitle(String questionTitle) {
 		this.questionTitle = questionTitle;
+	}
+
+	/**
+	 * @return the questionImageUrl
+	 */
+	public String getQuestionImageUrl() {
+		return questionImageUrl;
+	}
+
+	/**
+	 * @param questionImageUrl the questionImageUrl to set
+	 */
+	public void setQuestionImageUrl(String questionImageUrl) {
+		this.questionImageUrl = questionImageUrl;
 	}
 
 	/**

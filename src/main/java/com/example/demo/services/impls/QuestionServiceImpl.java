@@ -317,44 +317,31 @@ public class QuestionServiceImpl implements IQuestionService {
 							optionQuestionGameDTO
 									.setWrongOptionText(optionQuestionList.get(integerList.get(i)).getOptionText());
 							optionQuestionGameDTOList.add(optionQuestionGameDTO);
-						}
+						}						
 					}
-//					if (questionType.equals("CHOOSE")) {
-//						List<String> optionImageUrlList = new ArrayList<>();
-//						for (OptionQuestion optionQuestion : optionQuestionList) {
-//							optionImageUrlList.add(optionQuestion.getOptionImageUrl());
-//						}
-//						for (int i = 0; i < optionQuestionList.size(); i++) {
-//							OptionQuestionChooseDTO optionQuestionChooseDTO = new OptionQuestionChooseDTO();
-//							optionQuestionChooseDTO.setId(optionQuestionList.get(i).getId());
-//							optionQuestionChooseDTO.setOptionText(optionQuestionList.get(i).getOptionText());
-//							Collections.shuffle(optionImageUrlList);
-//							Collections.swap(optionImageUrlList, 0, optionImageUrlList.indexOf(optionQuestionList.get(i).getOptionImageUrl()));
-//							
-//							optionQuestionChooseDTO.setOptionImageUrlList(optionImageUrlList);
-//							optionQuestionGameDTOList.add(optionQuestionChooseDTO);
-//						}
-//					}
-					
+
 					if (questionType.equals("CHOOSE")) {
 						Collections.shuffle(optionQuestionList);
 						for (OptionQuestion optionQuestion : optionQuestionList) {
-							OptionQuestionChooseDTO optionQuestionChooseDTO = modelMapper.map(optionQuestion, OptionQuestionChooseDTO.class);
+							OptionQuestionChooseDTO optionQuestionChooseDTO = modelMapper.map(optionQuestion,
+									OptionQuestionChooseDTO.class);
 							optionQuestionGameDTOList.add(optionQuestionChooseDTO);
-						}
+						}						
 					}
-					//chưa viết
+					// chưa viết
 					if (questionType.equals("FILL")) {
-						Collections.shuffle(optionQuestionList);
-						for (OptionQuestion optionQuestion : optionQuestionList) {
-							OptionQuestionChooseDTO optionQuestionChooseDTO = modelMapper.map(optionQuestion, OptionQuestionChooseDTO.class);
-							optionQuestionGameDTOList.add(optionQuestionChooseDTO);
+						for (OptionQuestion optionQuestion : optionQuestionList) {							
+							OptionQuestionFillDTO optionQuestionFillDTO = new OptionQuestionFillDTO();
+							optionQuestionFillDTO.setText(optionQuestion.getOptionText());
+							optionQuestionFillDTO.setOptionInputType(optionQuestionFillDTO.getOptionInputType());
+							optionQuestionGameDTOList.add(optionQuestionFillDTO);
 						}
 					}
 
 					QuestionGameViewDTO questionGameViewDTO = new QuestionGameViewDTO();
 					questionGameViewDTO.setQuestionType(question.getQuestionType().getDescription());
 					questionGameViewDTO.setQuestionTitle(question.getQuestionTitle());
+					questionGameViewDTO.setQuestionImageUrl(question.getQuestionImageUrl());
 					questionGameViewDTO.setOptionQuestion(optionQuestionGameDTOList);
 					questionGameViewDTOList.add(questionGameViewDTO);
 				}
