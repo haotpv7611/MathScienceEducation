@@ -82,7 +82,7 @@ public class ScoreServiceImpl implements IScoreService {
 			List<LessonScoreViewDTO> lessonScoreViewDTOList = new ArrayList<>();
 
 			String unitName = entry.getKey();
-			String process = "0";
+			String process = "N/A";
 			int totalExericse = 0;
 			int countNotDone = 0;
 

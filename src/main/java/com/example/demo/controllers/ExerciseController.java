@@ -30,6 +30,17 @@ public class ExerciseController {
 
 	@Autowired
 	IExerciseService iExerciseService;
+	
+	@GetMapping("/exercise/{id}/status")
+	public ResponseEntity<String> findStatusById(@PathVariable long id){
+		String response = iExerciseService.findStatusById(id);
+		if (response == null) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+		
+		return ResponseEntity.ok(response);
+	}
 
 	@GetMapping("/lesson/{lessonId}/exercises")
 	public ResponseEntity<List<ExerciseResponseDTO>> findByLessonIdOrderByExerciseNameAsc(@PathVariable long lessonId) {

@@ -9,6 +9,8 @@ import com.example.demo.dtos.ExerciseRequestDTO;
 
 public interface IExerciseService {
 
+	String findStatusById(long id);
+
 	List<ExerciseResponseDTO> findByLessonIdOrderByExerciseNameAsc(long lessonId);
 
 	List<ExerciseResponseDTO> findByLessonIdStudentView(long lessonId, long accountId);

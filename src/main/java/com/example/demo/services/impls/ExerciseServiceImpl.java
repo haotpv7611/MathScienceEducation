@@ -56,6 +56,22 @@ public class ExerciseServiceImpl implements IExerciseService {
 	@Autowired
 	private ModelMapper modelMapper;
 
+	@Override
+	public String findStatusById(long id) {
+		String status = null;
+		try {
+			Exercise exercise = iExerciseRepository.findByIdAndStatusNot(id, DELETED_STATUS);
+			if (exercise == null) {
+				throw new ResourceNotFoundException();
+			}
+			status = exercise.getStatus();
+		} catch (Exception e) {
+			logger.error("Find all exercises by id = " + id + "! " + e.getMessage());
+		}
+
+		return status;
+	}
+
 	// should modify find by lesson --> lesson or progressTest
 	@Override
 	public List<ExerciseResponseDTO> findByLessonIdOrderByExerciseNameAsc(long lessonId) {
