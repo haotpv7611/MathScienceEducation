@@ -1,9 +1,8 @@
 package com.example.demo.services.impls;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -16,7 +15,6 @@ import java.util.Map.Entry;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.collections4.map.HashedMap;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -289,35 +287,26 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 			Sheet sheet = sheetIterator.next();
 			Classes classes = new Classes(sheet.getSheetName(), ACTIVE_STATUS, schoolGrade);
 			iClassRepository.save(classes);
-			System.out.println(classes.getId());
-			System.out.println(classes);
 
 			Iterator<Row> rowIterator = sheet.rowIterator();
 			while (rowIterator.hasNext()) {
 
 				Row row = rowIterator.next();
-				System.out.println(row.getRowNum());
 				if (row.getRowNum() < FIRST_ROW) {
 					continue;
 				} else {
 					// get accountId user input
-//					long accountId = 0;
 					long studentId = 0;
 					if (row.getCell(1) != null) {
 						if (row.getCell(1).getCellType() != CellType.BLANK) {
 							String studentCode = row.getCell(1).getStringCellValue();
-//							accountId = Long.parseLong(studentCode.substring(2, studentCode.length()));
 							studentId = Long.parseLong(studentCode.substring(2, studentCode.length()));
-							System.out.println("run here");
-//							System.out.println("accId: " + accountId);
 						}
 					}
 
 					// if not existed --> create new
 					// else update username and classesId
-//					if (accountId == 0) {
 					if (studentId == 0) {
-						System.out.println("error here");
 						String fullName = row.getCell(2).getStringCellValue();
 						SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-YYYY");
 						String DoB = sdf.format(row.getCell(3).getDateCellValue());
@@ -329,17 +318,11 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 								gender, parentName, contact);
 						createStudenProfile(studentRequestDTO);
 					} else {
-						StudentProfile studentProfile = iStudentProfileRepository.findByIdAndStatusNot(studentId, DELETE_STATUS);
-//						if (studentProfile == null) {
-//							
-//						}
-//						Account account = iAccountRepository.findByIdAndStatusNot(accountId, "DELETED");
-//						if (account == null) {
-//							workbook.close();
-//							throw new ResourceNotFoundException();
-//						}
+						StudentProfile studentProfile = iStudentProfileRepository.findByIdAndStatusNot(studentId,
+								DELETE_STATUS);
+
 						Account account = studentProfile.getAccount();
-						
+
 						String schoolCode = classes.getSchoolGrade().getSchool().getSchoolCode()
 								+ classes.getSchoolGrade().getSchool().getSchoolCount();
 						int gradeName = classes.getSchoolGrade().getGrade().getGradeName();
@@ -348,7 +331,6 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 						account.setUsername(username);
 						iAccountRepository.save(account);
 
-//						StudentProfile studentProfile = account.getStudentProfile();
 						studentProfile.setClasses(classes);
 						studentProfile.setStudentCount(studentCount);
 						iStudentProfileRepository.save(studentProfile);
@@ -358,10 +340,13 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 
 		}
 		workbook.close();
+
 		return "OK";
 	}
 
-	public void exportScore(long schoolId, int gradeId, long subjectId, HttpServletResponse httpServletResponse) throws IOException {
+	public void exportScore(long schoolId, int gradeId, long subjectId, HttpServletResponse httpServletResponse)
+			throws IOException {
+		// validate data input
 		School school = iSchoolRepository.findByIdAndStatusNot(schoolId, DELETE_STATUS);
 		if (school == null) {
 			throw new ResourceNotFoundException();
@@ -383,10 +368,10 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 			}
 		}
 
-		// header
+		// header value content
 		String schoolName = school.getSchoolName();
 		String schoolCode = school.getSchoolCode() + school.getSchoolCount();
-		int gradeName = grade.getGradeName();
+		String gradeName = String.valueOf(grade.getGradeName());
 		SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-yyyy");
 		String exportDate = sdf.format(new Date());
 		String subjectName = subject.getSubjectName();
@@ -428,9 +413,10 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 			for (Classes classes : classesList) {
 				List<StudentProfile> studentProfileList = new ArrayList<>();
 				if (!classesList.isEmpty()) {
-					if (!iStudentProfileRepository.findByClassesIdAndStatusNot(classes.getId(), subjectName).isEmpty()) {
-						studentProfileList
-								.addAll(iStudentProfileRepository.findByClassesIdAndStatusNot(classes.getId(), subjectName));
+					if (!iStudentProfileRepository.findByClassesIdAndStatusNot(classes.getId(), subjectName)
+							.isEmpty()) {
+						studentProfileList.addAll(
+								iStudentProfileRepository.findByClassesIdAndStatusNot(classes.getId(), subjectName));
 					}
 				}
 
@@ -442,8 +428,6 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 					sheet.setColumnWidth(i, 3500);
 				}
 
-				System.out.println(studentProfileList.size() + 5);
-
 				for (int i = 0; i < studentProfileList.size() + 10; i++) {
 					if (i == 5 || i == 6) {
 						continue;
@@ -451,138 +435,105 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 					sheet.createRow(i);
 				}
 
-				Cell schoolNameCell = createOneCell(workbook, sheet.getRow(0), 2, CellType.STRING,
-						HorizontalAlignment.RIGHT, VerticalAlignment.CENTER, BorderStyle.MEDIUM,
-						IndexedColors.BLACK.getIndex(), true, (short) 14);
-				schoolNameCell.setCellValue("School Name:");
-				Cell schoolNameValueCell = createArrangeCell(workbook, sheet, 0, 0, 3, 5, sheet.getRow(0), 3,
-						CellType.STRING, HorizontalAlignment.CENTER, VerticalAlignment.CENTER, BorderStyle.MEDIUM,
-						IndexedColors.RED.getIndex(), true, (short) 16);
-				schoolNameValueCell.setCellValue(schoolName);
+				// create Table Information
+				createOneInfoCell(workbook, sheet.getRow(0), 2, "School Name:");
+				createArrangeInfoCell(workbook, sheet, sheet.getRow(0), 3, 0, 0, 3, 5, schoolName);
+				createOneInfoCell(workbook, sheet.getRow(1), 2, "School Code:");
+				createArrangeInfoCell(workbook, sheet, sheet.getRow(1), 3, 1, 1, 3, 5, schoolCode);
+				createOneInfoCell(workbook, sheet.getRow(2), 2, "Grade:");
+				createArrangeInfoCell(workbook, sheet, sheet.getRow(2), 3, 2, 2, 3, 5, gradeName);
+				createOneInfoCell(workbook, sheet.getRow(3), 2, "Export Date:");
+				createArrangeInfoCell(workbook, sheet, sheet.getRow(3), 3, 3, 3, 3, 5, exportDate);
+				createOneInfoCell(workbook, sheet.getRow(4), 2, "Subject Name:");
+				createArrangeInfoCell(workbook, sheet, sheet.getRow(4), 3, 4, 4, 3, 5, subjectName);
 
-				Cell schoolCodeCell = createOneCell(workbook, sheet.getRow(1), 2, CellType.STRING,
-						HorizontalAlignment.RIGHT, VerticalAlignment.CENTER, BorderStyle.MEDIUM,
-						IndexedColors.BLACK.getIndex(), true, (short) 14);
-				schoolCodeCell.setCellValue("School Code:");
-				Cell schoolCodeValueCell = createArrangeCell(workbook, sheet, 1, 1, 3, 5, sheet.getRow(1), 3,
-						CellType.STRING, HorizontalAlignment.CENTER, VerticalAlignment.CENTER, BorderStyle.MEDIUM,
-						IndexedColors.RED.getIndex(), true, (short) 16);
-				schoolCodeValueCell.setCellValue(schoolCode);
+				// create Header
+				createArrangeHeaderCell(workbook, sheet, sheet.getRow(7), 0, 7, 9, 0, 0, "No.");
+				createArrangeHeaderCell(workbook, sheet, sheet.getRow(7), 1, 7, 9, 1, 1, "StudentID");
+				createArrangeHeaderCell(workbook, sheet, sheet.getRow(7), 2, 7, 9, 2, 2, "Fullname");
 
-				Cell gradeCell = createOneCell(workbook, sheet.getRow(2), 2, CellType.STRING, HorizontalAlignment.RIGHT,
-						VerticalAlignment.CENTER, BorderStyle.MEDIUM, IndexedColors.BLACK.getIndex(), true, (short) 14);
-				gradeCell.setCellValue("Grade:");
-				Cell gradeValueCell = createArrangeCell(workbook, sheet, 2, 2, 3, 5, sheet.getRow(2), 3,
-						CellType.STRING, HorizontalAlignment.CENTER, VerticalAlignment.CENTER, BorderStyle.MEDIUM,
-						IndexedColors.RED.getIndex(), true, (short) 16);
-				gradeValueCell.setCellValue(gradeName);
-
-				Cell exportDateCell = createOneCell(workbook, sheet.getRow(3), 2, CellType.STRING,
-						HorizontalAlignment.RIGHT, VerticalAlignment.CENTER, BorderStyle.MEDIUM,
-						IndexedColors.BLACK.getIndex(), true, (short) 14);
-				exportDateCell.setCellValue("Export Date:");
-				Cell exportDateValueCell = createArrangeCell(workbook, sheet, 3, 3, 3, 5, sheet.getRow(3), 3,
-						CellType.STRING, HorizontalAlignment.CENTER, VerticalAlignment.CENTER, BorderStyle.MEDIUM,
-						IndexedColors.RED.getIndex(), true, (short) 16);
-				exportDateValueCell.setCellValue(exportDate);
-
-				Cell subjectNameCell = createOneCell(workbook, sheet.getRow(4), 2, CellType.STRING,
-						HorizontalAlignment.RIGHT, VerticalAlignment.CENTER, BorderStyle.MEDIUM,
-						IndexedColors.BLACK.getIndex(), true, (short) 14);
-				subjectNameCell.setCellValue("Subject Name:");
-				Cell subjectNameValueCell = createArrangeCell(workbook, sheet, 4, 4, 3, 5, sheet.getRow(4), 3,
-						CellType.STRING, HorizontalAlignment.CENTER, VerticalAlignment.CENTER, BorderStyle.MEDIUM,
-						IndexedColors.RED.getIndex(), true, (short) 16);
-				subjectNameValueCell.setCellValue(subjectName);
-
-				Cell noCell = createArrangeCell(workbook, sheet, 7, 9, 0, 0, sheet.getRow(7), 0, CellType.STRING,
-						HorizontalAlignment.CENTER, VerticalAlignment.CENTER, BorderStyle.THIN,
-						IndexedColors.BLACK.getIndex(), true, (short) 13);
-				noCell.setCellValue("No.");
-				Cell studentId = createArrangeCell(workbook, sheet, 7, 9, 1, 1, sheet.getRow(7), 1, CellType.STRING,
-						HorizontalAlignment.CENTER, VerticalAlignment.CENTER, BorderStyle.THIN,
-						IndexedColors.BLACK.getIndex(), true, (short) 13);
-				studentId.setCellValue("StudentId");
-				Cell fullNameCell = createArrangeCell(workbook, sheet, 7, 9, 2, 2, sheet.getRow(7), 2, CellType.STRING,
-						HorizontalAlignment.CENTER, VerticalAlignment.CENTER, BorderStyle.THIN,
-						IndexedColors.BLACK.getIndex(), true, (short) 13);
-				fullNameCell.setCellValue("Fullname");
-
-				for (int i = 3; i < exerciseList.size() + 3; i++) {
-					Cell cell = createOneCell(workbook, sheet.getRow(9), i, CellType.STRING, HorizontalAlignment.CENTER,
-							VerticalAlignment.CENTER, BorderStyle.THIN, IndexedColors.BLACK.getIndex(), true,
-							(short) 13);
-					cell.setCellValue("Exercise " + exerciseList.get(i - 3).getExerciseName());
-				}
+				// unit
 				int beginColumn = 3;
-				for (Map.Entry<Lesson, Integer> entry : lessonMap.entrySet()) {
-					System.out.println("begin: " + beginColumn);
-					System.out.println("end: " + (beginColumn + entry.getValue() - 1));
-					if (entry.getValue() > 1) {
-						Cell lessonCell = createArrangeCell(workbook, sheet, 8, 8, beginColumn,
-								beginColumn + entry.getValue() - 1, sheet.getRow(8), beginColumn, CellType.STRING,
-								HorizontalAlignment.CENTER, VerticalAlignment.CENTER, BorderStyle.THIN,
-								IndexedColors.BLACK.getIndex(), true, (short) 13);
-						beginColumn += entry.getValue();
-						lessonCell.setCellValue("Lesson " + entry.getKey().getLessonName());
-					} else {
-						Cell lessonCell = createOneCell(workbook, sheet.getRow(8), beginColumn, CellType.STRING,
-								HorizontalAlignment.CENTER, VerticalAlignment.CENTER, BorderStyle.THIN,
-								IndexedColors.BLACK.getIndex(), true, (short) 13);
-						beginColumn += entry.getValue();
-						lessonCell.setCellValue("Lesson " + entry.getKey().getLessonName());
-					}
-				}
-				beginColumn = 3;
 				for (Entry<String, Integer> entry : unitMap.entrySet()) {
 					if (entry.getValue() > 1) {
-						Cell unitCell = createArrangeCell(workbook, sheet, 7, 7, beginColumn,
-								beginColumn + entry.getValue() - 1, sheet.getRow(7), beginColumn, CellType.STRING,
-								HorizontalAlignment.CENTER, VerticalAlignment.CENTER, BorderStyle.THIN,
-								IndexedColors.BLACK.getIndex(), true, (short) 13);
+						createArrangeHeaderCell(workbook, sheet, sheet.getRow(7), beginColumn, 7, 7, beginColumn,
+								beginColumn + entry.getValue() - 1, entry.getKey());
 						beginColumn += entry.getValue();
-						unitCell.setCellValue(entry.getKey());
 					} else {
-						Cell unitCell = createOneCell(workbook, sheet.getRow(7), beginColumn, CellType.STRING,
-								HorizontalAlignment.CENTER, VerticalAlignment.CENTER, BorderStyle.THIN,
-								IndexedColors.BLACK.getIndex(), true, (short) 13);
+						createOneHeaderCell(workbook, sheet.getRow(7), beginColumn, entry.getKey());
 						beginColumn += entry.getValue();
-						unitCell.setCellValue(entry.getKey());
 					}
 				}
+
+				// lesson
+				beginColumn = 3;
+				for (Map.Entry<Lesson, Integer> entry : lessonMap.entrySet()) {
+					if (entry.getValue() > 1) {
+						createArrangeHeaderCell(workbook, sheet, sheet.getRow(8), beginColumn, 8, 8, beginColumn,
+								beginColumn + entry.getValue() - 1, "Lesson " + entry.getKey().getLessonName());
+						beginColumn += entry.getValue();
+					} else {
+						createOneHeaderCell(workbook, sheet.getRow(8), beginColumn,
+								"Lesson " + entry.getKey().getLessonName());
+						beginColumn += entry.getValue();
+					}
+				}
+
+				// exercise
+				for (int i = 3; i < exerciseList.size() + 3; i++) {
+					createOneHeaderCell(workbook, sheet.getRow(9), i,
+							"Exercise " + exerciseList.get(i - 3).getExerciseName());
+				}
+
 				if (!studentProfileList.isEmpty()) {
 					for (int i = 0; i < studentProfileList.size(); i++) {
-						Cell noValueCell = createOneCell(workbook, sheet.getRow(i + 10), 0, CellType.STRING,
-								HorizontalAlignment.CENTER, VerticalAlignment.CENTER, BorderStyle.THIN,
-								IndexedColors.BLACK.getIndex(), false, (short) 13);
+						Cell noValueCell = createOneNormalCell(workbook, sheet.getRow(i + 10), 0, CellType.NUMERIC,
+								HorizontalAlignment.CENTER);
 						noValueCell.setCellValue(i + 1);
-						Cell studentIdValueCell = createOneCell(workbook, sheet.getRow(i + 10), 1, CellType.STRING,
-								HorizontalAlignment.CENTER, VerticalAlignment.CENTER, BorderStyle.THIN,
-								IndexedColors.BLACK.getIndex(), false, (short) 13);
+
+						Cell studentIdValueCell = createOneNormalCell(workbook, sheet.getRow(i + 10), 1,
+								CellType.STRING, HorizontalAlignment.CENTER);
 						studentIdValueCell
 								.setCellValue("MJ" + String.format("%06d", studentProfileList.get(i).getId()));
-						Cell fullNameValueCell = createOneCell(workbook, sheet.getRow(i + 10), 2, CellType.STRING,
-								HorizontalAlignment.LEFT, VerticalAlignment.CENTER, BorderStyle.THIN,
-								IndexedColors.BLACK.getIndex(), false, (short) 13);
+
+						Cell fullNameValueCell = createOneNormalCell(workbook, sheet.getRow(i + 10), 2, CellType.STRING,
+								HorizontalAlignment.LEFT);
 						fullNameValueCell.setCellValue(studentProfileList.get(i).getAccount().getFullName());
 
 						for (int j = 3; j < exerciseList.size() + 3; j++) {
 							List<ExerciseTaken> exerciseTakenList = iExerciseTakenRepository
 									.findByExerciseIdAndAccountId(exerciseList.get(j - 3).getId(),
 											studentProfileList.get(i).getAccount().getId());
-							String score = "Not yet!";
+							boolean isTaken = false;
+							double score = 0;
 							if (!exerciseTakenList.isEmpty()) {
-								float sumTotalScore = 0;
+								double sumTotalScore = 0;
 								for (ExerciseTaken exerciseTaken : exerciseTakenList) {
 									sumTotalScore += exerciseTaken.getTotalScore();
 								}
-								score = String.format("%.1f", sumTotalScore / exerciseTakenList.size());
+
+								score = sumTotalScore / exerciseTakenList.size();
+								score = Double.valueOf(new DecimalFormat("#.#").format(score));
+
+								isTaken = true;
 							}
 
-							Cell exerciseValueCell = createOneCell(workbook, sheet.getRow(i + 10), j, CellType.STRING,
-									HorizontalAlignment.CENTER, VerticalAlignment.CENTER, BorderStyle.THIN,
-									IndexedColors.LIGHT_ORANGE.getIndex(), false, (short) 13);
-							exerciseValueCell.setCellValue(score);
+							if (isTaken) {
+								Cell exerciseValueCell = createOneNormalCell(workbook, sheet.getRow(i + 10), j,
+										CellType.NUMERIC, HorizontalAlignment.CENTER);
+								exerciseValueCell.setCellValue(score);
+							} else {
+								createOneWarningCell(workbook, sheet.getRow(i + 10), j, "Not yet!");
+								
+//								Cell exerciseValueCell = createOneNormalCell(workbook, sheet.getRow(i + 10), j,
+//										CellType.STRING, HorizontalAlignment.CENTER);
+//								exerciseValueCell.setCellValue("Not yet!");
+
+//							Cell exerciseValueCell = createOneCell(workbook, sheet.getRow(i + 10), j, CellType.STRING,
+//									HorizontalAlignment.CENTER, VerticalAlignment.CENTER, BorderStyle.THIN,
+//									IndexedColors.LIGHT_ORANGE.getIndex(), false, (short) 13);
+
+							}
 						}
 					}
 				}
@@ -592,149 +543,175 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 		FileOutputStream fileOut = new FileOutputStream("E:\\" + schoolName + "-" + gradeName + "-ScoreExport.xlsx");
 		workbook.write(fileOut);
 		fileOut.close();
-		
-		
-//		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-//		workbook.write(byteArrayOutputStream);		
-//		workbook.close();
-//		Map<String, ByteArrayInputStream> export = new HashedMap<>();
-//		export.put(schoolName + "-" + schoolCode + "-" + "Grade" + gradeName + "-ScoreExport.xlsx", new ByteArrayInputStream(byteArrayOutputStream.toByteArray()));
-		
-		
-//		String fileName = schoolName + "-" + schoolCode + "-" + "Grade" + gradeName + "-ScoreExport.xlsx";
+
 		ServletOutputStream outputStream = httpServletResponse.getOutputStream();
 		workbook.write(outputStream);
-		outputStream.close();
 		workbook.close();
-		
-//		return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
-//		return fileName;
+		outputStream.close();
 	}
-	
+
 	@Override
 	public String generateFileNameExport(long schoolId, int gradeId, long subjectId) {
 		School school = iSchoolRepository.findByIdAndStatusNot(schoolId, DELETE_STATUS);
+		Grade grade = iGradeRepository.findById(gradeId).orElseThrow(() -> new ResourceNotFoundException());
+		Subject subject = iSubjectRepository.findByIdAndIsDisableFalse(subjectId);
+
 		String schoolName = school.getSchoolName();
 		String schoolCode = school.getSchoolCode() + school.getSchoolCount();
-		Grade grade = iGradeRepository.findById(gradeId).orElseThrow(() -> new ResourceNotFoundException());
 		int gradeName = grade.getGradeName();
-		Subject subject = iSubjectRepository.findByIdAndIsDisableFalse(subjectId);
 		String subjectName = subject.getSubjectName();
-		
 		String fileName = schoolName + "-" + schoolCode + "-Gr" + gradeName + "-" + subjectName + "-ScoreExport.xlsx";
-		
+
 		return fileName;
 	}
 
-	private Cell createOneCell(Workbook workbook, Row row, int column, CellType cellType,
-			HorizontalAlignment halignment, VerticalAlignment valignment, BorderStyle border, short color, boolean bold,
-			short fontSize) {
-		Cell cell = row.createCell(column, cellType);
+	private Cell createOneInfoCell(Workbook workbook, Row row, int column, String cellValue) {
+		Cell cell = row.createCell(column, CellType.STRING);
 		CellStyle cellStyle = workbook.createCellStyle();
-		cellStyle.setAlignment(halignment);
-		cellStyle.setVerticalAlignment(valignment);
-		cellStyle.setBorderTop(border);
-		cellStyle.setBorderBottom(border);
-		cellStyle.setBorderLeft(border);
-		cellStyle.setBorderRight(border);
+		formatStyle(cellStyle, HorizontalAlignment.RIGHT, VerticalAlignment.CENTER, BorderStyle.MEDIUM);
+		cellStyle.setIndention((short) 1);
 
 		Font font = workbook.createFont();
-		font.setColor(color);
-		font.setBold(bold);
-		font.setFontName("Times New Roman");
-		font.setFontHeightInPoints(fontSize);
-		cellStyle.setFont(font);
+		formatFont(font, IndexedColors.BLACK.getIndex(), true, 14);
 
+		cellStyle.setFont(font);
 		cell.setCellStyle(cellStyle);
+		cell.setCellValue(cellValue);
+
 		return cell;
 	}
 
-	private Cell createArrangeCell(Workbook workbook, Sheet sheet, int rowBegin, int rowEnd, int columnBegin,
-			int columnEnd, Row row, int column, CellType cellType, HorizontalAlignment halignment,
-			VerticalAlignment valignment, BorderStyle border, short color, boolean bold, short fontSize) {
-		Cell cell = row.createCell(column, cellType);
+	private Cell createArrangeInfoCell(Workbook workbook, Sheet sheet, Row row, int column, int rowBegin, int rowEnd,
+			int columnBegin, int columnEnd, String cellValue) {
+		Cell cell = row.createCell(column, CellType.STRING);
 		CellRangeAddress cellRangeAddress = new CellRangeAddress(rowBegin, rowEnd, columnBegin, columnEnd);
 		sheet.addMergedRegion(cellRangeAddress);
 		CellStyle cellStyle = workbook.createCellStyle();
-		cellStyle.setAlignment(halignment);
-		cellStyle.setVerticalAlignment(valignment);
-		cellStyle.setBorderTop(border);
-		cellStyle.setBorderBottom(border);
-		cellStyle.setBorderLeft(border);
-		cellStyle.setBorderRight(border);
-		RegionUtil.setBorderTop(border, cellRangeAddress, sheet);
-		RegionUtil.setBorderBottom(border, cellRangeAddress, sheet);
-		RegionUtil.setBorderLeft(border, cellRangeAddress, sheet);
-		RegionUtil.setBorderRight(border, cellRangeAddress, sheet);
+		formatStyle(cellStyle, HorizontalAlignment.CENTER, VerticalAlignment.CENTER, BorderStyle.MEDIUM);
+
+		RegionUtil.setBorderTop(BorderStyle.MEDIUM, cellRangeAddress, sheet);
+		RegionUtil.setBorderBottom(BorderStyle.MEDIUM, cellRangeAddress, sheet);
+		RegionUtil.setBorderLeft(BorderStyle.MEDIUM, cellRangeAddress, sheet);
+		RegionUtil.setBorderRight(BorderStyle.MEDIUM, cellRangeAddress, sheet);
 
 		Font font = workbook.createFont();
-		font.setColor(color);
-		font.setBold(bold);
-		font.setFontName("Times New Roman");
-		font.setFontHeightInPoints(fontSize);
-		cellStyle.setFont(font);
+		formatFont(font, IndexedColors.RED.getIndex(), true, 14);
 
+		cellStyle.setFont(font);
 		cell.setCellStyle(cellStyle);
+		cell.setCellValue(cellValue);
+
 		return cell;
 	}
 
-//	private CellStyle formatCell(Workbook workbook, CellStyle cellStyle, Font font, HorizontalAlignment alignment,
-//			BorderStyle border, short color, boolean bold, short fontSize) {
-//		cellStyle = workbook.createCellStyle();
-//		font = workbook.createFont();
-//		cellStyle.setAlignment(alignment);
-//		cellStyle.setBorderTop(border);
-//		cellStyle.setBorderBottom(border);
-//		cellStyle.setBorderLeft(border);
-//		cellStyle.setBorderTop(border);
-//		font.setColor(color);
-//		font.setBold(bold);
-//		font.setFontName("Times New Roman");
-//		font.setFontHeightInPoints(fontSize);
-//		cellStyle.setFont(font);
-//		return cellStyle;
-//	}
-//
-//	private CellStyle formatRegionCell(Workbook workbook, CellStyle cellStyle, Font font, HorizontalAlignment alignment,
-//			Sheet sheet, CellRangeAddress cellRangeAddress, BorderStyle border, short color, boolean bold,
-//			short fontSize) {
-////		CellRange<Cell> cellRange = cellRangeAddress;
-//		cellStyle = workbook.createCellStyle();
-//		font = workbook.createFont();
-//		cellStyle.setAlignment(alignment);
-//		cellStyle.setBorderTop(border);
-//		cellStyle.setBorderBottom(border);
-//		cellStyle.setBorderLeft(border);
-//		cellStyle.setBorderTop(border);
-//		RegionUtil.setBorderTop(border, cellRangeAddress, sheet);
-//		RegionUtil.setBorderBottom(border, cellRangeAddress, sheet);
-//		RegionUtil.setBorderLeft(border, cellRangeAddress, sheet);
-//		RegionUtil.setBorderRight(border, cellRangeAddress, sheet);
-//		font.setColor(color);
-//		font.setBold(bold);
-//		font.setFontName("Times New Roman");
-//		font.setFontHeightInPoints(fontSize);
-//		cellStyle.setFont(font);
-//		return cellStyle;
-//	}
+	private Cell createOneHeaderCell(Workbook workbook, Row row, int column, String cellValue) {
+		Cell cell = row.createCell(column, CellType.STRING);
+		CellStyle cellStyle = workbook.createCellStyle();
+		formatStyle(cellStyle, HorizontalAlignment.CENTER, VerticalAlignment.CENTER, BorderStyle.THIN);
+
+		Font font = workbook.createFont();
+		formatFont(font, IndexedColors.BLACK.getIndex(), true, 13);
+
+		cellStyle.setFont(font);
+		cell.setCellStyle(cellStyle);
+		cell.setCellValue(cellValue);
+
+		return cell;
+	}
+
+	private Cell createArrangeHeaderCell(Workbook workbook, Sheet sheet, Row row, int column, int rowBegin, int rowEnd,
+			int columnBegin, int columnEnd, String cellValue) {
+		Cell cell = row.createCell(column, CellType.STRING);
+		CellRangeAddress cellRangeAddress = new CellRangeAddress(rowBegin, rowEnd, columnBegin, columnEnd);
+		sheet.addMergedRegion(cellRangeAddress);
+		CellStyle cellStyle = workbook.createCellStyle();
+		formatStyle(cellStyle, HorizontalAlignment.CENTER, VerticalAlignment.CENTER, BorderStyle.THIN);
+		RegionUtil.setBorderTop(BorderStyle.THIN, cellRangeAddress, sheet);
+		RegionUtil.setBorderBottom(BorderStyle.THIN, cellRangeAddress, sheet);
+		RegionUtil.setBorderLeft(BorderStyle.THIN, cellRangeAddress, sheet);
+		RegionUtil.setBorderRight(BorderStyle.THIN, cellRangeAddress, sheet);
+
+		Font font = workbook.createFont();
+		formatFont(font, IndexedColors.BLACK.getIndex(), true, 13);
+
+		cellStyle.setFont(font);
+		cell.setCellStyle(cellStyle);
+		cell.setCellValue(cellValue);
+
+		return cell;
+	}
+
+	private Cell createOneNormalCell(Workbook workbook, Row row, int column, CellType cellType,
+			HorizontalAlignment horizontalAlignment) {
+		Cell cell = row.createCell(column, cellType);
+		CellStyle cellStyle = workbook.createCellStyle();
+		formatStyle(cellStyle, horizontalAlignment, VerticalAlignment.CENTER, BorderStyle.THIN);
+
+		Font font = workbook.createFont();
+		formatFont(font, IndexedColors.BLACK.getIndex(), false, 13);
+
+		cellStyle.setFont(font);
+		cell.setCellStyle(cellStyle);
+
+		return cell;
+	}
+
+	private Cell createOneWarningCell(Workbook workbook, Row row, int column, String cellValue) {
+		Cell cell = row.createCell(column, CellType.STRING);
+		CellStyle cellStyle = workbook.createCellStyle();
+		formatStyle(cellStyle, HorizontalAlignment.CENTER, VerticalAlignment.CENTER, BorderStyle.THIN);
+		cellStyle.setFillForegroundColor(IndexedColors.LIGHT_YELLOW.getIndex());
+		cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+		Font font = workbook.createFont();
+		formatFont(font, IndexedColors.BLACK.getIndex(), true, 13);
+		
+		cellStyle.setFont(font);
+		cell.setCellStyle(cellStyle);
+		cell.setCellValue(cellValue);
+
+		return cell;
+	}
+
+	private void formatStyle(CellStyle cellStyle, HorizontalAlignment horizontalAlignment,
+			VerticalAlignment verticalAlignment, BorderStyle borderStyle) {
+		cellStyle.setAlignment(horizontalAlignment);
+		cellStyle.setVerticalAlignment(verticalAlignment);
+		cellStyle.setBorderTop(borderStyle);
+		cellStyle.setBorderBottom(borderStyle);
+		cellStyle.setBorderLeft(borderStyle);
+		cellStyle.setBorderRight(borderStyle);
+	}
+
+	private void formatFont(Font font, short color, boolean bold, int fontSize) {
+		font.setColor(color);
+		font.setBold(bold);
+		font.setFontName("Times New Roman");
+		font.setFontHeightInPoints((short) fontSize);
+	}
 
 	@Override
 	@Transactional
 	public String updateStudent(long id, StudentRequestDTO studentProfileRequestDTO) {
-		StudentProfile studentProfile = iStudentProfileRepository.findByIdAndStatusNot(id, DELETE_STATUS);
-		if (studentProfile == null) {
-			throw new ResourceNotFoundException();
+		try {
+
+			StudentProfile studentProfile = iStudentProfileRepository.findByIdAndStatusNot(id, DELETE_STATUS);
+			if (studentProfile == null) {
+				throw new ResourceNotFoundException();
+			}
+
+			studentProfile.setDOB(studentProfileRequestDTO.getDoB());
+			studentProfile.setGender(studentProfileRequestDTO.getGender());
+			studentProfile.setParentName(studentProfileRequestDTO.getParentName());
+			studentProfile.setContact(studentProfileRequestDTO.getContact());
+			iStudentProfileRepository.save(studentProfile);
+
+			Account account = studentProfile.getAccount();
+			account.setFullName(studentProfileRequestDTO.getFullName());
+			iAccountRepository.save(account);
+		} catch (Exception e) {
+			// TODO: handle exception
 		}
-
-		studentProfile.setDOB(studentProfileRequestDTO.getDoB());
-		studentProfile.setGender(studentProfileRequestDTO.getGender());
-		studentProfile.setParentName(studentProfileRequestDTO.getParentName());
-		studentProfile.setContact(studentProfileRequestDTO.getContact());
-		iStudentProfileRepository.save(studentProfile);
-
-		Account account = studentProfile.getAccount();
-		account.setFullName(studentProfileRequestDTO.getFullName());
-		iAccountRepository.save(account);
 		return "UPDATE SUCCESS!";
 	}
 
@@ -766,7 +743,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 			}
 			if (status.equals(PENDING_STATUS)) {
 				SchoolGrade schoolGrade = studentProfile.getClasses().getSchoolGrade();
-				Classes pendingClass = iClassRepository.findBySchoolGradeIdAndClassName(schoolGrade.getId(),
+				Classes pendingClass = iClassRepository.findBySchoolGradeIdAndClassNameIgnoreCase(schoolGrade.getId(),
 						PENDING_STATUS);
 				if (pendingClass == null) {
 					pendingClass = new Classes();

@@ -12,6 +12,8 @@ public interface IClassService {
 	List<ClassResponseDTO> findBySchoolGradeId(SchoolGradeDTO schoolGradeDTO);
 
 	String createClass(ClassRequestDTO classRequestDTO);
+	
+	String updateClass(long id, ClassRequestDTO classRequestDTO);
 
 	String changeStatusClass(ListIdAndStatusDTO listIdAndStatusDTO);
 	

@@ -70,20 +70,8 @@ public class QuestionServiceImpl implements IQuestionService {
 	@Autowired
 	private IOptionQuestionRepository iOptionQuestionRepository;
 
-//	@Autowired
-//	private IExerciseRepository iExerciseRepository;
-//	
-//	@Autowired
-//	private IGameRepository iGameRepository;
-
 	@Autowired
 	private IExerciseGameQuestionRepository iExerciseGameQuestionRepository;
-
-//	@Autowired
-//	private IExerciseGameQuestionService iExerciseGameQuestionService;
-
-//	@Autowired
-//	private IGameRepository iGameRepository;
 
 	// done
 	@Override
@@ -173,17 +161,14 @@ public class QuestionServiceImpl implements IQuestionService {
 	// done ok
 	@Override
 	public List<QuestionResponseDTO> findQuestionByExerciseIdOrGameId(long id, boolean isExercise) {
-//		List<Long> ids = null;
 		List<ExerciseGameQuestion> exerciseGameQuestionList = null;
 		List<QuestionResponseDTO> questionResponseDTOList = new ArrayList<>();
 
 		try {
 			if (isExercise) {
 				exerciseGameQuestionList = iExerciseGameQuestionRepository.findByExerciseIdAndIsDisableFalse(id);
-//				ids = iExerciseGameQuestionService.findAllQuestionIdByExerciseId(id);
 			} else {
 				exerciseGameQuestionList = iExerciseGameQuestionRepository.findByGameIdAndIsDisableFalse(id);
-//				ids = iExerciseGameQuestionService.findAllQuestionIdByGameId(id);
 			}
 
 			if (!exerciseGameQuestionList.isEmpty()) {
@@ -282,7 +267,6 @@ public class QuestionServiceImpl implements IQuestionService {
 
 		List<ExerciseGameQuestion> exerciseGameQuestionList = iExerciseGameQuestionRepository
 				.findByGameIdAndIsDisableFalse(gameId);
-		System.out.println("exerciseGameQuestionList: " + exerciseGameQuestionList.size());
 
 		// find all question in game
 		List<Question> questionList = new ArrayList<>();
@@ -294,11 +278,10 @@ public class QuestionServiceImpl implements IQuestionService {
 			}
 
 		}
-		System.out.println("questionList: " + questionList.size());
+
 		if (!questionList.isEmpty()) {
 			for (Question question : questionList) {
-				System.out.println(
-						"questionId: " + question.getId() + " type: " + question.getQuestionType().getDescription());
+
 				// find all option by questionId
 				List<Object> optionQuestionGameDTOList = new ArrayList<>();
 				List<OptionQuestion> optionQuestionList = iOptionQuestionRepository
@@ -311,13 +294,13 @@ public class QuestionServiceImpl implements IQuestionService {
 						Collections.shuffle(integerList);
 
 						for (int i = 0; i < optionQuestionList.size(); i++) {
-							System.out.println("optionId: " + optionQuestionList.get(i).getId());
+
 							OptionQuestionGameDTO optionQuestionGameDTO = modelMapper.map(optionQuestionList.get(i),
 									OptionQuestionGameDTO.class);
 							optionQuestionGameDTO
 									.setWrongOptionText(optionQuestionList.get(integerList.get(i)).getOptionText());
 							optionQuestionGameDTOList.add(optionQuestionGameDTO);
-						}						
+						}
 					}
 
 					if (questionType.equals("CHOOSE")) {
@@ -326,11 +309,11 @@ public class QuestionServiceImpl implements IQuestionService {
 							OptionQuestionChooseDTO optionQuestionChooseDTO = modelMapper.map(optionQuestion,
 									OptionQuestionChooseDTO.class);
 							optionQuestionGameDTOList.add(optionQuestionChooseDTO);
-						}						
+						}
 					}
 					// chưa viết
 					if (questionType.equals("FILL")) {
-						for (OptionQuestion optionQuestion : optionQuestionList) {							
+						for (OptionQuestion optionQuestion : optionQuestionList) {
 							OptionQuestionFillDTO optionQuestionFillDTO = new OptionQuestionFillDTO();
 							optionQuestionFillDTO.setText(optionQuestion.getOptionText());
 							optionQuestionFillDTO.setOptionInputType(optionQuestion.getOptionInputType());
@@ -815,22 +798,4 @@ public class QuestionServiceImpl implements IQuestionService {
 		iQuestionRepository.save(question);
 	}
 
-//	private void generateQuestionView(List<Long> questionIdList, List<QuestionExerciseViewDTO> questionViewDTOList) {
-//		if (!questionIdList.isEmpty()) {
-//			List<Question> questionList = iQuestionRepository.findByIsDisableFalseAndIdIn(questionIdList);
-//
-//			if (!questionList.isEmpty()) {
-//				for (Question question : questionList) {
-//					List<OptionQuestionExerciseDTO> optionQuestionExerciseDTOList = iOptionsService
-//							.findExerciseOptionByQuestionId(question.getId());
-//					if (!optionQuestionExerciseDTOList.isEmpty()) {
-//						QuestionExerciseViewDTO questionExerciseViewDTO = modelMapper.map(question,
-//								QuestionExerciseViewDTO.class);
-//						questionExerciseViewDTO.setOptionList(optionQuestionExerciseDTOList);
-//						questionViewDTOList.add(questionExerciseViewDTO);
-//					}
-//				}
-//			}
-//		}
-//	}
 }

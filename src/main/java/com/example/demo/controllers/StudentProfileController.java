@@ -1,18 +1,12 @@
 package com.example.demo.controllers;
 
-import java.io.ByteArrayInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -69,10 +63,10 @@ public class StudentProfileController {
 		return ResponseEntity.status(HttpStatus.CREATED)
 				.body(iStudentProfileService.createStudenProfile(studentRequestDTO));
 	}
-	
+
 	@PostMapping("/student/{id}")
-	public ResponseEntity<String> createStudent(@PathVariable long id, @Valid @RequestBody StudentRequestDTO studentRequestDTO,
-			BindingResult bindingResult) {
+	public ResponseEntity<String> createStudent(@PathVariable long id,
+			@Valid @RequestBody StudentRequestDTO studentRequestDTO, BindingResult bindingResult) {
 		if (bindingResult.hasErrors()) {
 			String error = "";
 			for (ObjectError object : bindingResult.getAllErrors()) {
@@ -81,50 +75,34 @@ public class StudentProfileController {
 
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
 		}
-		return ResponseEntity.status(HttpStatus.OK)
-				.body(iStudentProfileService.createStudenProfile(studentRequestDTO));
+		return ResponseEntity.status(HttpStatus.OK).body(iStudentProfileService.createStudenProfile(studentRequestDTO));
 	}
-	
+
 	@PostMapping("/student/validate")
-	public ResponseEntity<String> validateStudent(@RequestParam MultipartFile file, @RequestParam long schoolId, @RequestParam int gradeId) throws IOException{
+	public ResponseEntity<String> validateStudent(@RequestParam MultipartFile file, @RequestParam long schoolId,
+			@RequestParam int gradeId) throws IOException {
 		iStudentProfileService.validateStudentFile(file, schoolId, gradeId);
 		return ResponseEntity.status(HttpStatus.OK).body("OK");
 	}
-	
-	
 
 	@PostMapping("/student/import")
-	public ResponseEntity<String> importStudent(@RequestParam MultipartFile file, @RequestParam long schoolId, @RequestParam int gradeId) throws IOException{
+	public ResponseEntity<String> importStudent(@RequestParam MultipartFile file, @RequestParam long schoolId,
+			@RequestParam int gradeId) throws IOException {
 		String response = iStudentProfileService.importStudent(file, schoolId, gradeId);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
-	
+
 	@GetMapping("/student/export")
-	public void exportScore(HttpServletResponse response, @RequestParam long schoolId, @RequestParam int gradeId, @RequestParam long subjectId) throws IOException{
+	public void exportScore(HttpServletResponse response, @RequestParam long schoolId, @RequestParam int gradeId,
+			@RequestParam long subjectId) throws IOException {
 		response.setContentType("application/octet-stream");
 		String headerKey = "Content-Disposition";
-        String headerValue = "attachment; filename=" + iStudentProfileService.generateFileNameExport(schoolId, gradeId, subjectId);
-        response.setHeader(headerKey, headerValue);
-        iStudentProfileService.exportScore(schoolId, gradeId, subjectId, response);
-        
-        
-//		Map<String, ByteArrayInputStream> map = iStudentProfileService.exportScore(schoolId, gradeId, subjectId);
-//		String fileName = "";
-//		ByteArrayInputStream export = null;
-//		for (Entry<String, ByteArrayInputStream> entry : map.entrySet()) {
-//			fileName = "attachment; filename=" + entry.getKey();
-//			export = entry.getValue();
-//		}
-//		
-//        headers.add("Content-Disposition", fileName);
-		
-		
-//		return ResponseEntity.ok()
-//				.headers(headers).body(new InputStreamResource(export));
+		String headerValue = "attachment; filename="
+				+ iStudentProfileService.generateFileNameExport(schoolId, gradeId, subjectId);
+		response.setHeader(headerKey, headerValue);
+		iStudentProfileService.exportScore(schoolId, gradeId, subjectId, response);
+
 	}
-	
-	
-	
 
 	@PutMapping("/student")
 	public ResponseEntity<String> changeStatusClass(@Valid @RequestBody ListIdAndStatusDTO idAndStatusDTOList,
