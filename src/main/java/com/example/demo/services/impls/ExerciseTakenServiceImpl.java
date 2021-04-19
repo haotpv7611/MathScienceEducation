@@ -61,6 +61,8 @@ public class ExerciseTakenServiceImpl implements IExerciseTakenService {
 				LocalDateTime createdDate = exerciseTaken.getCreatedDate();
 				ExerciseTakenResponseDTO exerciseTakenResponseDTO = new ExerciseTakenResponseDTO(id, totalScore,
 						createdDate);
+				Exercise exercise = iExerciseRepository.findByIdAndStatusNot(exerciseTaken.getId(), DELETED_STATUS);
+				exerciseTakenResponseDTO.setExerciseName("Exercise" + exercise.getExerciseName());
 				exerciseTakenResponseDTOList.add(exerciseTakenResponseDTO);
 			}
 		}
@@ -83,6 +85,8 @@ public class ExerciseTakenServiceImpl implements IExerciseTakenService {
 			}
 
 			ExerciseTaken exerciseTaken = modelMapper.map(exerciseTakenRequestDTO, ExerciseTaken.class);
+			System.out.println(exerciseTakenRequestDTO.getTotalScore());
+			System.out.println(exerciseTaken.getTotalScore());
 			iExerciseTakenRepository.save(exerciseTaken);
 		} catch (Exception e) {
 			logger.error("DO EXERICSE: id = " + exerciseId + " by accountId =  " + accountId + "! " + e.getMessage());

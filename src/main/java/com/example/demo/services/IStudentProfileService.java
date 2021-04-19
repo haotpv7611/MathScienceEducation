@@ -21,7 +21,9 @@ public interface IStudentProfileService {
 
 	String changeStatusStudent(ListIdAndStatusDTO listIdAndStatusDTO);
 
-	String validateStudentFile(MultipartFile file, long schoolId, int gradeId) throws IOException;
+	void validateStudentFile(MultipartFile file, long schoolId, int gradeId) throws IOException;
 
 	String importStudent(MultipartFile file, long schoolId, int gradeId) throws IOException;
+	
+	void exportScore(long schoolId, int gradeId, long subjectId) throws IOException ;
 }

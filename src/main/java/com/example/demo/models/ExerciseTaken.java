@@ -68,16 +68,16 @@ public class ExerciseTaken {
 	}
 
 	/**
-	 * @return the mark
+	 * @return the totalScore
 	 */
 	public float getTotalScore() {
 		return totalScore;
 	}
 
 	/**
-	 * @param mark the mark to set
+	 * @param totalScore the totalScore to set
 	 */
-	public void setMark(float totalScore) {
+	public void setTotalScore(float totalScore) {
 		this.totalScore = totalScore;
 	}
 

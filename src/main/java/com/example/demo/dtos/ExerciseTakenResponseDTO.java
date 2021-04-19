@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 public class ExerciseTakenResponseDTO {
 	private long id;
+	private String exerciseName;
 	private String totalScore;
 	@JsonFormat(pattern = "dd-MMM-yyyy HH:mm")
 	private LocalDateTime createdDate;
@@ -32,6 +33,20 @@ public class ExerciseTakenResponseDTO {
 	 */
 	public void setId(long id) {
 		this.id = id;
+	}
+
+	/**
+	 * @return the exerciseName
+	 */
+	public String getExerciseName() {
+		return exerciseName;
+	}
+
+	/**
+	 * @param exerciseName the exerciseName to set
+	 */
+	public void setExerciseName(String exerciseName) {
+		this.exerciseName = exerciseName;
 	}
 
 	/**

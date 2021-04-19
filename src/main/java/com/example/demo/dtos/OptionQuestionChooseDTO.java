@@ -1,25 +1,8 @@
 package com.example.demo.dtos;
 
-import java.util.List;
-
 public class OptionQuestionChooseDTO {
-	private long id;
 	private String optionText;
-	private List<String> optionImageUrlList;
-
-	/**
-	 * @return the id
-	 */
-	public long getId() {
-		return id;
-	}
-
-	/**
-	 * @param id the id to set
-	 */
-	public void setId(long id) {
-		this.id = id;
-	}
+	private String optionImageUrl;
 
 	/**
 	 * @return the optionText
@@ -36,17 +19,16 @@ public class OptionQuestionChooseDTO {
 	}
 
 	/**
-	 * @return the optionImageUrlList
+	 * @return the optionImageUrl
 	 */
-	public List<String> getOptionImageUrlList() {
-		return optionImageUrlList;
+	public String getOptionImageUrl() {
+		return optionImageUrl;
 	}
 
 	/**
-	 * @param optionImageUrlList the optionImageUrlList to set
+	 * @param optionImageUrl the optionImageUrl to set
 	 */
-	public void setOptionImageUrlList(List<String> optionImageUrlList) {
-		this.optionImageUrlList = optionImageUrlList;
+	public void setOptionImageUrl(String optionImageUrl) {
+		this.optionImageUrl = optionImageUrl;
 	}
-
 }

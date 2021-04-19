@@ -62,12 +62,25 @@ public class StudentProfileController {
 		return ResponseEntity.status(HttpStatus.CREATED)
 				.body(iStudentProfileService.createStudenProfile(studentRequestDTO));
 	}
+	
+	@PostMapping("/student/validate")
+	public ResponseEntity<String> validateStudent(@RequestParam MultipartFile file, @RequestParam long schoolId, @RequestParam int gradeId) throws IOException{
+		iStudentProfileService.validateStudentFile(file, schoolId, gradeId);
+		return ResponseEntity.status(HttpStatus.OK).body("OK");
+	}
+	
+	
 
 	@PostMapping("/student/import")
-	public ResponseEntity<String> importStudent(@RequestParam MultipartFile file, @RequestParam long schoolId, @RequestParam long gradeId) throws IOException{
-//		System.out.println(file.getContentType());
-//		iStudentProfileService.testImport(file, schoolId, gradeId);
-		return ResponseEntity.status(HttpStatus.CREATED).body(null);
+	public ResponseEntity<String> importStudent(@RequestParam MultipartFile file, @RequestParam long schoolId, @RequestParam int gradeId) throws IOException{
+		String response = iStudentProfileService.importStudent(file, schoolId, gradeId);
+		return ResponseEntity.status(HttpStatus.CREATED).body(response);
+	}
+	
+	@PostMapping("/student/export")
+	public ResponseEntity<String> exportScore(@RequestParam long schoolId, @RequestParam int gradeId, @RequestParam long subjectId) throws IOException{
+		iStudentProfileService.exportScore(schoolId, gradeId, subjectId);
+		return ResponseEntity.status(HttpStatus.OK).body("OK");
 	}
 
 	@PutMapping("/student")

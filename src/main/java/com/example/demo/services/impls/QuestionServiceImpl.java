@@ -319,19 +319,35 @@ public class QuestionServiceImpl implements IQuestionService {
 							optionQuestionGameDTOList.add(optionQuestionGameDTO);
 						}
 					}
+//					if (questionType.equals("CHOOSE")) {
+//						List<String> optionImageUrlList = new ArrayList<>();
+//						for (OptionQuestion optionQuestion : optionQuestionList) {
+//							optionImageUrlList.add(optionQuestion.getOptionImageUrl());
+//						}
+//						for (int i = 0; i < optionQuestionList.size(); i++) {
+//							OptionQuestionChooseDTO optionQuestionChooseDTO = new OptionQuestionChooseDTO();
+//							optionQuestionChooseDTO.setId(optionQuestionList.get(i).getId());
+//							optionQuestionChooseDTO.setOptionText(optionQuestionList.get(i).getOptionText());
+//							Collections.shuffle(optionImageUrlList);
+//							Collections.swap(optionImageUrlList, 0, optionImageUrlList.indexOf(optionQuestionList.get(i).getOptionImageUrl()));
+//							
+//							optionQuestionChooseDTO.setOptionImageUrlList(optionImageUrlList);
+//							optionQuestionGameDTOList.add(optionQuestionChooseDTO);
+//						}
+//					}
+					
 					if (questionType.equals("CHOOSE")) {
-						List<String> optionImageUrlList = new ArrayList<>();
+						Collections.shuffle(optionQuestionList);
 						for (OptionQuestion optionQuestion : optionQuestionList) {
-							optionImageUrlList.add(optionQuestion.getOptionImageUrl());
+							OptionQuestionChooseDTO optionQuestionChooseDTO = modelMapper.map(optionQuestion, OptionQuestionChooseDTO.class);
+							optionQuestionGameDTOList.add(optionQuestionChooseDTO);
 						}
-						for (int i = 0; i < optionQuestionList.size(); i++) {
-							OptionQuestionChooseDTO optionQuestionChooseDTO = new OptionQuestionChooseDTO();
-							optionQuestionChooseDTO.setId(optionQuestionList.get(i).getId());
-							optionQuestionChooseDTO.setOptionText(optionQuestionList.get(i).getOptionText());
-							Collections.shuffle(optionImageUrlList);
-							Collections.swap(optionImageUrlList, 0, optionImageUrlList.indexOf(optionQuestionList.get(i).getOptionImageUrl()));
-							
-							optionQuestionChooseDTO.setOptionImageUrlList(optionImageUrlList);
+					}
+					//chưa viết
+					if (questionType.equals("FILL")) {
+						Collections.shuffle(optionQuestionList);
+						for (OptionQuestion optionQuestion : optionQuestionList) {
+							OptionQuestionChooseDTO optionQuestionChooseDTO = modelMapper.map(optionQuestion, OptionQuestionChooseDTO.class);
 							optionQuestionGameDTOList.add(optionQuestionChooseDTO);
 						}
 					}

@@ -150,7 +150,7 @@ public class ScoreServiceImpl implements IScoreService {
 			}
 
 			ScoreResponseDTO scoreResponseDTO = new ScoreResponseDTO();
-			scoreResponseDTO.setUnitName(unitName);
+			scoreResponseDTO.setUnitName("Unit " + unitName);
 			scoreResponseDTO.setProcess(process);
 			scoreResponseDTO.setLessonScoreViewDTOList(lessonScoreViewDTOList);
 			scoreResponseDTOList.add(scoreResponseDTO);
