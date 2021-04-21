@@ -125,27 +125,29 @@ public class UnitServiceImpl implements IUnitService {
 		try {
 			// find all unit by gradeID
 			List<Unit> unitList = iUnitRepository.findBySubjectIdAndIsDisableFalseOrderByUnitNameAsc(subjectId);
+			System.out.println("list unit: " + unitList.size());
 			List<ProgressTest> progressTestList = iProgressTestRepository.findBySubjectIdAndIsDisableFalse(subjectId);
-
+			System.out.println("list progress: " + progressTestList.size());
 			List<Long> ids = new ArrayList<>();
 			if (!progressTestList.isEmpty()) {
 				for (ProgressTest progressTest : progressTestList) {
 					ids.add(progressTest.getUnitAfterId());
+					System.out.println("pg id: " + progressTest.getUnitAfterId());
 				}
 			}
-
-			if (unitList.isEmpty()) {
+			System.out.println("list ids: " + progressTestList.size());
+			
+			if (!unitList.isEmpty()) {
 				for (Unit unit : unitList) {
 					if (!ids.isEmpty()) {
+						System.out.println("unit id:" + unit.getId());
 						if (!ids.contains(unit.getId())) {
 							UnitResponseDTO unitResponseDTO = modelMapper.map(unit, UnitResponseDTO.class);
 							unitResponseDTOList.add(unitResponseDTO);
 						}
 					} else {
-
 						UnitResponseDTO unitResponseDTO = modelMapper.map(unit, UnitResponseDTO.class);
 						unitResponseDTOList.add(unitResponseDTO);
-
 					}
 
 				}
