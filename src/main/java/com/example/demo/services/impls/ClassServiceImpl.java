@@ -10,12 +10,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.demo.dtos.ClassChangeDTO;
 import com.example.demo.dtos.ClassRequestDTO;
 import com.example.demo.dtos.ClassResponseDTO;
+import com.example.demo.dtos.GradeClassDTO;
 import com.example.demo.dtos.ListIdAndStatusDTO;
 import com.example.demo.dtos.SchoolGradeDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.Classes;
+import com.example.demo.models.Grade;
 import com.example.demo.models.SchoolGrade;
 import com.example.demo.repositories.IClassRepository;
 import com.example.demo.repositories.ISchoolGradeRepository;
@@ -56,6 +59,52 @@ public class ClassServiceImpl implements IClassService {
 	}
 
 	@Override
+	public List<GradeClassDTO> findGradeClassBySchoolId(long schoolId) {
+		List<GradeClassDTO> gradeClassDTOList = new ArrayList<>();
+
+		try {
+			List<SchoolGrade> schoolGradeList = iSchoolGradeRepository.findBySchoolIdAndStatusNot(schoolId,
+					DELETED_STATUS);
+			System.out.println("schoolGrade = " + schoolGradeList.size());
+			if (!schoolGradeList.isEmpty()) {
+				List<Grade> gradeList = new ArrayList<>();
+				for (SchoolGrade schoolGrade : schoolGradeList) {
+					gradeList.add(schoolGrade.getGrade());
+				}
+				System.out.println("Grade = " + gradeList.size());
+
+				if (!gradeList.isEmpty()) {
+					for (Grade grade : gradeList) {
+						List<ClassChangeDTO> classChangeDTOList = new ArrayList<>();
+						List<Classes> classesList = iClassRepository
+								.findBySchoolGradeIdAndStatusNotOrderByStatusAscClassNameAsc(grade.getId(),
+										DELETED_STATUS);
+
+						System.out.println("Class = " + classesList.size());
+						if (!classesList.isEmpty()) {
+							for (Classes classes : classesList) {
+								ClassChangeDTO classChangeDTO = new ClassChangeDTO(classes.getId(),
+										classes.getClassName());
+								classChangeDTOList.add(classChangeDTO);
+							}
+						}
+						System.out.println("ClassDTO = " + classChangeDTOList.size());
+						GradeClassDTO gradeClassDTO = new GradeClassDTO(grade.getId(), grade.getGradeName(),
+								classChangeDTOList);
+						gradeClassDTOList.add(gradeClassDTO);
+					}
+				}
+				
+				System.out.println("total = " + gradeClassDTOList.size());
+			}
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+
+		return gradeClassDTOList;
+	}
+
+	@Override
 	public Map<Long, String> findAllClass() {
 		Map<Long, String> classesMap = new HashMap<>();
 		List<Classes> classesList = iClassRepository.findByStatusNot(DELETED_STATUS);
@@ -75,14 +124,17 @@ public class ClassServiceImpl implements IClassService {
 		if (schoolGrade == null) {
 			throw new ResourceNotFoundException();
 		}
-		List<Classes> classList = schoolGrade.getClassList();
+		List<Classes> classesList = iClassRepository.findBySchoolGradeIdAndStatusNot(schoolGrade.getId(),
+				DELETED_STATUS);
 
 		String className = classRequestDTO.getClassName();
-		for (Classes classes : classList) {
-			if (!classes.getStatus().equals("DELETE") && classes.getClassName().equalsIgnoreCase(className)) {
-				return "EXISTED";
+		if (!classesList.isEmpty()) {
+			for (Classes classes : classesList) {
+				if (!classes.getClassName(). equalsIgnoreCase(className)) {
+					
+					return "EXISTED";
+				}
 			}
-
 		}
 
 		Classes classes = new Classes();

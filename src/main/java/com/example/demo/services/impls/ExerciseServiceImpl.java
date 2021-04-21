@@ -229,8 +229,18 @@ public class ExerciseServiceImpl implements IExerciseService {
 
 			Exercise exercise = null;
 			if (isProgressTest) {
+				if (iExerciseRepository.findByProgressTestIdAndExerciseNameAndStatusNot(progressTestId,
+						exerciseName, DELETED_STATUS) != null) {
+
+					return "EXISTED";
+				}
 				exercise = new Exercise(exerciseName, description, 0, progressTestId, isProgressTest, INACTIVE_STATUS);
 			} else {
+				if (iExerciseRepository.findByLessonIdAndExerciseNameAndStatusNot(lessonId, exerciseName,
+						DELETED_STATUS) != null) {
+
+					return "EXISTED";
+				}
 				exercise = new Exercise(exerciseName, description, lessonId, 0, isProgressTest, INACTIVE_STATUS);
 			}
 			iExerciseRepository.save(exercise);

@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dtos.ClassRequestDTO;
 import com.example.demo.dtos.ClassResponseDTO;
+import com.example.demo.dtos.GradeClassDTO;
 import com.example.demo.dtos.ListIdAndStatusDTO;
 import com.example.demo.dtos.SchoolGradeDTO;
 import com.example.demo.services.IClassService;
@@ -35,6 +37,12 @@ public class ClassController {
 	public ResponseEntity<List<ClassResponseDTO>> findBySchoolGradeId(@RequestBody SchoolGradeDTO schoolGradeDTO) {
 
 		return ResponseEntity.ok(iClassService.findBySchoolGradeId(schoolGradeDTO));
+	}
+	
+	@GetMapping("/{schoolId}")
+	public ResponseEntity<List<GradeClassDTO>> findGradeClassBySchoolId(@PathVariable long schoolId) {
+
+		return ResponseEntity.ok(iClassService.findGradeClassBySchoolId(schoolId));
 	}
 
 	@PostMapping

@@ -26,7 +26,7 @@ public class Grade {
 		this.gradeName = gradeName;
 	}
 
-	public long getId() {
+	public int getId() {
 		return id;
 	}
 

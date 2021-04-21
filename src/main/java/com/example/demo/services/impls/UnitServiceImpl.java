@@ -281,6 +281,7 @@ public class UnitServiceImpl implements IUnitService {
 			}
 			if (unit.getUnitName() != unitName) {
 				if (iUnitRepository.findBySubjectIdAndUnitNameAndIsDisableFalse(subjectId, unitName) != null) {
+					
 					return "EXISTED";
 				}
 			}
