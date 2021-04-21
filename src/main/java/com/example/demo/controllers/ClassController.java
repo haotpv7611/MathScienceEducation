@@ -60,7 +60,7 @@ public class ClassController {
 		return ResponseEntity.ok(iClassService.createClass(classRequestDTO));
 	}
 	
-	@PostMapping("/{id}")
+	@PutMapping("/{id}")
 	public ResponseEntity<String> updateClass(@PathVariable long id, @Valid @RequestBody ClassRequestDTO classRequestDTO,
 			BindingResult bindingResult) {
 		if (bindingResult.hasErrors()) {
