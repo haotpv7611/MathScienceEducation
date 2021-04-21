@@ -44,41 +44,78 @@ public class NewsController {
 		}
 
 		String response = inewsService.createNews(newsRequestDTO);
-		if (response.contains("permission")) {
+		if (response.contains("NOT FOUND")) {
 
-			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
+		if (response.contains("FAIL")) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
 		}
 
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 
-	//both
+	// both
 	@GetMapping("/all")
 	public ResponseEntity<List<NewsResponseDTO>> findAllOrderByCreateDateDesc(@RequestParam boolean isStudent) {
 		List<NewsResponseDTO> response = inewsService.findAllNewsOrderByCreatedDateDesc(isStudent);
+		if (response == null) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
 
 		return ResponseEntity.ok(response);
 	}
 
-	//both
+	// both
 	@GetMapping("/{id}")
-	public ResponseEntity<NewsResponseDTO> findNewsById(@PathVariable long id) {
-		NewsResponseDTO response = inewsService.findNewsById(id);
+	public ResponseEntity<?> findNewsById(@PathVariable long id) {
+		Object response = inewsService.findNewsById(id);
+		if (response.equals("NOT FOUND!")) {
+
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
+		if (response.equals("FIND FAIL!")) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
 
 		return ResponseEntity.ok(response);
 	}
 
 	@PutMapping
 	public ResponseEntity<String> deleteNews(@RequestBody List<Long> ids) {
+		if (ids == null) {
+
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("INVALID ID");
+		} else {
+			if (ids.isEmpty()) {
+
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("INVALID ID");
+			}
+		}
 		String response = inewsService.deleteNews(ids);
+		if (response.equals("NOT FOUND!")) {
+
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
+		if (response.equals("FIND FAIL!")) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
 
 		return ResponseEntity.ok(response);
 	}
 
-	//student role
+	// student role
 	@GetMapping("/3newest")
 	public ResponseEntity<List<NewsResponseDTO>> findThreeOrderByCreateDateDesc() {
 		List<NewsResponseDTO> response = inewsService.findThreeNewsOrderByCreatedDateDesc();
+		if (response == null) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
 
 		return ResponseEntity.ok(response);
 	}

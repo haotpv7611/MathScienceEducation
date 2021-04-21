@@ -123,16 +123,6 @@ public class SubjectServiceImpl implements ISubjectService {
 	public String createSubject(String subjectName, MultipartFile file, String description, int gradeId)
 			throws SizeLimitExceededException, IOException {
 		try {
-			// validate data input
-//			String error = Util.validateRequiredString(subjectName, SUBJECT_NAME_MAX_LENGTH,
-//					"\nSubjectName is invalid!");
-//			error += Util.validateRequiredFile(file, "image", "\nFile is invalid!",
-//					"\nNot supported this file type for image!");
-//			error += Util.validateString(description, DESCRIPTION_MAX_LENGTH, "\nDescription is invalid!");
-//			if (!error.isEmpty()) {
-//				return error.trim();
-//			}
-
 			// check subjectName existed in grade
 			iGradeRepository.findById(gradeId).orElseThrow(() -> new ResourceNotFoundException());
 			if (iSubjectRepository.findByGradeIdAndSubjectNameIgnoreCaseAndIsDisableFalse(gradeId,
@@ -170,14 +160,6 @@ public class SubjectServiceImpl implements ISubjectService {
 			if (subject == null) {
 				throw new ResourceNotFoundException();
 			}
-//			iGradeRepository.findById(gradeId).orElseThrow(() -> new ResourceNotFoundException());
-//			String error = Util.validateRequiredString(subjectName, SUBJECT_NAME_MAX_LENGTH,
-//					"\nSubjectName is invalid!");
-//			error += Util.validateFile(file, "image", "\nNot supported this file type for image!");
-//			error += Util.validateString(description, DESCRIPTION_MAX_LENGTH, "\nDescription is invalid!");
-//			if (!error.isEmpty()) {
-//				return error.trim();
-//			}
 
 			// check subjectName is existed in grade
 			if (!subject.getSubjectName().equals(subjectName)) {

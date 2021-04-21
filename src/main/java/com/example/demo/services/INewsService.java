@@ -10,7 +10,7 @@ public interface INewsService {
 
 	List<NewsResponseDTO> findAllNewsOrderByCreatedDateDesc(boolean isStudent);
 
-	NewsResponseDTO findNewsById(long id);
+	Object findNewsById(long id);
 
 	String deleteNews(List<Long> ids);
 

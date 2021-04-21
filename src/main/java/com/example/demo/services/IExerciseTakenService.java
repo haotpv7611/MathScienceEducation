@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.example.demo.dtos.ExerciseTakenRequestDTO;
 import com.example.demo.dtos.ExerciseTakenResponseDTO;
+import com.example.demo.dtos.ScoreResponseDTO;
 
 public interface IExerciseTakenService {
 
@@ -14,4 +15,6 @@ public interface IExerciseTakenService {
 	String doExercise(ExerciseTakenRequestDTO exerciseTakenRequestDTO);
 
 	int countExerciseNotDone(long accountId, long exerciseId);
+	
+	List<ScoreResponseDTO> findAllExerciseScoreBySubjectId(long subjectId, long accountId);
 }

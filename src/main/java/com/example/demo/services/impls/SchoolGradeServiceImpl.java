@@ -26,6 +26,7 @@ import com.example.demo.services.ISchoolGradeService;
 @Service
 public class SchoolGradeServiceImpl implements ISchoolGradeService {
 	Logger logger = LoggerFactory.getLogger(SchoolGradeServiceImpl.class);
+	private final String DELETED_STATUS = "DELETED";
 
 	@Autowired
 	IGradeRepository iGradeRepository;
@@ -41,20 +42,25 @@ public class SchoolGradeServiceImpl implements ISchoolGradeService {
 
 	@Override
 	public List<SchoolResponseDTO> findSchoolLinkedByGradeId(int gradeId) {
-		List<SchoolGrade> schoolGradeList = iSchoolGradeRepository.findByGradeIdAndStatusNotOrderByStatusAsc(gradeId,
-				"DELETED");
 		List<SchoolResponseDTO> schoolResponseDTOList = new ArrayList<>();
-
-		if (!schoolGradeList.isEmpty()) {
-			for (SchoolGrade schoolGrade : schoolGradeList) {
-				SchoolResponseDTO schoolResponseDTO = (modelMapper.map(schoolGrade.getSchool(),
-						SchoolResponseDTO.class));
-				schoolResponseDTO.setSchoolStreet(null);
-				schoolResponseDTO.setSchoolDistrict(null);
-				schoolResponseDTO.setSchoolLevel(schoolGrade.getSchool().getSchoolLevel().getDescription());
-				schoolResponseDTO.setStatus(schoolGrade.getStatus());
-				schoolResponseDTOList.add(schoolResponseDTO);
+		try {
+			List<SchoolGrade> schoolGradeList = iSchoolGradeRepository
+					.findByGradeIdAndStatusNotOrderByStatusAsc(gradeId, "DELETED");
+			if (!schoolGradeList.isEmpty()) {
+				for (SchoolGrade schoolGrade : schoolGradeList) {
+					SchoolResponseDTO schoolResponseDTO = (modelMapper.map(schoolGrade.getSchool(),
+							SchoolResponseDTO.class));
+					schoolResponseDTO.setSchoolStreet(null);
+					schoolResponseDTO.setSchoolDistrict(null);
+					schoolResponseDTO.setSchoolLevel(schoolGrade.getSchool().getSchoolLevel().getDescription());
+					schoolResponseDTO.setStatus(schoolGrade.getStatus());
+					schoolResponseDTOList.add(schoolResponseDTO);
+				}
 			}
+		} catch (Exception e) {
+			logger.error("FIND: all school linked by gradeId = " + gradeId + "! " + e.getMessage());
+
+			return null;
 		}
 
 		return schoolResponseDTOList;
@@ -65,22 +71,32 @@ public class SchoolGradeServiceImpl implements ISchoolGradeService {
 	public String linkGradeAndSchool(SchoolGradeDTO schoolGradeDTO) {
 		int gradeId = schoolGradeDTO.getGradeId();
 		long schoolId = schoolGradeDTO.getSchoolId();
-		Grade grade = iGradeRepository.findById(gradeId).orElseThrow(() -> new ResourceNotFoundException());
-		School school = iSchoolRepository.findByIdAndStatusNot(schoolId, "DELETED");
-		if (school == null) {
-			throw new ResourceNotFoundException();
-		}
+		try {
+			Grade grade = iGradeRepository.findById(gradeId).orElseThrow(() -> new ResourceNotFoundException());
+			School school = iSchoolRepository.findByIdAndStatusNot(schoolId, "DELETED");
+			if (school == null) {
+				throw new ResourceNotFoundException();
+			}
 
-		SchoolGrade schoolGrade = iSchoolGradeRepository.findByGradeIdAndSchoolIdAndStatusNot(gradeId, schoolId,
-				"DELETED");
-		if (schoolGrade != null) {
-			return "EXISTED!";
+			SchoolGrade schoolGrade = iSchoolGradeRepository.findByGradeIdAndSchoolIdAndStatusNot(gradeId, schoolId,
+					"DELETED");
+			if (schoolGrade != null) {
+				return "EXISTED!";
+			}
+			schoolGrade = new SchoolGrade();
+			schoolGrade.setGrade(grade);
+			schoolGrade.setSchool(school);
+			schoolGrade.setStatus("ACTIVE");
+			iSchoolGradeRepository.save(schoolGrade);
+		} catch (Exception e) {
+			logger.error("LINK: schoolId = " + schoolId + " and gradeId = " + gradeId + "! " + e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
+
+				return "NOT FOUND!";
+			}
+
+			return "FIND FAIL!";
 		}
-		schoolGrade = new SchoolGrade();
-		schoolGrade.setGrade(grade);
-		schoolGrade.setSchool(school);
-		schoolGrade.setStatus("ACTIVE");
-		iSchoolGradeRepository.save(schoolGrade);
 
 		return "LINK SUCCESS!";
 	}
@@ -88,28 +104,32 @@ public class SchoolGradeServiceImpl implements ISchoolGradeService {
 //	 validate before remove
 //	 add function active
 	@Override
-	public String changeStatusGradeAndSchool(ListIdAndStatusDTO listIdAndStatusDTO) {
+	public void changeStatusGradeAndSchool(ListIdAndStatusDTO listIdAndStatusDTO) {
 		int gradeId = Math.toIntExact(listIdAndStatusDTO.getIds().get(0));
 		long schoolId = listIdAndStatusDTO.getIds().get(1);
-		iGradeRepository.findById(gradeId).orElseThrow(() -> new ResourceNotFoundException());
+		try {
+			iGradeRepository.findById(gradeId).orElseThrow(() -> new ResourceNotFoundException());
+			School school = iSchoolRepository.findByIdAndStatusNot(schoolId, "DELETED");
+			if (school == null) {
+				throw new ResourceNotFoundException();
+			}
+			SchoolGrade schoolGrade = iSchoolGradeRepository.findByGradeIdAndSchoolIdAndStatusNot(gradeId, schoolId,
+					"DELETED");
+			if (schoolGrade == null) {
+				throw new ResourceNotFoundException();
+			}
 
-		School school = iSchoolRepository.findByIdAndStatusNot(schoolId, "DELETED");
-		if (school == null) {
-			throw new ResourceNotFoundException();
+			String status = listIdAndStatusDTO.getStatus();
+			if (status.equalsIgnoreCase(DELETED_STATUS)) {
+				// delete lower level
+			}
+			schoolGrade.setStatus(status);
+			iSchoolGradeRepository.save(schoolGrade);
+		} catch (Exception e) {
+			logger.error("Change status " + listIdAndStatusDTO.getStatus() + " with schoolId = " + schoolId
+					+ " and gradeId = " + gradeId + "! " + e.getMessage());
+			throw e;
 		}
-
-		SchoolGrade schoolGrade = iSchoolGradeRepository.findByGradeIdAndSchoolIdAndStatusNot(gradeId, schoolId,
-				"DELETED");
-		if (schoolGrade == null) {
-			throw new ResourceNotFoundException();
-		}
-		String status = listIdAndStatusDTO.getStatus();
-		schoolGrade.setStatus(status);
-		iSchoolGradeRepository.save(schoolGrade);
-
-		// change status lower level
-
-		return "CHANGE SUCCESS!";
 	}
 
 	// done
@@ -118,14 +138,14 @@ public class SchoolGradeServiceImpl implements ISchoolGradeService {
 		List<GradeResponseDTO> gradeDTOList = new ArrayList<>();
 		try {
 			// find all schoolGrade active and get all grade
-			List<SchoolGrade> schoolGradeList = iSchoolGradeRepository.findBySchoolIdAndStatusNot(schoolId, "DELETED");			
+			List<SchoolGrade> schoolGradeList = iSchoolGradeRepository.findBySchoolIdAndStatusNot(schoolId, "DELETED");
 			if (!schoolGradeList.isEmpty()) {
 				for (SchoolGrade schoolGrade : schoolGradeList) {
 					Grade grade = schoolGrade.getGrade();
 					GradeResponseDTO gradeDTO = modelMapper.map(grade, GradeResponseDTO.class);
 					gradeDTOList.add(gradeDTO);
 				}
-				//sort by gradeName
+				// sort by gradeName
 				Collections.sort(gradeDTOList);
 			}
 		} catch (Exception e) {

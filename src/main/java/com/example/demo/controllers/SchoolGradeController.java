@@ -17,6 +17,7 @@ import com.example.demo.dtos.GradeResponseDTO;
 import com.example.demo.dtos.ListIdAndStatusDTO;
 import com.example.demo.dtos.SchoolGradeDTO;
 import com.example.demo.dtos.SchoolResponseDTO;
+import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.services.ISchoolGradeService;
 
 @CrossOrigin
@@ -25,36 +26,61 @@ public class SchoolGradeController {
 
 	@Autowired
 	ISchoolGradeService iSchoolGradeService;
-	
+
 	@GetMapping("/grade/{gradeId}/school")
 	public ResponseEntity<List<SchoolResponseDTO>> findSchoolByGradeId(@PathVariable int gradeId) {
 		List<SchoolResponseDTO> response = iSchoolGradeService.findSchoolLinkedByGradeId(gradeId);
-		
+		if (response == null) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+
 		return ResponseEntity.ok(response);
 	}
 
 	@PostMapping("/schoolGrade")
 	public ResponseEntity<String> linkGradeAndSchool(@RequestBody SchoolGradeDTO schoolGradeDTO) {
 		String response = iSchoolGradeService.linkGradeAndSchool(schoolGradeDTO);
-		if (response.equals("EXISTED!")) {
-			
+		if (response.contains("NOT FOUND")) {
+
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
+		if (response.contains("FAIL")) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+		if (response.contains("EXISTED")) {
+
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 		}
-		
-		return ResponseEntity.ok(response);
+
+		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
-	
+
 	@PutMapping("/schoolGrade")
 	public ResponseEntity<String> removeLinkGradeAndSchool(@RequestBody ListIdAndStatusDTO listIdAndStatusDTO) {
-		String response = iSchoolGradeService.changeStatusGradeAndSchool(listIdAndStatusDTO);
-		
-		return ResponseEntity.ok(response);
+		try {
+			iSchoolGradeService.changeStatusGradeAndSchool(listIdAndStatusDTO);
+
+			return ResponseEntity.ok("CHANGE SUCCESS!");
+		} catch (Exception e) {
+			if (e instanceof ResourceNotFoundException) {
+
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).body("NOT FOUND");
+			}
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("DELETE FAIL!");
+		}
 	}
-	
+
 	@GetMapping("/grade/{schoolId}")
 	public ResponseEntity<List<GradeResponseDTO>> findGradeBySchoolId(@PathVariable long schoolId) {
 		List<GradeResponseDTO> response = iSchoolGradeService.findGradeLinkedBySchoolId(schoolId);
-		
+		if (response == null) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+
 		return ResponseEntity.ok(response);
 	}
 }

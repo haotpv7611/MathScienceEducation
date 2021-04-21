@@ -47,13 +47,14 @@ public class UnitServiceImpl implements IUnitService {
 	private ILessonRepository iLessonRepository;
 
 	@Autowired
-	IQuestionRepository iQuestionRepository;
+	private IQuestionRepository iQuestionRepository;
+	
 	@Autowired
-
-	ILessonService iLessonService;
+	private ILessonService iLessonService;
+	
 	@Autowired
-
-	IQuestionService iQuestionService;
+	private IQuestionService iQuestionService;
+	
 	@Autowired
 	private ISubjectRepository iSubjectRepository;
 
@@ -330,6 +331,7 @@ public class UnitServiceImpl implements IUnitService {
 		return "UPDATE SUCCESS!";
 	}
 
+	//??? progressTest with unitAfterId
 	@Override
 	@Transactional
 	public void deleteOneUnit(long id) {

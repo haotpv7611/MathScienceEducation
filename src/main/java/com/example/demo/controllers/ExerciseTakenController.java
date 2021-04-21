@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dtos.ExerciseTakenRequestDTO;
 import com.example.demo.dtos.ExerciseTakenResponseDTO;
+import com.example.demo.dtos.ScoreResponseDTO;
 import com.example.demo.services.IExerciseTakenService;
 
 @CrossOrigin
@@ -47,5 +48,17 @@ public class ExerciseTakenController {
 		String response = iExerciseTakenService.doExercise(exerciseTakenRequestDTO);
 		
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
+	}
+	
+	@PostMapping("subject/{subjectId}/score")
+	public ResponseEntity<List<ScoreResponseDTO>> findAllScoreBySubjectId(@PathVariable long subjectId,
+			@RequestParam long accountId) {
+		List<ScoreResponseDTO> response = iExerciseTakenService.findAllExerciseScoreBySubjectId(subjectId, accountId);
+		if (response == null) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+		
+		return ResponseEntity.ok(response);
 	}
 }

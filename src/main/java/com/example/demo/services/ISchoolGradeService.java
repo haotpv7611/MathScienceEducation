@@ -10,7 +10,7 @@ import com.example.demo.dtos.SchoolResponseDTO;
 public interface ISchoolGradeService {
 	String linkGradeAndSchool(SchoolGradeDTO schoolGradeDTO);
 
-	String changeStatusGradeAndSchool(ListIdAndStatusDTO listIdAndStatusDTO);
+	void changeStatusGradeAndSchool(ListIdAndStatusDTO listIdAndStatusDTO);
 
 	List<SchoolResponseDTO> findSchoolLinkedByGradeId(int gradeId);
 	
