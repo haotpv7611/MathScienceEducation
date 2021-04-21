@@ -1,6 +1,7 @@
 package com.example.demo.controllers;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
@@ -64,8 +65,8 @@ public class StudentProfileController {
 				.body(iStudentProfileService.createStudenProfile(studentRequestDTO));
 	}
 
-	@PostMapping("/student/{id}")
-	public ResponseEntity<String> createStudent(@PathVariable long id,
+	@PutMapping("/student/{id}")
+	public ResponseEntity<String> updateStudent(@PathVariable long id,
 			@Valid @RequestBody StudentRequestDTO studentRequestDTO, BindingResult bindingResult) {
 		if (bindingResult.hasErrors()) {
 			String error = "";
@@ -96,9 +97,10 @@ public class StudentProfileController {
 	public void exportScore(HttpServletResponse response, @RequestParam long schoolId, @RequestParam int gradeId,
 			@RequestParam long subjectId) throws IOException {
 		response.setContentType("application/octet-stream");
+//		response.setCharacterEncoding("UTF-8");
 		String headerKey = "Content-Disposition";
-		String headerValue = "attachment; filename="
-				+ iStudentProfileService.generateFileNameExport(schoolId, gradeId, subjectId);
+		String headerValue = "attachment; filename=" +URLEncoder.encode(
+				iStudentProfileService.generateFileNameExport(schoolId, gradeId, subjectId), "UTF-8");
 		response.setHeader(headerKey, headerValue);
 		iStudentProfileService.exportScoreBySubjectId(schoolId, gradeId, subjectId, response);
 	}
