@@ -59,8 +59,8 @@ public class UnitController {
 	}
 
 	@GetMapping("/subject/{subjectId}/unitAterIds")
-	public ResponseEntity<Map<Long, Integer>> findAllUnitAfterIdsBySubjectId(@PathVariable long subjectId) {
-		Map<Long, Integer> response = iUnitService.findAllUnitAfterIdsBySubjectId(subjectId);
+	public ResponseEntity<List<UnitResponseDTO>> findAllUnitAfterIdsBySubjectId(@PathVariable long subjectId) {
+		List<UnitResponseDTO> response = iUnitService.findAllUnitAfterIdsBySubjectId(subjectId);
 		if (response == null) {
 
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);

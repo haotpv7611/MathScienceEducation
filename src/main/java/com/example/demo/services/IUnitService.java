@@ -13,7 +13,7 @@ public interface IUnitService {
 
 	List<UnitResponseDTO> findBySubjectId(long subjectId);
 
-	Map<Long, Integer> findAllUnitAfterIdsBySubjectId(long subjectId);
+	List<UnitResponseDTO> findAllUnitAfterIdsBySubjectId(long subjectId);
 
 	List<UnitViewDTO> showUnitViewBySubjectId(long subjectId, long accountId);
 
