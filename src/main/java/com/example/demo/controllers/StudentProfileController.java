@@ -26,7 +26,7 @@ import com.example.demo.dtos.StudentRequestDTO;
 import com.example.demo.dtos.StudentResponseDTO;
 import com.example.demo.services.IStudentProfileService;
 
-@CrossOrigin
+@CrossOrigin(exposedHeaders = "Content-Disposition")
 @RestController
 public class StudentProfileController {
 	@Autowired
@@ -100,7 +100,7 @@ public class StudentProfileController {
 		String headerValue = "attachment; filename="
 				+ iStudentProfileService.generateFileNameExport(schoolId, gradeId, subjectId);
 		response.setHeader(headerKey, headerValue);
-		iStudentProfileService.exportScore(schoolId, gradeId, subjectId, response);
+		iStudentProfileService.exportScoreBySubjectId(schoolId, gradeId, subjectId, response);
 
 	}
 

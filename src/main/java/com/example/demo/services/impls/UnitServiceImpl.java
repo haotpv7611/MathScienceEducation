@@ -122,16 +122,19 @@ public class UnitServiceImpl implements IUnitService {
 	public List<UnitResponseDTO> findAllUnitAfterIdsBySubjectId(long subjectId) {
 		List<UnitResponseDTO> unitResponseDTOList = new ArrayList<>();
 
-//		Map<Long, Integer> unitAfterMap = new HashMap<>();
 		try {
 			// find all unit by gradeID
 			List<Unit> unitList = iUnitRepository.findBySubjectIdAndIsDisableFalseOrderByUnitNameAsc(subjectId);
 			List<ProgressTest> progressTestList = iProgressTestRepository.findBySubjectIdAndIsDisableFalse(subjectId);
 
 			if (!unitList.isEmpty()) {
-				if (!progressTestList.isEmpty()) {
-					for (ProgressTest progressTest : progressTestList) {
-						unitList.remove(iUnitRepository.findByIdAndIsDisableFalse(progressTest.getUnitAfterId()));
+				for (int i = 0; i < unitList.size(); i++) {
+					if (!progressTestList.isEmpty()) {
+						for (ProgressTest progressTest : progressTestList) {
+							if (unitList.get(i).getId() == progressTest.getUnitAfterId()) {
+								unitList.remove(unitList.get(i));
+							}
+						}
 					}
 				}
 			}
@@ -141,22 +144,6 @@ public class UnitServiceImpl implements IUnitService {
 					unitResponseDTOList.add(unitResponseDTO);
 				}
 			}
-
-//			if (!unitList.isEmpty()) {
-//				for (Unit unit : unitList) {
-//					unitAfterMap.put(unit.getId(), unit.getUnitName());
-//				}
-//
-//				List<ProgressTest> progressTestList = iProgressTestRepository
-//						.findBySubjectIdAndIsDisableFalse(subjectId);
-//				if (progressTestList.isEmpty()) {
-//					for (ProgressTest progressTest : progressTestList) {
-//						if (unitAfterMap.containsKey(progressTest.getUnitAfterId())) {
-//							unitAfterMap.remove(progressTest.getUnitAfterId());
-//						}
-//					}
-//				}
-//			}
 		} catch (Exception e) {
 			logger.error("FIND: all unitAfter by subjectId = " + subjectId + "! " + e.getMessage());
 
