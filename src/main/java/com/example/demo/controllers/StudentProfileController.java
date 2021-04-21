@@ -93,10 +93,14 @@ public class StudentProfileController {
 	}
 
 	@PostMapping("/student/import")
-	public ResponseEntity<String> importStudent(@RequestParam MultipartFile file, @RequestParam long schoolId,
+	public void importStudent(HttpServletResponse response, @RequestParam MultipartFile file, @RequestParam long schoolId,
 			@RequestParam int gradeId) throws IOException {
-		String response = iStudentProfileService.importStudent(file, schoolId, gradeId);
-		return ResponseEntity.status(HttpStatus.CREATED).body(response);
+		response.setContentType("application/octet-stream");
+		String headerKey = "Content-Disposition";
+		String headerValue = "attachment; filename=" + "TestImport.xlsx";
+		response.setHeader(headerKey, headerValue);
+		iStudentProfileService.importStudent(file, schoolId, gradeId, response);
+//		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 
 	@GetMapping("/student/export")
@@ -105,8 +109,8 @@ public class StudentProfileController {
 		response.setContentType("application/octet-stream");
 //		response.setCharacterEncoding("UTF-8");
 		String headerKey = "Content-Disposition";
-		String headerValue = "attachment; filename=" + URLEncoder
-				.encode(iStudentProfileService.generateFileNameExport(schoolId, gradeId, subjectId), "UTF-8");
+		String headerValue = "attachment; filename=" + 
+				iStudentProfileService.generateFileNameExport(schoolId, gradeId, subjectId);
 		response.setHeader(headerKey, headerValue);
 		iStudentProfileService.exportScoreBySubjectId(schoolId, gradeId, subjectId, response);
 	}

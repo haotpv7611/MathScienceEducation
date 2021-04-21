@@ -25,7 +25,7 @@ public interface IStudentProfileService {
 
 	void validateStudentFile(MultipartFile file, long schoolId, int gradeId, HttpServletResponse httpServletResponse) throws IOException;
 
-	String importStudent(MultipartFile file, long schoolId, int gradeId) throws IOException;
+	String importStudent(MultipartFile file, long schoolId, int gradeId, HttpServletResponse httpServletResponse) throws IOException;
 
 	void exportScoreBySubjectId(long schoolId, int gradeId, long subjectId, HttpServletResponse httpServletResponse)
 			throws IOException;

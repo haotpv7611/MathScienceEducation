@@ -284,7 +284,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 
 	@Override
 	@Transactional
-	public String importStudent(MultipartFile file, long schoolId, int gradeId) throws IOException {
+	public String importStudent(MultipartFile file, long schoolId, int gradeId, HttpServletResponse httpServletResponse) throws IOException {
 		// open file
 		Workbook workbook = new XSSFWorkbook(file.getInputStream());
 		SchoolGrade schoolGrade = iSchoolGradeRepository.findByGradeIdAndSchoolIdAndStatusNot(gradeId, schoolId,
@@ -368,6 +368,15 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				FileOutputStream fileOut = new FileOutputStream("E:\\" + "Not existed StudentId-" + fileName);
 				workbook.write(fileOut);
 				fileOut.close();
+				
+				
+				ServletOutputStream outputStream = httpServletResponse.getOutputStream();
+				workbook.write(outputStream);
+				workbook.close();
+				outputStream.close();
+				
+			}else {
+				
 			}
 		}
 
