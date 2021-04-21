@@ -51,7 +51,7 @@ public class SchoolGradeServiceImpl implements ISchoolGradeService {
 						SchoolResponseDTO.class));
 				schoolResponseDTO.setSchoolStreet(null);
 				schoolResponseDTO.setSchoolDistrict(null);
-				schoolResponseDTO.setSchoolLevel(null);
+				schoolResponseDTO.setSchoolLevel(schoolGrade.getSchool().getSchoolLevel().getDescription());
 				schoolResponseDTO.setStatus(schoolGrade.getStatus());
 				schoolResponseDTOList.add(schoolResponseDTO);
 			}

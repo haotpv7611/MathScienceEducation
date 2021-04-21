@@ -126,6 +126,7 @@ public class SchoolServiceImpl implements ISchoolService {
 					schoolCount = "";
 				}
 				schoolResponseDTO.setSchoolCode(school.getSchoolCode() + schoolCount);
+				schoolResponseDTO.setSchoolLevel(school.getSchoolLevel().getDescription());
 				schoolDTOList.add(schoolResponseDTO);
 			}
 		}

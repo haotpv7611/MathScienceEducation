@@ -103,8 +103,8 @@ public class ClassServiceImpl implements IClassService {
 
 		SchoolGrade schoolGrade = classes.getSchoolGrade();
 		if (!classes.getClassName().equalsIgnoreCase(classRequestDTO.getClassName())) {
-			if (iClassRepository.findBySchoolGradeIdAndClassNameIgnoreCase(schoolGrade.getId(),
-					classRequestDTO.getClassName()) != null)
+			if (iClassRepository.findBySchoolGradeIdAndClassNameIgnoreCaseAndStatusNot(schoolGrade.getId(),
+					classRequestDTO.getClassName(), DELETED_STATUS) != null)
 
 				return "EXISTED";
 		}
