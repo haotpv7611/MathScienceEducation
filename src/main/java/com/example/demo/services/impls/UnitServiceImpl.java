@@ -127,24 +127,48 @@ public class UnitServiceImpl implements IUnitService {
 			List<Unit> unitList = iUnitRepository.findBySubjectIdAndIsDisableFalseOrderByUnitNameAsc(subjectId);
 			List<ProgressTest> progressTestList = iProgressTestRepository.findBySubjectIdAndIsDisableFalse(subjectId);
 
-			if (!unitList.isEmpty()) {
-				for (int i = 0; i < unitList.size(); i++) {
-					if (!progressTestList.isEmpty()) {
-						for (ProgressTest progressTest : progressTestList) {
-							if (unitList.get(i).getId() == progressTest.getUnitAfterId()) {
-								unitList.remove(unitList.get(i));
-							}
-						}
-					}
+			List<Long> ids = new ArrayList<>();
+			if (!progressTestList.isEmpty()) {
+				for (ProgressTest progressTest : progressTestList) {
+					ids.add(progressTest.getUnitAfterId());
 				}
-				System.out.println("unit: " + unitList.size());
 			}
-			if (!unitList.isEmpty()) {
+
+			if (unitList.isEmpty()) {
 				for (Unit unit : unitList) {
-					UnitResponseDTO unitResponseDTO = modelMapper.map(unit, UnitResponseDTO.class);
-					unitResponseDTOList.add(unitResponseDTO);
+					if (!ids.isEmpty()) {
+						if (!ids.contains(unit.getId())) {
+							UnitResponseDTO unitResponseDTO = modelMapper.map(unit, UnitResponseDTO.class);
+							unitResponseDTOList.add(unitResponseDTO);
+						}
+					} else {
+
+						UnitResponseDTO unitResponseDTO = modelMapper.map(unit, UnitResponseDTO.class);
+						unitResponseDTOList.add(unitResponseDTO);
+
+					}
+
 				}
 			}
+
+//			if (!unitList.isEmpty()) {
+//				for (int i = 0; i < unitList.size(); i++) {
+//					if (!progressTestList.isEmpty()) {
+//						for (ProgressTest progressTest : progressTestList) {
+//							if (unitList.get(i).getId() == progressTest.getUnitAfterId()) {
+//								unitList.remove(unitList.get(i));
+//							}
+//						}
+//					}
+//				}
+//				System.out.println("unit: " + unitList.size());
+//			}
+//			if (!unitList.isEmpty()) {
+//				for (Unit unit : unitList) {
+//					UnitResponseDTO unitResponseDTO = modelMapper.map(unit, UnitResponseDTO.class);
+//					unitResponseDTOList.add(unitResponseDTO);
+//				}
+//			}
 		} catch (Exception e) {
 			logger.error("FIND: all unitAfter by subjectId = " + subjectId + "! " + e.getMessage());
 
@@ -282,7 +306,7 @@ public class UnitServiceImpl implements IUnitService {
 			}
 			if (unit.getUnitName() != unitName) {
 				if (iUnitRepository.findBySubjectIdAndUnitNameAndIsDisableFalse(subjectId, unitName) != null) {
-					
+
 					return "EXISTED";
 				}
 			}
