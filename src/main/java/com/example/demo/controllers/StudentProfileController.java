@@ -101,7 +101,6 @@ public class StudentProfileController {
 				+ iStudentProfileService.generateFileNameExport(schoolId, gradeId, subjectId);
 		response.setHeader(headerKey, headerValue);
 		iStudentProfileService.exportScoreBySubjectId(schoolId, gradeId, subjectId, response);
-
 	}
 
 	@PutMapping("/student")

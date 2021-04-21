@@ -30,8 +30,12 @@ import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.RegionUtil;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.modelmapper.ModelMapper;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTSheetView;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTSheetViews;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTWorksheet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +55,7 @@ import com.example.demo.models.Exercise;
 import com.example.demo.models.ExerciseTaken;
 import com.example.demo.models.Grade;
 import com.example.demo.models.Lesson;
+import com.example.demo.models.ProgressTest;
 import com.example.demo.models.School;
 import com.example.demo.models.SchoolGrade;
 import com.example.demo.models.StudentProfile;
@@ -62,6 +67,7 @@ import com.example.demo.repositories.IExerciseRepository;
 import com.example.demo.repositories.IExerciseTakenRepository;
 import com.example.demo.repositories.IGradeRepository;
 import com.example.demo.repositories.ILessonRepository;
+import com.example.demo.repositories.IProgressTestRepository;
 import com.example.demo.repositories.ISchoolGradeRepository;
 import com.example.demo.repositories.ISchoolRepository;
 import com.example.demo.repositories.IStudentProfileRepository;
@@ -102,6 +108,9 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 
 	@Autowired
 	ISubjectRepository iSubjectRepository;
+
+	@Autowired
+	IProgressTestRepository iProgressTestRepository;
 
 	@Autowired
 	private IUnitRepository iUnitRepository;
@@ -285,10 +294,15 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 		// create class by each sheetName
 		while (sheetIterator.hasNext()) {
 			Sheet sheet = sheetIterator.next();
-			Classes classes = new Classes(sheet.getSheetName(), ACTIVE_STATUS, schoolGrade);
-			iClassRepository.save(classes);
 
+			Classes classes = iClassRepository.findBySchoolGradeIdAndClassNameIgnoreCaseAndStatusNot(
+					schoolGrade.getId(), sheet.getSheetName(), DELETE_STATUS);
+			if (classes == null) {
+				classes = new Classes(sheet.getSheetName(), ACTIVE_STATUS, schoolGrade);
+				iClassRepository.save(classes);
+			}
 			Iterator<Row> rowIterator = sheet.rowIterator();
+			List<Cell> cellList = new ArrayList<>();
 			while (rowIterator.hasNext()) {
 
 				Row row = rowIterator.next();
@@ -320,32 +334,84 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 					} else {
 						StudentProfile studentProfile = iStudentProfileRepository.findByIdAndStatusNot(studentId,
 								DELETE_STATUS);
+						if (studentProfile == null) {
+							cellList.add(row.getCell(1));
 
-						Account account = studentProfile.getAccount();
+							continue;
+						} else {
 
-						String schoolCode = classes.getSchoolGrade().getSchool().getSchoolCode()
-								+ classes.getSchoolGrade().getSchool().getSchoolCount();
-						int gradeName = classes.getSchoolGrade().getGrade().getGradeName();
-						long studentCount = countStudent(classes);
-						String username = generateUsername(schoolCode, gradeName, studentCount);
-						account.setUsername(username);
-						iAccountRepository.save(account);
+							Account account = studentProfile.getAccount();
 
-						studentProfile.setClasses(classes);
-						studentProfile.setStudentCount(studentCount);
-						iStudentProfileRepository.save(studentProfile);
+							String schoolCode = classes.getSchoolGrade().getSchool().getSchoolCode()
+									+ classes.getSchoolGrade().getSchool().getSchoolCount();
+							int gradeName = classes.getSchoolGrade().getGrade().getGradeName();
+							long studentCount = countStudent(classes);
+							String username = generateUsername(schoolCode, gradeName, studentCount);
+							account.setUsername(username);
+							iAccountRepository.save(account);
+
+							studentProfile.setClasses(classes);
+							studentProfile.setStudentCount(studentCount);
+							iStudentProfileRepository.save(studentProfile);
+						}
 					}
 				}
 			}
 
+			if (!cellList.isEmpty()) {
+				CellStyle cellStyle = formatErrorCell(workbook);
+				for (Cell cell : cellList) {
+					cell.setCellStyle(cellStyle);
+				}
+
+				String fileName = file.getOriginalFilename();
+				FileOutputStream fileOut = new FileOutputStream("E:\\" + "Not existed StudentId-" + fileName);
+				workbook.write(fileOut);
+				fileOut.close();
+			}
 		}
+
 		workbook.close();
 
 		return "OK";
 	}
 
-	public void exportScore(long schoolId, int gradeId, long subjectId, HttpServletResponse httpServletResponse)
+//	@Override
+	public void exportFinalScore(long schoolId, int gradeId, HttpServletResponse httpServletResponse)
 			throws IOException {
+		School school = iSchoolRepository.findByIdAndStatusNot(schoolId, DELETE_STATUS);
+		if (school == null) {
+			throw new ResourceNotFoundException();
+		}
+		Grade grade = iGradeRepository.findById(gradeId).orElseThrow(() -> new ResourceNotFoundException());
+		SchoolGrade schoolGrade = iSchoolGradeRepository.findByGradeIdAndSchoolIdAndStatusNot(gradeId, schoolId,
+				DELETE_STATUS);
+		List<Classes> classesList = iClassRepository
+				.findBySchoolGradeIdAndStatusNotOrderByStatusAscClassNameAsc(schoolGrade.getId(), DELETE_STATUS);
+		if (!classesList.isEmpty()) {
+			for (int i = 0; i < classesList.size(); i++) {
+				if (classesList.get(i).getClassName().equals(PENDING_STATUS)) {
+					classesList.remove(classesList.get(i));
+					break;
+				}
+			}
+		}
+
+		List<Subject> subjectList = iSubjectRepository.findByGradeIdAndIsDisableFalse(gradeId);
+		List<Unit> unitList = new ArrayList<>();
+		if (!subjectList.isEmpty()) {
+			for (Subject subject : subjectList) {
+				int unitSize = iUnitRepository.findBySubjectIdAndIsDisableFalseOrderByUnitNameAsc(subject.getId()).size();
+				if (unitSize > 0) {
+					unitList.addAll(iUnitRepository.findBySubjectIdAndIsDisableFalseOrderByUnitNameAsc(subject.getId()));
+				}
+			}
+		}
+	}
+
+	@Override
+	public void exportScoreBySubjectId(long schoolId, int gradeId, long subjectId,
+			HttpServletResponse httpServletResponse) throws IOException {
 		// validate data input
 		School school = iSchoolRepository.findByIdAndStatusNot(schoolId, DELETE_STATUS);
 		if (school == null) {
@@ -371,7 +437,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 		// header value content
 		String schoolName = school.getSchoolName();
 		String schoolCode = school.getSchoolCode() + school.getSchoolCount();
-		String gradeName = String.valueOf(grade.getGradeName());
+		int gradeName = grade.getGradeName();
 		SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-yyyy");
 		String exportDate = sdf.format(new Date());
 		String subjectName = subject.getSubjectName();
@@ -381,7 +447,6 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 		Map<String, Integer> unitMap = new LinkedHashMap<>();
 		Map<Lesson, Integer> lessonMap = new LinkedHashMap<>();
 		if (!unitList.isEmpty()) {
-
 			for (Unit unit : unitList) {
 				int totalExercise = 0;
 				List<Lesson> lessonList = new ArrayList<>();
@@ -395,7 +460,6 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 							exerciseList.addAll(iExerciseRepository
 									.findByLessonIdAndStatusNotOrderByExerciseNameAsc(lesson.getId(), DELETE_STATUS));
 							totalExercise += exerciseSize;
-							System.out.println("lesson: " + lesson.getLessonName() + " - " + exerciseSize);
 							lessonMap.put(lesson, exerciseSize);
 						}
 					}
@@ -404,6 +468,22 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 						System.out.println("unit: " + unit.getUnitName() + " - " + totalExercise);
 						unitMap.put("Unit " + unit.getUnitName(), totalExercise);
 					}
+				}
+			}
+		}
+
+		Map<String, Integer> progressTestMap = new LinkedHashMap<>();
+		List<Exercise> exercisePTList = new ArrayList<>();
+		List<ProgressTest> progressTestList = iProgressTestRepository.findBySubjectIdAndIsDisableFalse(subjectId);
+		if (!progressTestList.isEmpty()) {
+			for (ProgressTest progressTest : progressTestList) {
+				int exerciseSize = iExerciseRepository
+						.findByProgressTestIdAndStatusNotOrderByExerciseNameAsc(progressTest.getId(), DELETE_STATUS)
+						.size();
+				if (exerciseSize > 0) {
+					exercisePTList.addAll(iExerciseRepository.findByProgressTestIdAndStatusNotOrderByExerciseNameAsc(
+							progressTest.getId(), DELETE_STATUS));
+					progressTestMap.put(progressTest.getProgressTestName(), exerciseSize);
 				}
 			}
 		}
@@ -424,28 +504,30 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				sheet.setColumnWidth(0, 1500);
 				sheet.setColumnWidth(1, 3500);
 				sheet.setColumnWidth(2, 9000);
-				for (int i = 3; i < exerciseList.size() + 3; i++) {
+				for (int i = 3; i < exerciseList.size() + exercisePTList.size() + 3; i++) {
 					sheet.setColumnWidth(i, 3500);
 				}
 
 				for (int i = 0; i < studentProfileList.size() + 10; i++) {
-					if (i == 5 || i == 6) {
+					if (i == 6) {
 						continue;
 					}
 					sheet.createRow(i);
 				}
 
+				createArrangeInfoCell(workbook, sheet, sheet.getRow(0), 2, 0, 0, 2, 5, "SCORE EXPORT TABLE", 0);
+
 				// create Table Information
-				createOneInfoCell(workbook, sheet.getRow(0), 2, "School Name:");
-				createArrangeInfoCell(workbook, sheet, sheet.getRow(0), 3, 0, 0, 3, 5, schoolName);
-				createOneInfoCell(workbook, sheet.getRow(1), 2, "School Code:");
-				createArrangeInfoCell(workbook, sheet, sheet.getRow(1), 3, 1, 1, 3, 5, schoolCode);
-				createOneInfoCell(workbook, sheet.getRow(2), 2, "Grade:");
-				createArrangeInfoCell(workbook, sheet, sheet.getRow(2), 3, 2, 2, 3, 5, gradeName);
-				createOneInfoCell(workbook, sheet.getRow(3), 2, "Export Date:");
-				createArrangeInfoCell(workbook, sheet, sheet.getRow(3), 3, 3, 3, 3, 5, exportDate);
-				createOneInfoCell(workbook, sheet.getRow(4), 2, "Subject Name:");
-				createArrangeInfoCell(workbook, sheet, sheet.getRow(4), 3, 4, 4, 3, 5, subjectName);
+				createOneInfoCell(workbook, sheet.getRow(1), 2, "School Name:");
+				createArrangeInfoCell(workbook, sheet, sheet.getRow(1), 3, 1, 1, 3, 5, schoolName, 0);
+				createOneInfoCell(workbook, sheet.getRow(2), 2, "School Code:");
+				createArrangeInfoCell(workbook, sheet, sheet.getRow(2), 3, 2, 2, 3, 5, schoolCode, 0);
+				createOneInfoCell(workbook, sheet.getRow(3), 2, "Grade:");
+				createArrangeInfoCell(workbook, sheet, sheet.getRow(3), 3, 3, 3, 3, 5, "", gradeName);
+				createOneInfoCell(workbook, sheet.getRow(4), 2, "Export Date:");
+				createArrangeInfoCell(workbook, sheet, sheet.getRow(4), 3, 4, 4, 3, 5, exportDate, 0);
+				createOneInfoCell(workbook, sheet.getRow(5), 2, "Subject Name:");
+				createArrangeInfoCell(workbook, sheet, sheet.getRow(5), 3, 5, 5, 3, 5, subjectName, 0);
 
 				// create Header
 				createArrangeHeaderCell(workbook, sheet, sheet.getRow(7), 0, 7, 9, 0, 0, "No.");
@@ -454,28 +536,37 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 
 				// unit
 				int beginColumn = 3;
-				for (Entry<String, Integer> entry : unitMap.entrySet()) {
-					if (entry.getValue() > 1) {
-						createArrangeHeaderCell(workbook, sheet, sheet.getRow(7), beginColumn, 7, 7, beginColumn,
-								beginColumn + entry.getValue() - 1, entry.getKey());
-						beginColumn += entry.getValue();
-					} else {
-						createOneHeaderCell(workbook, sheet.getRow(7), beginColumn, entry.getKey());
-						beginColumn += entry.getValue();
+				if (unitMap != null) {
+					if (!unitMap.isEmpty()) {
+						for (Entry<String, Integer> entry : unitMap.entrySet()) {
+							if (entry.getValue() > 1) {
+								createArrangeHeaderCell(workbook, sheet, sheet.getRow(7), beginColumn, 7, 7,
+										beginColumn, beginColumn + entry.getValue() - 1, entry.getKey());
+								beginColumn += entry.getValue();
+							} else {
+								createOneHeaderCell(workbook, sheet.getRow(7), beginColumn, entry.getKey());
+								beginColumn += entry.getValue();
+							}
+						}
 					}
 				}
 
 				// lesson
 				beginColumn = 3;
-				for (Map.Entry<Lesson, Integer> entry : lessonMap.entrySet()) {
-					if (entry.getValue() > 1) {
-						createArrangeHeaderCell(workbook, sheet, sheet.getRow(8), beginColumn, 8, 8, beginColumn,
-								beginColumn + entry.getValue() - 1, "Lesson " + entry.getKey().getLessonName());
-						beginColumn += entry.getValue();
-					} else {
-						createOneHeaderCell(workbook, sheet.getRow(8), beginColumn,
-								"Lesson " + entry.getKey().getLessonName());
-						beginColumn += entry.getValue();
+				if (lessonMap != null) {
+					if (!lessonMap.isEmpty()) {
+						for (Map.Entry<Lesson, Integer> entry : lessonMap.entrySet()) {
+							if (entry.getValue() > 1) {
+								createArrangeHeaderCell(workbook, sheet, sheet.getRow(8), beginColumn, 8, 8,
+										beginColumn, beginColumn + entry.getValue() - 1,
+										"Lesson " + entry.getKey().getLessonName());
+								beginColumn += entry.getValue();
+							} else {
+								createOneHeaderCell(workbook, sheet.getRow(8), beginColumn,
+										"Lesson " + entry.getKey().getLessonName());
+								beginColumn += entry.getValue();
+							}
+						}
 					}
 				}
 
@@ -483,6 +574,30 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				for (int i = 3; i < exerciseList.size() + 3; i++) {
 					createOneHeaderCell(workbook, sheet.getRow(9), i,
 							"Exercise " + exerciseList.get(i - 3).getExerciseName());
+				}
+
+				// progressTest
+				int beginProgressTestColumn = exerciseList.size() + 3;
+
+				// exercise
+				for (int i = beginProgressTestColumn; i < exercisePTList.size() + beginProgressTestColumn; i++) {
+					createOneHeaderCell(workbook, sheet.getRow(9), i,
+							"Exercise " + exerciseList.get(i - exerciseList.size() - 3).getExerciseName());
+				}
+
+				if (progressTestMap != null) {
+					if (!progressTestMap.isEmpty()) {
+						for (Map.Entry<String, Integer> entry : progressTestMap.entrySet()) {
+							System.out.println("name = " + entry.getKey() + " exercise = " + entry.getValue());
+							System.out.println(beginProgressTestColumn);
+							if (entry.getValue() >= 1) {
+								createArrangeHeaderCell(workbook, sheet, sheet.getRow(7), beginProgressTestColumn, 7, 8,
+										beginProgressTestColumn, beginProgressTestColumn + entry.getValue() - 1,
+										entry.getKey());
+								beginProgressTestColumn += entry.getValue();
+							}
+						}
+					}
 				}
 
 				if (!studentProfileList.isEmpty()) {
@@ -524,15 +639,34 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 								exerciseValueCell.setCellValue(score);
 							} else {
 								createOneWarningCell(workbook, sheet.getRow(i + 10), j, "Not yet!");
-								
-//								Cell exerciseValueCell = createOneNormalCell(workbook, sheet.getRow(i + 10), j,
-//										CellType.STRING, HorizontalAlignment.CENTER);
-//								exerciseValueCell.setCellValue("Not yet!");
+							}
+						}
 
-//							Cell exerciseValueCell = createOneCell(workbook, sheet.getRow(i + 10), j, CellType.STRING,
-//									HorizontalAlignment.CENTER, VerticalAlignment.CENTER, BorderStyle.THIN,
-//									IndexedColors.LIGHT_ORANGE.getIndex(), false, (short) 13);
+						for (int j = exerciseList.size() + 3; j < exercisePTList.size() + exerciseList.size()
+								+ 3; j++) {
+							List<ExerciseTaken> exerciseTakenList = iExerciseTakenRepository
+									.findByExerciseIdAndAccountId(exerciseList.get(j - exerciseList.size() - 3).getId(),
+											studentProfileList.get(i).getAccount().getId());
+							boolean isTaken = false;
+							double score = 0;
+							if (!exerciseTakenList.isEmpty()) {
+								double sumTotalScore = 0;
+								for (ExerciseTaken exerciseTaken : exerciseTakenList) {
+									sumTotalScore += exerciseTaken.getTotalScore();
+								}
 
+								score = sumTotalScore / exerciseTakenList.size();
+								score = Double.valueOf(new DecimalFormat("#.#").format(score));
+
+								isTaken = true;
+							}
+
+							if (isTaken) {
+								Cell exerciseValueCell = createOneNormalCell(workbook, sheet.getRow(i + 10), j,
+										CellType.NUMERIC, HorizontalAlignment.CENTER);
+								exerciseValueCell.setCellValue(score);
+							} else {
+								createOneWarningCell(workbook, sheet.getRow(i + 10), j, "Not yet!");
 							}
 						}
 					}
@@ -582,7 +716,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 	}
 
 	private Cell createArrangeInfoCell(Workbook workbook, Sheet sheet, Row row, int column, int rowBegin, int rowEnd,
-			int columnBegin, int columnEnd, String cellValue) {
+			int columnBegin, int columnEnd, String cellValue, int intValue) {
 		Cell cell = row.createCell(column, CellType.STRING);
 		CellRangeAddress cellRangeAddress = new CellRangeAddress(rowBegin, rowEnd, columnBegin, columnEnd);
 		sheet.addMergedRegion(cellRangeAddress);
@@ -600,6 +734,9 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 		cellStyle.setFont(font);
 		cell.setCellStyle(cellStyle);
 		cell.setCellValue(cellValue);
+		if (intValue > 0) {
+			cell.setCellValue(intValue);
+		}
 
 		return cell;
 	}
@@ -665,7 +802,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 
 		Font font = workbook.createFont();
 		formatFont(font, IndexedColors.BLACK.getIndex(), true, 13);
-		
+
 		cellStyle.setFont(font);
 		cell.setCellStyle(cellStyle);
 		cell.setCellValue(cellValue);
@@ -743,8 +880,8 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 			}
 			if (status.equals(PENDING_STATUS)) {
 				SchoolGrade schoolGrade = studentProfile.getClasses().getSchoolGrade();
-				Classes pendingClass = iClassRepository.findBySchoolGradeIdAndClassNameIgnoreCase(schoolGrade.getId(),
-						PENDING_STATUS);
+				Classes pendingClass = iClassRepository.findBySchoolGradeIdAndClassNameIgnoreCaseAndStatusNot(
+						schoolGrade.getId(), PENDING_STATUS, DELETE_STATUS);
 				if (pendingClass == null) {
 					pendingClass = new Classes();
 					pendingClass.setClassName(PENDING_STATUS);
@@ -775,6 +912,21 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 		return username;
 	}
 
+	private CellStyle formatErrorCell(Workbook workbook) {
+		CellStyle cellStyle = workbook.createCellStyle();
+		formatStyle(cellStyle, HorizontalAlignment.CENTER, VerticalAlignment.CENTER, BorderStyle.THIN);
+		cellStyle.setFillForegroundColor(IndexedColors.RED1.getIndex());
+		cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+		Font font = workbook.createFont();
+		formatFont(font, IndexedColors.BLACK.getIndex(), true, 13);
+		font.setStrikeout(true);
+
+		cellStyle.setFont(font);
+
+		return cellStyle;
+	}
+
 	@Override
 	public void validateStudentFile(MultipartFile file, long schoolId, int gradeId) throws IOException {
 		// open file
@@ -786,69 +938,43 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 		if (schoolGrade == null) {
 			throw new ResourceNotFoundException();
 		}
-
-		// get all className of schoolGradeId
 		List<Classes> classesList = iClassRepository.findBySchoolGradeIdAndStatusNot(schoolGrade.getId(),
 				DELETE_STATUS);
-		List<String> classNameList = new ArrayList<>();
-		if (!classesList.isEmpty()) {
-			for (Classes classes : classesList) {
-				classNameList.add(classes.getClassName());
-			}
-		}
 
 		// validate all sheet in excel file
-		String error = "";
 		Iterator<Sheet> sheetIterator = workbook.sheetIterator();
 		while (sheetIterator.hasNext()) {
 			Sheet sheet = sheetIterator.next();
-//			error = validateSheetData(sheet, classNameList);
-			List<Cell> cellList = validateSheetData(sheet, classNameList);
+			List<Cell> cellList = validateSheetData(sheet, classesList);
 			if (!cellList.isEmpty()) {
-				CellStyle style = workbook.createCellStyle();
-				style.setFillForegroundColor(IndexedColors.RED.getIndex());
-				style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-				style.setAlignment(HorizontalAlignment.CENTER);
-				Font font = workbook.createFont();
-				font.setColor(IndexedColors.BLACK.getIndex());
-				font.setBold(true);
-				font.setStrikeout(true);
-				style.setFont(font);
-
+				CellStyle cellStyle = formatErrorCell(workbook);
 				for (Cell cell : cellList) {
-
-					cell.setCellStyle(style);
-
+					cell.setCellStyle(cellStyle);
 				}
+
+				XSSFSheet tempSheet = (XSSFSheet) sheet;
+				CTWorksheet ctWorksheet = tempSheet.getCTWorksheet();
+				CTSheetViews ctSheetViews = ctWorksheet.getSheetViews();
+				CTSheetView ctSheetView = ctSheetViews.getSheetViewArray(ctSheetViews.sizeOfSheetViewArray() - 1);
+				ctSheetView.setTopLeftCell("A1");
+				workbook.setActiveSheet(0);
+
 				String fileName = file.getOriginalFilename();
 				FileOutputStream fileOut = new FileOutputStream("E:\\" + "Error-" + fileName);
 				workbook.write(fileOut);
+
 				fileOut.close();
-				workbook.close();
 			}
 		}
 
-//		workbook.close();
-
-//		if (!error.trim().isEmpty()) {
-//			return error.trim();
-//		}
-
-//		return "OK";
-
+		workbook.close();
 	}
 
-	private List<Cell> validateSheetData(Sheet sheet, List<String> classNameList) {
+	private List<Cell> validateSheetData(Sheet sheet, List<Classes> classesList) {
 		List<Cell> cellList = new ArrayList<>();
 		DataFormatter dataFormatter = new DataFormatter();
 
-//		String error = "";
-		// check className existed
-//		if (classNameList.contains(sheet.getSheetName())) {
-//			error += "\nClass with sheet name = " + sheet.getSheetName() + " EXISTED!";
-//		}
 		Iterator<Row> rowIterator = sheet.rowIterator();
-
 		while (rowIterator.hasNext()) {
 			Row row = rowIterator.next();
 			if (row.getRowNum() < FIRST_ROW) {
@@ -859,10 +985,17 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				switch (i) {
 				case 1:
 					if (cell != null) {
-						if (cell.getCellType() != CellType.STRING) {
+						String studentIdRegex = "^MJ\\d{6}$";
+						if (cell.getCellType() == CellType.STRING) {
+							boolean checkStudentIdFormat = cell.getStringCellValue().matches(studentIdRegex);
+							if (checkStudentIdFormat == false) {
+								cellList.add(cell);
+							}
+						} else {
 							cellList.add(cell);
 						}
 					}
+
 					break;
 
 				case 3:
@@ -875,13 +1008,12 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 							if (cell.getCellType() != CellType.NUMERIC) {
 								cellList.add(cell);
 							} else {
-								String dateFormat = dataFormatter.formatCellValue(cell);
-								System.out.println(dateFormat);
-								String regex = "\\d{1,2}/\\d{1,2}/\\d{2}";
-								String regex1 = "\\d{1,2}-[a-zA-Z]{3}-\\d{2}";
-								if (!dateFormat.matches(regex) && !dateFormat.matches(regex1)) {
+								String dataFormat = dataFormatter.formatCellValue(cell);
+								System.out.println(dataFormat);
+								String dateFormatRegex1 = "\\d{1,2}/\\d{1,2}/\\d{2}";
+								String dateFormatRegex2 = "\\d{1,2}-[a-zA-Z]{3}-\\d{2}";
+								if (!dataFormat.matches(dateFormatRegex1) && !dataFormat.matches(dateFormatRegex2)) {
 									cellList.add(cell);
-									System.out.println("wrong regex");
 								} else {
 									Date date = new Date();
 									if (cell.getDateCellValue().after(date)) {
@@ -958,7 +1090,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				}
 			}
 		}
-//		StudentProfile studentProfile = null;
+
 		long studentCount = 1;
 		if (!studentProfileList.isEmpty()) {
 			for (StudentProfile studentProfile : studentProfileList) {
