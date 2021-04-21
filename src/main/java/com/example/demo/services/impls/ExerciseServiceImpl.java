@@ -32,6 +32,7 @@ import com.example.demo.services.IExerciseService;
 @Service
 public class ExerciseServiceImpl implements IExerciseService {
 	Logger logger = LoggerFactory.getLogger(ExerciseServiceImpl.class);
+	private final String ACTIVE_STATUS = "ACTIVE";
 	private final String INACTIVE_STATUS = "INACTIVE";
 	private final String DELETED_STATUS = "DELETED";
 
@@ -101,8 +102,8 @@ public class ExerciseServiceImpl implements IExerciseService {
 		List<ExerciseResponseDTO> exerciseResponseDTOList = new ArrayList<>();
 		try {
 			// find all exercise
-			List<Exercise> exerciseList = iExerciseRepository.findByLessonIdAndStatusNotOrderByExerciseNameAsc(lessonId,
-					DELETED_STATUS);
+			List<Exercise> exerciseList = iExerciseRepository.findByLessonIdAndStatusOrderByExerciseNameAsc(lessonId,
+					ACTIVE_STATUS);
 			if (!exerciseList.isEmpty()) {
 				for (Exercise exercise : exerciseList) {
 					// check have question in exercise
@@ -158,7 +159,7 @@ public class ExerciseServiceImpl implements IExerciseService {
 		try {
 			// find all exercise
 			List<Exercise> exerciseList = iExerciseRepository
-					.findByProgressTestIdAndStatusNotOrderByExerciseNameAsc(progressTestId, DELETED_STATUS);
+					.findByProgressTestIdAndStatusOrderByExerciseNameAsc(progressTestId, ACTIVE_STATUS);
 			if (!exerciseList.isEmpty()) {
 				for (Exercise exercise : exerciseList) {
 					// check have question in exercise

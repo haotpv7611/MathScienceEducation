@@ -95,7 +95,7 @@ public class GameServiceImpl implements IGameService {
 	public List<GameResponseDTO> findAllByLessonIdStudentView(long lessonId) {
 		List<GameResponseDTO> gameResponseDTOList = new ArrayList<>();
 		try {
-			List<Game> gameList = iGameRepository.findByLessonIdAndStatusNot(lessonId, ACTIVE_STATUS);
+			List<Game> gameList = iGameRepository.findByLessonIdAndStatus(lessonId, ACTIVE_STATUS);
 			if (!gameList.isEmpty()) {
 				for (Game game : gameList) {
 					List<ExerciseGameQuestion> exerciseGameQuestionList = iExerciseGameQuestionRepository

@@ -15,10 +15,14 @@ public interface IExerciseRepository extends JpaRepository<Exercise, Long> {
 	List<Exercise> findByLessonIdAndStatusNot(long lessonId, String status);
 
 	List<Exercise> findByLessonIdAndStatusNotOrderByExerciseNameAsc(long lessonId, String status);
+	
+	List<Exercise> findByLessonIdAndStatusOrderByExerciseNameAsc(long lessonId, String status);
 
 	List<Exercise> findByProgressTestIdAndStatusNot(long progressTestId, String status);
 
 	List<Exercise> findByProgressTestIdAndStatusNotOrderByExerciseNameAsc(long progressTestId, String status);
+	
+	List<Exercise> findByProgressTestIdAndStatusOrderByExerciseNameAsc(long progressTestId, String status);
 
 	Exercise findByIdAndStatusNot(long id, String status);
 
