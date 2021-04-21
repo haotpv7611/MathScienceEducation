@@ -65,25 +65,31 @@ public class StudentProfileController {
 				.body(iStudentProfileService.createStudenProfile(studentRequestDTO));
 	}
 
-	@PutMapping("/student/{id}")
-	public ResponseEntity<String> updateStudent(@PathVariable long id,
-			@Valid @RequestBody StudentRequestDTO studentRequestDTO, BindingResult bindingResult) {
-		if (bindingResult.hasErrors()) {
-			String error = "";
-			for (ObjectError object : bindingResult.getAllErrors()) {
-				error += "\n" + object.getDefaultMessage();
-			}
-
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
-		}
-		return ResponseEntity.status(HttpStatus.OK).body(iStudentProfileService.createStudenProfile(studentRequestDTO));
-	}
+//	@PutMapping("/student/{id}")
+//	public ResponseEntity<String> updateStudent(@PathVariable long id,
+//			@Valid @RequestBody StudentRequestDTO studentRequestDTO, BindingResult bindingResult) {
+//		if (bindingResult.hasErrors()) {
+//			String error = "";
+//			for (ObjectError object : bindingResult.getAllErrors()) {
+//				error += "\n" + object.getDefaultMessage();
+//			}
+//
+//			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
+//		}
+//		return ResponseEntity.status(HttpStatus.OK).body(iStudentProfileService.createStudenProfile(studentRequestDTO));
+//	}
 
 	@PostMapping("/student/validate")
-	public ResponseEntity<String> validateStudent(@RequestParam MultipartFile file, @RequestParam long schoolId,
-			@RequestParam int gradeId) throws IOException {
-		iStudentProfileService.validateStudentFile(file, schoolId, gradeId);
-		return ResponseEntity.status(HttpStatus.OK).body("OK");
+	public void validateStudent(HttpServletResponse response, @RequestParam MultipartFile file,
+			@RequestParam long schoolId, @RequestParam int gradeId) throws IOException {
+		response.setContentType("application/octet-stream");
+//		response.setCharacterEncoding("UTF-8");
+		String headerKey = "Content-Disposition";
+		String headerValue = "attachment; filename=" + "TestValidate.xlsx";
+		response.setHeader(headerKey, headerValue);
+
+		iStudentProfileService.validateStudentFile(file, schoolId, gradeId, response);
+//		return ResponseEntity.status(HttpStatus.OK).body("OK");
 	}
 
 	@PostMapping("/student/import")
@@ -99,8 +105,8 @@ public class StudentProfileController {
 		response.setContentType("application/octet-stream");
 //		response.setCharacterEncoding("UTF-8");
 		String headerKey = "Content-Disposition";
-		String headerValue = "attachment; filename=" +URLEncoder.encode(
-				iStudentProfileService.generateFileNameExport(schoolId, gradeId, subjectId), "UTF-8");
+		String headerValue = "attachment; filename=" + URLEncoder
+				.encode(iStudentProfileService.generateFileNameExport(schoolId, gradeId, subjectId), "UTF-8");
 		response.setHeader(headerKey, headerValue);
 		iStudentProfileService.exportScoreBySubjectId(schoolId, gradeId, subjectId, response);
 	}

@@ -876,6 +876,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				studentProfile.setStudentCount(deleteClass.getStudentProfileList().size() + 1);
 
 				String username = "DEL" + String.format("%05d", deleteClass.getStudentProfileList().size() + 1);
+				System.out.println("username: " + username);
 				account.setUsername(username);
 			}
 			if (status.equals(PENDING_STATUS)) {
@@ -928,7 +929,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 	}
 
 	@Override
-	public void validateStudentFile(MultipartFile file, long schoolId, int gradeId) throws IOException {
+	public void validateStudentFile(MultipartFile file, long schoolId, int gradeId, HttpServletResponse httpServletResponse) throws IOException {
 		// open file
 		Workbook workbook = new XSSFWorkbook(file.getInputStream());
 
@@ -962,8 +963,14 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				String fileName = file.getOriginalFilename();
 				FileOutputStream fileOut = new FileOutputStream("E:\\" + "Error-" + fileName);
 				workbook.write(fileOut);
-
 				fileOut.close();
+				
+				ServletOutputStream outputStream = httpServletResponse.getOutputStream();
+				workbook.write(outputStream);
+				workbook.close();
+				outputStream.close();
+			}else {
+							
 			}
 		}
 
