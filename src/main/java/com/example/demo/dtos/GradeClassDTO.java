@@ -4,16 +4,16 @@ import java.util.List;
 
 public class GradeClassDTO {
 	private int id;
-	private String gradeName;
+	private String name;
 	private List<ClassChangeDTO> classesList;
 
 	public GradeClassDTO() {
 	}
 
-	public GradeClassDTO(int id, int gradeName, List<ClassChangeDTO> classesList) {
+	public GradeClassDTO(int id, int name, List<ClassChangeDTO> classesList) {
 		super();
 		this.id = id;
-		this.gradeName = "Grade " + gradeName;
+		this.name = "Grade " + name;
 		this.classesList = classesList;
 	}
 
@@ -32,17 +32,17 @@ public class GradeClassDTO {
 	}
 
 	/**
-	 * @return the gradeName
+	 * @return the name
 	 */
-	public String getGradeName() {
-		return gradeName;
+	public String getName() {
+		return name;
 	}
 
 	/**
-	 * @param gradeName the gradeName to set
+	 * @param name the name to set
 	 */
-	public void setGradeName(String gradeName) {
-		this.gradeName = gradeName;
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	/**

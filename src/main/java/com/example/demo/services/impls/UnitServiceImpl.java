@@ -137,6 +137,7 @@ public class UnitServiceImpl implements IUnitService {
 						}
 					}
 				}
+				System.out.println("unit: " + unitList.size());
 			}
 			if (!unitList.isEmpty()) {
 				for (Unit unit : unitList) {

@@ -65,7 +65,7 @@ public class ClassServiceImpl implements IClassService {
 		try {
 			List<SchoolGrade> schoolGradeList = iSchoolGradeRepository.findBySchoolIdAndStatusNot(schoolId,
 					DELETED_STATUS);
-			System.out.println("schoolGrade = " + schoolGradeList.size());
+
 			if (!schoolGradeList.isEmpty()) {
 				List<Grade> gradeList = new ArrayList<>();
 				for (SchoolGrade schoolGrade : schoolGradeList) {
@@ -94,7 +94,7 @@ public class ClassServiceImpl implements IClassService {
 						gradeClassDTOList.add(gradeClassDTO);
 					}
 				}
-				
+
 				System.out.println("total = " + gradeClassDTOList.size());
 			}
 		} catch (Exception e) {
@@ -124,18 +124,27 @@ public class ClassServiceImpl implements IClassService {
 		if (schoolGrade == null) {
 			throw new ResourceNotFoundException();
 		}
-		List<Classes> classesList = iClassRepository.findBySchoolGradeIdAndStatusNot(schoolGrade.getId(),
-				DELETED_STATUS);
 
-		String className = classRequestDTO.getClassName();
-		if (!classesList.isEmpty()) {
-			for (Classes classes : classesList) {
-				if (!classes.getClassName(). equalsIgnoreCase(className)) {
-					
-					return "EXISTED";
-				}
-			}
+		if (iClassRepository.findBySchoolGradeIdAndClassNameIgnoreCaseAndStatusNot(schoolGrade.getId(),
+				classRequestDTO.getClassName(), DELETED_STATUS) != null) {
+
+			return "EXISTED";
 		}
+		
+		String className = classRequestDTO.getClassName();
+
+//		List<Classes> classesList = iClassRepository.findBySchoolGradeIdAndStatusNot(schoolGrade.getId(),
+//				DELETED_STATUS);
+//
+//		String className = classRequestDTO.getClassName();
+//		if (!classesList.isEmpty()) {
+//			for (Classes classes : classesList) {
+//				if (classes.getClassName().equalsIgnoreCase(className)) {
+//
+//					return "EXISTED";
+//				}
+//			}
+//		}
 
 		Classes classes = new Classes();
 		classes.setSchoolGrade(schoolGrade);
@@ -156,9 +165,10 @@ public class ClassServiceImpl implements IClassService {
 		SchoolGrade schoolGrade = classes.getSchoolGrade();
 		if (!classes.getClassName().equalsIgnoreCase(classRequestDTO.getClassName())) {
 			if (iClassRepository.findBySchoolGradeIdAndClassNameIgnoreCaseAndStatusNot(schoolGrade.getId(),
-					classRequestDTO.getClassName(), DELETED_STATUS) != null)
+					classRequestDTO.getClassName(), DELETED_STATUS) != null) {
 
 				return "EXISTED";
+			}
 		}
 
 		classes.setClassName(classRequestDTO.getClassName());
