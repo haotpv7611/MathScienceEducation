@@ -20,6 +20,7 @@ import com.example.demo.repositories.IAccountRepository;
 import com.example.demo.repositories.IBannerImageRepository;
 import com.example.demo.services.IBannerImageService;
 import com.example.demo.services.IFirebaseService;
+import com.example.demo.utils.Util;
 
 @Service
 public class BannerImageServiceImpl implements IBannerImageService {
@@ -48,7 +49,7 @@ public class BannerImageServiceImpl implements IBannerImageService {
 		}
 		String error = validateRequiredFile(file, "image", "File is invalid!",
 				"Not supported this file type for image!");
-		error += validateRequiredString(description, DESCRIPTION_MAX_LENGTH, "\nDescription is invalid!");
+		error += Util.validateString(description, DESCRIPTION_MAX_LENGTH, "\nDescription is invalid!");
 		if (!error.isEmpty()) {
 			return error.trim();
 		}

@@ -39,7 +39,7 @@ public class BannerImageController {
 	IBannerImageService iBannerImageService;
 
 	@PostMapping
-	public ResponseEntity<String> createBannerImage(@RequestParam String description, @RequestParam MultipartFile file,
+	public ResponseEntity<String> createBannerImage(@RequestParam(required = false) String description, @RequestParam MultipartFile file,
 			@RequestParam long accountId) throws SizeLimitExceededException, IOException {
 		String response = iBannerImageService.createBannerImage(description, file, accountId);
 		if (response.contains("permission")) {

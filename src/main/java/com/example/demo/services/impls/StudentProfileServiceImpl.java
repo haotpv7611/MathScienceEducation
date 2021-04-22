@@ -227,7 +227,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 		return studentResponseDTOList;
 	}
 
-	public List<StudentResponseDTO> findStudentByClassedId(long classesId, String schoolName, int gradeName) {
+	private List<StudentResponseDTO> findStudentByClassedId(long classesId, String schoolName, int gradeName) {
 		Classes classes = iClassRepository.findByIdAndStatusNot(classesId, DELETE_STATUS);
 		if (classes == null) {
 			throw new ResourceNotFoundException();
@@ -284,7 +284,8 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 
 	@Override
 	@Transactional
-	public String importStudent(MultipartFile file, long schoolId, int gradeId, HttpServletResponse httpServletResponse) throws IOException {
+	public String importStudent(MultipartFile file, long schoolId, int gradeId, HttpServletResponse httpServletResponse)
+			throws IOException {
 		// open file
 		Workbook workbook = new XSSFWorkbook(file.getInputStream());
 		SchoolGrade schoolGrade = iSchoolGradeRepository.findByGradeIdAndSchoolIdAndStatusNot(gradeId, schoolId,
@@ -368,21 +369,72 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				FileOutputStream fileOut = new FileOutputStream("E:\\" + "Not existed StudentId-" + fileName);
 				workbook.write(fileOut);
 				fileOut.close();
-				
-				
+
 				ServletOutputStream outputStream = httpServletResponse.getOutputStream();
 				workbook.write(outputStream);
 				workbook.close();
 				outputStream.close();
-				
-			}else {
-				
+
+			} else {
+
 			}
 		}
 
 		workbook.close();
 
 		return "OK";
+	}
+
+	// cùng khối, k phải lớp pending thì giữ nguyên account
+	// khác khối hoặc pending thì đổi account
+
+	@Override
+	public String changeClassForStudent(List<Long> studentIdList, long classesId) {
+		try {
+			Classes newClasses = iClassRepository.findByIdAndStatusNot(classesId, DELETE_STATUS);
+			if (newClasses == null) {
+				throw new ResourceNotFoundException();
+			}
+			Grade newGrade = newClasses.getSchoolGrade().getGrade();
+
+			for (long studentId : studentIdList) {
+				StudentProfile studentProfile = iStudentProfileRepository.findByIdAndStatusNot(studentId,
+						DELETE_STATUS);
+				if (studentProfile == null) {
+					throw new ResourceNotFoundException();
+				}
+
+				Grade oldGrade = studentProfile.getClasses().getSchoolGrade().getGrade();				
+				if (oldGrade.equals(newGrade)) {
+					if (studentProfile.getClasses().getClassName().equalsIgnoreCase("PENDING")) {
+						String username = generateUsername(newClasses);
+						Account account = studentProfile.getAccount();
+						account.setUsername(username);
+						iAccountRepository.save(account);
+
+						studentProfile.setStudentCount(countStudent(newClasses));
+					}
+
+					studentProfile.setClasses(newClasses);
+					iStudentProfileRepository.save(studentProfile);
+				} else {
+					String username = generateUsername(newClasses);
+					Account account = studentProfile.getAccount();
+					account.setUsername(username);
+					iAccountRepository.save(account);
+
+					studentProfile.setClasses(newClasses);
+					studentProfile.setStudentCount(countStudent(newClasses));
+					iStudentProfileRepository.save(studentProfile);
+				}
+			}
+		} catch (Exception e) {
+			logger.error("Change studentListId =  " + studentIdList.toString() + " to classId = " + classesId + "! "
+					+ e.getMessage());
+			throw e;
+		}
+
+		return "CHANGE SUCCESS!";
 	}
 
 //	@Override
@@ -410,9 +462,11 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 		List<Unit> unitList = new ArrayList<>();
 		if (!subjectList.isEmpty()) {
 			for (Subject subject : subjectList) {
-				int unitSize = iUnitRepository.findBySubjectIdAndIsDisableFalseOrderByUnitNameAsc(subject.getId()).size();
+				int unitSize = iUnitRepository.findBySubjectIdAndIsDisableFalseOrderByUnitNameAsc(subject.getId())
+						.size();
 				if (unitSize > 0) {
-					unitList.addAll(iUnitRepository.findBySubjectIdAndIsDisableFalseOrderByUnitNameAsc(subject.getId()));
+					unitList.addAll(
+							iUnitRepository.findBySubjectIdAndIsDisableFalseOrderByUnitNameAsc(subject.getId()));
 				}
 			}
 		}
@@ -917,6 +971,16 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 		return "CHANGE SUCCESS!";
 	}
 
+	private String generateUsername(Classes classes) {
+		int gradeName = classes.getSchoolGrade().getGrade().getGradeName();
+		String schoolCode = classes.getSchoolGrade().getSchool().getSchoolCode()
+				+ classes.getSchoolGrade().getSchool().getSchoolCount();
+
+		long studentCount = countStudent(classes);
+		String username = schoolCode + String.format("%02d", gradeName) + String.format("%03d", studentCount);
+		return username;
+	}
+
 	private String generateUsername(String schoolCode, int gradeName, long studentCount) {
 		String username = schoolCode + String.format("%02d", gradeName) + String.format("%03d", studentCount);
 		return username;
@@ -938,7 +1002,8 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 	}
 
 	@Override
-	public void validateStudentFile(MultipartFile file, long schoolId, int gradeId, HttpServletResponse httpServletResponse) throws IOException {
+	public void validateStudentFile(MultipartFile file, long schoolId, int gradeId,
+			HttpServletResponse httpServletResponse) throws IOException {
 		// open file
 		Workbook workbook = new XSSFWorkbook(file.getInputStream());
 
@@ -970,16 +1035,17 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				workbook.setActiveSheet(0);
 
 				String fileName = file.getOriginalFilename();
+				System.out.println("have error");
 				FileOutputStream fileOut = new FileOutputStream("E:\\" + "Error-" + fileName);
 				workbook.write(fileOut);
 				fileOut.close();
-				
+
 				ServletOutputStream outputStream = httpServletResponse.getOutputStream();
 				workbook.write(outputStream);
 				workbook.close();
 				outputStream.close();
-			}else {
-							
+			} else {
+				System.out.println("no error");
 			}
 		}
 

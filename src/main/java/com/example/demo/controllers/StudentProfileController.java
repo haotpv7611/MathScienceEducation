@@ -25,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.example.demo.dtos.ListIdAndStatusDTO;
 import com.example.demo.dtos.StudentRequestDTO;
 import com.example.demo.dtos.StudentResponseDTO;
+import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.services.IStudentProfileService;
 
 @CrossOrigin(exposedHeaders = "Content-Disposition")
@@ -93,8 +94,8 @@ public class StudentProfileController {
 	}
 
 	@PostMapping("/student/import")
-	public void importStudent(HttpServletResponse response, @RequestParam MultipartFile file, @RequestParam long schoolId,
-			@RequestParam int gradeId) throws IOException {
+	public void importStudent(HttpServletResponse response, @RequestParam MultipartFile file,
+			@RequestParam long schoolId, @RequestParam int gradeId) throws IOException {
 		response.setContentType("application/octet-stream");
 		String headerKey = "Content-Disposition";
 		String headerValue = "attachment; filename=" + "TestImport.xlsx";
@@ -109,14 +110,14 @@ public class StudentProfileController {
 		response.setContentType("application/octet-stream");
 //		response.setCharacterEncoding("UTF-8");
 		String headerKey = "Content-Disposition";
-		String headerValue = "attachment; filename=" + 
-				iStudentProfileService.generateFileNameExport(schoolId, gradeId, subjectId);
+		String headerValue = "attachment; filename="
+				+ iStudentProfileService.generateFileNameExport(schoolId, gradeId, subjectId);
 		response.setHeader(headerKey, headerValue);
 		iStudentProfileService.exportScoreBySubjectId(schoolId, gradeId, subjectId, response);
 	}
 
 	@PutMapping("/student")
-	public ResponseEntity<String> changeStatusClass(@Valid @RequestBody ListIdAndStatusDTO idAndStatusDTOList,
+	public ResponseEntity<String> changeStatusStudent(@Valid @RequestBody ListIdAndStatusDTO idAndStatusDTOList,
 			BindingResult bindingResult) {
 		if (bindingResult.hasErrors()) {
 			String error = "";
@@ -135,4 +136,36 @@ public class StudentProfileController {
 
 		return ResponseEntity.ok(response);
 	}
+
+	@PutMapping("/student/changeClass")
+	public ResponseEntity<String> changeClassForStudent(@RequestParam List<Long> studentIdList,
+			@RequestParam long classesId) {
+		String error = "";
+		if (studentIdList == null) {	
+			error += "\nStudentIds INVALID";
+		}else {
+			if (studentIdList.isEmpty()) {
+				error += "\nStudentIds INVALID";
+			}
+		}
+
+		if (!error.isEmpty()) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
+		}
+
+		try {
+			String response = iStudentProfileService.changeClassForStudent(studentIdList, classesId);
+
+			return ResponseEntity.ok(response);
+		} catch (Exception e) {
+			if (e instanceof ResourceNotFoundException) {
+
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).body("NOT FOUND!");
+			}
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("FAIL!");
+		}
+
+	}
+
 }

@@ -38,7 +38,7 @@ public class ClassController {
 
 		return ResponseEntity.ok(iClassService.findBySchoolGradeId(schoolGradeDTO));
 	}
-	
+
 	@GetMapping("/{schoolId}")
 	public ResponseEntity<List<GradeClassDTO>> findGradeClassBySchoolId(@PathVariable long schoolId) {
 
@@ -57,12 +57,26 @@ public class ClassController {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
 		}
 
-		return ResponseEntity.ok(iClassService.createClass(classRequestDTO));
+		String response = iClassService.createClass(classRequestDTO);
+		if (response.contains("NOT FOUND")) {
+
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
+		if (response.contains("FAIL")) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+		if (response.contains("EXISTED")) {
+
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+		}
+
+		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
-	
+
 	@PutMapping("/{id}")
-	public ResponseEntity<String> updateClass(@PathVariable long id, @Valid @RequestBody ClassRequestDTO classRequestDTO,
-			BindingResult bindingResult) {
+	public ResponseEntity<String> updateClass(@PathVariable long id,
+			@Valid @RequestBody ClassRequestDTO classRequestDTO, BindingResult bindingResult) {
 		if (bindingResult.hasErrors()) {
 			String error = "";
 			for (ObjectError object : bindingResult.getAllErrors()) {
@@ -74,7 +88,7 @@ public class ClassController {
 
 		return ResponseEntity.ok(iClassService.updateClass(id, classRequestDTO));
 	}
-	
+
 	@PutMapping("/changeStatus")
 	public ResponseEntity<String> changeStatusClass(@Valid @RequestBody ListIdAndStatusDTO idAndStatusDTOList,
 			BindingResult bindingResult) {
@@ -90,7 +104,7 @@ public class ClassController {
 		if (!status.equals("ACTIVE") && !status.equals("INACTIVE") && !status.equals("DELETED")) {
 
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("STATUS INVALID!");
-		}		
+		}
 		String response = iClassService.changeStatusClass(idAndStatusDTOList);
 
 		return ResponseEntity.ok(response);
