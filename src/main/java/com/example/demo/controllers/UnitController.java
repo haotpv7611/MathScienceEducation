@@ -140,9 +140,14 @@ public class UnitController {
 	@PutMapping("unit/delete")
 	public ResponseEntity<String> deleteUnit(@RequestParam long id) {
 		try {
-			iUnitService.deleteOneUnit(id);
+			String response = iUnitService.deleteUnit(id);
 
-			return ResponseEntity.ok("DELETE SUCCESS!");
+			if (response.contains("SUCCESS")) {
+				
+				return ResponseEntity.ok(response);
+			}
+			
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 		} catch (Exception e) {
 			if (e instanceof ResourceNotFoundException) {
 

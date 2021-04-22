@@ -11,6 +11,8 @@ import com.example.demo.models.ProgressTest;
 public interface IProgressTestRepository extends JpaRepository<ProgressTest, Long> {
 
 	ProgressTest findByIdAndIsDisableFalse(long id);
+	
+	ProgressTest findByUnitAfterIdAndIsDisableFalse(long unitAfterId);
 
 	ProgressTest findBySubjectIdAndProgressTestNameIgnoreCaseAndIsDisableFalse(long subjectId, String progressTestName);
 

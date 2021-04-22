@@ -48,13 +48,13 @@ public class UnitServiceImpl implements IUnitService {
 
 	@Autowired
 	private IQuestionRepository iQuestionRepository;
-	
+
 	@Autowired
 	private ILessonService iLessonService;
-	
+
 	@Autowired
 	private IQuestionService iQuestionService;
-	
+
 	@Autowired
 	private ISubjectRepository iSubjectRepository;
 
@@ -137,7 +137,7 @@ public class UnitServiceImpl implements IUnitService {
 				}
 			}
 			System.out.println("list ids: " + progressTestList.size());
-			
+
 			if (!unitList.isEmpty()) {
 				for (Unit unit : unitList) {
 					if (!ids.isEmpty()) {
@@ -331,7 +331,27 @@ public class UnitServiceImpl implements IUnitService {
 		return "UPDATE SUCCESS!";
 	}
 
-	//??? progressTest with unitAfterId
+	// before delete unit
+	// check unit have progressTest
+	// delete lesson --> question --> unit
+	@Override
+	public String deleteUnit(long id) {
+		try {
+			ProgressTest progressTest = iProgressTestRepository.findByUnitAfterIdAndIsDisableFalse(id);
+			if (progressTest == null) {
+				deleteOneUnit(id);
+			} else {
+
+				return "Have progressTest LINKED!";
+			}
+		} catch (Exception e) {
+			logger.error("DELETE: have check progressTest with unitId = " + id + "! " + e.getMessage());
+			throw e;
+		}
+
+		return "DELETE SUCCESS!";
+	}
+
 	@Override
 	@Transactional
 	public void deleteOneUnit(long id) {

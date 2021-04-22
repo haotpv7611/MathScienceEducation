@@ -24,4 +24,6 @@ public interface IUnitService {
 	String updateUnit(long id, UnitRequestDTO unitRequestDTO);
 
 	void deleteOneUnit(long id);
+
+	String deleteUnit(long id);
 }

@@ -66,19 +66,19 @@ public class StudentProfileController {
 				.body(iStudentProfileService.createStudenProfile(studentRequestDTO));
 	}
 
-//	@PutMapping("/student/{id}")
-//	public ResponseEntity<String> updateStudent(@PathVariable long id,
-//			@Valid @RequestBody StudentRequestDTO studentRequestDTO, BindingResult bindingResult) {
-//		if (bindingResult.hasErrors()) {
-//			String error = "";
-//			for (ObjectError object : bindingResult.getAllErrors()) {
-//				error += "\n" + object.getDefaultMessage();
-//			}
-//
-//			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
-//		}
-//		return ResponseEntity.status(HttpStatus.OK).body(iStudentProfileService.createStudenProfile(studentRequestDTO));
-//	}
+	@PutMapping("/student/{id}")
+	public ResponseEntity<String> updateStudent(@PathVariable long id,
+			@Valid @RequestBody StudentRequestDTO studentRequestDTO, BindingResult bindingResult) {
+		if (bindingResult.hasErrors()) {
+			String error = "";
+			for (ObjectError object : bindingResult.getAllErrors()) {
+				error += "\n" + object.getDefaultMessage();
+			}
+
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
+		}
+		return ResponseEntity.status(HttpStatus.OK).body(iStudentProfileService.updateStudent(id, studentRequestDTO));
+	}
 
 	@PostMapping("/student/validate")
 	public void validateStudent(HttpServletResponse response, @RequestParam MultipartFile file,
