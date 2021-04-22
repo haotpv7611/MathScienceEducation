@@ -20,5 +20,7 @@ public interface IClassService {
 
 	String changeStatusClass(ListIdAndStatusDTO listIdAndStatusDTO);
 
+	void changeStatusOneClass(long id, String status);
+
 	Map<Long, String> findAllClass();
 }

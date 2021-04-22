@@ -788,14 +788,22 @@ public class QuestionServiceImpl implements IQuestionService {
 		String questionImageUrl = question.getQuestionImageUrl();
 		String questionAudioUrl = question.getQuestionAudioUrl();
 		if (imageFile != null) {
-			iFirebaseService.deleteFile(questionImageUrl);
 			question.setQuestionImageUrl(iFirebaseService.uploadFile(imageFile));
 		}
 		if (audioFile != null) {
-			iFirebaseService.deleteFile(questionAudioUrl);
 			question.setQuestionAudioUrl(iFirebaseService.uploadFile(audioFile));
 		}
 		iQuestionRepository.save(question);
+		if (questionImageUrl != null) {
+			if (!questionImageUrl.isEmpty()) {
+				iFirebaseService.deleteFile(questionImageUrl);
+			}
+		}
+		if (questionAudioUrl != null) {
+			if (!questionAudioUrl.isEmpty()) {
+				iFirebaseService.deleteFile(questionAudioUrl);
+			}
+		}
 	}
 
 }

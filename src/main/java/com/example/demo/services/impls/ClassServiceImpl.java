@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,39 +22,54 @@ import com.example.demo.dtos.SchoolGradeDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.Classes;
 import com.example.demo.models.SchoolGrade;
+import com.example.demo.models.StudentProfile;
 import com.example.demo.repositories.IClassRepository;
 import com.example.demo.repositories.ISchoolGradeRepository;
+import com.example.demo.repositories.IStudentProfileRepository;
 import com.example.demo.services.IClassService;
+import com.example.demo.services.IStudentProfileService;
 
 @Service
 public class ClassServiceImpl implements IClassService {
+	Logger logger = LoggerFactory.getLogger(ClassServiceImpl.class);
 	private final String DELETED_STATUS = "DELETED";
 
 	@Autowired
-	ISchoolGradeRepository iSchoolGradeRepository;
+	private ISchoolGradeRepository iSchoolGradeRepository;
 
 	@Autowired
-	IClassRepository iClassRepository;
+	private IClassRepository iClassRepository;
+	
+	@Autowired
+	private IStudentProfileRepository iStudentProfileRepository;
+	
+	@Autowired
+	private IStudentProfileService iStudentProfileService;
 
 	@Autowired
-	ModelMapper modelMapper;
+	private ModelMapper modelMapper;
 
 	@Override
 	public List<ClassResponseDTO> findBySchoolGradeId(SchoolGradeDTO schoolGradeDTO) {
 		int gradeId = schoolGradeDTO.getGradeId();
 		long schoolId = schoolGradeDTO.getSchoolId();
-		SchoolGrade schoolGrade = iSchoolGradeRepository.findByGradeIdAndSchoolIdAndStatusNot(gradeId, schoolId,
-				"DELETED");
-		if (schoolGrade == null) {
-			throw new ResourceNotFoundException();
-		}
 		List<ClassResponseDTO> classResponseDTOList = new ArrayList<>();
-		List<Classes> classList = iClassRepository
-				.findBySchoolGradeIdAndStatusNotOrderByStatusAscClassNameAsc(schoolGrade.getId(), "DELETED");
-		if (!classList.isEmpty()) {
-			for (Classes classes : classList) {
-				classResponseDTOList.add(modelMapper.map(classes, ClassResponseDTO.class));
+		try {
+			SchoolGrade schoolGrade = iSchoolGradeRepository.findByGradeIdAndSchoolIdAndStatusNot(gradeId, schoolId,
+					"DELETED");
+			List<Classes> classList = iClassRepository
+					.findBySchoolGradeIdAndStatusNotOrderByStatusAscClassNameAsc(schoolGrade.getId(), "DELETED");
+			if (!classList.isEmpty()) {
+				for (Classes classes : classList) {
+					ClassResponseDTO classResponseDTO = modelMapper.map(classes, ClassResponseDTO.class);
+					classResponseDTOList.add(classResponseDTO);
+				}
 			}
+		} catch (Exception e) {
+			logger.error(
+					"FIND: all class by schoolId = " + schoolId + "and gradeId = " + gradeId + "! " + e.getMessage());
+
+			return null;
 		}
 
 		return classResponseDTOList;
@@ -60,7 +77,6 @@ public class ClassServiceImpl implements IClassService {
 
 	// get all grade linked by gradeName
 	// get all class by gradeId
-
 	@Override
 	public List<GradeClassDTO> findGradeClassBySchoolId(long schoolId) {
 		List<GradeClassDTO> gradeClassDTOList = new ArrayList<>();
@@ -90,7 +106,9 @@ public class ClassServiceImpl implements IClassService {
 				}
 			}
 		} catch (Exception e) {
-			// TODO: handle exception
+			logger.error("FIND: all grade and class by schoolId = " + schoolId + "! " + e.getMessage());
+
+			return null;
 		}
 
 		return gradeClassDTOList;
@@ -99,9 +117,16 @@ public class ClassServiceImpl implements IClassService {
 	@Override
 	public Map<Long, String> findAllClass() {
 		Map<Long, String> classesMap = new HashMap<>();
-		List<Classes> classesList = iClassRepository.findByStatusNot(DELETED_STATUS);
-		for (Classes classes : classesList) {
-			classesMap.put(classes.getId(), classes.getClassName());
+		try {
+
+			List<Classes> classesList = iClassRepository.findByStatusNot(DELETED_STATUS);
+			for (Classes classes : classesList) {
+				classesMap.put(classes.getId(), classes.getClassName());
+			}
+		} catch (Exception e) {
+			logger.error("FIND: all class! " + e.getMessage());
+
+			return null;
 		}
 
 		return classesMap;
@@ -111,48 +136,70 @@ public class ClassServiceImpl implements IClassService {
 	public String createClass(ClassRequestDTO classRequestDTO) {
 		int gradeId = classRequestDTO.getGradeId();
 		long schoolId = classRequestDTO.getSchoolId();
-		SchoolGrade schoolGrade = iSchoolGradeRepository.findByGradeIdAndSchoolIdAndStatusNot(gradeId, schoolId,
-				"DELETED");
-		if (schoolGrade == null) {
-			throw new ResourceNotFoundException();
-		}
-
-		if (iClassRepository.findBySchoolGradeIdAndClassNameIgnoreCaseAndStatusNot(schoolGrade.getId(),
-				classRequestDTO.getClassName(), DELETED_STATUS) != null) {
-
-			return "EXISTED";
-		}
-
 		String className = classRequestDTO.getClassName();
+		try {
 
-		Classes classes = new Classes();
-		classes.setSchoolGrade(schoolGrade);
-		classes.setClassName(className);
-		classes.setStatus("ACTIVE");
-		iClassRepository.save(classes);
+			SchoolGrade schoolGrade = iSchoolGradeRepository.findByGradeIdAndSchoolIdAndStatusNot(gradeId, schoolId,
+					"DELETED");
+			if (schoolGrade == null) {
+				throw new ResourceNotFoundException();
+			}
 
-		return "CREATE SUCCESS!";
-	}
-
-	@Override
-	public String updateClass(long id, ClassRequestDTO classRequestDTO) {
-		Classes classes = iClassRepository.findByIdAndStatusNot(id, DELETED_STATUS);
-		if (classes == null) {
-			throw new ResourceNotFoundException();
-		}
-
-		SchoolGrade schoolGrade = classes.getSchoolGrade();
-		if (!classes.getClassName().equalsIgnoreCase(classRequestDTO.getClassName())) {
 			if (iClassRepository.findBySchoolGradeIdAndClassNameIgnoreCaseAndStatusNot(schoolGrade.getId(),
 					classRequestDTO.getClassName(), DELETED_STATUS) != null) {
 
 				return "EXISTED";
 			}
+
+			Classes classes = new Classes();
+			classes.setSchoolGrade(schoolGrade);
+			classes.setClassName(className);
+			classes.setStatus("ACTIVE");
+			iClassRepository.save(classes);
+		} catch (Exception e) {
+			logger.error("CREATE: className = " + className + " in schoolId =  " + schoolId + "and gradeId = " + gradeId
+					+ "! " + e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
+
+				return "NOT FOUND!";
+			}
+
+			return "CREATE FAIL!";
 		}
 
-		classes.setClassName(classRequestDTO.getClassName());
-		classes.setStatus("ACTIVE");
-		iClassRepository.save(classes);
+		return "CREATE SUCCESS!";
+	}
+
+	// check className existed
+	@Override
+	public String updateClass(long id, ClassRequestDTO classRequestDTO) {
+		try {
+			Classes classes = iClassRepository.findByIdAndStatusNot(id, DELETED_STATUS);
+			if (classes == null) {
+				throw new ResourceNotFoundException();
+			}
+
+			SchoolGrade schoolGrade = classes.getSchoolGrade();
+			if (!classes.getClassName().equalsIgnoreCase(classRequestDTO.getClassName())) {
+				if (iClassRepository.findBySchoolGradeIdAndClassNameIgnoreCaseAndStatusNot(schoolGrade.getId(),
+						classRequestDTO.getClassName(), DELETED_STATUS) != null) {
+
+					return "EXISTED";
+				}
+			}
+
+			classes.setClassName(classRequestDTO.getClassName());
+			classes.setStatus("ACTIVE");
+			iClassRepository.save(classes);
+		} catch (Exception e) {
+			logger.error("UPDATE: classesId = " + id + "! " + e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
+
+				return "NOT FOUND!";
+			}
+
+			return "UPDATE FAIL!";
+		}
 
 		return "UPDATE SUCCESS!";
 	}
@@ -167,17 +214,40 @@ public class ClassServiceImpl implements IClassService {
 		// 2. find entity by id
 		// 3. if not existed throw exception
 		for (long id : ids) {
-			Classes classes = iClassRepository.findByIdAndStatusNot(id, "DELETED");
-			if (classes == null) {
-				throw new ResourceNotFoundException();
+			try {
+				changeStatusOneClass(id, status);
+			} catch (Exception e) {
+				logger.error("Change status: list classId = " + ids.toString() + "! " + e.getMessage());
+				throw e;
 			}
-
-			// 4. update entity with isDisable = true
-			classes.setStatus(status);
-			iClassRepository.save(classes);
+			
 		}
 
 		return "CHANGE SUCCESS!";
 	}
 
+	// change status all student in class --> change status class
+	@Override
+	@Transactional
+	public void changeStatusOneClass(long id, String status) {
+		try {
+			Classes classes = iClassRepository.findByIdAndStatusNot(id, "DELETED");
+			if (classes == null) {
+				throw new ResourceNotFoundException();
+			}
+			
+			List<StudentProfile> studentProfileList = iStudentProfileRepository.findByClassesIdAndStatusNot(id, DELETED_STATUS);
+			if (!studentProfileList.isEmpty()) {
+				for (StudentProfile studentProfile : studentProfileList) {
+					iStudentProfileService.changeStatusOneStudent(studentProfile.getId(), status);
+				}				
+			}
+			
+			classes.setStatus(status);
+			iClassRepository.save(classes);
+		} catch (Exception e) {
+			logger.error("Change status: one classesId = " + id + "! " + e.getMessage());
+			throw e;
+		}
+	}
 }

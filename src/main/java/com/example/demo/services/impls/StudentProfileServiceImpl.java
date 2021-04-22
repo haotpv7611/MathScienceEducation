@@ -80,6 +80,7 @@ import com.example.demo.services.IStudentProfileService;
 public class StudentProfileServiceImpl implements IStudentProfileService {
 	Logger logger = LoggerFactory.getLogger(StudentProfileServiceImpl.class);
 	private final String ACTIVE_STATUS = "ACTIVE";
+	private final String INACTIVE_STATUS = "INACTIVE";
 	private final String DELETE_STATUS = "DELETED";
 	private final String PENDING_STATUS = "PENDING";
 	private final String DEFAULT_PASSWORD = "abc123456";
@@ -157,6 +158,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 		return studentResponseDTO;
 	}
 
+	// if school existed --> find all grade linked
 	@Override
 	public List<StudentResponseDTO> findStudentByListId(List<Long> ids) {
 		long schoolId = ids.get(0);
@@ -165,121 +167,427 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 
 		List<StudentResponseDTO> studentResponseDTOList = new ArrayList<>();
 		if (schoolId != 0) {
-			// check school existed
-			School school = iSchoolRepository.findByIdAndStatusNot(schoolId, DELETE_STATUS);
-			if (school == null) {
-				throw new ResourceNotFoundException();
-			}
-			// if existed: get schoolName
-			String schoolName = school.getSchoolName();
-			SchoolGradeDTO schoolGradeDTO = null;
-			List<ClassResponseDTO> classResponseDTOList = new ArrayList<>();
+			try {
+				// check school existed
+				School school = iSchoolRepository.findByIdAndStatusNot(schoolId, DELETE_STATUS);
+				String schoolName = "";
+				// if existed: get schoolName
+				if (school != null) {
+					schoolName = school.getSchoolName();
 
-			// find if only have schoolId
-			if (gradeId == 0 && classId == 0) {
-				// get all grade linked
-				List<SchoolGrade> schoolGradeList = iSchoolGradeRepository.findBySchoolIdAndStatusNot(schoolId,
-						DELETE_STATUS);
+					SchoolGradeDTO schoolGradeDTO = null;
+					List<ClassResponseDTO> classResponseDTOList = new ArrayList<>();
 
-				if (!schoolGradeList.isEmpty()) {
-					List<Classes> classesList = new ArrayList<>();
-					for (SchoolGrade schoolGrade : schoolGradeList) {
-						classesList.addAll(iClassRepository.findBySchoolGradeIdAndStatusNotOrderByStatusAscClassNameAsc(
-								schoolGrade.getId(), DELETE_STATUS));
+					// find if only have schoolId
+					if (gradeId == 0 && classId == 0) {
+						// get all grade linked
+						List<SchoolGrade> schoolGradeList = iSchoolGradeRepository.findBySchoolIdAndStatusNot(schoolId,
+								DELETE_STATUS);
+
+						if (!schoolGradeList.isEmpty()) {
+							List<Classes> classesList = new ArrayList<>();
+							for (SchoolGrade schoolGrade : schoolGradeList) {
+								classesList.addAll(
+										iClassRepository.findBySchoolGradeIdAndStatusNotOrderByStatusAscClassNameAsc(
+												schoolGrade.getId(), DELETE_STATUS));
+							}
+
+							if (!classesList.isEmpty()) {
+								for (Classes classes : classesList) {
+									// get all student in class
+									Grade grade = classes.getSchoolGrade().getGrade();
+									int gradeName = grade.getGradeName();
+									studentResponseDTOList
+											.addAll(findStudentByClassedId(classes.getId(), schoolName, gradeName));
+								}
+							}
+						}
 					}
+					// find if have schoolId and grade Id
+					if (gradeId != 0) {
+						Grade grade = iGradeRepository.findById(gradeId)
+								.orElseThrow(() -> new ResourceNotFoundException());
+						int gradeName = grade.getGradeName();
+						if (classId == 0) {
+							schoolGradeDTO = new SchoolGradeDTO(schoolId, gradeId);
 
-					if (!classesList.isEmpty()) {
-						for (Classes classes : classesList) {
-							// get all student in class
-							Grade grade = classes.getSchoolGrade().getGrade();
-							int gradeName = grade.getGradeName();
-							studentResponseDTOList
-									.addAll(findStudentByClassedId(classes.getId(), schoolName, gradeName));
+							// get all class with schoolGradeId
+							classResponseDTOList = iClassService.findBySchoolGradeId(schoolGradeDTO);
+							if (!classResponseDTOList.isEmpty()) {
+								for (ClassResponseDTO classResponseDTO : classResponseDTOList) {
+									// get all student
+									studentResponseDTOList.addAll(
+											findStudentByClassedId(classResponseDTO.getId(), schoolName, gradeName));
+								}
+							}
+						}
+						// find if have classesId
+						if (classId != 0) {
+							studentResponseDTOList.addAll(findStudentByClassedId(classId, schoolName, gradeName));
 						}
 					}
 				}
-			}
-			// find if have schoolId and grade Id
-			if (gradeId != 0) {
-				Grade grade = iGradeRepository.findById(gradeId).orElseThrow(() -> new ResourceNotFoundException());
-				int gradeName = grade.getGradeName();
-				if (classId == 0) {
-					schoolGradeDTO = new SchoolGradeDTO(schoolId, gradeId);
+			} catch (Exception e) {
+				logger.error("FIND: student by schoolId = " + schoolId + ", gradeId = " + gradeId + " and classId = "
+						+ classId + "! " + e.getMessage());
 
-					// get all class with schoolGradeId
-					classResponseDTOList = iClassService.findBySchoolGradeId(schoolGradeDTO);
-					if (!classResponseDTOList.isEmpty()) {
-						for (ClassResponseDTO classResponseDTO : classResponseDTOList) {
-							// get all student
-							studentResponseDTOList
-									.addAll(findStudentByClassedId(classResponseDTO.getId(), schoolName, gradeName));
-						}
-					}
-				}
-//				 find if have classesId
-				if (classId != 0) {
-					studentResponseDTOList.addAll(findStudentByClassedId(classId, schoolName, gradeName));
-				}
+				return null;
 			}
-
 		}
 
 		return studentResponseDTOList;
 	}
 
 	private List<StudentResponseDTO> findStudentByClassedId(long classesId, String schoolName, int gradeName) {
-		Classes classes = iClassRepository.findByIdAndStatusNot(classesId, DELETE_STATUS);
-		if (classes == null) {
-			throw new ResourceNotFoundException();
-		}
-		String className = classes.getClassName();
 		List<StudentResponseDTO> studentResponseDTOList = new ArrayList<>();
-		List<StudentProfile> studentProfileList = iStudentProfileRepository.findByClassesIdAndStatusNot(classesId,
-				DELETE_STATUS);
-		for (StudentProfile studentProfile : studentProfileList) {
-			Account account = studentProfile.getAccount();
-			StudentResponseDTO studentResponseDTO = modelMapper.map(account, StudentResponseDTO.class);
-			studentResponseDTO.setId(studentProfile.getId());
-			studentResponseDTO.setStudentId("MJ" + String.format("%06d", studentProfile.getId()));
-			studentResponseDTO.setSchoolName(schoolName);
-			studentResponseDTO.setGradeName(gradeName);
-			studentResponseDTO.setClassName(className);
-			studentResponseDTO.setGender(studentProfile.getGender());
-			studentResponseDTOList.add(studentResponseDTO);
+		try {
+			Classes classes = iClassRepository.findByIdAndStatusNot(classesId, DELETE_STATUS);
+			if (classes != null) {
+				String className = classes.getClassName();
+
+				List<StudentProfile> studentProfileList = iStudentProfileRepository
+						.findByClassesIdAndStatusNot(classesId, DELETE_STATUS);
+				for (StudentProfile studentProfile : studentProfileList) {
+					Account account = studentProfile.getAccount();
+					StudentResponseDTO studentResponseDTO = modelMapper.map(account, StudentResponseDTO.class);
+					studentResponseDTO.setId(studentProfile.getId());
+					studentResponseDTO.setStudentId("MJ" + String.format("%06d", studentProfile.getId()));
+					studentResponseDTO.setSchoolName(schoolName);
+					studentResponseDTO.setGradeName(gradeName);
+					studentResponseDTO.setClassName(className);
+					studentResponseDTO.setGender(studentProfile.getGender());
+					studentResponseDTOList.add(studentResponseDTO);
+				}
+			}
+		} catch (Exception e) {
+			logger.error("FIND: student by classesId = " + classesId + "! " + e.getMessage());
+
+			return null;
 		}
 
 		return studentResponseDTOList;
 	}
 
-//classId --> schoolGradeId --> gradeName --> schoolCode
-//schoolGradeId --> all className != pending --> all student active or inactive --> count max + 1
+	// classId --> schoolGradeId --> gradeName --> schoolCode
+	// schoolGradeId --> all className != pending --> all student active or inactive
+	// --> count max + 1
 	@Override
 	@Transactional
 	public String createStudenProfile(StudentRequestDTO studentRequestDTO) {
 		long classId = studentRequestDTO.getClassesId();
-		Classes classes = iClassRepository.findByIdAndStatusNot(classId, DELETE_STATUS);
-		if (classes == null) {
-			throw new ResourceNotFoundException();
+		try {
+			Classes classes = iClassRepository.findByIdAndStatusNot(classId, DELETE_STATUS);
+			if (classes == null) {
+				throw new ResourceNotFoundException();
+			}
+
+			String username = generateUsername(classes);
+			String fullName = studentRequestDTO.getFullName();
+			Account account = new Account(username, DEFAULT_PASSWORD, fullName, STUDENT_ROLE, ACTIVE_STATUS);
+			iAccountRepository.save(account);
+
+			String DoB = studentRequestDTO.getDoB();
+			String gender = studentRequestDTO.getGender();
+			String parentName = studentRequestDTO.getParentName();
+			String contact = studentRequestDTO.getContact();
+			StudentProfile studentProfile = new StudentProfile(DoB, gender, parentName, contact, ACTIVE_STATUS,
+					countStudent(classes), account, classes);
+			iStudentProfileRepository.save(studentProfile);
+		} catch (Exception e) {
+			logger.error("CREATE: student in classId =  " + classId + "! " + e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
+
+				return "NOT FOUND!";
+			}
+
+			return "CREATE FAIL!";
 		}
-		int gradeName = classes.getSchoolGrade().getGrade().getGradeName();
-		String schoolCode = classes.getSchoolGrade().getSchool().getSchoolCode()
-				+ classes.getSchoolGrade().getSchool().getSchoolCount();
-
-		long studentCount = countStudent(classes);
-		String username = generateUsername(schoolCode, gradeName, studentCount);
-		String fullName = studentRequestDTO.getFullName();
-		Account account = new Account(username, DEFAULT_PASSWORD, fullName, STUDENT_ROLE, ACTIVE_STATUS);
-		iAccountRepository.save(account);
-
-		String DoB = studentRequestDTO.getDoB();
-		String gender = studentRequestDTO.getGender();
-		String parentName = studentRequestDTO.getParentName();
-		String contact = studentRequestDTO.getContact();
-		StudentProfile studentProfile = new StudentProfile(DoB, gender, parentName, contact, ACTIVE_STATUS,
-				studentCount, account, classes);
-		iStudentProfileRepository.save(studentProfile);
 
 		return "CREATE SUCCESS!";
+	}
+
+	@Override
+	@Transactional
+	public String updateStudent(long id, StudentRequestDTO studentProfileRequestDTO) {
+		try {
+			StudentProfile studentProfile = iStudentProfileRepository.findByIdAndStatusNot(id, DELETE_STATUS);
+			if (studentProfile == null) {
+				throw new ResourceNotFoundException();
+			}
+
+			studentProfile.setDOB(studentProfileRequestDTO.getDoB());
+			studentProfile.setGender(studentProfileRequestDTO.getGender());
+			studentProfile.setParentName(studentProfileRequestDTO.getParentName());
+			studentProfile.setContact(studentProfileRequestDTO.getContact());
+			iStudentProfileRepository.save(studentProfile);
+
+			Account account = studentProfile.getAccount();
+			account.setFullName(studentProfileRequestDTO.getFullName());
+			iAccountRepository.save(account);
+		} catch (Exception e) {
+			logger.error("UPDATE: studentId = " + id + "! " + e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
+
+				return "NOT FOUND!";
+			}
+
+			return "UPDATE FAIL!";
+		}
+
+		return "UPDATE SUCCESS!";
+	}
+
+	@Override
+	@Transactional
+	public String changeStatusStudent(ListIdAndStatusDTO listIdAndStatusDTO) {
+		List<Long> ids = listIdAndStatusDTO.getIds();
+		String status = listIdAndStatusDTO.getStatus();
+		for (long id : ids) {
+
+			changeStatusOneStudent(id, status);
+		}
+
+		return "CHANGE SUCCESS!";
+	}
+
+	// active <--> inactive
+	// active, inactive --> deleted
+	// graduate: active, inactive --> pending
+	// active và inactive thì k thay đổi username
+	// delete và pending thì thay đổi username và classesId
+	@Override
+	public void changeStatusOneStudent(long id, String status) {
+		StudentProfile studentProfile = iStudentProfileRepository.findByIdAndStatusNot(id, DELETE_STATUS);
+		if (studentProfile == null) {
+			throw new ResourceNotFoundException();
+		}
+
+		Account account = studentProfile.getAccount();
+		if (status.contains(ACTIVE_STATUS)) {
+			account.setStatus(status);
+			iAccountRepository.save(account);
+
+			studentProfile.setStatus(status);
+			iStudentProfileRepository.save(studentProfile);
+		}
+		if (status.equalsIgnoreCase(DELETE_STATUS)) {
+			Classes deleteClass = iClassRepository.findById(0L).orElseThrow(() -> new ResourceNotFoundException());
+			studentProfile.setClasses(deleteClass);
+			studentProfile.setStudentCount(countStudent(deleteClass));
+
+			String username = generateUsernameDELPEND(DELETE_STATUS, deleteClass);
+			account.setUsername(username);
+			account.setStatus(status);
+			iAccountRepository.save(account);
+
+			studentProfile.setStatus(status);
+			iStudentProfileRepository.save(studentProfile);
+		}
+		if (status.equalsIgnoreCase(PENDING_STATUS)) {
+			SchoolGrade schoolGrade = studentProfile.getClasses().getSchoolGrade();
+			Classes pendingClass = iClassRepository.findBySchoolGradeIdAndClassNameIgnoreCaseAndStatusNot(
+					schoolGrade.getId(), PENDING_STATUS, DELETE_STATUS);
+			if (pendingClass == null) {
+
+				pendingClass = new Classes(PENDING_STATUS, PENDING_STATUS, schoolGrade);
+				iClassRepository.save(pendingClass);
+			}
+			studentProfile.setClasses(pendingClass);
+			studentProfile.setStudentCount(countStudent(pendingClass));
+
+			String username = generateUsernameDELPEND(PENDING_STATUS, pendingClass);
+			account.setUsername(username);
+			account.setStatus(status);
+			iAccountRepository.save(account);
+
+			studentProfile.setStatus(status);
+			iStudentProfileRepository.save(studentProfile);
+		}
+	}
+
+	// chuyển giữa các lớp đang active, chuyển từ lớp pending sang lớp active
+	// cùng khối, lớp cũ k phải lớp pending thì giữ nguyên account
+	// khác khối hoặc pending thì đổi account
+	@Override
+	public String changeClassForStudent(List<Long> studentIdList, long classesId) {
+		try {
+			Classes newClasses = iClassRepository.findByIdAndStatusNot(classesId, DELETE_STATUS);
+			if (newClasses == null) {
+				throw new ResourceNotFoundException();
+			}
+			Grade newGrade = newClasses.getSchoolGrade().getGrade();
+
+			for (long studentId : studentIdList) {
+				StudentProfile studentProfile = iStudentProfileRepository.findByIdAndStatusNot(studentId,
+						DELETE_STATUS);
+				if (studentProfile == null) {
+					throw new ResourceNotFoundException();
+				}
+
+				Grade oldGrade = studentProfile.getClasses().getSchoolGrade().getGrade();
+				if (oldGrade.equals(newGrade)) {
+					if (studentProfile.getClasses().getClassName().equalsIgnoreCase("PENDING")) {
+						String username = generateUsername(newClasses);
+						Account account = studentProfile.getAccount();
+						account.setUsername(username);
+						account.setStatus(ACTIVE_STATUS);
+						iAccountRepository.save(account);
+
+						studentProfile.setStudentCount(countStudent(newClasses));
+						studentProfile.setClasses(newClasses);
+						studentProfile.setStatus(ACTIVE_STATUS);
+						iStudentProfileRepository.save(studentProfile);
+					} else {
+						studentProfile.setClasses(newClasses);
+						iStudentProfileRepository.save(studentProfile);
+					}
+
+				} else {
+					String username = generateUsername(newClasses);
+					Account account = studentProfile.getAccount();
+					account.setUsername(username);
+					iAccountRepository.save(account);
+
+					studentProfile.setClasses(newClasses);
+					studentProfile.setStudentCount(countStudent(newClasses));
+					iStudentProfileRepository.save(studentProfile);
+				}
+			}
+		} catch (Exception e) {
+			logger.error("Change studentListId =  " + studentIdList.toString() + " to classId = " + classesId + "! "
+					+ e.getMessage());
+			throw e;
+		}
+
+		return "CHANGE SUCCESS!";
+	}
+
+	@Override
+	public void validateStudentFile(MultipartFile file, long schoolId, int gradeId,
+			HttpServletResponse httpServletResponse) throws IOException {
+		// open file
+		Workbook workbook = new XSSFWorkbook(file.getInputStream());
+
+		// check schoolGrade existed
+		SchoolGrade schoolGrade = iSchoolGradeRepository.findByGradeIdAndSchoolIdAndStatusNot(gradeId, schoolId,
+				DELETE_STATUS);
+		if (schoolGrade == null) {
+			throw new ResourceNotFoundException();
+		}
+		List<Classes> classesList = iClassRepository.findBySchoolGradeIdAndStatusNot(schoolGrade.getId(),
+				DELETE_STATUS);
+
+		// validate all sheet in excel file
+		Iterator<Sheet> sheetIterator = workbook.sheetIterator();
+		while (sheetIterator.hasNext()) {
+			Sheet sheet = sheetIterator.next();
+			List<Cell> cellList = validateSheetData(sheet, classesList);
+			if (!cellList.isEmpty()) {
+				CellStyle cellStyle = formatErrorCell(workbook);
+				for (Cell cell : cellList) {
+					cell.setCellStyle(cellStyle);
+				}
+
+				XSSFSheet tempSheet = (XSSFSheet) sheet;
+				CTWorksheet ctWorksheet = tempSheet.getCTWorksheet();
+				CTSheetViews ctSheetViews = ctWorksheet.getSheetViews();
+				CTSheetView ctSheetView = ctSheetViews.getSheetViewArray(ctSheetViews.sizeOfSheetViewArray() - 1);
+				ctSheetView.setTopLeftCell("A1");
+				workbook.setActiveSheet(0);
+
+				String fileName = file.getOriginalFilename();
+				System.out.println("have error");
+				FileOutputStream fileOut = new FileOutputStream("E:\\" + "Error-" + fileName);
+				workbook.write(fileOut);
+				fileOut.close();
+
+				ServletOutputStream outputStream = httpServletResponse.getOutputStream();
+				workbook.write(outputStream);
+				workbook.close();
+				outputStream.close();
+			} else {
+				System.out.println("no error");
+			}
+		}
+
+		workbook.close();
+	}
+
+	private List<Cell> validateSheetData(Sheet sheet, List<Classes> classesList) {
+		List<Cell> cellList = new ArrayList<>();
+		DataFormatter dataFormatter = new DataFormatter();
+
+		Iterator<Row> rowIterator = sheet.rowIterator();
+		while (rowIterator.hasNext()) {
+			Row row = rowIterator.next();
+			if (row.getRowNum() < FIRST_ROW) {
+				continue;
+			}
+			for (int i = FIRST_CELL; i < (LAST_CELL + 1); i++) {
+				Cell cell = row.getCell(i);
+				switch (i) {
+				case 1:
+					if (cell != null) {
+						String studentIdRegex = "^MJ\\d{6}$";
+						if (cell.getCellType() == CellType.STRING) {
+							boolean checkStudentIdFormat = cell.getStringCellValue().matches(studentIdRegex);
+							if (checkStudentIdFormat == false) {
+								cellList.add(cell);
+							}
+						} else {
+							cellList.add(cell);
+						}
+					}
+
+					break;
+
+				case 3:
+					if (cell == null) {
+						cellList.add(cell);
+					} else {
+						if (cell.getCellType() == CellType.BLANK) {
+							cellList.add(cell);
+						} else {
+							if (cell.getCellType() != CellType.NUMERIC) {
+								cellList.add(cell);
+							} else {
+								String dataFormat = dataFormatter.formatCellValue(cell);
+								System.out.println(dataFormat);
+								String dateFormatRegex1 = "\\d{1,2}/\\d{1,2}/\\d{2}";
+								String dateFormatRegex2 = "\\d{1,2}-[a-zA-Z]{3}-\\d{2}";
+								if (!dataFormat.matches(dateFormatRegex1) && !dataFormat.matches(dateFormatRegex2)) {
+									cellList.add(cell);
+								} else {
+									Date date = new Date();
+									if (cell.getDateCellValue().after(date)) {
+										cellList.add(cell);
+									}
+								}
+							}
+						}
+					}
+					break;
+
+				case 2:
+				case 4:
+				case 5:
+				case 6:
+					if (cell == null) {
+						cellList.add(cell);
+					} else {
+						if (cell.getCellType() == CellType.BLANK) {
+							cellList.add(cell);
+						} else {
+							if (cell.getCellType() != CellType.STRING) {
+								cellList.add(cell);
+							}
+						}
+					}
+				}
+			}
+		}
+
+		return cellList;
 	}
 
 	@Override
@@ -341,18 +649,13 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 							continue;
 						} else {
 
+							String username = generateUsername(classes);
 							Account account = studentProfile.getAccount();
-
-							String schoolCode = classes.getSchoolGrade().getSchool().getSchoolCode()
-									+ classes.getSchoolGrade().getSchool().getSchoolCount();
-							int gradeName = classes.getSchoolGrade().getGrade().getGradeName();
-							long studentCount = countStudent(classes);
-							String username = generateUsername(schoolCode, gradeName, studentCount);
 							account.setUsername(username);
 							iAccountRepository.save(account);
 
 							studentProfile.setClasses(classes);
-							studentProfile.setStudentCount(studentCount);
+							studentProfile.setStudentCount(countStudent(classes));
 							iStudentProfileRepository.save(studentProfile);
 						}
 					}
@@ -383,93 +686,6 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 		workbook.close();
 
 		return "OK";
-	}
-
-	// cùng khối, k phải lớp pending thì giữ nguyên account
-	// khác khối hoặc pending thì đổi account
-
-	@Override
-	public String changeClassForStudent(List<Long> studentIdList, long classesId) {
-		try {
-			Classes newClasses = iClassRepository.findByIdAndStatusNot(classesId, DELETE_STATUS);
-			if (newClasses == null) {
-				throw new ResourceNotFoundException();
-			}
-			Grade newGrade = newClasses.getSchoolGrade().getGrade();
-
-			for (long studentId : studentIdList) {
-				StudentProfile studentProfile = iStudentProfileRepository.findByIdAndStatusNot(studentId,
-						DELETE_STATUS);
-				if (studentProfile == null) {
-					throw new ResourceNotFoundException();
-				}
-
-				Grade oldGrade = studentProfile.getClasses().getSchoolGrade().getGrade();				
-				if (oldGrade.equals(newGrade)) {
-					if (studentProfile.getClasses().getClassName().equalsIgnoreCase("PENDING")) {
-						String username = generateUsername(newClasses);
-						Account account = studentProfile.getAccount();
-						account.setUsername(username);
-						iAccountRepository.save(account);
-
-						studentProfile.setStudentCount(countStudent(newClasses));
-					}
-
-					studentProfile.setClasses(newClasses);
-					iStudentProfileRepository.save(studentProfile);
-				} else {
-					String username = generateUsername(newClasses);
-					Account account = studentProfile.getAccount();
-					account.setUsername(username);
-					iAccountRepository.save(account);
-
-					studentProfile.setClasses(newClasses);
-					studentProfile.setStudentCount(countStudent(newClasses));
-					iStudentProfileRepository.save(studentProfile);
-				}
-			}
-		} catch (Exception e) {
-			logger.error("Change studentListId =  " + studentIdList.toString() + " to classId = " + classesId + "! "
-					+ e.getMessage());
-			throw e;
-		}
-
-		return "CHANGE SUCCESS!";
-	}
-
-//	@Override
-	public void exportFinalScore(long schoolId, int gradeId, HttpServletResponse httpServletResponse)
-			throws IOException {
-		School school = iSchoolRepository.findByIdAndStatusNot(schoolId, DELETE_STATUS);
-		if (school == null) {
-			throw new ResourceNotFoundException();
-		}
-		Grade grade = iGradeRepository.findById(gradeId).orElseThrow(() -> new ResourceNotFoundException());
-		SchoolGrade schoolGrade = iSchoolGradeRepository.findByGradeIdAndSchoolIdAndStatusNot(gradeId, schoolId,
-				DELETE_STATUS);
-		List<Classes> classesList = iClassRepository
-				.findBySchoolGradeIdAndStatusNotOrderByStatusAscClassNameAsc(schoolGrade.getId(), DELETE_STATUS);
-		if (!classesList.isEmpty()) {
-			for (int i = 0; i < classesList.size(); i++) {
-				if (classesList.get(i).getClassName().equals(PENDING_STATUS)) {
-					classesList.remove(classesList.get(i));
-					break;
-				}
-			}
-		}
-
-		List<Subject> subjectList = iSubjectRepository.findByGradeIdAndIsDisableFalse(gradeId);
-		List<Unit> unitList = new ArrayList<>();
-		if (!subjectList.isEmpty()) {
-			for (Subject subject : subjectList) {
-				int unitSize = iUnitRepository.findBySubjectIdAndIsDisableFalseOrderByUnitNameAsc(subject.getId())
-						.size();
-				if (unitSize > 0) {
-					unitList.addAll(
-							iUnitRepository.findBySubjectIdAndIsDisableFalseOrderByUnitNameAsc(subject.getId()));
-				}
-			}
-		}
 	}
 
 	@Override
@@ -747,19 +963,39 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 		outputStream.close();
 	}
 
-	@Override
-	public String generateFileNameExport(long schoolId, int gradeId, long subjectId) {
+//	@Override
+	public void exportFinalScore(long schoolId, int gradeId, HttpServletResponse httpServletResponse)
+			throws IOException {
 		School school = iSchoolRepository.findByIdAndStatusNot(schoolId, DELETE_STATUS);
+		if (school == null) {
+			throw new ResourceNotFoundException();
+		}
 		Grade grade = iGradeRepository.findById(gradeId).orElseThrow(() -> new ResourceNotFoundException());
-		Subject subject = iSubjectRepository.findByIdAndIsDisableFalse(subjectId);
+		SchoolGrade schoolGrade = iSchoolGradeRepository.findByGradeIdAndSchoolIdAndStatusNot(gradeId, schoolId,
+				DELETE_STATUS);
+		List<Classes> classesList = iClassRepository
+				.findBySchoolGradeIdAndStatusNotOrderByStatusAscClassNameAsc(schoolGrade.getId(), DELETE_STATUS);
+		if (!classesList.isEmpty()) {
+			for (int i = 0; i < classesList.size(); i++) {
+				if (classesList.get(i).getClassName().equals(PENDING_STATUS)) {
+					classesList.remove(classesList.get(i));
+					break;
+				}
+			}
+		}
 
-		String schoolName = school.getSchoolName();
-		String schoolCode = school.getSchoolCode() + school.getSchoolCount();
-		int gradeName = grade.getGradeName();
-		String subjectName = subject.getSubjectName();
-		String fileName = schoolName + "-" + schoolCode + "-Gr" + gradeName + "-" + subjectName + "-ScoreExport.xlsx";
-
-		return fileName;
+		List<Subject> subjectList = iSubjectRepository.findByGradeIdAndIsDisableFalse(gradeId);
+		List<Unit> unitList = new ArrayList<>();
+		if (!subjectList.isEmpty()) {
+			for (Subject subject : subjectList) {
+				int unitSize = iUnitRepository.findBySubjectIdAndIsDisableFalseOrderByUnitNameAsc(subject.getId())
+						.size();
+				if (unitSize > 0) {
+					unitList.addAll(
+							iUnitRepository.findBySubjectIdAndIsDisableFalseOrderByUnitNameAsc(subject.getId()));
+				}
+			}
+		}
 	}
 
 	private Cell createOneInfoCell(Workbook workbook, Row row, int column, String cellValue) {
@@ -890,102 +1126,6 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 		font.setFontHeightInPoints((short) fontSize);
 	}
 
-	@Override
-	@Transactional
-	public String updateStudent(long id, StudentRequestDTO studentProfileRequestDTO) {
-		try {
-
-			StudentProfile studentProfile = iStudentProfileRepository.findByIdAndStatusNot(id, DELETE_STATUS);
-			if (studentProfile == null) {
-				throw new ResourceNotFoundException();
-			}
-
-			studentProfile.setDOB(studentProfileRequestDTO.getDoB());
-			studentProfile.setGender(studentProfileRequestDTO.getGender());
-			studentProfile.setParentName(studentProfileRequestDTO.getParentName());
-			studentProfile.setContact(studentProfileRequestDTO.getContact());
-			iStudentProfileRepository.save(studentProfile);
-
-			Account account = studentProfile.getAccount();
-			account.setFullName(studentProfileRequestDTO.getFullName());
-			iAccountRepository.save(account);
-		} catch (Exception e) {
-			// TODO: handle exception
-		}
-		return "UPDATE SUCCESS!";
-	}
-
-	@Override
-	@Transactional
-	public String changeStatusStudent(ListIdAndStatusDTO listIdAndStatusDTO) {
-		List<Long> ids = listIdAndStatusDTO.getIds();
-		String status = listIdAndStatusDTO.getStatus();
-		for (long id : ids) {
-			StudentProfile studentProfile = iStudentProfileRepository.findByIdAndStatusNot(id, DELETE_STATUS);
-			if (studentProfile == null) {
-				throw new ResourceNotFoundException();
-			}
-		}
-
-		for (long id : ids) {
-			StudentProfile studentProfile = iStudentProfileRepository.findByIdAndStatusNot(id, DELETE_STATUS);
-			Account account = studentProfile.getAccount();
-
-			if (status.equals(DELETE_STATUS)) {
-				Classes deleteClass = iClassRepository.findById(0L).orElseThrow(() -> new ResourceNotFoundException());
-				System.out.println(deleteClass.getClassName());
-				studentProfile.setClasses(deleteClass);
-				System.out.println(deleteClass.getStudentProfileList().size());
-				studentProfile.setStudentCount(deleteClass.getStudentProfileList().size() + 1);
-
-				String username = "DEL" + String.format("%05d", deleteClass.getStudentProfileList().size() + 1);
-				System.out.println("username: " + username);
-				account.setUsername(username);
-			}
-			if (status.equals(PENDING_STATUS)) {
-				SchoolGrade schoolGrade = studentProfile.getClasses().getSchoolGrade();
-				Classes pendingClass = iClassRepository.findBySchoolGradeIdAndClassNameIgnoreCaseAndStatusNot(
-						schoolGrade.getId(), PENDING_STATUS, DELETE_STATUS);
-				if (pendingClass == null) {
-					pendingClass = new Classes();
-					pendingClass.setClassName(PENDING_STATUS);
-					pendingClass.setSchoolGrade(schoolGrade);
-					pendingClass.setStatus(PENDING_STATUS);
-					iClassRepository.save(pendingClass);
-				}
-				studentProfile.setClasses(pendingClass);
-				studentProfile.setStudentCount(pendingClass.getStudentProfileList().size() + 1);
-
-				String username = "PEND" + String.format("%05d", pendingClass.getStudentProfileList().size() + 1);
-				account.setUsername(username);
-			}
-			studentProfile.setStatus(status);
-			iStudentProfileRepository.save(studentProfile);
-
-			System.out.println(account.getId());
-			System.out.println(status);
-			account.setStatus(status);
-			iAccountRepository.save(account);
-		}
-
-		return "CHANGE SUCCESS!";
-	}
-
-	private String generateUsername(Classes classes) {
-		int gradeName = classes.getSchoolGrade().getGrade().getGradeName();
-		String schoolCode = classes.getSchoolGrade().getSchool().getSchoolCode()
-				+ classes.getSchoolGrade().getSchool().getSchoolCount();
-
-		long studentCount = countStudent(classes);
-		String username = schoolCode + String.format("%02d", gradeName) + String.format("%03d", studentCount);
-		return username;
-	}
-
-	private String generateUsername(String schoolCode, int gradeName, long studentCount) {
-		String username = schoolCode + String.format("%02d", gradeName) + String.format("%03d", studentCount);
-		return username;
-	}
-
 	private CellStyle formatErrorCell(Workbook workbook) {
 		CellStyle cellStyle = workbook.createCellStyle();
 		formatStyle(cellStyle, HorizontalAlignment.CENTER, VerticalAlignment.CENTER, BorderStyle.THIN);
@@ -1001,132 +1141,52 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 		return cellStyle;
 	}
 
-	@Override
-	public void validateStudentFile(MultipartFile file, long schoolId, int gradeId,
-			HttpServletResponse httpServletResponse) throws IOException {
-		// open file
-		Workbook workbook = new XSSFWorkbook(file.getInputStream());
+	private String generateUsername(Classes classes) {
+		int gradeName = classes.getSchoolGrade().getGrade().getGradeName();
+		String schoolCode = classes.getSchoolGrade().getSchool().getSchoolCode()
+				+ classes.getSchoolGrade().getSchool().getSchoolCount();
 
-		// check schoolGrade existed
-		SchoolGrade schoolGrade = iSchoolGradeRepository.findByGradeIdAndSchoolIdAndStatusNot(gradeId, schoolId,
-				DELETE_STATUS);
-		if (schoolGrade == null) {
-			throw new ResourceNotFoundException();
-		}
-		List<Classes> classesList = iClassRepository.findBySchoolGradeIdAndStatusNot(schoolGrade.getId(),
-				DELETE_STATUS);
-
-		// validate all sheet in excel file
-		Iterator<Sheet> sheetIterator = workbook.sheetIterator();
-		while (sheetIterator.hasNext()) {
-			Sheet sheet = sheetIterator.next();
-			List<Cell> cellList = validateSheetData(sheet, classesList);
-			if (!cellList.isEmpty()) {
-				CellStyle cellStyle = formatErrorCell(workbook);
-				for (Cell cell : cellList) {
-					cell.setCellStyle(cellStyle);
-				}
-
-				XSSFSheet tempSheet = (XSSFSheet) sheet;
-				CTWorksheet ctWorksheet = tempSheet.getCTWorksheet();
-				CTSheetViews ctSheetViews = ctWorksheet.getSheetViews();
-				CTSheetView ctSheetView = ctSheetViews.getSheetViewArray(ctSheetViews.sizeOfSheetViewArray() - 1);
-				ctSheetView.setTopLeftCell("A1");
-				workbook.setActiveSheet(0);
-
-				String fileName = file.getOriginalFilename();
-				System.out.println("have error");
-				FileOutputStream fileOut = new FileOutputStream("E:\\" + "Error-" + fileName);
-				workbook.write(fileOut);
-				fileOut.close();
-
-				ServletOutputStream outputStream = httpServletResponse.getOutputStream();
-				workbook.write(outputStream);
-				workbook.close();
-				outputStream.close();
-			} else {
-				System.out.println("no error");
-			}
-		}
-
-		workbook.close();
+		long studentCount = countStudent(classes);
+		String username = schoolCode + String.format("%02d", gradeName) + String.format("%03d", studentCount);
+		return username;
 	}
 
-	private List<Cell> validateSheetData(Sheet sheet, List<Classes> classesList) {
-		List<Cell> cellList = new ArrayList<>();
-		DataFormatter dataFormatter = new DataFormatter();
+	private String generateUsernameDELPEND(String status, Classes classes) {
+		String username = "";
+		long studentCount = countStudent(classes);
+		if (status.equalsIgnoreCase(DELETE_STATUS)) {
+			username = "DEL" + String.format("%09d", studentCount);
+		}
+		if (status.equalsIgnoreCase(PENDING_STATUS)) {
+			int gradeName = classes.getSchoolGrade().getGrade().getGradeName();
+			String schoolCode = classes.getSchoolGrade().getSchool().getSchoolCode()
+					+ classes.getSchoolGrade().getSchool().getSchoolCount();
+			username = schoolCode + "_PEND_" + String.format("%02d", gradeName) + String.format("%09d", studentCount);
+		}
+		return username;
+	}
 
-		Iterator<Row> rowIterator = sheet.rowIterator();
-		while (rowIterator.hasNext()) {
-			Row row = rowIterator.next();
-			if (row.getRowNum() < FIRST_ROW) {
-				continue;
+	@Override
+	public String generateFileNameExport(long schoolId, int gradeId, long subjectId) {
+		String fileName = "";
+		try {
+			School school = iSchoolRepository.findByIdAndStatusNot(schoolId, DELETE_STATUS);
+			Grade grade = iGradeRepository.findById(gradeId).orElseThrow(() -> new ResourceNotFoundException());
+			String subjectName = "";
+			if (subjectId > 0) {
+				Subject subject = iSubjectRepository.findByIdAndIsDisableFalse(subjectId);
+				subjectName = subject.getSubjectName() + "-";
 			}
-			for (int i = FIRST_CELL; i < (LAST_CELL + 1); i++) {
-				Cell cell = row.getCell(i);
-				switch (i) {
-				case 1:
-					if (cell != null) {
-						String studentIdRegex = "^MJ\\d{6}$";
-						if (cell.getCellType() == CellType.STRING) {
-							boolean checkStudentIdFormat = cell.getStringCellValue().matches(studentIdRegex);
-							if (checkStudentIdFormat == false) {
-								cellList.add(cell);
-							}
-						} else {
-							cellList.add(cell);
-						}
-					}
 
-					break;
+			String schoolCode = school.getSchoolCode() + school.getSchoolCount();
+			int gradeName = grade.getGradeName();
 
-				case 3:
-					if (cell == null) {
-						cellList.add(cell);
-					} else {
-						if (cell.getCellType() == CellType.BLANK) {
-							cellList.add(cell);
-						} else {
-							if (cell.getCellType() != CellType.NUMERIC) {
-								cellList.add(cell);
-							} else {
-								String dataFormat = dataFormatter.formatCellValue(cell);
-								System.out.println(dataFormat);
-								String dateFormatRegex1 = "\\d{1,2}/\\d{1,2}/\\d{2}";
-								String dateFormatRegex2 = "\\d{1,2}-[a-zA-Z]{3}-\\d{2}";
-								if (!dataFormat.matches(dateFormatRegex1) && !dataFormat.matches(dateFormatRegex2)) {
-									cellList.add(cell);
-								} else {
-									Date date = new Date();
-									if (cell.getDateCellValue().after(date)) {
-										cellList.add(cell);
-									}
-								}
-							}
-						}
-					}
-					break;
-
-				case 2:
-				case 4:
-				case 5:
-				case 6:
-					if (cell == null) {
-						cellList.add(cell);
-					} else {
-						if (cell.getCellType() == CellType.BLANK) {
-							cellList.add(cell);
-						} else {
-							if (cell.getCellType() != CellType.STRING) {
-								cellList.add(cell);
-							}
-						}
-					}
-				}
-			}
+			fileName = schoolCode + "-Grade" + gradeName + "-" + subjectName;
+		} catch (Exception e) {
+			// TODO: handle exception
 		}
 
-		return cellList;
+		return fileName;
 	}
 
 //	private String parseToCell(int rowIndex, int columnIndex) {
@@ -1156,32 +1216,42 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 //	}
 
 	private long countStudent(Classes classes) {
-		List<Classes> classesList = classes.getSchoolGrade().getClassList();
-		List<StudentProfile> studentProfileList = new ArrayList<>();
-		if (!classesList.isEmpty()) {
-			for (Classes classes2 : classesList) {
-				if (classes2.getStatus().equals(PENDING_STATUS)) {
-					classesList.remove(classes2);
-				} else {
+		String className = classes.getClassName();
+		long studentCount = 1;
+
+		if (!className.equalsIgnoreCase(PENDING_STATUS) && classes.getId() != 0) {
+			List<Classes> classesList = iClassRepository.findBySchoolGradeIdAndStatus(classes.getSchoolGrade().getId(),
+					ACTIVE_STATUS);
+			classesList.addAll(
+					iClassRepository.findBySchoolGradeIdAndStatus(classes.getSchoolGrade().getId(), INACTIVE_STATUS));
+			if (!classesList.isEmpty()) {
+				List<StudentProfile> studentProfileList = new ArrayList<>();
+				for (Classes classes2 : classesList) {
 					StudentProfile studentProfile = iStudentProfileRepository
 							.findFirstByClassesIdAndStatusLikeOrderByStudentCountDesc(classes2.getId(), ACTIVE_STATUS);
-
 					if (studentProfile != null) {
 						studentProfileList.add(studentProfile);
 					}
 				}
+				if (!studentProfileList.isEmpty()) {
+					for (StudentProfile studentProfile : studentProfileList) {
+						if (studentProfile.getStudentCount() > studentCount) {
+							studentCount = studentProfile.getStudentCount();
+						}
+					}
+					studentCount++;
+				}
+			}
+		} else {
+			StudentProfile studentProfile = iStudentProfileRepository
+					.findFirstByClassesIdAndStatusLikeOrderByStudentCountDesc(classes.getId(), classes.getStatus());
+
+			if (studentProfile != null) {
+				studentCount = studentProfile.getStudentCount() + 1;
 			}
 		}
 
-		long studentCount = 1;
-		if (!studentProfileList.isEmpty()) {
-			for (StudentProfile studentProfile : studentProfileList) {
-				if (studentProfile.getStudentCount() > studentCount) {
-					studentCount = studentProfile.getStudentCount();
-				}
-			}
-			studentCount++;
-		}
 		return studentCount;
 	}
+
 }

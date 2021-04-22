@@ -22,15 +22,19 @@ public interface IStudentProfileService {
 	String updateStudent(long id, StudentRequestDTO studentProfileRequestDTO);
 
 	String changeStatusStudent(ListIdAndStatusDTO listIdAndStatusDTO);
-	
+
+	void changeStatusOneStudent(long id, String status);
+
 	String changeClassForStudent(List<Long> studentIdList, long classesId);
 
-	void validateStudentFile(MultipartFile file, long schoolId, int gradeId, HttpServletResponse httpServletResponse) throws IOException;
+	void validateStudentFile(MultipartFile file, long schoolId, int gradeId, HttpServletResponse httpServletResponse)
+			throws IOException;
 
-	String importStudent(MultipartFile file, long schoolId, int gradeId, HttpServletResponse httpServletResponse) throws IOException;
+	String importStudent(MultipartFile file, long schoolId, int gradeId, HttpServletResponse httpServletResponse)
+			throws IOException;
 
 	void exportScoreBySubjectId(long schoolId, int gradeId, long subjectId, HttpServletResponse httpServletResponse)
 			throws IOException;
-	
+
 	String generateFileNameExport(long schoolId, int gradeId, long subjectId);
 }

@@ -2,6 +2,7 @@ package com.example.demo.controllers;
 
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
@@ -84,13 +85,12 @@ public class StudentProfileController {
 	public void validateStudent(HttpServletResponse response, @RequestParam MultipartFile file,
 			@RequestParam long schoolId, @RequestParam int gradeId) throws IOException {
 		response.setContentType("application/octet-stream");
-//		response.setCharacterEncoding("UTF-8");
+		String fileName = iStudentProfileService.generateFileNameExport(schoolId, gradeId, 0) + "Validate.xlxs";
 		String headerKey = "Content-Disposition";
-		String headerValue = "attachment; filename=" + "TestValidate.xlsx";
+		String headerValue = "attachment; filename=" + fileName;
 		response.setHeader(headerKey, headerValue);
 
 		iStudentProfileService.validateStudentFile(file, schoolId, gradeId, response);
-//		return ResponseEntity.status(HttpStatus.OK).body("OK");
 	}
 
 	@PostMapping("/student/import")
@@ -128,7 +128,7 @@ public class StudentProfileController {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
 		}
 		String status = idAndStatusDTOList.getStatus();
-		if (!status.equals("ACTIVE") && !status.equals("INACTIVE") && !status.equals("DELETED")) {
+		if (!status.equals("ACTIVE") && !status.equals("INACTIVE") && !status.equals("DELETED")&& !status.equals("PENDING")) {
 
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("STATUS INVALID!");
 		}
@@ -141,9 +141,9 @@ public class StudentProfileController {
 	public ResponseEntity<String> changeClassForStudent(@RequestParam List<Long> studentIdList,
 			@RequestParam long classesId) {
 		String error = "";
-		if (studentIdList == null) {	
+		if (studentIdList == null) {
 			error += "\nStudentIds INVALID";
-		}else {
+		} else {
 			if (studentIdList.isEmpty()) {
 				error += "\nStudentIds INVALID";
 			}

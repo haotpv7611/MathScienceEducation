@@ -333,7 +333,7 @@ public class UnitServiceImpl implements IUnitService {
 
 	// before delete unit
 	// check unit have progressTest
-	// delete lesson --> question --> unit
+	
 	@Override
 	public String deleteUnit(long id) {
 		try {
@@ -352,6 +352,7 @@ public class UnitServiceImpl implements IUnitService {
 		return "DELETE SUCCESS!";
 	}
 
+	// delete lesson --> question --> delete unit
 	@Override
 	@Transactional
 	public void deleteOneUnit(long id) {

@@ -196,6 +196,7 @@ public class SubjectServiceImpl implements ISubjectService {
 		return "UPDATE SUCCESS!";
 	}
 
+	//delete progressTest --> unit --> delete subject
 	@Override
 	@Transactional
 	public String deleteSubject(long id) {

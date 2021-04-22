@@ -23,6 +23,7 @@ import com.example.demo.dtos.ClassResponseDTO;
 import com.example.demo.dtos.GradeClassDTO;
 import com.example.demo.dtos.ListIdAndStatusDTO;
 import com.example.demo.dtos.SchoolGradeDTO;
+import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.services.IClassService;
 
 @CrossOrigin
@@ -35,14 +36,24 @@ public class ClassController {
 
 	@PostMapping("/schoolGradeId")
 	public ResponseEntity<List<ClassResponseDTO>> findBySchoolGradeId(@RequestBody SchoolGradeDTO schoolGradeDTO) {
+		List<ClassResponseDTO> response = iClassService.findBySchoolGradeId(schoolGradeDTO);
+		if (response == null) {
 
-		return ResponseEntity.ok(iClassService.findBySchoolGradeId(schoolGradeDTO));
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+
+		return ResponseEntity.ok(response);
 	}
 
 	@GetMapping("/{schoolId}")
 	public ResponseEntity<List<GradeClassDTO>> findGradeClassBySchoolId(@PathVariable long schoolId) {
+		List<GradeClassDTO> response = iClassService.findGradeClassBySchoolId(schoolId);
+		if (response == null) {
 
-		return ResponseEntity.ok(iClassService.findGradeClassBySchoolId(schoolId));
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+
+		return ResponseEntity.ok(response);
 	}
 
 	@PostMapping
@@ -85,8 +96,21 @@ public class ClassController {
 
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
 		}
+		String response = iClassService.updateClass(id, classRequestDTO);
+		if (response.contains("NOT FOUND")) {
 
-		return ResponseEntity.ok(iClassService.updateClass(id, classRequestDTO));
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
+		if (response.contains("FAIL")) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+		if (response.contains("EXISTED")) {
+
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+		}
+
+		return ResponseEntity.ok(response);
 	}
 
 	@PutMapping("/changeStatus")
@@ -105,8 +129,18 @@ public class ClassController {
 
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("STATUS INVALID!");
 		}
-		String response = iClassService.changeStatusClass(idAndStatusDTOList);
+		try {
+			String response = iClassService.changeStatusClass(idAndStatusDTOList);
 
-		return ResponseEntity.ok(response);
+			return ResponseEntity.ok(response);
+
+		} catch (Exception e) {
+			if (e instanceof ResourceNotFoundException) {
+
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).body("NOT FOUND");
+			}
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("CHANGE FAIL!");
+		}
 	}
 }
