@@ -1,6 +1,7 @@
 package com.example.demo.services.impls;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +19,6 @@ import com.example.demo.dtos.ListIdAndStatusDTO;
 import com.example.demo.dtos.SchoolGradeDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.Classes;
-import com.example.demo.models.Grade;
 import com.example.demo.models.SchoolGrade;
 import com.example.demo.repositories.IClassRepository;
 import com.example.demo.repositories.ISchoolGradeRepository;
@@ -58,44 +58,36 @@ public class ClassServiceImpl implements IClassService {
 		return classResponseDTOList;
 	}
 
+	// get all grade linked by gradeName
+	// get all class by gradeId
+
 	@Override
 	public List<GradeClassDTO> findGradeClassBySchoolId(long schoolId) {
 		List<GradeClassDTO> gradeClassDTOList = new ArrayList<>();
-
 		try {
 			List<SchoolGrade> schoolGradeList = iSchoolGradeRepository.findBySchoolIdAndStatusNot(schoolId,
 					DELETED_STATUS);
-
 			if (!schoolGradeList.isEmpty()) {
-				List<Grade> gradeList = new ArrayList<>();
 				for (SchoolGrade schoolGrade : schoolGradeList) {
-					gradeList.add(schoolGrade.getGrade());
-				}
-				System.out.println("Grade = " + gradeList.size());
+					List<ClassChangeDTO> classChangeDTOList = new ArrayList<>();
+					List<Classes> classesList = iClassRepository
+							.findBySchoolGradeIdAndStatusNotOrderByStatusAscClassNameAsc(schoolGrade.getId(),
+									DELETED_STATUS);
 
-				if (!gradeList.isEmpty()) {
-					for (Grade grade : gradeList) {
-						List<ClassChangeDTO> classChangeDTOList = new ArrayList<>();
-						List<Classes> classesList = iClassRepository
-								.findBySchoolGradeIdAndStatusNotOrderByStatusAscClassNameAsc(grade.getId(),
-										DELETED_STATUS);
-
-						System.out.println("Class = " + classesList.size());
-						if (!classesList.isEmpty()) {
-							for (Classes classes : classesList) {
-								ClassChangeDTO classChangeDTO = new ClassChangeDTO(classes.getId(),
-										classes.getClassName());
-								classChangeDTOList.add(classChangeDTO);
-							}
+					if (!classesList.isEmpty()) {
+						for (Classes classes : classesList) {
+							ClassChangeDTO classChangeDTO = new ClassChangeDTO(classes.getId(), classes.getClassName());
+							classChangeDTOList.add(classChangeDTO);
 						}
-						System.out.println("ClassDTO = " + classChangeDTOList.size());
-						GradeClassDTO gradeClassDTO = new GradeClassDTO(grade.getId(), grade.getGradeName(),
-								classChangeDTOList);
-						gradeClassDTOList.add(gradeClassDTO);
 					}
+					GradeClassDTO gradeClassDTO = new GradeClassDTO(schoolGrade.getGrade().getId(),
+							schoolGrade.getGrade().getGradeName(), classChangeDTOList);
+					gradeClassDTOList.add(gradeClassDTO);
 				}
 
-				System.out.println("total = " + gradeClassDTOList.size());
+				if (!gradeClassDTOList.isEmpty()) {
+					gradeClassDTOList.sort(Comparator.comparing(GradeClassDTO::getName));
+				}
 			}
 		} catch (Exception e) {
 			// TODO: handle exception
@@ -130,21 +122,8 @@ public class ClassServiceImpl implements IClassService {
 
 			return "EXISTED";
 		}
-		
-		String className = classRequestDTO.getClassName();
 
-//		List<Classes> classesList = iClassRepository.findBySchoolGradeIdAndStatusNot(schoolGrade.getId(),
-//				DELETED_STATUS);
-//
-//		String className = classRequestDTO.getClassName();
-//		if (!classesList.isEmpty()) {
-//			for (Classes classes : classesList) {
-//				if (classes.getClassName().equalsIgnoreCase(className)) {
-//
-//					return "EXISTED";
-//				}
-//			}
-//		}
+		String className = classRequestDTO.getClassName();
 
 		Classes classes = new Classes();
 		classes.setSchoolGrade(schoolGrade);
