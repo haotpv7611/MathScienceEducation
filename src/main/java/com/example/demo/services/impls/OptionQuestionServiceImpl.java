@@ -96,7 +96,7 @@ public class OptionQuestionServiceImpl implements IOptionQuestionService {
 	// done ok
 	@Override
 	public void updateExerciseOptionQuestion(long id, String optionText, boolean isCorrect) {
-//		try {
+		try {
 			// validate optionId
 			OptionQuestion optionQuestion = iOptionQuestionRepository.findByIdAndIsDisableFalse(id);
 			if (optionQuestion == null) {
@@ -107,9 +107,9 @@ public class OptionQuestionServiceImpl implements IOptionQuestionService {
 			optionQuestion.setOptionText(optionText);
 			optionQuestion.setCorrect(isCorrect);
 			iOptionQuestionRepository.save(optionQuestion);
-//		} catch (Exception e) {
-//			throw e;
-//		}
+		} catch (Exception e) {
+			throw e;
+		}
 	}
 
 	// done ok
