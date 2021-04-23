@@ -36,5 +36,7 @@ public interface IStudentProfileService {
 	void exportScoreBySubjectId(long schoolId, int gradeId, long subjectId, HttpServletResponse httpServletResponse)
 			throws IOException;
 
+	void exportFinalScore(long schoolId, int gradeId, HttpServletResponse httpServletResponse) throws IOException;
+
 	String generateFileNameExport(long schoolId, int gradeId, long subjectId);
 }

@@ -803,14 +803,13 @@ public class QuestionServiceImpl implements IQuestionService {
 		// file đầu vào k phải là fake thì update file mới và xóa file cũ
 		if (imageFile != null) {
 			if (imageFile.getOriginalFilename().equalsIgnoreCase("fakeFile")) {
-				System.out.println(imageFile.getOriginalFilename());
 				if (questionImageUrl != null) {
 					if (!questionImageUrl.isEmpty()) {
 						iFirebaseService.deleteFile(questionImageUrl);
+						question.setQuestionImageUrl(null);
 					}
 				}
-			} else {
-				System.out.println("bug");
+			} else {				
 				question.setQuestionImageUrl(iFirebaseService.uploadFile(imageFile));
 				if (questionImageUrl != null) {
 					if (!questionImageUrl.isEmpty()) {
@@ -824,6 +823,7 @@ public class QuestionServiceImpl implements IQuestionService {
 				if (questionAudioUrl != null) {
 					if (!questionAudioUrl.isEmpty()) {
 						iFirebaseService.deleteFile(questionAudioUrl);
+						question.setQuestionAudioUrl(null);
 					}
 				}
 			} else {

@@ -528,14 +528,16 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				switch (i) {
 				case 1:
 					if (cell != null) {
-						String studentIdRegex = "^MJ\\d{6}$";
-						if (cell.getCellType() == CellType.STRING) {
-							boolean checkStudentIdFormat = cell.getStringCellValue().matches(studentIdRegex);
-							if (checkStudentIdFormat == false) {
+						if (cell.getCellType() != CellType.BLANK) {
+							String studentIdRegex = "^MJ\\d{6}$";
+							if (cell.getCellType() == CellType.STRING) {
+								boolean checkStudentIdFormat = cell.getStringCellValue().matches(studentIdRegex);
+								if (checkStudentIdFormat == false) {
+									cellList.add(cell);
+								}
+							} else {
 								cellList.add(cell);
 							}
-						} else {
-							cellList.add(cell);
 						}
 					}
 
@@ -688,6 +690,9 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 		return "OK";
 	}
 
+	// tìm tất cả các lớp dựa trên schoolId và gradeId --> tất cả hs
+	// tìm tất cả các unit, lesson, exercise, progressTest dựa trên subjectId
+	// in ra điểm trung bình từng exericse của từng hs, nếu chưa làm in ra not yet
 	@Override
 	public void exportScoreBySubjectId(long schoolId, int gradeId, long subjectId,
 			HttpServletResponse httpServletResponse) throws IOException {
@@ -772,10 +777,10 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 			for (Classes classes : classesList) {
 				List<StudentProfile> studentProfileList = new ArrayList<>();
 				if (!classesList.isEmpty()) {
-					if (!iStudentProfileRepository.findByClassesIdAndStatusNot(classes.getId(), subjectName)
+					if (!iStudentProfileRepository.findByClassesIdAndStatusNot(classes.getId(), DELETE_STATUS)
 							.isEmpty()) {
 						studentProfileList.addAll(
-								iStudentProfileRepository.findByClassesIdAndStatusNot(classes.getId(), subjectName));
+								iStudentProfileRepository.findByClassesIdAndStatusNot(classes.getId(), DELETE_STATUS));
 					}
 				}
 
@@ -963,7 +968,10 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 		outputStream.close();
 	}
 
-//	@Override
+	// tìm tất cả các lớp dựa trên schoolId và gradeId --> tất cả hs
+	// tìm tất cả các subject, unit và progressTest
+	// in ra điểm trung bình của unit và progressTest của từng hs
+	@Override
 	public void exportFinalScore(long schoolId, int gradeId, HttpServletResponse httpServletResponse)
 			throws IOException {
 		School school = iSchoolRepository.findByIdAndStatusNot(schoolId, DELETE_STATUS);
@@ -984,18 +992,120 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 			}
 		}
 
+		Map<String, Integer> subjectMap = new LinkedHashMap<>();
+		Map<String, Integer> lessonMap = new LinkedHashMap<>();
 		List<Subject> subjectList = iSubjectRepository.findByGradeIdAndIsDisableFalse(gradeId);
 		List<Unit> unitList = new ArrayList<>();
+		List<ProgressTest> progressTestList = new ArrayList<>();
 		if (!subjectList.isEmpty()) {
+			int totalUnit = 0;
 			for (Subject subject : subjectList) {
 				int unitSize = iUnitRepository.findBySubjectIdAndIsDisableFalseOrderByUnitNameAsc(subject.getId())
 						.size();
 				if (unitSize > 0) {
 					unitList.addAll(
 							iUnitRepository.findBySubjectIdAndIsDisableFalseOrderByUnitNameAsc(subject.getId()));
+					totalUnit += unitSize;
 				}
+				int progressTestSize = iProgressTestRepository.findBySubjectIdAndIsDisableFalse(subject.getId()).size();
+				if (progressTestSize > 0) {
+					progressTestList.addAll(iProgressTestRepository.findBySubjectIdAndIsDisableFalse(subject.getId()));
+					totalUnit += progressTestSize;
+				}
+
+				if (totalUnit > 0) {
+					subjectMap.put(subject.getSubjectName(), totalUnit);
+				}
+//				unitList = new ArrayList<>();
 			}
 		}
+
+		// header value content
+		String schoolName = school.getSchoolName();
+		String schoolCode = school.getSchoolCode() + school.getSchoolCount();
+		int gradeName = grade.getGradeName();
+		SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-yyyy");
+		String exportDate = sdf.format(new Date());
+
+		Workbook workbook = new XSSFWorkbook();
+		if (!classesList.isEmpty()) {
+			for (Classes classes : classesList) {
+				List<StudentProfile> studentProfileList = new ArrayList<>();
+				if (!classesList.isEmpty()) {
+					if (!iStudentProfileRepository.findByClassesIdAndStatusNot(classes.getId(), DELETE_STATUS)
+							.isEmpty()) {
+						studentProfileList.addAll(
+								iStudentProfileRepository.findByClassesIdAndStatusNot(classes.getId(), DELETE_STATUS));
+					}
+				}
+
+				Sheet sheet = workbook.createSheet(classes.getClassName());
+				sheet.setColumnWidth(0, 1500);
+				sheet.setColumnWidth(1, 3500);
+				sheet.setColumnWidth(2, 9000);
+				for (int i = 3; i < unitList.size() + progressTestList.size() + 3; i++) {
+					sheet.setColumnWidth(i, 3500);
+				}
+
+				for (int i = 0; i < studentProfileList.size() + 10; i++) {
+					if (i == 5) {
+						continue;
+					}
+					sheet.createRow(i);
+				}
+
+				createArrangeInfoCell(workbook, sheet, sheet.getRow(0), 2, 0, 0, 2, 5,
+						"FINAL SCORE GRADUATE EXPORT TABLE", 0);
+
+				// create Table Information
+				createOneInfoCell(workbook, sheet.getRow(1), 2, "School Name:");
+				createArrangeInfoCell(workbook, sheet, sheet.getRow(1), 3, 1, 1, 3, 5, schoolName, 0);
+				createOneInfoCell(workbook, sheet.getRow(2), 2, "School Code:");
+				createArrangeInfoCell(workbook, sheet, sheet.getRow(2), 3, 2, 2, 3, 5, schoolCode, 0);
+				createOneInfoCell(workbook, sheet.getRow(3), 2, "Grade:");
+				createArrangeInfoCell(workbook, sheet, sheet.getRow(3), 3, 3, 3, 3, 5, "", gradeName);
+				createOneInfoCell(workbook, sheet.getRow(4), 2, "Export Date:");
+				createArrangeInfoCell(workbook, sheet, sheet.getRow(4), 3, 4, 4, 3, 5, exportDate, 0);
+
+				// create Header
+				createArrangeHeaderCell(workbook, sheet, sheet.getRow(6), 0, 6, 7, 0, 0, "No.");
+				createArrangeHeaderCell(workbook, sheet, sheet.getRow(6), 1, 6, 7, 1, 1, "StudentID");
+				createArrangeHeaderCell(workbook, sheet, sheet.getRow(6), 2, 6, 7, 2, 2, "Fullname");
+
+				int beginColumn = 3;
+				if (subjectMap != null) {
+					if (!subjectMap.isEmpty()) {
+						for (Entry<String, Integer> entry : subjectMap.entrySet()) {
+							if (entry.getValue() > 1) {
+								createArrangeHeaderCell(workbook, sheet, sheet.getRow(6), beginColumn, 6, 6,
+										beginColumn, beginColumn + entry.getValue() - 1, entry.getKey());
+								beginColumn += entry.getValue();
+							} else {
+								createOneHeaderCell(workbook, sheet.getRow(6), beginColumn, entry.getKey());
+								beginColumn += entry.getValue();
+							}
+						}
+					}
+				}
+
+				// unit
+				for (int i = 3; i < unitList.size() + 3; i++) {
+					createOneHeaderCell(workbook, sheet.getRow(7), i, "Unit " + unitList.get(i - 3).getUnitName());
+				}
+
+				// progressTest
+				for (int i = unitList.size() + 3; i < unitList.size() + progressTestList.size() + 3; i++) {
+					createOneHeaderCell(workbook, sheet.getRow(7), i,
+							progressTestList.get(i - unitList.size() - 3).getProgressTestName());
+				}
+			}
+
+		}
+
+		FileOutputStream fileOut = new FileOutputStream(
+				"E:\\" + schoolName + "-" + gradeName + "-FinalScoreExport.xlsx");
+		workbook.write(fileOut);
+		fileOut.close();
 	}
 
 	private Cell createOneInfoCell(Workbook workbook, Row row, int column, String cellValue) {

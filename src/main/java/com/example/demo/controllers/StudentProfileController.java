@@ -116,6 +116,18 @@ public class StudentProfileController {
 		iStudentProfileService.exportScoreBySubjectId(schoolId, gradeId, subjectId, response);
 	}
 
+	@GetMapping("/student/export/scoreFinal")
+	public void exportFinalScore(HttpServletResponse response, @RequestParam long schoolId, @RequestParam int gradeId)
+			throws IOException {
+		response.setContentType("application/octet-stream");
+//		response.setCharacterEncoding("UTF-8");
+		String headerKey = "Content-Disposition";
+		String headerValue = "attachment; filename="
+				+ iStudentProfileService.generateFileNameExport(schoolId, gradeId, 0);
+		response.setHeader(headerKey, headerValue);
+		iStudentProfileService.exportFinalScore(schoolId, gradeId, response);
+	}
+
 	@PutMapping("/student")
 	public ResponseEntity<String> changeStatusStudent(@Valid @RequestBody ListIdAndStatusDTO idAndStatusDTOList,
 			BindingResult bindingResult) {
@@ -128,7 +140,8 @@ public class StudentProfileController {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
 		}
 		String status = idAndStatusDTOList.getStatus();
-		if (!status.equals("ACTIVE") && !status.equals("INACTIVE") && !status.equals("DELETED")&& !status.equals("PENDING")) {
+		if (!status.equals("ACTIVE") && !status.equals("INACTIVE") && !status.equals("DELETED")
+				&& !status.equals("PENDING")) {
 
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("STATUS INVALID!");
 		}
