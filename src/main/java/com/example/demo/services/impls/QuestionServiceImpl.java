@@ -537,6 +537,9 @@ public class QuestionServiceImpl implements IQuestionService {
 				if (!optionIdDeleteList.isEmpty()) {
 					for (long optionIdDelete : optionIdDeleteList) {
 						OptionQuestion optionQuestion = iOptionQuestionRepository.findByIdAndIsDisableFalse(optionIdDelete);
+						if (optionQuestion == null) {
+							throw new ResourceNotFoundException();
+						}
 						iOptionsService.deleteOptionQuestion(optionIdDelete);
 					}
 				}

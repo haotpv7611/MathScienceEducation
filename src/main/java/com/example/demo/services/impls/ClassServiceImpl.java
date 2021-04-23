@@ -32,6 +32,9 @@ import com.example.demo.services.IStudentProfileService;
 @Service
 public class ClassServiceImpl implements IClassService {
 	Logger logger = LoggerFactory.getLogger(ClassServiceImpl.class);
+
+	private final String ACTIVE_STATUS = "ACTIVE";
+	private final String INACTIVE_STATUS = "INACTIVE";
 	private final String DELETED_STATUS = "DELETED";
 
 	@Autowired
@@ -39,10 +42,10 @@ public class ClassServiceImpl implements IClassService {
 
 	@Autowired
 	private IClassRepository iClassRepository;
-	
+
 	@Autowired
 	private IStudentProfileRepository iStudentProfileRepository;
-	
+
 	@Autowired
 	private IStudentProfileService iStudentProfileService;
 
@@ -86,9 +89,9 @@ public class ClassServiceImpl implements IClassService {
 			if (!schoolGradeList.isEmpty()) {
 				for (SchoolGrade schoolGrade : schoolGradeList) {
 					List<ClassChangeDTO> classChangeDTOList = new ArrayList<>();
-					List<Classes> classesList = iClassRepository
-							.findBySchoolGradeIdAndStatusNotOrderByStatusAscClassNameAsc(schoolGrade.getId(),
-									DELETED_STATUS);
+					List<Classes> classesList = iClassRepository.findBySchoolGradeIdAndStatus(schoolId, ACTIVE_STATUS);
+					classesList.addAll(
+							iClassRepository.findBySchoolGradeIdAndStatus(schoolGrade.getId(), INACTIVE_STATUS));
 
 					if (!classesList.isEmpty()) {
 						for (Classes classes : classesList) {
@@ -220,7 +223,7 @@ public class ClassServiceImpl implements IClassService {
 				logger.error("Change status: list classId = " + ids.toString() + "! " + e.getMessage());
 				throw e;
 			}
-			
+
 		}
 
 		return "CHANGE SUCCESS!";
@@ -235,14 +238,15 @@ public class ClassServiceImpl implements IClassService {
 			if (classes == null) {
 				throw new ResourceNotFoundException();
 			}
-			
-			List<StudentProfile> studentProfileList = iStudentProfileRepository.findByClassesIdAndStatusNot(id, DELETED_STATUS);
+
+			List<StudentProfile> studentProfileList = iStudentProfileRepository.findByClassesIdAndStatusNot(id,
+					DELETED_STATUS);
 			if (!studentProfileList.isEmpty()) {
 				for (StudentProfile studentProfile : studentProfileList) {
 					iStudentProfileService.changeStatusOneStudent(studentProfile.getId(), status);
-				}				
+				}
 			}
-			
+
 			classes.setStatus(status);
 			iClassRepository.save(classes);
 		} catch (Exception e) {

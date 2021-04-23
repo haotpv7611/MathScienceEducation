@@ -71,7 +71,11 @@ public class BannerImageServiceImpl implements IBannerImageService {
 
 		// 6. create new entity and return SUCCESS
 		BannerImage bannerImage = new BannerImage();
-		bannerImage.setDescription(description.trim());
+		if (description != null) {
+			if (!description.trim().isEmpty()) {
+				bannerImage.setDescription(description.trim());
+			}
+		}		
 		bannerImage.setImageUrl(iFirebaseService.uploadFile(file));
 		bannerImage.setStatus("ACTIVE");
 		bannerImage.setAccountId(accountId);

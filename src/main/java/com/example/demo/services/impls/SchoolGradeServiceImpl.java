@@ -9,18 +9,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.dtos.GradeResponseDTO;
 import com.example.demo.dtos.ListIdAndStatusDTO;
 import com.example.demo.dtos.SchoolGradeDTO;
 import com.example.demo.dtos.SchoolResponseDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
+import com.example.demo.models.Classes;
 import com.example.demo.models.Grade;
 import com.example.demo.models.School;
 import com.example.demo.models.SchoolGrade;
+import com.example.demo.repositories.IClassRepository;
 import com.example.demo.repositories.IGradeRepository;
 import com.example.demo.repositories.ISchoolGradeRepository;
 import com.example.demo.repositories.ISchoolRepository;
+import com.example.demo.services.IClassService;
 import com.example.demo.services.ISchoolGradeService;
 
 @Service
@@ -29,16 +33,22 @@ public class SchoolGradeServiceImpl implements ISchoolGradeService {
 	private final String DELETED_STATUS = "DELETED";
 
 	@Autowired
-	IGradeRepository iGradeRepository;
+	private IGradeRepository iGradeRepository;
 
 	@Autowired
-	ISchoolRepository iSchoolRepository;
+	private ISchoolRepository iSchoolRepository;
 
 	@Autowired
-	ISchoolGradeRepository iSchoolGradeRepository;
+	private ISchoolGradeRepository iSchoolGradeRepository;
 
 	@Autowired
-	ModelMapper modelMapper;
+	private IClassRepository iClassRepository;
+
+	@Autowired
+	private IClassService iClassService;
+
+	@Autowired
+	private ModelMapper modelMapper;
 
 	@Override
 	public List<SchoolResponseDTO> findSchoolLinkedByGradeId(int gradeId) {
@@ -104,6 +114,7 @@ public class SchoolGradeServiceImpl implements ISchoolGradeService {
 //	 validate before remove
 //	 add function active
 	@Override
+	@Transactional
 	public void changeStatusGradeAndSchool(ListIdAndStatusDTO listIdAndStatusDTO) {
 		int gradeId = Math.toIntExact(listIdAndStatusDTO.getIds().get(0));
 		long schoolId = listIdAndStatusDTO.getIds().get(1);
@@ -120,9 +131,13 @@ public class SchoolGradeServiceImpl implements ISchoolGradeService {
 			}
 
 			String status = listIdAndStatusDTO.getStatus();
-			if (status.equalsIgnoreCase(DELETED_STATUS)) {
-				// delete lower level
+
+			List<Classes> classesList = iClassRepository.findBySchoolGradeIdAndStatusNot(schoolGrade.getId(),
+					DELETED_STATUS);
+			for (Classes classes : classesList) {
+				iClassService.changeStatusOneClass(classes.getId(), status);
 			}
+
 			schoolGrade.setStatus(status);
 			iSchoolGradeRepository.save(schoolGrade);
 		} catch (Exception e) {
