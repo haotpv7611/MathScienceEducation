@@ -149,10 +149,15 @@ public class OptionQuestionServiceImpl implements IOptionQuestionService {
 			if (imageFile != null) {
 				if (!imageFile.isEmpty()) {
 					optionQuestion.setOptionImageUrl(iFirebaseService.uploadFile(imageFile));
+					if (optionImageUrl != null) {
+						if (!optionImageUrl.isEmpty()) {
+							iFirebaseService.deleteFile(optionImageUrl);
+						}
+					}
 				}
 			}
 			iOptionQuestionRepository.save(optionQuestion);
-			iFirebaseService.deleteFile(optionImageUrl);
+//			iFirebaseService.deleteFile(optionImageUrl);
 		} catch (Exception e) {
 			throw e;
 		}

@@ -689,6 +689,7 @@ public class QuestionServiceImpl implements IQuestionService {
 			question.setQuestionAudioUrl(null);
 			iQuestionRepository.save(question);
 			if (questionImageUrl != null) {
+				
 				iFirebaseService.deleteFile(questionImageUrl);
 			}
 			if (questionAudioUrl != null) {
@@ -789,21 +790,22 @@ public class QuestionServiceImpl implements IQuestionService {
 		String questionAudioUrl = question.getQuestionAudioUrl();
 		if (imageFile != null) {
 			question.setQuestionImageUrl(iFirebaseService.uploadFile(imageFile));
+			if (questionImageUrl != null) {
+				if (!questionImageUrl.isEmpty()) {
+					iFirebaseService.deleteFile(questionImageUrl);
+				}
+			}
 		}
 		if (audioFile != null) {
 			question.setQuestionAudioUrl(iFirebaseService.uploadFile(audioFile));
+			if (questionAudioUrl != null) {
+				if (!questionAudioUrl.isEmpty()) {
+					iFirebaseService.deleteFile(questionAudioUrl);
+				}
+			}
 		}
 		iQuestionRepository.save(question);
-		if (questionImageUrl != null) {
-			if (!questionImageUrl.isEmpty()) {
-				iFirebaseService.deleteFile(questionImageUrl);
-			}
-		}
-		if (questionAudioUrl != null) {
-			if (!questionAudioUrl.isEmpty()) {
-				iFirebaseService.deleteFile(questionAudioUrl);
-			}
-		}
+
 	}
 
 }
