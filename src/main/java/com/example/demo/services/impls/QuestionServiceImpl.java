@@ -502,16 +502,14 @@ public class QuestionServiceImpl implements IQuestionService {
 			}
 			// validate option data input
 			for (int i = 0; i < optionIdList.size(); i++) {
-
 				if (optionIdList.get(i) == 0) {
-					iOptionsService.createExerciseOptionQuestion(question.getId(), optionTextList.get(i),
-							isCorrectList.get(i));
-				}
-
-				OptionQuestion optionQuestion = iOptionQuestionRepository
-						.findByIdAndIsDisableFalse(optionIdList.get(i));
-				if (optionQuestion == null) {
-					throw new ResourceNotFoundException();
+					continue;
+				} else {
+					OptionQuestion optionQuestion = iOptionQuestionRepository
+							.findByIdAndIsDisableFalse(optionIdList.get(i));
+					if (optionQuestion == null) {
+						throw new ResourceNotFoundException();
+					}
 				}
 			}
 			String optionError = validateExerciseOptionInput(optionTextList);
@@ -526,8 +524,13 @@ public class QuestionServiceImpl implements IQuestionService {
 
 			// last: update list option and return
 			for (int i = 0; i < optionIdList.size(); i++) {
-				iOptionsService.updateExerciseOptionQuestion(optionIdList.get(i), optionTextList.get(i),
-						isCorrectList.get(i));
+				if (optionIdList.get(i) == 0) {
+					iOptionsService.createExerciseOptionQuestion(question.getId(), optionTextList.get(i),
+							isCorrectList.get(i));
+				} else {
+					iOptionsService.updateExerciseOptionQuestion(optionIdList.get(i), optionTextList.get(i),
+							isCorrectList.get(i));
+				}
 			}
 		} catch (Exception e) {
 			logger.error("UPDATE: questionId = " + id + "! " + e.getMessage());
@@ -800,12 +803,14 @@ public class QuestionServiceImpl implements IQuestionService {
 		// file đầu vào k phải là fake thì update file mới và xóa file cũ
 		if (imageFile != null) {
 			if (imageFile.getOriginalFilename().equalsIgnoreCase("fakeFile")) {
+				System.out.println(imageFile.getOriginalFilename());
 				if (questionImageUrl != null) {
 					if (!questionImageUrl.isEmpty()) {
 						iFirebaseService.deleteFile(questionImageUrl);
 					}
 				}
 			} else {
+				System.out.println("bug");
 				question.setQuestionImageUrl(iFirebaseService.uploadFile(imageFile));
 				if (questionImageUrl != null) {
 					if (!questionImageUrl.isEmpty()) {
