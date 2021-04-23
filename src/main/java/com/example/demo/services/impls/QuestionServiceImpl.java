@@ -495,7 +495,7 @@ public class QuestionServiceImpl implements IQuestionService {
 		error += Util.validateFile(imageFile, "image", "\nNot supported this file type for image!");
 		error += Util.validateFile(audioFile, "audio", "\nNot supported this file type for audio!");
 
-		try {
+//		try {
 			Question question = iQuestionRepository.findByIdAndIsDisableFalse(id);
 			if (question == null) {
 				throw new ResourceNotFoundException();
@@ -522,15 +522,15 @@ public class QuestionServiceImpl implements IQuestionService {
 				iOptionsService.updateExerciseOptionQuestion(optionIdList.get(i), optionTextList.get(i),
 						isCorrectList.get(i));
 			}
-		} catch (Exception e) {
-			logger.error("UPDATE: questionId = " + id + "! " + e.getMessage());
-			if (e instanceof ResourceNotFoundException) {
-
-				return "NOT FOUND!";
-			}
-
-			return "UPDATE FAIL!";
-		}
+//		} catch (Exception e) {
+//			logger.error("UPDATE: questionId = " + id + "! " + e.getMessage());
+//			if (e instanceof ResourceNotFoundException) {
+//
+//				return "NOT FOUND!";
+//			}
+//
+//			return "UPDATE FAIL!";
+//		}
 
 		return "UPDATE SUCCESS!";
 	}
