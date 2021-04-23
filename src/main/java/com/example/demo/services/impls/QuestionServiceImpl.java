@@ -495,14 +495,21 @@ public class QuestionServiceImpl implements IQuestionService {
 		error += Util.validateFile(imageFile, "image", "\nNot supported this file type for image!");
 		error += Util.validateFile(audioFile, "audio", "\nNot supported this file type for audio!");
 
-//		try {
+		try {
 			Question question = iQuestionRepository.findByIdAndIsDisableFalse(id);
 			if (question == null) {
 				throw new ResourceNotFoundException();
 			}
 			// validate option data input
-			for (long optionId : optionIdList) {
-				OptionQuestion optionQuestion = iOptionQuestionRepository.findByIdAndIsDisableFalse(optionId);
+			for (int i = 0; i < optionIdList.size(); i++) {
+
+				if (optionIdList.get(i) == 0) {
+					iOptionsService.createExerciseOptionQuestion(question.getId(), optionTextList.get(i),
+							isCorrectList.get(i));
+				}
+
+				OptionQuestion optionQuestion = iOptionQuestionRepository
+						.findByIdAndIsDisableFalse(optionIdList.get(i));
 				if (optionQuestion == null) {
 					throw new ResourceNotFoundException();
 				}
@@ -522,15 +529,15 @@ public class QuestionServiceImpl implements IQuestionService {
 				iOptionsService.updateExerciseOptionQuestion(optionIdList.get(i), optionTextList.get(i),
 						isCorrectList.get(i));
 			}
-//		} catch (Exception e) {
-//			logger.error("UPDATE: questionId = " + id + "! " + e.getMessage());
-//			if (e instanceof ResourceNotFoundException) {
-//
-//				return "NOT FOUND!";
-//			}
-//
-//			return "UPDATE FAIL!";
-//		}
+		} catch (Exception e) {
+			logger.error("UPDATE: questionId = " + id + "! " + e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
+
+				return "NOT FOUND!";
+			}
+
+			return "UPDATE FAIL!";
+		}
 
 		return "UPDATE SUCCESS!";
 	}
@@ -689,7 +696,7 @@ public class QuestionServiceImpl implements IQuestionService {
 			question.setQuestionAudioUrl(null);
 			iQuestionRepository.save(question);
 			if (questionImageUrl != null) {
-				
+
 				iFirebaseService.deleteFile(questionImageUrl);
 			}
 			if (questionAudioUrl != null) {
@@ -788,19 +795,38 @@ public class QuestionServiceImpl implements IQuestionService {
 		question.setScore(score);
 		String questionImageUrl = question.getQuestionImageUrl();
 		String questionAudioUrl = question.getQuestionAudioUrl();
+
+		// file đầu vào là fake --> nếu trước đó có file thì xóa, k có file thì k làm gì
+		// file đầu vào k phải là fake thì update file mới và xóa file cũ
 		if (imageFile != null) {
-			question.setQuestionImageUrl(iFirebaseService.uploadFile(imageFile));
-			if (questionImageUrl != null) {
-				if (!questionImageUrl.isEmpty()) {
-					iFirebaseService.deleteFile(questionImageUrl);
+			if (imageFile.getOriginalFilename().equalsIgnoreCase("fakeFile")) {
+				if (questionImageUrl != null) {
+					if (!questionImageUrl.isEmpty()) {
+						iFirebaseService.deleteFile(questionImageUrl);
+					}
+				}
+			} else {
+				question.setQuestionImageUrl(iFirebaseService.uploadFile(imageFile));
+				if (questionImageUrl != null) {
+					if (!questionImageUrl.isEmpty()) {
+						iFirebaseService.deleteFile(questionImageUrl);
+					}
 				}
 			}
 		}
 		if (audioFile != null) {
-			question.setQuestionAudioUrl(iFirebaseService.uploadFile(audioFile));
-			if (questionAudioUrl != null) {
-				if (!questionAudioUrl.isEmpty()) {
-					iFirebaseService.deleteFile(questionAudioUrl);
+			if (audioFile.getOriginalFilename().equalsIgnoreCase("fakeFile")) {
+				if (questionAudioUrl != null) {
+					if (!questionAudioUrl.isEmpty()) {
+						iFirebaseService.deleteFile(questionAudioUrl);
+					}
+				}
+			} else {
+				question.setQuestionAudioUrl(iFirebaseService.uploadFile(audioFile));
+				if (questionAudioUrl != null) {
+					if (!questionAudioUrl.isEmpty()) {
+						iFirebaseService.deleteFile(questionAudioUrl);
+					}
 				}
 			}
 		}
