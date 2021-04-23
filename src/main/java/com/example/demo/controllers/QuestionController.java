@@ -163,10 +163,10 @@ public class QuestionController {
 			@RequestParam(required = false) MultipartFile audioFile, @RequestParam String questionTitle,
 			@RequestParam(required = false) String description, @RequestParam float score,
 			@RequestParam List<Long> optionIdList, @RequestParam List<String> optionTextList,
-			@RequestParam List<Boolean> isCorrectList) throws SizeLimitExceededException, IOException {
+			@RequestParam List<Boolean> isCorrectList, @RequestParam List<Long> optionIdDeleteList) throws SizeLimitExceededException, IOException {
 
 		String response = iQuestionService.updateExerciseQuestion(id, imageFile, audioFile, questionTitle, description,
-				score, optionIdList, optionTextList, isCorrectList);
+				score, optionIdList, optionTextList, isCorrectList, optionIdDeleteList);
 		if (response.contains("NOT FOUND")) {
 
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);

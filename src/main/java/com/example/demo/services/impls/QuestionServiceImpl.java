@@ -489,7 +489,7 @@ public class QuestionServiceImpl implements IQuestionService {
 	@Transactional
 	public String updateExerciseQuestion(long id, MultipartFile imageFile, MultipartFile audioFile,
 			String questionTitle, String description, float score, List<Long> optionIdList, List<String> optionTextList,
-			List<Boolean> isCorrectList) throws SizeLimitExceededException, IOException {
+			List<Boolean> isCorrectList, List<Long> optionIdDeleteList) throws SizeLimitExceededException, IOException {
 		// validate question data input
 		String error = validateQuestionInput(questionTitle, description, score);
 		error += Util.validateFile(imageFile, "image", "\nNot supported this file type for image!");
@@ -530,6 +530,15 @@ public class QuestionServiceImpl implements IQuestionService {
 				} else {
 					iOptionsService.updateExerciseOptionQuestion(optionIdList.get(i), optionTextList.get(i),
 							isCorrectList.get(i));
+				}
+			}
+			
+			if (optionIdDeleteList != null) {
+				if (!optionIdDeleteList.isEmpty()) {
+					for (long optionIdDelete : optionIdDeleteList) {
+						OptionQuestion optionQuestion = iOptionQuestionRepository.findByIdAndIsDisableFalse(optionIdDelete);
+						iOptionsService.deleteOptionQuestion(optionIdDelete);
+					}
 				}
 			}
 		} catch (Exception e) {
