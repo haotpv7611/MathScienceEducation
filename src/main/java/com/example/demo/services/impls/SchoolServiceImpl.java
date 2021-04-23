@@ -8,22 +8,34 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.dtos.IdAndStatusDTO;
+import com.example.demo.dtos.ListIdAndStatusDTO;
 import com.example.demo.dtos.SchoolRequestDTO;
 import com.example.demo.dtos.SchoolResponseDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.School;
+import com.example.demo.models.SchoolGrade;
+import com.example.demo.repositories.ISchoolGradeRepository;
 import com.example.demo.repositories.ISchoolLevelRepository;
 import com.example.demo.repositories.ISchoolRepository;
+import com.example.demo.services.ISchoolGradeService;
 import com.example.demo.services.ISchoolService;
 
 @Service
 public class SchoolServiceImpl implements ISchoolService {
+
+	private final String DELETED_STATUS = "DELETED";
 
 	@Autowired
 	private ISchoolRepository iSchoolRepository;
 
 	@Autowired
 	private ISchoolLevelRepository iSchoolLevelRepository;
+
+	@Autowired
+	private ISchoolGradeRepository iSchoolGradeRepository;
+
+	@Autowired
+	private ISchoolGradeService iSchoolGradeService;
 
 	@Autowired
 	private ModelMapper modelMapper;
@@ -104,12 +116,24 @@ public class SchoolServiceImpl implements ISchoolService {
 		school.setStatus(idAndStatusDTO.getStatus());
 		iSchoolRepository.save(school);
 
-		// thiếu change status liên kết
+		List<SchoolGrade> schoolGradeList = iSchoolGradeRepository.findBySchoolIdAndStatusNot(school.getId(), DELETED_STATUS);
+		if (!schoolGradeList.isEmpty()) {
+			for (SchoolGrade schoolGrade : schoolGradeList) {
+				List<Long> ids = new ArrayList<>();
+				ids.add(Long.valueOf( schoolGrade.getGrade().getId()));
+				ids.add(school.getId());
+				ListIdAndStatusDTO listIdAndStatusDTO = new ListIdAndStatusDTO();
+				listIdAndStatusDTO.setIds(ids);
+				listIdAndStatusDTO.setStatus(idAndStatusDTO.getStatus());
+				
+				iSchoolGradeService.changeStatusGradeAndSchool(listIdAndStatusDTO);
+			}
+		}
 
 		return "CHANGE SUCCESS!";
 	}
 
-	//done
+	// done
 	@Override
 	public List<SchoolResponseDTO> findAllSchool() {
 
@@ -122,9 +146,9 @@ public class SchoolServiceImpl implements ISchoolService {
 			for (School school : schoolList) {
 				SchoolResponseDTO schoolResponseDTO = modelMapper.map(school, SchoolResponseDTO.class);
 				String schoolCount = String.valueOf(school.getSchoolCount());
-				if (school.getSchoolCount() == 1) {
-					schoolCount = "";
-				}
+//				if (school.getSchoolCount() == 1) {
+//					schoolCount = "";
+//				}
 				schoolResponseDTO.setSchoolCode(school.getSchoolCode() + schoolCount);
 				schoolResponseDTO.setSchoolLevel(school.getSchoolLevel().getDescription());
 				schoolDTOList.add(schoolResponseDTO);

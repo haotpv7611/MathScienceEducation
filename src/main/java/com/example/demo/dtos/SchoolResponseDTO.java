@@ -88,10 +88,10 @@ public class SchoolResponseDTO {
 		this.schoolDistrict = schoolDistrict;
 	}
 
-	public static Object builder() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+//	public static Object builder() {
+//		// TODO Auto-generated method stub
+//		return null;
+//	}
 
 	/**
 	 * @return the schoolCode
