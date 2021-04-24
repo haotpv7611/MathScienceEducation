@@ -113,20 +113,20 @@ public class ExerciseTakenServiceImpl implements IExerciseTakenService {
 			if (exercise == null) {
 				throw new ResourceNotFoundException();
 			}
-			long lessonId = exercise.getLessonId();
-			Lesson lesson = iLessonRepository.findByIdAndIsDisableFalse(lessonId);
-			long unitId = lesson.getUnitId();
-			long progressTestId = exercise.getProgressTestId();
-			
+
 			ExerciseTaken exerciseTaken = modelMapper.map(exerciseTakenRequestDTO, ExerciseTaken.class);
-			if (exercise.isProgressTest()) {
-				exerciseTaken.setProgressTestId(progressTestId);
-				exerciseTaken.setUnitId(0);
-			} else {
-				exerciseTaken.setProgressTestId(0);
-				exerciseTaken.setUnitId(unitId);
-			}
+
 			iExerciseTakenRepository.save(exerciseTaken);
+
+			long lessonId = exercise.getLessonId();
+			long unitId = 0;
+			if (lessonId != 0) {
+				Lesson lesson = iLessonRepository.findByIdAndIsDisableFalse(lessonId);
+				if (lesson != null) {
+					unitId = lesson.getUnitId();
+				}
+			}
+			long progressTestId = exercise.getProgressTestId();
 
 			StudentRecord studentRecord = iStudentRecordRepository.findByUnitIdAndAccountId(unitId, accountId);
 			if (studentRecord == null) {
@@ -135,7 +135,7 @@ public class ExerciseTakenServiceImpl implements IExerciseTakenService {
 				if (exercise.isProgressTest()) {
 					studentRecord.setProgressTestId(progressTestId);
 					studentRecord.setUnitId(0);
-				}else {
+				} else {
 					studentRecord.setProgressTestId(0);
 					studentRecord.setUnitId(unitId);
 				}
@@ -228,8 +228,8 @@ public class ExerciseTakenServiceImpl implements IExerciseTakenService {
 					List<Exercise> exerciseList = new ArrayList<>();
 					long progressTestId = entry.getValue();
 					// get all exercise by progress id
-					exerciseList.addAll(
-							iExerciseRepository.findByProgressTestIdAndStatusNotOrderByExerciseNameAsc(progressTestId, DELETED_STATUS));
+					exerciseList.addAll(iExerciseRepository
+							.findByProgressTestIdAndStatusNotOrderByExerciseNameAsc(progressTestId, DELETED_STATUS));
 					totalExericse = 0 + exerciseList.size();
 					List<ExerciseResponseDTO> exerciseResponseDTOList = new ArrayList<>();
 					for (Exercise exercise : exerciseList) {
