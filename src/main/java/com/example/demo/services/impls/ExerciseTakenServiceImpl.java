@@ -113,34 +113,31 @@ public class ExerciseTakenServiceImpl implements IExerciseTakenService {
 			if (exercise == null) {
 				throw new ResourceNotFoundException();
 			}
-
+			long lessonId = exercise.getLessonId();
+			Lesson lesson = iLessonRepository.findByIdAndIsDisableFalse(lessonId);
+			long unitId = lesson.getUnitId();
+			long progressTestId = exercise.getProgressTestId();
+			
 			ExerciseTaken exerciseTaken = modelMapper.map(exerciseTakenRequestDTO, ExerciseTaken.class);
 			if (exercise.isProgressTest()) {
-				exerciseTaken.setProgressTestId(exercise.getProgressTestId());
+				exerciseTaken.setProgressTestId(progressTestId);
 				exerciseTaken.setUnitId(0);
 			} else {
 				exerciseTaken.setProgressTestId(0);
-				long lessonId = exercise.getLessonId();
-				Lesson lesson = iLessonRepository.findByIdAndIsDisableFalse(lessonId);
-				exerciseTaken.setUnitId(lesson.getUnitId());
+				exerciseTaken.setUnitId(unitId);
 			}
-			System.out.println(exerciseTakenRequestDTO.getTotalScore());
-			System.out.println(exerciseTaken.getTotalScore());
 			iExerciseTakenRepository.save(exerciseTaken);
 
-			StudentRecord studentRecord = iStudentRecordRepository.findByExerciseIdAndAccountId(exerciseId, accountId);
+			StudentRecord studentRecord = iStudentRecordRepository.findByUnitIdAndAccountId(unitId, accountId);
 			if (studentRecord == null) {
 				studentRecord = new StudentRecord();
-				studentRecord.setExerciseId(exerciseId);
 				studentRecord.setAccountId(accountId);
 				if (exercise.isProgressTest()) {
-					studentRecord.setProgressTestId(exercise.getProgressTestId());
+					studentRecord.setProgressTestId(progressTestId);
 					studentRecord.setUnitId(0);
 				}else {
 					studentRecord.setProgressTestId(0);
-					long lessonId = exercise.getLessonId();
-					Lesson lesson = iLessonRepository.findByIdAndIsDisableFalse(lessonId);
-					studentRecord.setUnitId(lesson.getUnitId());
+					studentRecord.setUnitId(unitId);
 				}
 				studentRecord.setListExerciseTakenScore(String.valueOf(exerciseTakenRequestDTO.getTotalScore() + " "));
 				studentRecord.setAverageScore(exerciseTakenRequestDTO.getTotalScore());
@@ -151,14 +148,10 @@ public class ExerciseTakenServiceImpl implements IExerciseTakenService {
 				String[] scoreList = listExerciseTakenScore.split(" ");
 
 				float totalScore = 0;
-				System.out.println(scoreList.length + " length");
 				if (scoreList.length > 0) {
 					for (String score : scoreList) {
-						System.out.println(score + " score");
 						totalScore += Float.parseFloat(score);
-						System.out.println(totalScore + " total");
 					}
-					System.out.println((totalScore / scoreList.length) + " average");
 					studentRecord.setAverageScore(totalScore / scoreList.length);
 				}
 

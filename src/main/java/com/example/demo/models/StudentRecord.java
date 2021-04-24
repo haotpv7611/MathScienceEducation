@@ -11,7 +11,6 @@ public class StudentRecord {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
 	private long accountId;
-	private long exerciseId;
 	private long unitId;
 	private long progressTestId;
 	private String listExerciseTakenScore;
@@ -29,20 +28,6 @@ public class StudentRecord {
 	 */
 	public void setAccountId(long accountId) {
 		this.accountId = accountId;
-	}
-
-	/**
-	 * @return the exerciseId
-	 */
-	public long getExerciseId() {
-		return exerciseId;
-	}
-
-	/**
-	 * @param exerciseId the exerciseId to set
-	 */
-	public void setExerciseId(long exerciseId) {
-		this.exerciseId = exerciseId;
 	}
 
 	/**
