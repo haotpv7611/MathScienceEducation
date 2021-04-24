@@ -35,6 +35,7 @@ public class ClassServiceImpl implements IClassService {
 
 	private final String ACTIVE_STATUS = "ACTIVE";
 	private final String INACTIVE_STATUS = "INACTIVE";
+	private final String PENDING_STATUS = "PENDING";
 	private final String DELETED_STATUS = "DELETED";
 
 	@Autowired
@@ -64,7 +65,13 @@ public class ClassServiceImpl implements IClassService {
 					.findBySchoolGradeIdAndStatusNotOrderByStatusAscClassNameAsc(schoolGrade.getId(), "DELETED");
 			if (!classList.isEmpty()) {
 				for (Classes classes : classList) {
+					if (classes.getClassName().equalsIgnoreCase("PENDING")) {
+						System.out.println(classes.getStatus());
+					}
 					ClassResponseDTO classResponseDTO = modelMapper.map(classes, ClassResponseDTO.class);
+					if (classResponseDTO.getClassName().equalsIgnoreCase("PENDING")) {
+						System.out.println(classResponseDTO.getStatus());
+					}
 					classResponseDTOList.add(classResponseDTO);
 				}
 			}
@@ -230,6 +237,7 @@ public class ClassServiceImpl implements IClassService {
 	}
 
 	// change status all student in class --> change status class
+	// class pending only delete
 	@Override
 	@Transactional
 	public void changeStatusOneClass(long id, String status) {
@@ -239,15 +247,28 @@ public class ClassServiceImpl implements IClassService {
 				throw new ResourceNotFoundException();
 			}
 
-			List<StudentProfile> studentProfileList = iStudentProfileRepository.findByClassesIdAndStatusNot(id,
-					DELETED_STATUS);
-			if (!studentProfileList.isEmpty()) {
-				for (StudentProfile studentProfile : studentProfileList) {
-					iStudentProfileService.changeStatusOneStudent(studentProfile.getId(), status);
+			if (status.equalsIgnoreCase(DELETED_STATUS)) {
+				List<StudentProfile> studentProfileList = iStudentProfileRepository.findByClassesIdAndStatusNot(id,
+						DELETED_STATUS);
+				if (!studentProfileList.isEmpty()) {
+					for (StudentProfile studentProfile : studentProfileList) {
+						iStudentProfileService.changeStatusOneStudent(studentProfile.getId(), status);
+					}
+					classes.setStatus(status);
+				}
+			} else {
+				if (!classes.getClassName().equalsIgnoreCase(PENDING_STATUS)) {
+					List<StudentProfile> studentProfileList = iStudentProfileRepository.findByClassesIdAndStatusNot(id,
+							DELETED_STATUS);
+					if (!studentProfileList.isEmpty()) {
+						for (StudentProfile studentProfile : studentProfileList) {
+							iStudentProfileService.changeStatusOneStudent(studentProfile.getId(), status);
+						}
+						classes.setStatus(status);
+					}
 				}
 			}
 
-			classes.setStatus(status);
 			iClassRepository.save(classes);
 		} catch (Exception e) {
 			logger.error("Change status: one classesId = " + id + "! " + e.getMessage());

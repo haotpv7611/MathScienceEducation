@@ -3,6 +3,7 @@ package com.example.demo.services.impls;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -15,11 +16,11 @@ import java.util.Map.Entry;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
@@ -28,6 +29,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.CellAddress;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.RegionUtil;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -85,9 +87,9 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 	private final String PENDING_STATUS = "PENDING";
 	private final String DEFAULT_PASSWORD = "abc123456";
 	private final int STUDENT_ROLE = 3;
-	private final int FIRST_ROW = 7;
-	private final int FIRST_CELL = 1;
-	private final int LAST_CELL = 6;
+	private final int FIRST_STUDENT_ROW = 7;
+	private final int FIRST_COLUMN = 1;
+	private final int LAST_COLUMN = 6;
 
 	@Autowired
 	ISchoolRepository iSchoolRepository;
@@ -464,7 +466,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 
 	@Override
 	public void validateStudentFile(MultipartFile file, long schoolId, int gradeId,
-			HttpServletResponse httpServletResponse) throws IOException {
+			HttpServletResponse httpServletResponse) throws IOException, ParseException {
 		// open file
 		Workbook workbook = new XSSFWorkbook(file.getInputStream());
 
@@ -474,6 +476,9 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 		if (schoolGrade == null) {
 			throw new ResourceNotFoundException();
 		}
+		School school = schoolGrade.getSchool();
+		int gradeName = schoolGrade.getGrade().getGradeName();
+		String schoolCode = school.getSchoolCode() + school.getSchoolCount();
 		List<Classes> classesList = iClassRepository.findBySchoolGradeIdAndStatusNot(schoolGrade.getId(),
 				DELETE_STATUS);
 
@@ -481,22 +486,23 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 		Iterator<Sheet> sheetIterator = workbook.sheetIterator();
 		while (sheetIterator.hasNext()) {
 			Sheet sheet = sheetIterator.next();
-			List<Cell> cellList = validateSheetData(sheet, classesList);
+			List<Cell> cellList = validateSheetData(sheet, classesList, schoolCode, gradeName);
 			if (!cellList.isEmpty()) {
 				CellStyle cellStyle = formatErrorCell(workbook);
 				for (Cell cell : cellList) {
 					cell.setCellStyle(cellStyle);
 				}
 
+				// set view default sheet index = 1, view A1, cell active A1
 				XSSFSheet tempSheet = (XSSFSheet) sheet;
 				CTWorksheet ctWorksheet = tempSheet.getCTWorksheet();
 				CTSheetViews ctSheetViews = ctWorksheet.getSheetViews();
 				CTSheetView ctSheetView = ctSheetViews.getSheetViewArray(ctSheetViews.sizeOfSheetViewArray() - 1);
 				ctSheetView.setTopLeftCell("A1");
+				sheet.setActiveCell(new CellAddress("A1"));
 				workbook.setActiveSheet(0);
 
 				String fileName = file.getOriginalFilename();
-				System.out.println("have error");
 				FileOutputStream fileOut = new FileOutputStream("E:\\" + "Error-" + fileName);
 				workbook.write(fileOut);
 				fileOut.close();
@@ -506,29 +512,93 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				workbook.close();
 				outputStream.close();
 			} else {
-				System.out.println("no error");
+
 			}
 		}
 
 		workbook.close();
 	}
 
-	private List<Cell> validateSheetData(Sheet sheet, List<Classes> classesList) {
+	private List<Cell> validateSheetData(Sheet sheet, List<Classes> classesList, String schoolCode, int gradeName)
+			throws ParseException {
 		List<Cell> cellList = new ArrayList<>();
-		DataFormatter dataFormatter = new DataFormatter();
 
 		Iterator<Row> rowIterator = sheet.rowIterator();
 		while (rowIterator.hasNext()) {
 			Row row = rowIterator.next();
-			if (row.getRowNum() < FIRST_ROW) {
+
+			// check schoolCode
+			if (row.getRowNum() == 2) {
+				Cell cell = row.getCell(3);
+				if (cell == null) {
+					cellList.add(cell);
+				} else {
+					if (cell.getCellType() == CellType.BLANK || cell.toString().isBlank()) {
+						cellList.add(cell);
+					} else {
+						if (cell.getCellType() != CellType.STRING) {
+							cellList.add(cell);
+						} else {
+							if (!cell.getStringCellValue().equalsIgnoreCase(schoolCode)) {
+								cellList.add(cell);
+							}
+						}
+					}
+				}
+
+			}
+			// check gradeName
+			if (row.getRowNum() == 3) {
+				Cell cell = row.getCell(3);
+				if (cell == null) {
+					cellList.add(cell);
+				} else {
+					if (cell.getCellType() == CellType.BLANK || cell.toString().isBlank()) {
+						cellList.add(cell);
+					} else {
+						if (cell.getCellType() == CellType.STRING) {
+							if (!cell.getStringCellValue().equalsIgnoreCase(String.valueOf(gradeName))) {
+								cellList.add(cell);
+							}
+						} else if (cell.getCellType() == CellType.NUMERIC) {
+							if (cell.getNumericCellValue() != gradeName) {
+								cellList.add(cell);
+							}
+						} else {
+							cellList.add(cell);
+						}
+					}
+				}
+			}
+
+			if (row.getRowNum() < FIRST_STUDENT_ROW) {
 				continue;
 			}
-			for (int i = FIRST_CELL; i < (LAST_CELL + 1); i++) {
+
+			// if all cell in row is empty: continue
+			int totalEmptyCell = 0;
+			for (int i = FIRST_COLUMN; i < (LAST_COLUMN + 1); i++) {
+
+				Cell cell = row.getCell(i);
+
+				if (cell == null) {
+					totalEmptyCell++;
+				} else {
+					if (cell.getCellType() == CellType.BLANK || cell.toString().isBlank()) {
+						totalEmptyCell++;
+					}
+				}
+			}
+			if (totalEmptyCell == 6) {
+				continue;
+			}
+
+			for (int i = FIRST_COLUMN; i < (LAST_COLUMN + 1); i++) {
 				Cell cell = row.getCell(i);
 				switch (i) {
 				case 1:
 					if (cell != null) {
-						if (cell.getCellType() != CellType.BLANK) {
+						if (cell.getCellType() != CellType.BLANK || cell.toString().isBlank()) {
 							String studentIdRegex = "^MJ\\d{6}$";
 							if (cell.getCellType() == CellType.STRING) {
 								boolean checkStudentIdFormat = cell.getStringCellValue().matches(studentIdRegex);
@@ -544,27 +614,52 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 					break;
 
 				case 3:
+					// cell null or blank or not date type is string and numberic or date > current
+					// is invalid
 					if (cell == null) {
 						cellList.add(cell);
 					} else {
-						if (cell.getCellType() == CellType.BLANK) {
+						if (cell.getCellType() == CellType.BLANK || cell.toString().isBlank()) {
 							cellList.add(cell);
 						} else {
-							if (cell.getCellType() != CellType.NUMERIC) {
-								cellList.add(cell);
-							} else {
-								String dataFormat = dataFormatter.formatCellValue(cell);
-								System.out.println(dataFormat);
-								String dateFormatRegex1 = "\\d{1,2}/\\d{1,2}/\\d{2}";
-								String dateFormatRegex2 = "\\d{1,2}-[a-zA-Z]{3}-\\d{2}";
-								if (!dataFormat.matches(dateFormatRegex1) && !dataFormat.matches(dateFormatRegex2)) {
+							// nếu copy paste định dạng sẽ là string
+							// hỗ trợ 2 format dd/MM/yyyy và dd-MM-yyyy
+							// parse string to date và kiểm tra
+							if (cell.getCellType() == CellType.STRING) {
+								String dateFormatRegex1 = "\\d{1,2}/\\d{1,2}/\\d{4}";
+								String dateFormatRegex2 = "\\d{1,2}-\\d{1,2}-\\d{4}";
+								SimpleDateFormat simpleDateFormat = null;
+								if (cell.toString().trim().matches(dateFormatRegex1)) {
+									simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy");
+								}
+								if (cell.toString().trim().matches(dateFormatRegex2)) {
+									simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy");
+								}
+								if (simpleDateFormat == null) {
 									cellList.add(cell);
 								} else {
-									Date date = new Date();
-									if (cell.getDateCellValue().after(date)) {
+									simpleDateFormat.setLenient(false);
+									try {
+										Date date = simpleDateFormat.parse(cell.toString().trim());
+										if (date.after(new Date())) {
+											cellList.add(cell);
+										}
+									} catch (ParseException pe) {
 										cellList.add(cell);
 									}
 								}
+
+							} else if (cell.getCellType() == CellType.NUMERIC) {
+								if (HSSFDateUtil.isCellDateFormatted(cell) == false) {
+									cellList.add(cell);
+								}
+								Date date = new Date();
+								if (cell.getDateCellValue().after(date)) {
+									cellList.add(cell);
+								}
+
+							} else {
+								cellList.add(cell);
 							}
 						}
 					}
@@ -573,11 +668,29 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				case 2:
 				case 4:
 				case 5:
-				case 6:
+					// cell null or blank or not String type or have number is invalid
 					if (cell == null) {
 						cellList.add(cell);
 					} else {
-						if (cell.getCellType() == CellType.BLANK) {
+						if (cell.getCellType() == CellType.BLANK || cell.toString().isBlank()) {
+							cellList.add(cell);
+						} else {
+							if (cell.getCellType() != CellType.STRING) {
+								cellList.add(cell);
+							} else {
+								if (!cell.getStringCellValue().matches("^[\\p{L} .'-]+$")) {
+									cellList.add(cell);
+								}
+							}
+						}
+					}
+					break;
+				case 6:
+					// cell null or blank or not String type is invalid
+					if (cell == null) {
+						cellList.add(cell);
+					} else {
+						if (cell.getCellType() == CellType.BLANK || cell.toString().isBlank()) {
 							cellList.add(cell);
 						} else {
 							if (cell.getCellType() != CellType.STRING) {
@@ -585,11 +698,13 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 							}
 						}
 					}
+					break;
 				}
 			}
 		}
 
 		return cellList;
+
 	}
 
 	@Override
@@ -617,7 +732,8 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 			while (rowIterator.hasNext()) {
 
 				Row row = rowIterator.next();
-				if (row.getRowNum() < FIRST_ROW) {
+
+				if (row.getRowNum() < FIRST_STUDENT_ROW) {
 					continue;
 				} else {
 					// get accountId user input
@@ -633,7 +749,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 					// else update username and classesId
 					if (studentId == 0) {
 						String fullName = row.getCell(2).getStringCellValue();
-						SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-YYYY");
+						SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/YYYY");
 						String DoB = sdf.format(row.getCell(3).getDateCellValue());
 						String gender = row.getCell(4).getStringCellValue();
 						String parentName = row.getCell(5).getStringCellValue();
@@ -992,31 +1108,33 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 			}
 		}
 
-		Map<String, Integer> subjectMap = new LinkedHashMap<>();
-		Map<String, Integer> lessonMap = new LinkedHashMap<>();
+		Map<Subject, Integer> subjectMap = new LinkedHashMap<>();
 		List<Subject> subjectList = iSubjectRepository.findByGradeIdAndIsDisableFalse(gradeId);
-		List<Unit> unitList = new ArrayList<>();
-		List<ProgressTest> progressTestList = new ArrayList<>();
+		List<String> unitName = new ArrayList<>();
+
 		if (!subjectList.isEmpty()) {
-			int totalUnit = 0;
 			for (Subject subject : subjectList) {
-				int unitSize = iUnitRepository.findBySubjectIdAndIsDisableFalseOrderByUnitNameAsc(subject.getId())
-						.size();
-				if (unitSize > 0) {
-					unitList.addAll(
-							iUnitRepository.findBySubjectIdAndIsDisableFalseOrderByUnitNameAsc(subject.getId()));
-					totalUnit += unitSize;
+				int totalUnit = 0;
+				List<Unit> unitList = iUnitRepository
+						.findBySubjectIdAndIsDisableFalseOrderByUnitNameAsc(subject.getId());
+				if (!unitList.isEmpty()) {
+					for (Unit unit : unitList) {
+						unitName.add("Unit " + unit.getUnitName());
+					}
+					totalUnit += unitList.size();
 				}
-				int progressTestSize = iProgressTestRepository.findBySubjectIdAndIsDisableFalse(subject.getId()).size();
-				if (progressTestSize > 0) {
-					progressTestList.addAll(iProgressTestRepository.findBySubjectIdAndIsDisableFalse(subject.getId()));
-					totalUnit += progressTestSize;
+				List<ProgressTest> progressTestList = iProgressTestRepository
+						.findBySubjectIdAndIsDisableFalse(subject.getId());
+				if (!progressTestList.isEmpty()) {
+					for (ProgressTest progressTest : progressTestList) {
+						unitName.add(progressTest.getProgressTestName());
+					}
+					totalUnit += progressTestList.size();
 				}
 
 				if (totalUnit > 0) {
-					subjectMap.put(subject.getSubjectName(), totalUnit);
+					subjectMap.put(subject, totalUnit);
 				}
-//				unitList = new ArrayList<>();
 			}
 		}
 
@@ -1041,9 +1159,13 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 
 				Sheet sheet = workbook.createSheet(classes.getClassName());
 				sheet.setColumnWidth(0, 1500);
-				sheet.setColumnWidth(1, 3500);
+				sheet.setColumnWidth(1, 3700);
 				sheet.setColumnWidth(2, 9000);
-				for (int i = 3; i < unitList.size() + progressTestList.size() + 3; i++) {
+				sheet.setColumnWidth(3, 3700);
+				sheet.setColumnWidth(4, 3700);
+				sheet.setColumnWidth(5, 9000);
+				sheet.setColumnWidth(6, 9000);
+				for (int i = 7; i < unitName.size() + 7; i++) {
 					sheet.setColumnWidth(i, 3500);
 				}
 
@@ -1071,33 +1193,146 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				createArrangeHeaderCell(workbook, sheet, sheet.getRow(6), 0, 6, 7, 0, 0, "No.");
 				createArrangeHeaderCell(workbook, sheet, sheet.getRow(6), 1, 6, 7, 1, 1, "StudentID");
 				createArrangeHeaderCell(workbook, sheet, sheet.getRow(6), 2, 6, 7, 2, 2, "Fullname");
+				createArrangeHeaderCell(workbook, sheet, sheet.getRow(6), 3, 6, 7, 3, 3, "DoB");
+				createArrangeHeaderCell(workbook, sheet, sheet.getRow(6), 4, 6, 7, 4, 4, "Gender");
+				createArrangeHeaderCell(workbook, sheet, sheet.getRow(6), 5, 6, 7, 5, 5, "Parent Name");
+				createArrangeHeaderCell(workbook, sheet, sheet.getRow(6), 6, 6, 7, 6, 6, "Contact");
 
-				int beginColumn = 3;
-				if (subjectMap != null) {
-					if (!subjectMap.isEmpty()) {
-						for (Entry<String, Integer> entry : subjectMap.entrySet()) {
-							if (entry.getValue() > 1) {
-								createArrangeHeaderCell(workbook, sheet, sheet.getRow(6), beginColumn, 6, 6,
-										beginColumn, beginColumn + entry.getValue() - 1, entry.getKey());
-								beginColumn += entry.getValue();
-							} else {
-								createOneHeaderCell(workbook, sheet.getRow(6), beginColumn, entry.getKey());
-								beginColumn += entry.getValue();
-							}
+				int subjectBeginColumn = 7;
+
+				if (!subjectMap.isEmpty()) {
+					for (Entry<Subject, Integer> entry : subjectMap.entrySet()) {
+						if (entry.getValue() > 1) {
+							createArrangeHeaderCell(workbook, sheet, sheet.getRow(6), subjectBeginColumn, 6, 6,
+									subjectBeginColumn, subjectBeginColumn + entry.getValue() - 1,
+									entry.getKey().getSubjectName());
+							subjectBeginColumn += entry.getValue();
+						} else {
+							createOneHeaderCell(workbook, sheet.getRow(6), subjectBeginColumn,
+									entry.getKey().getSubjectName());
+							subjectBeginColumn += entry.getValue();
 						}
 					}
 				}
 
 				// unit
-				for (int i = 3; i < unitList.size() + 3; i++) {
-					createOneHeaderCell(workbook, sheet.getRow(7), i, "Unit " + unitList.get(i - 3).getUnitName());
+				int unitColumnBegin = 7;
+				if (!unitName.isEmpty()) {
+					for (int i = unitColumnBegin; i < unitName.size() + unitColumnBegin; i++) {
+						createOneHeaderCell(workbook, sheet.getRow(7), i, unitName.get(i - unitColumnBegin));
+					}
 				}
 
-				// progressTest
-				for (int i = unitList.size() + 3; i < unitList.size() + progressTestList.size() + 3; i++) {
-					createOneHeaderCell(workbook, sheet.getRow(7), i,
-							progressTestList.get(i - unitList.size() - 3).getProgressTestName());
+				if (!studentProfileList.isEmpty()) {
+					for (int i = 0; i < studentProfileList.size(); i++) {
+						Cell noValueCell = createOneNormalCell(workbook, sheet.getRow(i + 8), 0, CellType.NUMERIC,
+								HorizontalAlignment.CENTER);
+						noValueCell.setCellValue(i + 1);
+
+						Cell studentIdValueCell = createOneNormalCell(workbook, sheet.getRow(i + 8), 1, CellType.STRING,
+								HorizontalAlignment.CENTER);
+						studentIdValueCell
+								.setCellValue("MJ" + String.format("%06d", studentProfileList.get(i).getId()));
+
+						Cell fullNameValueCell = createOneNormalCell(workbook, sheet.getRow(i + 8), 2, CellType.STRING,
+								HorizontalAlignment.LEFT);
+						fullNameValueCell.setCellValue(studentProfileList.get(i).getAccount().getFullName());
+
+						Cell DoBValueCell = createOneNormalCell(workbook, sheet.getRow(i + 8), 3, CellType.STRING,
+								HorizontalAlignment.CENTER);
+						DoBValueCell.setCellValue(studentProfileList.get(i).getDOB());
+						Cell genderValueCell = createOneNormalCell(workbook, sheet.getRow(i + 8), 4, CellType.STRING,
+								HorizontalAlignment.CENTER);
+						genderValueCell.setCellValue(studentProfileList.get(i).getGender());
+						Cell parentNameValueCell = createOneNormalCell(workbook, sheet.getRow(i + 8), 5,
+								CellType.STRING, HorizontalAlignment.LEFT);
+						parentNameValueCell.setCellValue(studentProfileList.get(i).getParentName());
+						Cell contactValueCell = createOneNormalCell(workbook, sheet.getRow(i + 8), 6, CellType.STRING,
+								HorizontalAlignment.LEFT);
+						contactValueCell.setCellValue(studentProfileList.get(i).getContact());
+						int scoreColumnBegin = 7;
+						if (!subjectMap.isEmpty()) {
+							for (Entry<Subject, Integer> entry : subjectMap.entrySet()) {
+								List<Unit> unitList = iUnitRepository
+										.findBySubjectIdAndIsDisableFalse(entry.getKey().getId());
+								if (!unitList.isEmpty()) {
+
+									System.out.println(unitList.size() + " unit");
+									for (Unit unit : unitList) {
+										for (int j = scoreColumnBegin; j < unitList.size() + scoreColumnBegin; j++) {
+											List<ExerciseTaken> exerciseTakenList = iExerciseTakenRepository
+													.findByUnitIdAndAccountId(unit.getId(),
+															studentProfileList.get(i).getAccount().getId());
+
+											double score = 0;
+											if (!exerciseTakenList.isEmpty()) {
+												double sumTotalScore = 0;
+												for (ExerciseTaken exerciseTaken : exerciseTakenList) {
+													sumTotalScore += exerciseTaken.getTotalScore();
+												}
+
+												score = sumTotalScore / exerciseTakenList.size();
+												score = Double.valueOf(new DecimalFormat("#.#").format(score));
+
+//													isTaken = true;
+											}
+
+//												if (isTaken) {
+											Cell exerciseValueCell = createOneNormalCell(workbook, sheet.getRow(i + 8),
+													j, CellType.NUMERIC, HorizontalAlignment.CENTER);
+											exerciseValueCell.setCellValue(score);
+//												}
+//											else {
+//												createOneWarningCell(workbook, sheet.getRow(i + 10), j, "Not yet!");
+//											}
+										}
+
+									}
+
+									scoreColumnBegin += unitList.size();
+
+									List<ProgressTest> progressTestList = iProgressTestRepository
+											.findBySubjectIdAndIsDisableFalse(entry.getKey().getId());
+									if (!progressTestList.isEmpty()) {
+										for (ProgressTest progressTest : progressTestList) {
+											for (int j = scoreColumnBegin; j < progressTestList.size()
+													+ scoreColumnBegin; j++) {
+												List<ExerciseTaken> exerciseTakenList = iExerciseTakenRepository
+														.findByProgressTestIdAndAccountId(progressTest.getId(),
+																studentProfileList.get(i).getAccount().getId());
+
+												double score = 0;
+												if (!exerciseTakenList.isEmpty()) {
+													double sumTotalScore = 0;
+													for (ExerciseTaken exerciseTaken : exerciseTakenList) {
+														sumTotalScore += exerciseTaken.getTotalScore();
+													}
+
+													score = sumTotalScore / exerciseTakenList.size();
+													score = Double.valueOf(new DecimalFormat("#.#").format(score));
+
+//														isTaken = true;
+												}
+
+//													if (isTaken) {
+												Cell exerciseValueCell = createOneNormalCell(workbook,
+														sheet.getRow(i + 8), j, CellType.NUMERIC,
+														HorizontalAlignment.CENTER);
+												exerciseValueCell.setCellValue(score);
+//													}
+//												else {
+//													createOneWarningCell(workbook, sheet.getRow(i + 10), j, "Not yet!");
+//												}
+											}
+										}
+										scoreColumnBegin += progressTestList.size();
+									}
+								}
+							}
+						}
+					}
 				}
+//				
 			}
 
 		}
@@ -1111,7 +1346,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 	private Cell createOneInfoCell(Workbook workbook, Row row, int column, String cellValue) {
 		Cell cell = row.createCell(column, CellType.STRING);
 		CellStyle cellStyle = workbook.createCellStyle();
-		formatStyle(cellStyle, HorizontalAlignment.RIGHT, VerticalAlignment.CENTER, BorderStyle.MEDIUM);
+		formatStyle(cellStyle, HorizontalAlignment.RIGHT, VerticalAlignment.CENTER, BorderStyle.THIN);
 		cellStyle.setIndention((short) 1);
 
 		Font font = workbook.createFont();
@@ -1130,12 +1365,12 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 		CellRangeAddress cellRangeAddress = new CellRangeAddress(rowBegin, rowEnd, columnBegin, columnEnd);
 		sheet.addMergedRegion(cellRangeAddress);
 		CellStyle cellStyle = workbook.createCellStyle();
-		formatStyle(cellStyle, HorizontalAlignment.CENTER, VerticalAlignment.CENTER, BorderStyle.MEDIUM);
+		formatStyle(cellStyle, HorizontalAlignment.CENTER, VerticalAlignment.CENTER, BorderStyle.THIN);
 
-		RegionUtil.setBorderTop(BorderStyle.MEDIUM, cellRangeAddress, sheet);
-		RegionUtil.setBorderBottom(BorderStyle.MEDIUM, cellRangeAddress, sheet);
-		RegionUtil.setBorderLeft(BorderStyle.MEDIUM, cellRangeAddress, sheet);
-		RegionUtil.setBorderRight(BorderStyle.MEDIUM, cellRangeAddress, sheet);
+		RegionUtil.setBorderTop(BorderStyle.THIN, cellRangeAddress, sheet);
+		RegionUtil.setBorderBottom(BorderStyle.THIN, cellRangeAddress, sheet);
+		RegionUtil.setBorderLeft(BorderStyle.THIN, cellRangeAddress, sheet);
+		RegionUtil.setBorderRight(BorderStyle.THIN, cellRangeAddress, sheet);
 
 		Font font = workbook.createFont();
 		formatFont(font, IndexedColors.RED.getIndex(), true, 14);
@@ -1249,6 +1484,26 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 		cellStyle.setFont(font);
 
 		return cellStyle;
+	}
+
+	private String getCellValue(Cell cell) {
+		String cellValue = null;
+		if (cell != null) {
+			switch (cell.getCellType()) {
+
+			case NUMERIC:
+				System.out.println(cell.getNumericCellValue());
+				cellValue = String.valueOf(cell.getNumericCellValue());
+				break;
+			case STRING:
+				System.out.println(cell.getStringCellValue());
+				cellValue = cell.getStringCellValue();
+				break;
+			default:
+				break;
+			}
+		}
+		return cellValue;
 	}
 
 	private String generateUsername(Classes classes) {

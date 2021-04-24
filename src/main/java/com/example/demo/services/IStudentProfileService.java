@@ -1,6 +1,7 @@
 package com.example.demo.services;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
@@ -28,7 +29,7 @@ public interface IStudentProfileService {
 	String changeClassForStudent(List<Long> studentIdList, long classesId);
 
 	void validateStudentFile(MultipartFile file, long schoolId, int gradeId, HttpServletResponse httpServletResponse)
-			throws IOException;
+			throws IOException, ParseException;
 
 	String importStudent(MultipartFile file, long schoolId, int gradeId, HttpServletResponse httpServletResponse)
 			throws IOException;

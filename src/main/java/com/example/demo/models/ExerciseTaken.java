@@ -21,6 +21,8 @@ public class ExerciseTaken {
 	private long id;
 	private long accountId;
 	private long exerciseId;
+	private long unitId;
+	private long progressTestId;
 	private float totalScore;
 	private String takenObject;
 
@@ -65,6 +67,34 @@ public class ExerciseTaken {
 	 */
 	public void setExerciseId(long exerciseId) {
 		this.exerciseId = exerciseId;
+	}
+
+	/**
+	 * @return the unitId
+	 */
+	public long getUnitId() {
+		return unitId;
+	}
+
+	/**
+	 * @param unitId the unitId to set
+	 */
+	public void setUnitId(long unitId) {
+		this.unitId = unitId;
+	}
+
+	/**
+	 * @return the progressTestId
+	 */
+	public long getProgressTestId() {
+		return progressTestId;
+	}
+
+	/**
+	 * @param progressTestId the progressTestId to set
+	 */
+	public void setProgressTestId(long progressTestId) {
+		this.progressTestId = progressTestId;
 	}
 
 	/**

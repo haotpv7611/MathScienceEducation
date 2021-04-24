@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.dtos.ExerciseResponseDTO;
 import com.example.demo.dtos.ExerciseTakenRequestDTO;
@@ -24,12 +25,14 @@ import com.example.demo.models.Exercise;
 import com.example.demo.models.ExerciseTaken;
 import com.example.demo.models.Lesson;
 import com.example.demo.models.ProgressTest;
+import com.example.demo.models.StudentRecord;
 import com.example.demo.models.Unit;
 import com.example.demo.repositories.IAccountRepository;
 import com.example.demo.repositories.IExerciseRepository;
 import com.example.demo.repositories.IExerciseTakenRepository;
 import com.example.demo.repositories.ILessonRepository;
 import com.example.demo.repositories.IProgressTestRepository;
+import com.example.demo.repositories.IStudentRecordRepository;
 import com.example.demo.repositories.IUnitRepository;
 import com.example.demo.services.IExerciseTakenService;
 
@@ -57,6 +60,9 @@ public class ExerciseTakenServiceImpl implements IExerciseTakenService {
 
 	@Autowired
 	private IProgressTestRepository iProgressTestRepository;
+
+	@Autowired
+	private IStudentRecordRepository iStudentRecordRepository;
 
 	@Autowired
 	private ModelMapper modelMapper;
@@ -93,6 +99,7 @@ public class ExerciseTakenServiceImpl implements IExerciseTakenService {
 	}
 
 	@Override
+	@Transactional
 	public String doExercise(ExerciseTakenRequestDTO exerciseTakenRequestDTO) {
 		long accountId = exerciseTakenRequestDTO.getAccountId();
 		long exerciseId = exerciseTakenRequestDTO.getExerciseId();
@@ -108,9 +115,48 @@ public class ExerciseTakenServiceImpl implements IExerciseTakenService {
 			}
 
 			ExerciseTaken exerciseTaken = modelMapper.map(exerciseTakenRequestDTO, ExerciseTaken.class);
+			if (exercise.isProgressTest()) {
+				exerciseTaken.setProgressTestId(exercise.getProgressTestId());
+				exerciseTaken.setUnitId(0);
+			} else {
+				exerciseTaken.setProgressTestId(0);
+				long lessonId = exercise.getLessonId();
+				Lesson lesson = iLessonRepository.findByIdAndIsDisableFalse(lessonId);
+				exerciseTaken.setUnitId(lesson.getUnitId());
+			}
 			System.out.println(exerciseTakenRequestDTO.getTotalScore());
 			System.out.println(exerciseTaken.getTotalScore());
 			iExerciseTakenRepository.save(exerciseTaken);
+
+			StudentRecord studentRecord = iStudentRecordRepository.findByExerciseIdAndAccountId(exerciseId, accountId);
+			if (studentRecord == null) {
+				studentRecord = new StudentRecord();
+				studentRecord.setExerciseId(exerciseId);
+				studentRecord.setAccountId(accountId);
+				if (exercise.isProgressTest()) {
+					studentRecord.setProgressTestId(exercise.getProgressTestId());
+					studentRecord.setUnitId(0);
+				}
+				studentRecord.setListExerciseTakenScore(String.valueOf(exerciseTakenRequestDTO.getTotalScore() + " "));
+				studentRecord.setAverageScore(exerciseTakenRequestDTO.getTotalScore());
+				iStudentRecordRepository.save(studentRecord);
+			} else {
+				String listExerciseTakenScore = studentRecord.getListExerciseTakenScore();
+				listExerciseTakenScore += String.valueOf(exerciseTakenRequestDTO.getTotalScore() + " ");
+				String[] scoreList = studentRecord.getListExerciseTakenScore().split(" ");
+
+				float totalScore = 0;
+				if (scoreList.length > 0) {
+					for (String score : scoreList) {
+						totalScore += Float.parseFloat(score);
+					}
+					studentRecord.setAverageScore(totalScore / scoreList.length);
+				}
+
+				studentRecord.setListExerciseTakenScore(listExerciseTakenScore);
+				iStudentRecordRepository.save(studentRecord);
+			}
+
 		} catch (Exception e) {
 			logger.error("DO EXERICSE: id = " + exerciseId + " by accountId =  " + accountId + "! " + e.getMessage());
 			if (e instanceof ResourceNotFoundException) {

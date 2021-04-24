@@ -3,6 +3,7 @@ package com.example.demo.controllers;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.text.ParseException;
 import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
@@ -83,9 +84,9 @@ public class StudentProfileController {
 
 	@PostMapping("/student/validate")
 	public void validateStudent(HttpServletResponse response, @RequestParam MultipartFile file,
-			@RequestParam long schoolId, @RequestParam int gradeId) throws IOException {
+			@RequestParam long schoolId, @RequestParam int gradeId) throws IOException, ParseException {
 		response.setContentType("application/octet-stream");
-		String fileName = iStudentProfileService.generateFileNameExport(schoolId, gradeId, 0) + "Validate.xlxs";
+		String fileName = iStudentProfileService.generateFileNameExport(schoolId, gradeId, 0) + "Validate.xlsx";
 		String headerKey = "Content-Disposition";
 		String headerValue = "attachment; filename=" + fileName;
 		response.setHeader(headerKey, headerValue);
