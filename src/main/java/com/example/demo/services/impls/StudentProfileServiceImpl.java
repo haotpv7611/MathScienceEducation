@@ -598,7 +598,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				switch (i) {
 				case 1:
 					if (cell != null) {
-						if (cell.getCellType() != CellType.BLANK || cell.toString().trim().isEmpty()) {
+						if (cell.getCellType() != CellType.BLANK || cell.toString().trim().isEmpty() == false) {
 							String studentIdRegex = "^MJ\\d{6}$";
 							if (cell.getCellType() == CellType.STRING) {
 								boolean checkStudentIdFormat = cell.getStringCellValue().matches(studentIdRegex);

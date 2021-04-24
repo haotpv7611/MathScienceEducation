@@ -136,6 +136,11 @@ public class ExerciseTakenServiceImpl implements IExerciseTakenService {
 				if (exercise.isProgressTest()) {
 					studentRecord.setProgressTestId(exercise.getProgressTestId());
 					studentRecord.setUnitId(0);
+				}else {
+					studentRecord.setProgressTestId(0);
+					long lessonId = exercise.getLessonId();
+					Lesson lesson = iLessonRepository.findByIdAndIsDisableFalse(lessonId);
+					studentRecord.setUnitId(lesson.getUnitId());
 				}
 				studentRecord.setListExerciseTakenScore(String.valueOf(exerciseTakenRequestDTO.getTotalScore() + " "));
 				studentRecord.setAverageScore(exerciseTakenRequestDTO.getTotalScore());
