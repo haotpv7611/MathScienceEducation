@@ -73,8 +73,10 @@ import com.example.demo.repositories.IProgressTestRepository;
 import com.example.demo.repositories.ISchoolGradeRepository;
 import com.example.demo.repositories.ISchoolRepository;
 import com.example.demo.repositories.IStudentProfileRepository;
+import com.example.demo.repositories.IStudentRecordRepository;
 import com.example.demo.repositories.ISubjectRepository;
 import com.example.demo.repositories.IUnitRepository;
+import com.example.demo.models.StudentRecord;
 import com.example.demo.services.IClassService;
 import com.example.demo.services.IStudentProfileService;
 
@@ -128,10 +130,13 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 	private IExerciseTakenRepository iExerciseTakenRepository;
 
 	@Autowired
-	IClassService iClassService;
+	private IStudentRecordRepository iStudentRecordRepository;
 
 	@Autowired
-	ModelMapper modelMapper;
+	private IClassService iClassService;
+
+	@Autowired
+	private ModelMapper modelMapper;
 
 	@Override
 	public StudentResponseDTO findStudentById(long id) {
@@ -1258,35 +1263,17 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 								if (!unitList.isEmpty()) {
 
 									System.out.println(unitList.size() + " unit");
-									for (Unit unit : unitList) {
-										for (int j = scoreColumnBegin; j < unitList.size() + scoreColumnBegin; j++) {
-											List<ExerciseTaken> exerciseTakenList = iExerciseTakenRepository
-													.findByUnitIdAndAccountId(unit.getId(),
-															studentProfileList.get(i).getAccount().getId());
-
-											double score = 0;
-											if (!exerciseTakenList.isEmpty()) {
-												double sumTotalScore = 0;
-												for (ExerciseTaken exerciseTaken : exerciseTakenList) {
-													sumTotalScore += exerciseTaken.getTotalScore();
-												}
-
-												score = sumTotalScore / exerciseTakenList.size();
-												score = Double.valueOf(new DecimalFormat("#.#").format(score));
-
-//													isTaken = true;
-											}
-
-//												if (isTaken) {
-											Cell exerciseValueCell = createOneNormalCell(workbook, sheet.getRow(i + 8),
-													j, CellType.NUMERIC, HorizontalAlignment.CENTER);
-											exerciseValueCell.setCellValue(score);
-//												}
-//											else {
-//												createOneWarningCell(workbook, sheet.getRow(i + 10), j, "Not yet!");
-//											}
+									for (int j = scoreColumnBegin; j < unitList.size() + scoreColumnBegin; j++) {
+										StudentRecord studentRecord = iStudentRecordRepository.findByUnitIdAndAccountId(
+												unitList.get(j - scoreColumnBegin).getId(),
+												studentProfileList.get(i).getAccount().getId());
+										double score = 0;
+										if (studentRecord != null) {
+											score = studentRecord.getAverageScore();
 										}
-
+										Cell exerciseValueCell = createOneNormalCell(workbook, sheet.getRow(i + 8), j,
+												CellType.NUMERIC, HorizontalAlignment.CENTER);
+										exerciseValueCell.setCellValue(score);
 									}
 
 									scoreColumnBegin += unitList.size();
@@ -1294,38 +1281,55 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 									List<ProgressTest> progressTestList = iProgressTestRepository
 											.findBySubjectIdAndIsDisableFalse(entry.getKey().getId());
 									if (!progressTestList.isEmpty()) {
-										for (ProgressTest progressTest : progressTestList) {
-											for (int j = scoreColumnBegin; j < progressTestList.size()
-													+ scoreColumnBegin; j++) {
-												List<ExerciseTaken> exerciseTakenList = iExerciseTakenRepository
-														.findByProgressTestIdAndAccountId(progressTest.getId(),
-																studentProfileList.get(i).getAccount().getId());
-
-												double score = 0;
-												if (!exerciseTakenList.isEmpty()) {
-													double sumTotalScore = 0;
-													for (ExerciseTaken exerciseTaken : exerciseTakenList) {
-														sumTotalScore += exerciseTaken.getTotalScore();
-													}
-
-													score = sumTotalScore / exerciseTakenList.size();
-													score = Double.valueOf(new DecimalFormat("#.#").format(score));
-
-//														isTaken = true;
-												}
-
-//													if (isTaken) {
-												Cell exerciseValueCell = createOneNormalCell(workbook,
-														sheet.getRow(i + 8), j, CellType.NUMERIC,
-														HorizontalAlignment.CENTER);
-												exerciseValueCell.setCellValue(score);
-//													}
-//												else {
-//													createOneWarningCell(workbook, sheet.getRow(i + 10), j, "Not yet!");
-//												}
+										System.out.println(progressTestList.size() + " progressTestList");
+										for (int j = scoreColumnBegin; j < progressTestList.size()
+												+ scoreColumnBegin; j++) {
+											StudentRecord studentRecord = iStudentRecordRepository
+													.findByProgressTestIdAndAccountId(
+															progressTestList.get(j - scoreColumnBegin).getId(),
+															studentProfileList.get(i).getAccount().getId());
+											double score = 0;
+											if (studentRecord != null) {
+												score = studentRecord.getAverageScore();
 											}
+											Cell exerciseValueCell = createOneNormalCell(workbook, sheet.getRow(i + 8),
+													j, CellType.NUMERIC, HorizontalAlignment.CENTER);
+											exerciseValueCell.setCellValue(score);
 										}
 										scoreColumnBegin += progressTestList.size();
+
+//										for (ProgressTest progressTest : progressTestList) {
+//											for (int j = scoreColumnBegin; j < progressTestList.size()
+//													+ scoreColumnBegin; j++) {
+//												List<ExerciseTaken> exerciseTakenList = iExerciseTakenRepository
+//														.findByProgressTestIdAndAccountId(progressTest.getId(),
+//																studentProfileList.get(i).getAccount().getId());
+//
+//												double score = 0;
+//												if (!exerciseTakenList.isEmpty()) {
+//													double sumTotalScore = 0;
+//													for (ExerciseTaken exerciseTaken : exerciseTakenList) {
+//														sumTotalScore += exerciseTaken.getTotalScore();
+//													}
+//
+//													score = sumTotalScore / exerciseTakenList.size();
+//													score = Double.valueOf(new DecimalFormat("#.#").format(score));
+//
+////														isTaken = true;
+//												}
+//
+////													if (isTaken) {
+//												Cell exerciseValueCell = createOneNormalCell(workbook,
+//														sheet.getRow(i + 8), j, CellType.NUMERIC,
+//														HorizontalAlignment.CENTER);
+//												exerciseValueCell.setCellValue(score);
+////													}
+////												else {
+////													createOneWarningCell(workbook, sheet.getRow(i + 10), j, "Not yet!");
+////												}
+//											}
+//										}
+
 									}
 								}
 							}
