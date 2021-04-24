@@ -150,7 +150,7 @@ public class ExerciseTakenServiceImpl implements IExerciseTakenService {
 				float totalScore = 0;
 				if (scoreList.length > 0) {
 					for (String score : scoreList) {
-						totalScore += Float.parseFloat(score);
+						totalScore += Double.parseDouble(score);
 					}
 					studentRecord.setAverageScore(totalScore / scoreList.length);
 				}
@@ -259,7 +259,7 @@ public class ExerciseTakenServiceImpl implements IExerciseTakenService {
 							List<Exercise> exerciseList = new ArrayList<>();
 							long lessonId = lesson.getId();
 							exerciseList
-									.addAll(iExerciseRepository.findByLessonIdAndStatusNot(lessonId, DELETED_STATUS));
+									.addAll(iExerciseRepository.findByLessonIdAndStatusNotOrderByExerciseNameAsc(lessonId, DELETED_STATUS));
 							totalExericse += exerciseList.size();
 
 							if (!exerciseList.isEmpty()) {
