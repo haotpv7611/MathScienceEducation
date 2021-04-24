@@ -113,22 +113,23 @@ public class SchoolServiceImpl implements ISchoolService {
 		if (school == null) {
 			throw new ResourceNotFoundException();
 		}
-		school.setStatus(idAndStatusDTO.getStatus());
-		iSchoolRepository.save(school);
 
-		List<SchoolGrade> schoolGradeList = iSchoolGradeRepository.findBySchoolIdAndStatusNot(school.getId(), DELETED_STATUS);
+		List<SchoolGrade> schoolGradeList = iSchoolGradeRepository.findBySchoolIdAndStatusNot(school.getId(),
+				DELETED_STATUS);
 		if (!schoolGradeList.isEmpty()) {
 			for (SchoolGrade schoolGrade : schoolGradeList) {
 				List<Long> ids = new ArrayList<>();
-				ids.add(Long.valueOf( schoolGrade.getGrade().getId()));
+				ids.add(Long.valueOf(schoolGrade.getGrade().getId()));
 				ids.add(school.getId());
 				ListIdAndStatusDTO listIdAndStatusDTO = new ListIdAndStatusDTO();
 				listIdAndStatusDTO.setIds(ids);
 				listIdAndStatusDTO.setStatus(idAndStatusDTO.getStatus());
-				
+
 				iSchoolGradeService.changeStatusGradeAndSchool(listIdAndStatusDTO);
 			}
 		}
+		school.setStatus(idAndStatusDTO.getStatus());
+		iSchoolRepository.save(school);
 
 		return "CHANGE SUCCESS!";
 	}

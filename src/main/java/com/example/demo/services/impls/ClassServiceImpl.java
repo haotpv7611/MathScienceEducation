@@ -199,7 +199,6 @@ public class ClassServiceImpl implements IClassService {
 			}
 
 			classes.setClassName(classRequestDTO.getClassName());
-			classes.setStatus("ACTIVE");
 			iClassRepository.save(classes);
 		} catch (Exception e) {
 			logger.error("UPDATE: classesId = " + id + "! " + e.getMessage());
@@ -268,7 +267,7 @@ public class ClassServiceImpl implements IClassService {
 					}
 				}
 			}
-
+			classes.setStatus(status);
 			iClassRepository.save(classes);
 		} catch (Exception e) {
 			logger.error("Change status: one classesId = " + id + "! " + e.getMessage());

@@ -148,13 +148,17 @@ public class ExerciseTakenServiceImpl implements IExerciseTakenService {
 			} else {
 				String listExerciseTakenScore = studentRecord.getListExerciseTakenScore();
 				listExerciseTakenScore += String.valueOf(exerciseTakenRequestDTO.getTotalScore() + " ");
-				String[] scoreList = studentRecord.getListExerciseTakenScore().split(" ");
+				String[] scoreList = listExerciseTakenScore.split(" ");
 
 				float totalScore = 0;
+				System.out.println(scoreList.length + " length");
 				if (scoreList.length > 0) {
 					for (String score : scoreList) {
+						System.out.println(score + " score");
 						totalScore += Float.parseFloat(score);
+						System.out.println(totalScore + " total");
 					}
+					System.out.println((totalScore / scoreList.length) + " average");
 					studentRecord.setAverageScore(totalScore / scoreList.length);
 				}
 
