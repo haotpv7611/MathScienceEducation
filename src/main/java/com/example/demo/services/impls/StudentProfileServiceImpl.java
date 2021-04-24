@@ -1007,6 +1007,8 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 
 				if (!studentProfileList.isEmpty()) {
 					for (int i = 0; i < studentProfileList.size(); i++) {
+						System.out.println(studentProfileList.get(i).getId());
+						
 						Cell noValueCell = createOneNormalCell(workbook, sheet.getRow(i + 10), 0, CellType.NUMERIC,
 								HorizontalAlignment.CENTER);
 						noValueCell.setCellValue(i + 1);
@@ -1021,6 +1023,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 						fullNameValueCell.setCellValue(studentProfileList.get(i).getAccount().getFullName());
 
 						for (int j = 3; j < exerciseList.size() + 3; j++) {
+							System.out.println(exerciseList.get(j).getId() + " exercise");
 							List<ExerciseTaken> exerciseTakenList = iExerciseTakenRepository
 									.findByExerciseIdAndAccountId(exerciseList.get(j - 3).getId(),
 											studentProfileList.get(i).getAccount().getId());
@@ -1029,6 +1032,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 							if (!exerciseTakenList.isEmpty()) {
 								double sumTotalScore = 0;
 								for (ExerciseTaken exerciseTaken : exerciseTakenList) {
+									System.out.println(exerciseTaken.getId());
 									sumTotalScore += exerciseTaken.getTotalScore();
 								}
 
@@ -1334,6 +1338,8 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 								}
 							}
 						}
+						
+						changeStatusOneStudent(studentProfileList.get(i).getId(), PENDING_STATUS);
 					}
 				}
 //				

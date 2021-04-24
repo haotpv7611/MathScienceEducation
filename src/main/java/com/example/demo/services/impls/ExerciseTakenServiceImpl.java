@@ -144,13 +144,16 @@ public class ExerciseTakenServiceImpl implements IExerciseTakenService {
 				iStudentRecordRepository.save(studentRecord);
 			} else {
 				String listExerciseTakenScore = studentRecord.getListExerciseTakenScore();
-				listExerciseTakenScore += String.valueOf(exerciseTakenRequestDTO.getTotalScore() + " ");
+				listExerciseTakenScore += String.valueOf(" " + exerciseTakenRequestDTO.getTotalScore() + " ");
 				String[] scoreList = listExerciseTakenScore.split(" ");
 
 				float totalScore = 0;
 				if (scoreList.length > 0) {
 					for (String score : scoreList) {
+						System.out.println("start debug: " + score);
+						
 						totalScore += Double.parseDouble(score);
+						System.out.println("error");
 					}
 					studentRecord.setAverageScore(totalScore / scoreList.length);
 				}
