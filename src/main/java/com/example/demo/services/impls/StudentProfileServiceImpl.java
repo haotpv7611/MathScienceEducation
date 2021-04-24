@@ -533,7 +533,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				if (cell == null) {
 					cellList.add(cell);
 				} else {
-					if (cell.getCellType() == CellType.BLANK || cell.toString().isBlank()) {
+					if (cell.getCellType() == CellType.BLANK || cell.toString().trim().isEmpty()) {
 						cellList.add(cell);
 					} else {
 						if (cell.getCellType() != CellType.STRING) {
@@ -553,7 +553,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				if (cell == null) {
 					cellList.add(cell);
 				} else {
-					if (cell.getCellType() == CellType.BLANK || cell.toString().isBlank()) {
+					if (cell.getCellType() == CellType.BLANK || cell.toString().trim().isEmpty()) {
 						cellList.add(cell);
 					} else {
 						if (cell.getCellType() == CellType.STRING) {
@@ -584,7 +584,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				if (cell == null) {
 					totalEmptyCell++;
 				} else {
-					if (cell.getCellType() == CellType.BLANK || cell.toString().isBlank()) {
+					if (cell.getCellType() == CellType.BLANK || cell.toString().trim().isEmpty()) {
 						totalEmptyCell++;
 					}
 				}
@@ -598,7 +598,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				switch (i) {
 				case 1:
 					if (cell != null) {
-						if (cell.getCellType() != CellType.BLANK || cell.toString().isBlank()) {
+						if (cell.getCellType() != CellType.BLANK || cell.toString().trim().isEmpty()) {
 							String studentIdRegex = "^MJ\\d{6}$";
 							if (cell.getCellType() == CellType.STRING) {
 								boolean checkStudentIdFormat = cell.getStringCellValue().matches(studentIdRegex);
@@ -619,7 +619,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 					if (cell == null) {
 						cellList.add(cell);
 					} else {
-						if (cell.getCellType() == CellType.BLANK || cell.toString().isBlank()) {
+						if (cell.getCellType() == CellType.BLANK || cell.toString().trim().isEmpty()) {
 							cellList.add(cell);
 						} else {
 							// nếu copy paste định dạng sẽ là string
@@ -672,7 +672,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 					if (cell == null) {
 						cellList.add(cell);
 					} else {
-						if (cell.getCellType() == CellType.BLANK || cell.toString().isBlank()) {
+						if (cell.getCellType() == CellType.BLANK || cell.toString().trim().isEmpty()) {
 							cellList.add(cell);
 						} else {
 							if (cell.getCellType() != CellType.STRING) {
@@ -690,7 +690,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 					if (cell == null) {
 						cellList.add(cell);
 					} else {
-						if (cell.getCellType() == CellType.BLANK || cell.toString().isBlank()) {
+						if (cell.getCellType() == CellType.BLANK || cell.toString().trim().isEmpty()) {
 							cellList.add(cell);
 						} else {
 							if (cell.getCellType() != CellType.STRING) {
