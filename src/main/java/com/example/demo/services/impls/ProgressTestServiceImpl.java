@@ -74,7 +74,7 @@ public class ProgressTestServiceImpl implements IProgressTestService {
 	public List<ProgressTestResponseDTO> findBySubjectId(long subjectId) {
 		List<ProgressTestResponseDTO> progressTestResponseDTOList = new ArrayList<>();
 		try {
-			List<ProgressTest> progressTestList = iProgressTestRepository.findBySubjectIdAndIsDisableFalse(subjectId);
+			List<ProgressTest> progressTestList = iProgressTestRepository.findBySubjectIdAndIsDisableFalseOrderByProgressTestName(subjectId);
 			if (!progressTestList.isEmpty()) {
 				for (ProgressTest progressTest : progressTestList) {
 					long unitId = progressTest.getUnitAfterId();

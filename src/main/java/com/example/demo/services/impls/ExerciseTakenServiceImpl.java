@@ -229,7 +229,7 @@ public class ExerciseTakenServiceImpl implements IExerciseTakenService {
 					long progressTestId = entry.getValue();
 					// get all exercise by progress id
 					exerciseList.addAll(
-							iExerciseRepository.findByProgressTestIdAndStatusNot(progressTestId, DELETED_STATUS));
+							iExerciseRepository.findByProgressTestIdAndStatusNotOrderByExerciseNameAsc(progressTestId, DELETED_STATUS));
 					totalExericse = 0 + exerciseList.size();
 					List<ExerciseResponseDTO> exerciseResponseDTOList = new ArrayList<>();
 					for (Exercise exercise : exerciseList) {
