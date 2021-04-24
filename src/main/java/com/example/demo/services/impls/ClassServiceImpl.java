@@ -252,9 +252,9 @@ public class ClassServiceImpl implements IClassService {
 				if (!studentProfileList.isEmpty()) {
 					for (StudentProfile studentProfile : studentProfileList) {
 						iStudentProfileService.changeStatusOneStudent(studentProfile.getId(), status);
-					}
-					classes.setStatus(status);
+					}					
 				}
+				classes.setStatus(status);
 			} else {
 				if (!classes.getClassName().equalsIgnoreCase(PENDING_STATUS)) {
 					List<StudentProfile> studentProfileList = iStudentProfileRepository.findByClassesIdAndStatusNot(id,
@@ -263,11 +263,10 @@ public class ClassServiceImpl implements IClassService {
 						for (StudentProfile studentProfile : studentProfileList) {
 							iStudentProfileService.changeStatusOneStudent(studentProfile.getId(), status);
 						}
-						classes.setStatus(status);
 					}
+					classes.setStatus(status);
 				}
 			}
-			classes.setStatus(status);
 			iClassRepository.save(classes);
 		} catch (Exception e) {
 			logger.error("Change status: one classesId = " + id + "! " + e.getMessage());
