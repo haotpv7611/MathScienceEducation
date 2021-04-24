@@ -9,9 +9,7 @@ import com.example.demo.models.ExerciseTaken;
 
 @Repository
 public interface IExerciseTakenRepository extends JpaRepository<ExerciseTaken, Long> {
+
 	List<ExerciseTaken> findByExerciseIdAndAccountId(long exerciseId, long accountId);
 
-//	List<ExerciseTaken> findByUnitIdAndAccountId(long unitId, long accountId);
-//
-//	List<ExerciseTaken> findByProgressTestIdAndAccountId(long progressTestId, long accountId);
 }
