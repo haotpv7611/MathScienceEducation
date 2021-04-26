@@ -20,5 +20,7 @@ public interface IClassRepository extends JpaRepository<Classes, Long> {
 	List<Classes> findBySchoolGradeIdAndStatusNot(long schoolGradeId, String status);
 	
 	List<Classes> findBySchoolGradeIdAndStatus(long schoolGradeId, String status);
+	
+	List<Classes> findBySchoolGradeIdAndStatusOrderByClassName(long schoolGradeId, String status);
 
 }

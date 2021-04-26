@@ -33,11 +33,9 @@ public interface IStudentProfileService {
 
 	String changeClassForStudent(List<Long> studentIdList, long classesId);
 
-	Map<String, List<Cell>> validateStudentFile(MultipartFile file, long schoolId, int gradeId)
-			throws IOException, ParseException;
+	Map<String, Workbook> validateStudentFile(MultipartFile file, long schoolId, int gradeId) throws ParseException;
 
-	String importStudent(MultipartFile file, long schoolId, int gradeId, HttpServletResponse httpServletResponse)
-			throws IOException;
+	Map<String, Workbook> importStudent(MultipartFile file, long schoolId, int gradeId);
 
 	Map<String, Workbook> exportScoreBySubjectId(long schoolId, int gradeId, long subjectId);
 

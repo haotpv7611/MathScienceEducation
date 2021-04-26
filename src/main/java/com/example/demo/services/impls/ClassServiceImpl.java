@@ -96,9 +96,15 @@ public class ClassServiceImpl implements IClassService {
 			if (!schoolGradeList.isEmpty()) {
 				for (SchoolGrade schoolGrade : schoolGradeList) {
 					List<ClassChangeDTO> classChangeDTOList = new ArrayList<>();
-					List<Classes> classesList = iClassRepository.findBySchoolGradeIdAndStatus(schoolId, ACTIVE_STATUS);
-					classesList.addAll(
-							iClassRepository.findBySchoolGradeIdAndStatus(schoolGrade.getId(), INACTIVE_STATUS));
+					// lấy class active và inactive
+					List<Classes> classesList = new ArrayList<>();
+
+					if (iClassRepository
+							.findBySchoolGradeIdAndStatusOrderByClassName(schoolGrade.getId(), ACTIVE_STATUS)
+							.size() > 0) {
+						classesList.addAll(iClassRepository
+								.findBySchoolGradeIdAndStatusOrderByClassName(schoolGrade.getId(), ACTIVE_STATUS));
+					}
 
 					if (!classesList.isEmpty()) {
 						for (Classes classes : classesList) {
@@ -252,7 +258,7 @@ public class ClassServiceImpl implements IClassService {
 				if (!studentProfileList.isEmpty()) {
 					for (StudentProfile studentProfile : studentProfileList) {
 						iStudentProfileService.changeStatusOneStudent(studentProfile.getId(), status);
-					}					
+					}
 				}
 				classes.setStatus(status);
 			} else {

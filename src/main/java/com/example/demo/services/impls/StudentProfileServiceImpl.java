@@ -176,7 +176,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				String className = studentProfile.getClasses().getClassName();
 				String schoolName = studentProfile.getClasses().getSchoolGrade().getSchool().getSchoolName();
 				String fullName = account.getFullName();
-				String studentId = String.format("%06d", studentProfile.getId());
+				String studentId = "MJ" + String.format("%06d", studentProfile.getId());
 
 				studentResponseDTO.setClassName(className);
 				studentResponseDTO.setSchoolName(schoolName);
@@ -497,11 +497,11 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 	}
 
 	@Override
-	public Map<String, List<Cell>> validateStudentFile(MultipartFile file, long schoolId, int gradeId)
-			throws IOException, ParseException {
+	public Map<String, Workbook> validateStudentFile(MultipartFile file, long schoolId, int gradeId)
+			throws ParseException {
 		// open file
-		Map<String, List<Cell>> response = new HashedMap<>();
-		List<Cell> cellList = new ArrayList<>();
+		Map<String, Workbook> response = new HashedMap<>();
+
 		try {
 			// check schoolGrade existed
 			SchoolGrade schoolGrade = iSchoolGradeRepository.findByGradeIdAndSchoolIdAndStatusNot(gradeId, schoolId,
@@ -518,99 +518,53 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 			// validate all sheet in excel file
 			Workbook workbook = new XSSFWorkbook(file.getInputStream());
 			Iterator<Sheet> sheetIterator = workbook.sheetIterator();
+			List<Cell> cellList = new ArrayList<>();
 			while (sheetIterator.hasNext()) {
 				Sheet sheet = sheetIterator.next();
 				cellList = validateSheetData(sheet, classesList, schoolCode, gradeName);
 				if (!cellList.isEmpty()) {
 
-					response.put("BAD", cellList);
-				} else {
+					CellStyle cellStyle = formatErrorCell(workbook);
+					for (Cell cell : cellList) {
+						cell.setCellStyle(cellStyle);
+					}
 
-					response.put("OK", null);
+					// set view default sheet index = 1, view A1, cell active A1
+					XSSFSheet tempSheet = (XSSFSheet) sheet;
+					CTWorksheet ctWorksheet = tempSheet.getCTWorksheet();
+					CTSheetViews ctSheetViews = ctWorksheet.getSheetViews();
+					CTSheetView ctSheetView = ctSheetViews.getSheetViewArray(ctSheetViews.sizeOfSheetViewArray() - 1);
+					ctSheetView.setTopLeftCell("A1");
+					sheet.setActiveCell(new CellAddress("A1"));
+					workbook.setActiveSheet(0);
+
+//					response.put("ERROR", workbook);
 				}
-//				CellStyle cellStyle = formatErrorCell(workbook);
-//				for (Cell cell : cellList) {
-//					cell.setCellStyle(cellStyle);
-//				}
-//
-//				// set view default sheet index = 1, view A1, cell active A1
-//				XSSFSheet tempSheet = (XSSFSheet) sheet;
-//				CTWorksheet ctWorksheet = tempSheet.getCTWorksheet();
-//				CTSheetViews ctSheetViews = ctWorksheet.getSheetViews();
-//				CTSheetView ctSheetView = ctSheetViews.getSheetViewArray(ctSheetViews.sizeOfSheetViewArray() - 1);
-//				ctSheetView.setTopLeftCell("A1");
-//				sheet.setActiveCell(new CellAddress("A1"));
-//				workbook.setActiveSheet(0);
-//
-//				String fileName = file.getOriginalFilename();
-//				FileOutputStream fileOut = new FileOutputStream("E:\\" + "Error-" + fileName);
-//				workbook.write(fileOut);
-//				fileOut.close();
-//
-//				ServletOutputStream outputStream = httpServletResponse.getOutputStream();
-//				workbook.write(outputStream);
-//				workbook.close();
-//				outputStream.close();
-//			} else {
-//
-//			}
 			}
-			workbook.close();
+
+			if (cellList.isEmpty()) {
+				response.put("ERROR", workbook);
+			} else {
+				response.put("OK", null);
+//				workbook.close();
+			}
+			String fileName = file.getOriginalFilename();
+			FileOutputStream fileOut = new FileOutputStream("E:\\" + "Error-" + fileName);
+			workbook.write(fileOut);
+			fileOut.close();
+
 		} catch (Exception e) {
 
 			if (e instanceof ResourceNotFoundException) {
 
 				response.put("NOT FOUND", null);
-			}
+			} else {
 
-			response.put("FAIL", null);
-//			return null;
+				response.put("FAIL", null);
+			}
 		}
 
 		return response;
-	}
-
-	public void writeValidateFile(HttpServletResponse httpServletResponse, MultipartFile file,
-			List<Classes> classesList, String schoolCode, int gradeName) throws IOException {
-		Workbook workbook = new XSSFWorkbook(file.getInputStream());
-		Iterator<Sheet> sheetIterator = workbook.sheetIterator();
-		while (sheetIterator.hasNext()) {
-			Sheet sheet = sheetIterator.next();
-			List<Cell> cellList = null;
-			if (!cellList.isEmpty()) {
-
-//				response.put("BAD", cellList);
-			} else {
-//				response.put("OK", null);
-			}
-			CellStyle cellStyle = formatErrorCell(workbook);
-			for (Cell cell : cellList) {
-				cell.setCellStyle(cellStyle);
-			}
-
-			// set view default sheet index = 1, view A1, cell active A1
-			XSSFSheet tempSheet = (XSSFSheet) sheet;
-			CTWorksheet ctWorksheet = tempSheet.getCTWorksheet();
-			CTSheetViews ctSheetViews = ctWorksheet.getSheetViews();
-			CTSheetView ctSheetView = ctSheetViews.getSheetViewArray(ctSheetViews.sizeOfSheetViewArray() - 1);
-			ctSheetView.setTopLeftCell("A1");
-			sheet.setActiveCell(new CellAddress("A1"));
-			workbook.setActiveSheet(0);
-
-//		String fileName = file.getOriginalFilename();
-//		FileOutputStream fileOut = new FileOutputStream("E:\\" + "Error-" + fileName);
-//		workbook.write(fileOut);
-//		fileOut.close();
-
-			ServletOutputStream outputStream = httpServletResponse.getOutputStream();
-			workbook.write(outputStream);
-			workbook.close();
-			outputStream.close();
-		}
-//		ServletOutputStream outputStream = httpServletResponse.getOutputStream();
-//		workbook.write(outputStream);
-//		workbook.close();
-//		outputStream.close();
 	}
 
 	private List<Cell> validateSheetData(Sheet sheet, List<Classes> classesList, String schoolCode, int gradeName)
@@ -803,101 +757,107 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 
 	@Override
 	@Transactional
-	public String importStudent(MultipartFile file, long schoolId, int gradeId, HttpServletResponse httpServletResponse)
-			throws IOException {
+	public Map<String, Workbook> importStudent(MultipartFile file, long schoolId, int gradeId) {
+		Map<String, Workbook> response = new HashedMap<>();
+
 		// open file
-		Workbook workbook = new XSSFWorkbook(file.getInputStream());
-		SchoolGrade schoolGrade = iSchoolGradeRepository.findByGradeIdAndSchoolIdAndStatusNot(gradeId, schoolId,
-				DELETE_STATUS);
+		try {
 
-		Iterator<Sheet> sheetIterator = workbook.sheetIterator();
-		// create class by each sheetName
-		while (sheetIterator.hasNext()) {
-			Sheet sheet = sheetIterator.next();
-
-			Classes classes = iClassRepository.findBySchoolGradeIdAndClassNameIgnoreCaseAndStatusNot(
-					schoolGrade.getId(), sheet.getSheetName(), DELETE_STATUS);
-			if (classes == null) {
-				classes = new Classes(sheet.getSheetName(), ACTIVE_STATUS, schoolGrade);
-				iClassRepository.save(classes);
-			}
-			Iterator<Row> rowIterator = sheet.rowIterator();
+			SchoolGrade schoolGrade = iSchoolGradeRepository.findByGradeIdAndSchoolIdAndStatusNot(gradeId, schoolId,
+					DELETE_STATUS);
+			Workbook workbook = new XSSFWorkbook(file.getInputStream());
+			Iterator<Sheet> sheetIterator = workbook.sheetIterator();
 			List<Cell> cellList = new ArrayList<>();
-			while (rowIterator.hasNext()) {
+			// create class by each sheetName
+			while (sheetIterator.hasNext()) {
+				Sheet sheet = sheetIterator.next();
 
-				Row row = rowIterator.next();
+				Classes classes = iClassRepository.findBySchoolGradeIdAndClassNameIgnoreCaseAndStatusNot(
+						schoolGrade.getId(), sheet.getSheetName(), DELETE_STATUS);
+				if (classes == null) {
+					classes = new Classes(sheet.getSheetName(), ACTIVE_STATUS, schoolGrade);
+					iClassRepository.save(classes);
+				}
+				Iterator<Row> rowIterator = sheet.rowIterator();
 
-				if (row.getRowNum() < FIRST_STUDENT_ROW) {
-					continue;
-				} else {
-					// get accountId user input
-					long studentId = 0;
-					if (row.getCell(1) != null) {
-						if (row.getCell(1).getCellType() != CellType.BLANK) {
-							String studentCode = row.getCell(1).getStringCellValue();
-							studentId = Long.parseLong(studentCode.substring(2, studentCode.length()));
+				while (rowIterator.hasNext()) {
+
+					Row row = rowIterator.next();
+
+					if (row.getRowNum() < FIRST_STUDENT_ROW) {
+						continue;
+					} else {
+						// get accountId user input
+						long studentId = 0;
+						if (row.getCell(1) != null) {
+							if (row.getCell(1).getCellType() != CellType.BLANK) {
+								String studentCode = row.getCell(1).getStringCellValue();
+								studentId = Long.parseLong(studentCode.substring(2, studentCode.length()));
+							}
+						}
+
+						// if not existed --> create new
+						// else update username and classesId
+						if (studentId == 0) {
+							String fullName = row.getCell(2).getStringCellValue();
+							SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/YYYY");
+							String DoB = sdf.format(row.getCell(3).getDateCellValue());
+							String gender = row.getCell(4).getStringCellValue();
+							String parentName = row.getCell(5).getStringCellValue();
+							String contact = row.getCell(6).getStringCellValue();
+
+							StudentRequestDTO studentRequestDTO = new StudentRequestDTO(classes.getId(), fullName, DoB,
+									gender, parentName, contact);
+							createStudenProfile(studentRequestDTO);
+						} else {
+							StudentProfile studentProfile = iStudentProfileRepository.findByIdAndStatusNot(studentId,
+									DELETE_STATUS);
+							if (studentProfile == null) {
+								cellList.add(row.getCell(1));
+
+								continue;
+							} else {
+
+								String username = generateUsername(classes);
+								Account account = studentProfile.getAccount();
+								account.setUsername(username);
+								iAccountRepository.save(account);
+
+								studentProfile.setClasses(classes);
+								studentProfile.setStudentCount(countStudent(classes));
+								iStudentProfileRepository.save(studentProfile);
+							}
 						}
 					}
+				}
 
-					// if not existed --> create new
-					// else update username and classesId
-					if (studentId == 0) {
-						String fullName = row.getCell(2).getStringCellValue();
-						SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/YYYY");
-						String DoB = sdf.format(row.getCell(3).getDateCellValue());
-						String gender = row.getCell(4).getStringCellValue();
-						String parentName = row.getCell(5).getStringCellValue();
-						String contact = row.getCell(6).getStringCellValue();
-
-						StudentRequestDTO studentRequestDTO = new StudentRequestDTO(classes.getId(), fullName, DoB,
-								gender, parentName, contact);
-						createStudenProfile(studentRequestDTO);
-					} else {
-						StudentProfile studentProfile = iStudentProfileRepository.findByIdAndStatusNot(studentId,
-								DELETE_STATUS);
-						if (studentProfile == null) {
-							cellList.add(row.getCell(1));
-
-							continue;
-						} else {
-
-							String username = generateUsername(classes);
-							Account account = studentProfile.getAccount();
-							account.setUsername(username);
-							iAccountRepository.save(account);
-
-							studentProfile.setClasses(classes);
-							studentProfile.setStudentCount(countStudent(classes));
-							iStudentProfileRepository.save(studentProfile);
-						}
+				if (!cellList.isEmpty()) {
+					CellStyle cellStyle = formatErrorCell(workbook);
+					for (Cell cell : cellList) {
+						cell.setCellStyle(cellStyle);
 					}
 				}
 			}
 
 			if (!cellList.isEmpty()) {
-				CellStyle cellStyle = formatErrorCell(workbook);
-				for (Cell cell : cellList) {
-					cell.setCellStyle(cellStyle);
-				}
-
-				String fileName = file.getOriginalFilename();
-				FileOutputStream fileOut = new FileOutputStream("E:\\" + "Not existed StudentId-" + fileName);
-				workbook.write(fileOut);
-				fileOut.close();
-
-				ServletOutputStream outputStream = httpServletResponse.getOutputStream();
-				workbook.write(outputStream);
-				workbook.close();
-				outputStream.close();
-
+				response.put("ERROR", workbook);
 			} else {
-
+				response.put("IMPORT SUCCESS", null);
+				workbook.close();
+			}
+			String fileName = file.getOriginalFilename();
+			FileOutputStream fileOut = new FileOutputStream("E:\\" + "Not existed StudentId-" + fileName);
+			workbook.write(fileOut);
+			fileOut.close();
+		} catch (Exception e) {
+			if (e instanceof ResourceNotFoundException) {
+				response.put("NOT FOUND", null);
+			} else {
+				response.put("IMPORT FAIL", null);
 			}
 		}
 
-		workbook.close();
-
-		return "OK";
+		return response;
 	}
 
 	// tìm tất cả các lớp dựa trên schoolId và gradeId --> tất cả hs
@@ -1119,7 +1079,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 							fullNameValueCell.setCellValue(studentProfileList.get(i).getAccount().getFullName());
 
 							for (int j = 3; j < exerciseList.size() + 3; j++) {
-								System.out.println(exerciseList.get(j).getId() + " exercise");
+								System.out.println(exerciseList.get(j - 3).getId() + " exercise");
 								List<ExerciseTaken> exerciseTakenList = iExerciseTakenRepository
 										.findByExerciseIdAndAccountId(exerciseList.get(j - 3).getId(),
 												studentProfileList.get(i).getAccount().getId());
@@ -1179,7 +1139,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 					}
 				}
 				response.put("EXPORT SUCCESS", workbook);
-				
+
 				FileOutputStream fileOut = new FileOutputStream(
 						"E:\\" + schoolName + "-" + gradeName + "-ScoreExport.xlsx");
 				workbook.write(fileOut);
@@ -1192,7 +1152,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				response.put("GRADUATE FAIL", null);
 			}
 		}
-		
+
 		return response;
 	}
 

@@ -107,57 +107,65 @@ public class StudentProfileController {
 	@PostMapping("/student/validate")
 	public void validateStudent(HttpServletResponse httpServletResponse, @RequestParam MultipartFile file,
 			@RequestParam long schoolId, @RequestParam int gradeId) throws IOException, ParseException {
-		Map<String, List<Cell>> response = iStudentProfileService.validateStudentFile(file, schoolId, gradeId);
-		for (Entry<String, List<Cell>> entry : response.entrySet()) {
-			if (entry.getKey().equals("FAIL")) {
+		Map<String, Workbook> response = iStudentProfileService.validateStudentFile(file, schoolId, gradeId);
+		for (Entry<String, Workbook> entry : response.entrySet()) {
+			if (entry.getKey().contains("FAIL")) {
 
 				httpServletResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-			} else if (entry.getKey().equals("NOT FOUND")) {
+			} else if (entry.getKey().contains("NOT FOUND")) {
 
 				httpServletResponse.setStatus(HttpServletResponse.SC_NOT_FOUND);
-			} else if (entry.getKey().equals("OK")) {
+			} else if (entry.getKey().contains("OK")) {
 
 				httpServletResponse.setStatus(HttpServletResponse.SC_OK);
 			} else {
 				httpServletResponse.setContentType("application/octet-stream");
-				String fileName = iStudentProfileService.generateFileNameExport(schoolId, gradeId, 0) + "Validate.xlsx";
 				String headerKey = "Content-Disposition";
-				String headerValue = "attachment; filename=" + fileName;
+				String headerValue = "attachment; filename="
+						+ iStudentProfileService.generateFileNameExport(schoolId, gradeId, 0) + "Validate.xlsx";
 				httpServletResponse.setHeader(headerKey, headerValue);
 
-				Workbook workbook = new XSSFWorkbook(file.getInputStream());
-				Iterator<Sheet> sheetIterator = workbook.sheetIterator();
-				while (sheetIterator.hasNext()) {
-					Sheet sheet = sheetIterator.next();
-				}
+				iStudentProfileService.writeFileOS(httpServletResponse, entry.getValue());
 			}
-
 		}
-
-//		iStudentProfileService.validateStudentFile(file, schoolId, gradeId, response);
 	}
 
 	@PostMapping("/student/import")
-	public void importStudent(HttpServletResponse response, @RequestParam MultipartFile file,
+	public void importStudent(HttpServletResponse httpServletResponse, @RequestParam MultipartFile file,
 			@RequestParam long schoolId, @RequestParam int gradeId) throws IOException {
-		response.setContentType("application/octet-stream");
-		String headerKey = "Content-Disposition";
-		String headerValue = "attachment; filename=" + "TestImport.xlsx";
-		response.setHeader(headerKey, headerValue);
-		iStudentProfileService.importStudent(file, schoolId, gradeId, response);
-//		return ResponseEntity.status(HttpStatus.CREATED).body(response);
+		Map<String, Workbook> response = iStudentProfileService.importStudent(file, schoolId, gradeId);
+		for (Entry<String, Workbook> entry : response.entrySet()) {
+			if (entry.getKey().contains("FAIL")) {
+
+				httpServletResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			} else if (entry.getKey().contains("NOT FOUND")) {
+
+				httpServletResponse.setStatus(HttpServletResponse.SC_NOT_FOUND);
+			} else if (entry.getKey().contains("SUCCESS")) {
+
+				httpServletResponse.setStatus(HttpServletResponse.SC_CREATED);
+			} else {
+				httpServletResponse.setContentType("application/octet-stream");
+				String headerKey = "Content-Disposition";
+				String headerValue = "attachment; filename="
+						+ iStudentProfileService.generateFileNameExport(schoolId, gradeId, 0) + "ImportError.xlsx";
+				httpServletResponse.setHeader(headerKey, headerValue);
+
+				iStudentProfileService.writeFileOS(httpServletResponse, entry.getValue());
+			}
+		}
 	}
 
 	@GetMapping("/student/export")
-	public void exportScore(HttpServletResponse httpServletResponse, @RequestParam long schoolId, @RequestParam int gradeId,
-			@RequestParam long subjectId) throws IOException {
+	public void exportScore(HttpServletResponse httpServletResponse, @RequestParam long schoolId,
+			@RequestParam int gradeId, @RequestParam long subjectId) throws IOException {
 		Map<String, Workbook> response = iStudentProfileService.exportScoreBySubjectId(schoolId, gradeId, subjectId);
 		for (Entry<String, Workbook> entry : response.entrySet()) {
 			if (entry.getKey().contains("FAIL")) {
-				
+
 				httpServletResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			} else if (entry.getKey().contains("NOT FOUND")) {
-				
+
 				httpServletResponse.setStatus(HttpServletResponse.SC_NOT_FOUND);
 			} else {
 				httpServletResponse.setContentType("application/octet-stream");
@@ -165,7 +173,7 @@ public class StudentProfileController {
 				String headerValue = "attachment; filename="
 						+ iStudentProfileService.generateFileNameExport(schoolId, gradeId, subjectId) + "Score.xlsx";
 				httpServletResponse.setHeader(headerKey, headerValue);
-				
+
 				iStudentProfileService.writeFileOS(httpServletResponse, entry.getValue());
 			}
 		}
@@ -177,10 +185,10 @@ public class StudentProfileController {
 		Map<String, Workbook> response = iStudentProfileService.exportFinalScore(schoolId, gradeId);
 		for (Entry<String, Workbook> entry : response.entrySet()) {
 			if (entry.getKey().contains("FAIL")) {
-				
+
 				httpServletResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			} else if (entry.getKey().contains("NOT FOUND")) {
-				
+
 				httpServletResponse.setStatus(HttpServletResponse.SC_NOT_FOUND);
 			} else {
 				httpServletResponse.setContentType("application/octet-stream");
@@ -188,7 +196,7 @@ public class StudentProfileController {
 				String headerValue = "attachment; filename="
 						+ iStudentProfileService.generateFileNameExport(schoolId, gradeId, 0) + "Graduate.xlsx";
 				httpServletResponse.setHeader(headerKey, headerValue);
-				
+
 				iStudentProfileService.writeFileOS(httpServletResponse, entry.getValue());
 			}
 		}
