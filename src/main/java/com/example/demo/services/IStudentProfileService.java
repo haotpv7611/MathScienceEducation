@@ -14,7 +14,9 @@ import com.example.demo.dtos.StudentResponseDTO;
 
 public interface IStudentProfileService {
 
-	StudentResponseDTO findStudentById(long accountId);
+	StudentResponseDTO findStudentById(long id);
+	
+	StudentResponseDTO findStudentByAccountId(long accountId);
 
 	List<StudentResponseDTO> findStudentByListId(List<Long> ids);
 

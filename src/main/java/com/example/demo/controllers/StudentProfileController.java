@@ -39,7 +39,22 @@ public class StudentProfileController {
 	@GetMapping("/student/{id}")
 	public ResponseEntity<StudentResponseDTO> findStudentById(@PathVariable long id) {
 		StudentResponseDTO response = iStudentProfileService.findStudentById(id);
+		if (response == null) {
 
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+
+		return ResponseEntity.ok(response);
+	}
+
+	@GetMapping("/student/account/{accountId}")
+	public ResponseEntity<StudentResponseDTO> findStudentByAccountId(@PathVariable long accountId) {
+		StudentResponseDTO response = iStudentProfileService.findStudentByAccountId(accountId);
+		if (response == null) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+		
 		return ResponseEntity.ok(response);
 	}
 

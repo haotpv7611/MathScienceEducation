@@ -165,6 +165,32 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 		return studentResponseDTO;
 	}
 
+	@Override
+	public StudentResponseDTO findStudentByAccountId(long accountId) {
+		StudentResponseDTO studentResponseDTO = new StudentResponseDTO();
+		try {
+			Account account = iAccountRepository.findByIdAndStatus(accountId, ACTIVE_STATUS);
+			if (account != null) {
+				StudentProfile studentProfile = account.getStudentProfile();
+				String className = studentProfile.getClasses().getClassName();
+				String schoolName = studentProfile.getClasses().getSchoolGrade().getSchool().getSchoolName();
+				String fullName = account.getFullName();
+				String studentId = String.format("%06d", studentProfile.getId());
+
+				studentResponseDTO.setClassName(className);
+				studentResponseDTO.setSchoolName(schoolName);
+				studentResponseDTO.setFullName(fullName);
+				studentResponseDTO.setStudentId(studentId);
+			}
+		} catch (Exception e) {
+			logger.error("FIND: student by accountId = " + accountId + "! " + e.getMessage());
+
+			return null;
+		}
+
+		return studentResponseDTO;
+	}
+
 	// if school existed --> find all grade linked
 	@Override
 	public List<StudentResponseDTO> findStudentByListId(List<Long> ids) {
@@ -1008,7 +1034,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				if (!studentProfileList.isEmpty()) {
 					for (int i = 0; i < studentProfileList.size(); i++) {
 						System.out.println(studentProfileList.get(i).getId());
-						
+
 						Cell noValueCell = createOneNormalCell(workbook, sheet.getRow(i + 10), 0, CellType.NUMERIC,
 								HorizontalAlignment.CENTER);
 						noValueCell.setCellValue(i + 1);
@@ -1338,7 +1364,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 								}
 							}
 						}
-						
+
 						changeStatusOneStudent(studentProfileList.get(i).getId(), PENDING_STATUS);
 					}
 				}
