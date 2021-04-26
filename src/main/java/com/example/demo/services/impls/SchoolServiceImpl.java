@@ -22,8 +22,9 @@ import com.example.demo.services.ISchoolService;
 
 @Service
 public class SchoolServiceImpl implements ISchoolService {
-
+	private final String ACTIVE_STATUS = "ACTIVE";
 	private final String DELETED_STATUS = "DELETED";
+	
 
 	@Autowired
 	private ISchoolRepository iSchoolRepository;
@@ -156,6 +157,19 @@ public class SchoolServiceImpl implements ISchoolService {
 			}
 		}
 
+		return schoolDTOList;
+	}
+	
+	@Override
+	public List<SchoolResponseDTO> findSchoolByStatusActive(){
+		List<School> schoolList = iSchoolRepository.findByStatus(ACTIVE_STATUS);
+		List<SchoolResponseDTO> schoolDTOList = new ArrayList<>();
+		if (schoolList != null) {
+			for (School school : schoolList) {
+				SchoolResponseDTO schoolResponseDTO = modelMapper.map(school, SchoolResponseDTO.class);				
+				schoolDTOList.add(schoolResponseDTO);
+			}
+		}
 		return schoolDTOList;
 	}
 

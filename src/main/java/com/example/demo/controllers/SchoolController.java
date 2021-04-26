@@ -86,6 +86,13 @@ public class SchoolController {
 
 	}
 
+	@GetMapping("/all/active")
+	public ResponseEntity<List<SchoolResponseDTO>> findSchoolByStatusActive() {
+		List<SchoolResponseDTO> response = iSchoolService.findSchoolByStatusActive();
+
+		return ResponseEntity.ok(response);
+	}
+
 	@PutMapping("/changeStatus")
 	public ResponseEntity<String> changeStatusSchool(@Valid @RequestBody IdAndStatusDTO idAndStatusDTO,
 			BindingResult bindingResult) {
@@ -101,7 +108,7 @@ public class SchoolController {
 		if (!status.equals("ACTIVE") && !status.equals("INACTIVE") && !status.equals("DELETED")) {
 
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("STATUS INVALID!");
-		}		
+		}
 		String response = iSchoolService.changeStatusSchool(idAndStatusDTO);
 
 		return ResponseEntity.ok(response);

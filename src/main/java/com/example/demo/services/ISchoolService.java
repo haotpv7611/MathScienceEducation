@@ -20,4 +20,6 @@ public interface ISchoolService {
 
 	List<SchoolResponseDTO> findAllSchool();
 
+	List<SchoolResponseDTO> findSchoolByStatusActive();
+
 }
