@@ -171,7 +171,7 @@ public class SchoolServiceImpl implements ISchoolService {
 			}
 
 			if (!school.getSchoolDistrict().equalsIgnoreCase(schoolDistrict)
-					|| !schoolLevel.getDescription().equalsIgnoreCase(schoolRequestDTO.getSchoolLevel())) {
+					|| !school.getSchoolLevel().getDescription().equalsIgnoreCase(schoolRequestDTO.getSchoolLevel())) {
 				boolean isExisted = checkSchoolExisted(schoolRequestDTO.getSchoolLevel(),
 						schoolRequestDTO.getSchoolName(), schoolRequestDTO.getSchoolDistrict());
 				if (isExisted) {
