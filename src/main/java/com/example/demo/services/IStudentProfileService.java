@@ -3,9 +3,12 @@ package com.example.demo.services;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.dtos.ListIdAndStatusDTO;
@@ -15,7 +18,7 @@ import com.example.demo.dtos.StudentResponseDTO;
 public interface IStudentProfileService {
 
 	StudentResponseDTO findStudentById(long id);
-	
+
 	StudentResponseDTO findStudentByAccountId(long accountId);
 
 	List<StudentResponseDTO> findStudentByListId(List<Long> ids);
@@ -30,16 +33,17 @@ public interface IStudentProfileService {
 
 	String changeClassForStudent(List<Long> studentIdList, long classesId);
 
-	void validateStudentFile(MultipartFile file, long schoolId, int gradeId, HttpServletResponse httpServletResponse)
+	Map<String, List<Cell>> validateStudentFile(MultipartFile file, long schoolId, int gradeId)
 			throws IOException, ParseException;
 
 	String importStudent(MultipartFile file, long schoolId, int gradeId, HttpServletResponse httpServletResponse)
 			throws IOException;
 
-	void exportScoreBySubjectId(long schoolId, int gradeId, long subjectId, HttpServletResponse httpServletResponse)
-			throws IOException;
+	Map<String, Workbook> exportScoreBySubjectId(long schoolId, int gradeId, long subjectId);
 
-	void exportFinalScore(long schoolId, int gradeId, HttpServletResponse httpServletResponse) throws IOException;
+	Map<String, Workbook> exportFinalScore(long schoolId, int gradeId);
 
 	String generateFileNameExport(long schoolId, int gradeId, long subjectId);
+
+	void writeFileOS(HttpServletResponse httpServletResponse, Workbook workbook) throws IOException;
 }

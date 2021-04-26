@@ -16,6 +16,7 @@ import java.util.Map.Entry;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.collections4.map.HashedMap;
 import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
@@ -61,6 +62,7 @@ import com.example.demo.models.ProgressTest;
 import com.example.demo.models.School;
 import com.example.demo.models.SchoolGrade;
 import com.example.demo.models.StudentProfile;
+import com.example.demo.models.StudentRecord;
 import com.example.demo.models.Subject;
 import com.example.demo.models.Unit;
 import com.example.demo.repositories.IAccountRepository;
@@ -76,7 +78,6 @@ import com.example.demo.repositories.IStudentProfileRepository;
 import com.example.demo.repositories.IStudentRecordRepository;
 import com.example.demo.repositories.ISubjectRepository;
 import com.example.demo.repositories.IUnitRepository;
-import com.example.demo.models.StudentRecord;
 import com.example.demo.services.IClassService;
 import com.example.demo.services.IStudentProfileService;
 
@@ -94,28 +95,28 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 	private final int LAST_COLUMN = 6;
 
 	@Autowired
-	ISchoolRepository iSchoolRepository;
+	private ISchoolRepository iSchoolRepository;
 
 	@Autowired
-	IGradeRepository iGradeRepository;
+	private IGradeRepository iGradeRepository;
 
 	@Autowired
-	ISchoolGradeRepository iSchoolGradeRepository;
+	private ISchoolGradeRepository iSchoolGradeRepository;
 
 	@Autowired
-	IClassRepository iClassRepository;
+	private IClassRepository iClassRepository;
 
 	@Autowired
-	IStudentProfileRepository iStudentProfileRepository;
+	private IStudentProfileRepository iStudentProfileRepository;
 
 	@Autowired
-	IAccountRepository iAccountRepository;
+	private IAccountRepository iAccountRepository;
 
 	@Autowired
-	ISubjectRepository iSubjectRepository;
+	private ISubjectRepository iSubjectRepository;
 
 	@Autowired
-	IProgressTestRepository iProgressTestRepository;
+	private IProgressTestRepository iProgressTestRepository;
 
 	@Autowired
 	private IUnitRepository iUnitRepository;
@@ -496,58 +497,120 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 	}
 
 	@Override
-	public void validateStudentFile(MultipartFile file, long schoolId, int gradeId,
-			HttpServletResponse httpServletResponse) throws IOException, ParseException {
+	public Map<String, List<Cell>> validateStudentFile(MultipartFile file, long schoolId, int gradeId)
+			throws IOException, ParseException {
 		// open file
-		Workbook workbook = new XSSFWorkbook(file.getInputStream());
+		Map<String, List<Cell>> response = new HashedMap<>();
+		List<Cell> cellList = new ArrayList<>();
+		try {
+			// check schoolGrade existed
+			SchoolGrade schoolGrade = iSchoolGradeRepository.findByGradeIdAndSchoolIdAndStatusNot(gradeId, schoolId,
+					DELETE_STATUS);
+			if (schoolGrade == null) {
+				throw new ResourceNotFoundException();
+			}
+			School school = schoolGrade.getSchool();
+			int gradeName = schoolGrade.getGrade().getGradeName();
+			String schoolCode = school.getSchoolCode() + school.getSchoolCount();
+			List<Classes> classesList = iClassRepository.findBySchoolGradeIdAndStatusNot(schoolGrade.getId(),
+					DELETE_STATUS);
 
-		// check schoolGrade existed
-		SchoolGrade schoolGrade = iSchoolGradeRepository.findByGradeIdAndSchoolIdAndStatusNot(gradeId, schoolId,
-				DELETE_STATUS);
-		if (schoolGrade == null) {
-			throw new ResourceNotFoundException();
+			// validate all sheet in excel file
+			Workbook workbook = new XSSFWorkbook(file.getInputStream());
+			Iterator<Sheet> sheetIterator = workbook.sheetIterator();
+			while (sheetIterator.hasNext()) {
+				Sheet sheet = sheetIterator.next();
+				cellList = validateSheetData(sheet, classesList, schoolCode, gradeName);
+				if (!cellList.isEmpty()) {
+
+					response.put("BAD", cellList);
+				} else {
+
+					response.put("OK", null);
+				}
+//				CellStyle cellStyle = formatErrorCell(workbook);
+//				for (Cell cell : cellList) {
+//					cell.setCellStyle(cellStyle);
+//				}
+//
+//				// set view default sheet index = 1, view A1, cell active A1
+//				XSSFSheet tempSheet = (XSSFSheet) sheet;
+//				CTWorksheet ctWorksheet = tempSheet.getCTWorksheet();
+//				CTSheetViews ctSheetViews = ctWorksheet.getSheetViews();
+//				CTSheetView ctSheetView = ctSheetViews.getSheetViewArray(ctSheetViews.sizeOfSheetViewArray() - 1);
+//				ctSheetView.setTopLeftCell("A1");
+//				sheet.setActiveCell(new CellAddress("A1"));
+//				workbook.setActiveSheet(0);
+//
+//				String fileName = file.getOriginalFilename();
+//				FileOutputStream fileOut = new FileOutputStream("E:\\" + "Error-" + fileName);
+//				workbook.write(fileOut);
+//				fileOut.close();
+//
+//				ServletOutputStream outputStream = httpServletResponse.getOutputStream();
+//				workbook.write(outputStream);
+//				workbook.close();
+//				outputStream.close();
+//			} else {
+//
+//			}
+			}
+			workbook.close();
+		} catch (Exception e) {
+
+			if (e instanceof ResourceNotFoundException) {
+
+				response.put("NOT FOUND", null);
+			}
+
+			response.put("FAIL", null);
+//			return null;
 		}
-		School school = schoolGrade.getSchool();
-		int gradeName = schoolGrade.getGrade().getGradeName();
-		String schoolCode = school.getSchoolCode() + school.getSchoolCount();
-		List<Classes> classesList = iClassRepository.findBySchoolGradeIdAndStatusNot(schoolGrade.getId(),
-				DELETE_STATUS);
 
-		// validate all sheet in excel file
+		return response;
+	}
+
+	public void writeValidateFile(HttpServletResponse httpServletResponse, MultipartFile file,
+			List<Classes> classesList, String schoolCode, int gradeName) throws IOException {
+		Workbook workbook = new XSSFWorkbook(file.getInputStream());
 		Iterator<Sheet> sheetIterator = workbook.sheetIterator();
 		while (sheetIterator.hasNext()) {
 			Sheet sheet = sheetIterator.next();
-			List<Cell> cellList = validateSheetData(sheet, classesList, schoolCode, gradeName);
+			List<Cell> cellList = null;
 			if (!cellList.isEmpty()) {
-				CellStyle cellStyle = formatErrorCell(workbook);
-				for (Cell cell : cellList) {
-					cell.setCellStyle(cellStyle);
-				}
 
-				// set view default sheet index = 1, view A1, cell active A1
-				XSSFSheet tempSheet = (XSSFSheet) sheet;
-				CTWorksheet ctWorksheet = tempSheet.getCTWorksheet();
-				CTSheetViews ctSheetViews = ctWorksheet.getSheetViews();
-				CTSheetView ctSheetView = ctSheetViews.getSheetViewArray(ctSheetViews.sizeOfSheetViewArray() - 1);
-				ctSheetView.setTopLeftCell("A1");
-				sheet.setActiveCell(new CellAddress("A1"));
-				workbook.setActiveSheet(0);
-
-				String fileName = file.getOriginalFilename();
-				FileOutputStream fileOut = new FileOutputStream("E:\\" + "Error-" + fileName);
-				workbook.write(fileOut);
-				fileOut.close();
-
-				ServletOutputStream outputStream = httpServletResponse.getOutputStream();
-				workbook.write(outputStream);
-				workbook.close();
-				outputStream.close();
+//				response.put("BAD", cellList);
 			} else {
-
+//				response.put("OK", null);
 			}
-		}
+			CellStyle cellStyle = formatErrorCell(workbook);
+			for (Cell cell : cellList) {
+				cell.setCellStyle(cellStyle);
+			}
 
-		workbook.close();
+			// set view default sheet index = 1, view A1, cell active A1
+			XSSFSheet tempSheet = (XSSFSheet) sheet;
+			CTWorksheet ctWorksheet = tempSheet.getCTWorksheet();
+			CTSheetViews ctSheetViews = ctWorksheet.getSheetViews();
+			CTSheetView ctSheetView = ctSheetViews.getSheetViewArray(ctSheetViews.sizeOfSheetViewArray() - 1);
+			ctSheetView.setTopLeftCell("A1");
+			sheet.setActiveCell(new CellAddress("A1"));
+			workbook.setActiveSheet(0);
+
+//		String fileName = file.getOriginalFilename();
+//		FileOutputStream fileOut = new FileOutputStream("E:\\" + "Error-" + fileName);
+//		workbook.write(fileOut);
+//		fileOut.close();
+
+			ServletOutputStream outputStream = httpServletResponse.getOutputStream();
+			workbook.write(outputStream);
+			workbook.close();
+			outputStream.close();
+		}
+//		ServletOutputStream outputStream = httpServletResponse.getOutputStream();
+//		workbook.write(outputStream);
+//		workbook.close();
+//		outputStream.close();
 	}
 
 	private List<Cell> validateSheetData(Sheet sheet, List<Classes> classesList, String schoolCode, int gradeName)
@@ -841,482 +904,477 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 	// tìm tất cả các unit, lesson, exercise, progressTest dựa trên subjectId
 	// in ra điểm trung bình từng exericse của từng hs, nếu chưa làm in ra not yet
 	@Override
-	public void exportScoreBySubjectId(long schoolId, int gradeId, long subjectId,
-			HttpServletResponse httpServletResponse) throws IOException {
-		// validate data input
-		School school = iSchoolRepository.findByIdAndStatusNot(schoolId, DELETE_STATUS);
-		if (school == null) {
-			throw new ResourceNotFoundException();
-		}
-		Grade grade = iGradeRepository.findById(gradeId).orElseThrow(() -> new ResourceNotFoundException());
-		Subject subject = iSubjectRepository.findByIdAndIsDisableFalse(subjectId);
-		if (subject == null) {
-			throw new ResourceNotFoundException();
-		}
+	public Map<String, Workbook> exportScoreBySubjectId(long schoolId, int gradeId, long subjectId) {
 
-		SchoolGrade schoolGrade = iSchoolGradeRepository.findByGradeIdAndSchoolIdAndStatusNot(gradeId, schoolId,
-				DELETE_STATUS);
-		List<Classes> classesList = iClassRepository
-				.findBySchoolGradeIdAndStatusNotOrderByStatusAscClassNameAsc(schoolGrade.getId(), DELETE_STATUS);
-		for (int i = 0; i < classesList.size(); i++) {
-			if (classesList.get(i).getClassName().equals(PENDING_STATUS)) {
-				classesList.remove(classesList.get(i));
-				break;
+		Map<String, Workbook> response = new HashedMap<>();
+		try {
+
+			// validate data input
+			School school = iSchoolRepository.findByIdAndStatusNot(schoolId, DELETE_STATUS);
+			if (school == null) {
+				throw new ResourceNotFoundException();
 			}
-		}
-
-		// header value content
-		String schoolName = school.getSchoolName();
-		String schoolCode = school.getSchoolCode() + school.getSchoolCount();
-		int gradeName = grade.getGradeName();
-		SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-yyyy");
-		String exportDate = sdf.format(new Date());
-		String subjectName = subject.getSubjectName();
-
-		List<Unit> unitList = iUnitRepository.findBySubjectIdAndIsDisableFalseOrderByUnitNameAsc(subjectId);
-		List<Exercise> exerciseList = new ArrayList<>();
-		Map<String, Integer> unitMap = new LinkedHashMap<>();
-		Map<Lesson, Integer> lessonMap = new LinkedHashMap<>();
-		if (!unitList.isEmpty()) {
-			for (Unit unit : unitList) {
-				int totalExercise = 0;
-				List<Lesson> lessonList = new ArrayList<>();
-				lessonList.addAll(iLessonRepository.findByUnitIdAndIsDisableFalseOrderByLessonNameAsc(unit.getId()));
-				if (!lessonList.isEmpty()) {
-					for (Lesson lesson : lessonList) {
-						int exerciseSize = iExerciseRepository
-								.findByLessonIdAndStatusNotOrderByExerciseNameAsc(lesson.getId(), DELETE_STATUS).size();
-
-						if (exerciseSize > 0) {
-							exerciseList.addAll(iExerciseRepository
-									.findByLessonIdAndStatusNotOrderByExerciseNameAsc(lesson.getId(), DELETE_STATUS));
-							totalExercise += exerciseSize;
-							lessonMap.put(lesson, exerciseSize);
-						}
-					}
-
-					if (totalExercise > 0) {
-						System.out.println("unit: " + unit.getUnitName() + " - " + totalExercise);
-						unitMap.put("Unit " + unit.getUnitName(), totalExercise);
-					}
-				}
+			Grade grade = iGradeRepository.findById(gradeId).orElseThrow(() -> new ResourceNotFoundException());
+			Subject subject = iSubjectRepository.findByIdAndIsDisableFalse(subjectId);
+			if (subject == null) {
+				throw new ResourceNotFoundException();
 			}
-		}
 
-		Map<String, Integer> progressTestMap = new LinkedHashMap<>();
-		List<Exercise> exercisePTList = new ArrayList<>();
-		List<ProgressTest> progressTestList = iProgressTestRepository.findBySubjectIdAndIsDisableFalse(subjectId);
-		if (!progressTestList.isEmpty()) {
-			for (ProgressTest progressTest : progressTestList) {
-				int exerciseSize = iExerciseRepository
-						.findByProgressTestIdAndStatusNotOrderByExerciseNameAsc(progressTest.getId(), DELETE_STATUS)
-						.size();
-				if (exerciseSize > 0) {
-					exercisePTList.addAll(iExerciseRepository.findByProgressTestIdAndStatusNotOrderByExerciseNameAsc(
-							progressTest.getId(), DELETE_STATUS));
-					progressTestMap.put(progressTest.getProgressTestName(), exerciseSize);
-				}
-			}
-		}
-
-		Workbook workbook = new XSSFWorkbook();
-		if (!classesList.isEmpty()) {
-			for (Classes classes : classesList) {
-				List<StudentProfile> studentProfileList = new ArrayList<>();
-				if (!classesList.isEmpty()) {
-					if (!iStudentProfileRepository.findByClassesIdAndStatusNot(classes.getId(), DELETE_STATUS)
-							.isEmpty()) {
-						studentProfileList.addAll(
-								iStudentProfileRepository.findByClassesIdAndStatusNot(classes.getId(), DELETE_STATUS));
-					}
-				}
-
-				Sheet sheet = workbook.createSheet(classes.getClassName());
-				sheet.setColumnWidth(0, 1500);
-				sheet.setColumnWidth(1, 3500);
-				sheet.setColumnWidth(2, 9000);
-				for (int i = 3; i < exerciseList.size() + exercisePTList.size() + 3; i++) {
-					sheet.setColumnWidth(i, 3500);
-				}
-
-				for (int i = 0; i < studentProfileList.size() + 10; i++) {
-					if (i == 6) {
-						continue;
-					}
-					sheet.createRow(i);
-				}
-
-				createArrangeInfoCell(workbook, sheet, sheet.getRow(0), 2, 0, 0, 2, 5, "SCORE EXPORT TABLE", 0);
-
-				// create Table Information
-				createOneInfoCell(workbook, sheet.getRow(1), 2, "School Name:");
-				createArrangeInfoCell(workbook, sheet, sheet.getRow(1), 3, 1, 1, 3, 5, schoolName, 0);
-				createOneInfoCell(workbook, sheet.getRow(2), 2, "School Code:");
-				createArrangeInfoCell(workbook, sheet, sheet.getRow(2), 3, 2, 2, 3, 5, schoolCode, 0);
-				createOneInfoCell(workbook, sheet.getRow(3), 2, "Grade:");
-				createArrangeInfoCell(workbook, sheet, sheet.getRow(3), 3, 3, 3, 3, 5, "", gradeName);
-				createOneInfoCell(workbook, sheet.getRow(4), 2, "Export Date:");
-				createArrangeInfoCell(workbook, sheet, sheet.getRow(4), 3, 4, 4, 3, 5, exportDate, 0);
-				createOneInfoCell(workbook, sheet.getRow(5), 2, "Subject Name:");
-				createArrangeInfoCell(workbook, sheet, sheet.getRow(5), 3, 5, 5, 3, 5, subjectName, 0);
-
-				// create Header
-				createArrangeHeaderCell(workbook, sheet, sheet.getRow(7), 0, 7, 9, 0, 0, "No.");
-				createArrangeHeaderCell(workbook, sheet, sheet.getRow(7), 1, 7, 9, 1, 1, "StudentID");
-				createArrangeHeaderCell(workbook, sheet, sheet.getRow(7), 2, 7, 9, 2, 2, "Fullname");
-
-				// unit
-				int beginColumn = 3;
-				if (unitMap != null) {
-					if (!unitMap.isEmpty()) {
-						for (Entry<String, Integer> entry : unitMap.entrySet()) {
-							if (entry.getValue() > 1) {
-								createArrangeHeaderCell(workbook, sheet, sheet.getRow(7), beginColumn, 7, 7,
-										beginColumn, beginColumn + entry.getValue() - 1, entry.getKey());
-								beginColumn += entry.getValue();
-							} else {
-								createOneHeaderCell(workbook, sheet.getRow(7), beginColumn, entry.getKey());
-								beginColumn += entry.getValue();
-							}
-						}
-					}
-				}
-
-				// lesson
-				beginColumn = 3;
-				if (lessonMap != null) {
-					if (!lessonMap.isEmpty()) {
-						for (Map.Entry<Lesson, Integer> entry : lessonMap.entrySet()) {
-							if (entry.getValue() > 1) {
-								createArrangeHeaderCell(workbook, sheet, sheet.getRow(8), beginColumn, 8, 8,
-										beginColumn, beginColumn + entry.getValue() - 1,
-										"Lesson " + entry.getKey().getLessonName());
-								beginColumn += entry.getValue();
-							} else {
-								createOneHeaderCell(workbook, sheet.getRow(8), beginColumn,
-										"Lesson " + entry.getKey().getLessonName());
-								beginColumn += entry.getValue();
-							}
-						}
-					}
-				}
-
-				// exercise
-				for (int i = 3; i < exerciseList.size() + 3; i++) {
-					createOneHeaderCell(workbook, sheet.getRow(9), i,
-							"Exercise " + exerciseList.get(i - 3).getExerciseName());
-				}
-
-				// progressTest
-				int beginProgressTestColumn = exerciseList.size() + 3;
-
-				// exercise
-				for (int i = beginProgressTestColumn; i < exercisePTList.size() + beginProgressTestColumn; i++) {
-					createOneHeaderCell(workbook, sheet.getRow(9), i,
-							"Exercise " + exerciseList.get(i - exerciseList.size() - 3).getExerciseName());
-				}
-
-				if (progressTestMap != null) {
-					if (!progressTestMap.isEmpty()) {
-						for (Map.Entry<String, Integer> entry : progressTestMap.entrySet()) {
-							System.out.println("name = " + entry.getKey() + " exercise = " + entry.getValue());
-							System.out.println(beginProgressTestColumn);
-							if (entry.getValue() >= 1) {
-								createArrangeHeaderCell(workbook, sheet, sheet.getRow(7), beginProgressTestColumn, 7, 8,
-										beginProgressTestColumn, beginProgressTestColumn + entry.getValue() - 1,
-										entry.getKey());
-								beginProgressTestColumn += entry.getValue();
-							}
-						}
-					}
-				}
-
-				if (!studentProfileList.isEmpty()) {
-					for (int i = 0; i < studentProfileList.size(); i++) {
-						System.out.println(studentProfileList.get(i).getId());
-
-						Cell noValueCell = createOneNormalCell(workbook, sheet.getRow(i + 10), 0, CellType.NUMERIC,
-								HorizontalAlignment.CENTER);
-						noValueCell.setCellValue(i + 1);
-
-						Cell studentIdValueCell = createOneNormalCell(workbook, sheet.getRow(i + 10), 1,
-								CellType.STRING, HorizontalAlignment.CENTER);
-						studentIdValueCell
-								.setCellValue("MJ" + String.format("%06d", studentProfileList.get(i).getId()));
-
-						Cell fullNameValueCell = createOneNormalCell(workbook, sheet.getRow(i + 10), 2, CellType.STRING,
-								HorizontalAlignment.LEFT);
-						fullNameValueCell.setCellValue(studentProfileList.get(i).getAccount().getFullName());
-
-						for (int j = 3; j < exerciseList.size() + 3; j++) {
-							System.out.println(exerciseList.get(j).getId() + " exercise");
-							List<ExerciseTaken> exerciseTakenList = iExerciseTakenRepository
-									.findByExerciseIdAndAccountId(exerciseList.get(j - 3).getId(),
-											studentProfileList.get(i).getAccount().getId());
-							boolean isTaken = false;
-							double score = 0;
-							if (!exerciseTakenList.isEmpty()) {
-								double sumTotalScore = 0;
-								for (ExerciseTaken exerciseTaken : exerciseTakenList) {
-									System.out.println(exerciseTaken.getId());
-									sumTotalScore += exerciseTaken.getTotalScore();
-								}
-
-								score = sumTotalScore / exerciseTakenList.size();
-								score = Double.valueOf(new DecimalFormat("#.#").format(score));
-
-								isTaken = true;
-							}
-
-							if (isTaken) {
-								Cell exerciseValueCell = createOneNormalCell(workbook, sheet.getRow(i + 10), j,
-										CellType.NUMERIC, HorizontalAlignment.CENTER);
-								exerciseValueCell.setCellValue(score);
-							} else {
-								createOneWarningCell(workbook, sheet.getRow(i + 10), j, "Not yet!");
-							}
-						}
-
-						for (int j = exerciseList.size() + 3; j < exercisePTList.size() + exerciseList.size()
-								+ 3; j++) {
-							List<ExerciseTaken> exerciseTakenList = iExerciseTakenRepository
-									.findByExerciseIdAndAccountId(exerciseList.get(j - exerciseList.size() - 3).getId(),
-											studentProfileList.get(i).getAccount().getId());
-							boolean isTaken = false;
-							double score = 0;
-							if (!exerciseTakenList.isEmpty()) {
-								double sumTotalScore = 0;
-								for (ExerciseTaken exerciseTaken : exerciseTakenList) {
-									sumTotalScore += exerciseTaken.getTotalScore();
-								}
-
-								score = sumTotalScore / exerciseTakenList.size();
-								score = Double.valueOf(new DecimalFormat("#.#").format(score));
-
-								isTaken = true;
-							}
-
-							if (isTaken) {
-								Cell exerciseValueCell = createOneNormalCell(workbook, sheet.getRow(i + 10), j,
-										CellType.NUMERIC, HorizontalAlignment.CENTER);
-								exerciseValueCell.setCellValue(score);
-							} else {
-								createOneWarningCell(workbook, sheet.getRow(i + 10), j, "Not yet!");
-							}
-						}
-					}
-				}
-			}
-		}
-
-		FileOutputStream fileOut = new FileOutputStream("E:\\" + schoolName + "-" + gradeName + "-ScoreExport.xlsx");
-		workbook.write(fileOut);
-		fileOut.close();
-
-		ServletOutputStream outputStream = httpServletResponse.getOutputStream();
-		workbook.write(outputStream);
-		workbook.close();
-		outputStream.close();
-	}
-
-	// tìm tất cả các lớp dựa trên schoolId và gradeId --> tất cả hs
-	// tìm tất cả các subject, unit và progressTest
-	// in ra điểm trung bình của unit và progressTest của từng hs
-	@Override
-	public void exportFinalScore(long schoolId, int gradeId, HttpServletResponse httpServletResponse)
-			throws IOException {
-		School school = iSchoolRepository.findByIdAndStatusNot(schoolId, DELETE_STATUS);
-		if (school == null) {
-			throw new ResourceNotFoundException();
-		}
-		Grade grade = iGradeRepository.findById(gradeId).orElseThrow(() -> new ResourceNotFoundException());
-		SchoolGrade schoolGrade = iSchoolGradeRepository.findByGradeIdAndSchoolIdAndStatusNot(gradeId, schoolId,
-				DELETE_STATUS);
-		List<Classes> classesList = iClassRepository
-				.findBySchoolGradeIdAndStatusNotOrderByStatusAscClassNameAsc(schoolGrade.getId(), DELETE_STATUS);
-		if (!classesList.isEmpty()) {
+			SchoolGrade schoolGrade = iSchoolGradeRepository.findByGradeIdAndSchoolIdAndStatusNot(gradeId, schoolId,
+					DELETE_STATUS);
+			List<Classes> classesList = iClassRepository
+					.findBySchoolGradeIdAndStatusNotOrderByStatusAscClassNameAsc(schoolGrade.getId(), DELETE_STATUS);
 			for (int i = 0; i < classesList.size(); i++) {
 				if (classesList.get(i).getClassName().equals(PENDING_STATUS)) {
 					classesList.remove(classesList.get(i));
 					break;
 				}
 			}
-		}
 
-		Map<Subject, Integer> subjectMap = new LinkedHashMap<>();
-		List<Subject> subjectList = iSubjectRepository.findByGradeIdAndIsDisableFalse(gradeId);
-		List<String> unitName = new ArrayList<>();
+			// header value content
+			String schoolName = school.getSchoolName();
+			String schoolCode = school.getSchoolCode() + school.getSchoolCount();
+			int gradeName = grade.getGradeName();
+			SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-yyyy");
+			String exportDate = sdf.format(new Date());
+			String subjectName = subject.getSubjectName();
 
-		if (!subjectList.isEmpty()) {
-			for (Subject subject : subjectList) {
-				int totalUnit = 0;
-				List<Unit> unitList = iUnitRepository
-						.findBySubjectIdAndIsDisableFalseOrderByUnitNameAsc(subject.getId());
-				if (!unitList.isEmpty()) {
-					for (Unit unit : unitList) {
-						unitName.add("Unit " + unit.getUnitName());
-					}
-					totalUnit += unitList.size();
-				}
-				List<ProgressTest> progressTestList = iProgressTestRepository
-						.findBySubjectIdAndIsDisableFalse(subject.getId());
-				if (!progressTestList.isEmpty()) {
-					for (ProgressTest progressTest : progressTestList) {
-						unitName.add(progressTest.getProgressTestName());
-					}
-					totalUnit += progressTestList.size();
-				}
+			List<Unit> unitList = iUnitRepository.findBySubjectIdAndIsDisableFalseOrderByUnitNameAsc(subjectId);
+			List<Exercise> exerciseList = new ArrayList<>();
+			Map<String, Integer> unitMap = new LinkedHashMap<>();
+			Map<Lesson, Integer> lessonMap = new LinkedHashMap<>();
+			if (!unitList.isEmpty()) {
+				for (Unit unit : unitList) {
+					int totalExercise = 0;
+					List<Lesson> lessonList = new ArrayList<>();
+					lessonList
+							.addAll(iLessonRepository.findByUnitIdAndIsDisableFalseOrderByLessonNameAsc(unit.getId()));
+					if (!lessonList.isEmpty()) {
+						for (Lesson lesson : lessonList) {
+							int exerciseSize = iExerciseRepository
+									.findByLessonIdAndStatusNotOrderByExerciseNameAsc(lesson.getId(), DELETE_STATUS)
+									.size();
 
-				if (totalUnit > 0) {
-					subjectMap.put(subject, totalUnit);
-				}
-			}
-		}
+							if (exerciseSize > 0) {
+								exerciseList
+										.addAll(iExerciseRepository.findByLessonIdAndStatusNotOrderByExerciseNameAsc(
+												lesson.getId(), DELETE_STATUS));
+								totalExercise += exerciseSize;
+								lessonMap.put(lesson, exerciseSize);
+							}
+						}
 
-		// header value content
-		String schoolName = school.getSchoolName();
-		String schoolCode = school.getSchoolCode() + school.getSchoolCount();
-		int gradeName = grade.getGradeName();
-		SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-yyyy");
-		String exportDate = sdf.format(new Date());
-
-		Workbook workbook = new XSSFWorkbook();
-		if (!classesList.isEmpty()) {
-			for (Classes classes : classesList) {
-				List<StudentProfile> studentProfileList = new ArrayList<>();
-				if (!classesList.isEmpty()) {
-					if (!iStudentProfileRepository.findByClassesIdAndStatusNot(classes.getId(), DELETE_STATUS)
-							.isEmpty()) {
-						studentProfileList.addAll(
-								iStudentProfileRepository.findByClassesIdAndStatusNot(classes.getId(), DELETE_STATUS));
-					}
-				}
-
-				Sheet sheet = workbook.createSheet(classes.getClassName());
-				sheet.setColumnWidth(0, 1500);
-				sheet.setColumnWidth(1, 3700);
-				sheet.setColumnWidth(2, 9000);
-				sheet.setColumnWidth(3, 3700);
-				sheet.setColumnWidth(4, 3700);
-				sheet.setColumnWidth(5, 9000);
-				sheet.setColumnWidth(6, 9000);
-				for (int i = 7; i < unitName.size() + 7; i++) {
-					sheet.setColumnWidth(i, 3500);
-				}
-
-				for (int i = 0; i < studentProfileList.size() + 10; i++) {
-					if (i == 5) {
-						continue;
-					}
-					sheet.createRow(i);
-				}
-
-				createArrangeInfoCell(workbook, sheet, sheet.getRow(0), 2, 0, 0, 2, 5,
-						"FINAL SCORE GRADUATE EXPORT TABLE", 0);
-
-				// create Table Information
-				createOneInfoCell(workbook, sheet.getRow(1), 2, "School Name:");
-				createArrangeInfoCell(workbook, sheet, sheet.getRow(1), 3, 1, 1, 3, 5, schoolName, 0);
-				createOneInfoCell(workbook, sheet.getRow(2), 2, "School Code:");
-				createArrangeInfoCell(workbook, sheet, sheet.getRow(2), 3, 2, 2, 3, 5, schoolCode, 0);
-				createOneInfoCell(workbook, sheet.getRow(3), 2, "Grade:");
-				createArrangeInfoCell(workbook, sheet, sheet.getRow(3), 3, 3, 3, 3, 5, "", gradeName);
-				createOneInfoCell(workbook, sheet.getRow(4), 2, "Export Date:");
-				createArrangeInfoCell(workbook, sheet, sheet.getRow(4), 3, 4, 4, 3, 5, exportDate, 0);
-
-				// create Header
-				createArrangeHeaderCell(workbook, sheet, sheet.getRow(6), 0, 6, 7, 0, 0, "No.");
-				createArrangeHeaderCell(workbook, sheet, sheet.getRow(6), 1, 6, 7, 1, 1, "StudentID");
-				createArrangeHeaderCell(workbook, sheet, sheet.getRow(6), 2, 6, 7, 2, 2, "Fullname");
-				createArrangeHeaderCell(workbook, sheet, sheet.getRow(6), 3, 6, 7, 3, 3, "DoB");
-				createArrangeHeaderCell(workbook, sheet, sheet.getRow(6), 4, 6, 7, 4, 4, "Gender");
-				createArrangeHeaderCell(workbook, sheet, sheet.getRow(6), 5, 6, 7, 5, 5, "Parent Name");
-				createArrangeHeaderCell(workbook, sheet, sheet.getRow(6), 6, 6, 7, 6, 6, "Contact");
-
-				int subjectBeginColumn = 7;
-
-				if (!subjectMap.isEmpty()) {
-					for (Entry<Subject, Integer> entry : subjectMap.entrySet()) {
-						if (entry.getValue() > 1) {
-							createArrangeHeaderCell(workbook, sheet, sheet.getRow(6), subjectBeginColumn, 6, 6,
-									subjectBeginColumn, subjectBeginColumn + entry.getValue() - 1,
-									entry.getKey().getSubjectName());
-							subjectBeginColumn += entry.getValue();
-						} else {
-							createOneHeaderCell(workbook, sheet.getRow(6), subjectBeginColumn,
-									entry.getKey().getSubjectName());
-							subjectBeginColumn += entry.getValue();
+						if (totalExercise > 0) {
+							System.out.println("unit: " + unit.getUnitName() + " - " + totalExercise);
+							unitMap.put("Unit " + unit.getUnitName(), totalExercise);
 						}
 					}
 				}
+			}
 
-				// unit
-				int unitColumnBegin = 7;
-				if (!unitName.isEmpty()) {
-					for (int i = unitColumnBegin; i < unitName.size() + unitColumnBegin; i++) {
-						createOneHeaderCell(workbook, sheet.getRow(7), i, unitName.get(i - unitColumnBegin));
+			Map<String, Integer> progressTestMap = new LinkedHashMap<>();
+			List<Exercise> exercisePTList = new ArrayList<>();
+			List<ProgressTest> progressTestList = iProgressTestRepository.findBySubjectIdAndIsDisableFalse(subjectId);
+			if (!progressTestList.isEmpty()) {
+				for (ProgressTest progressTest : progressTestList) {
+					int exerciseSize = iExerciseRepository
+							.findByProgressTestIdAndStatusNotOrderByExerciseNameAsc(progressTest.getId(), DELETE_STATUS)
+							.size();
+					if (exerciseSize > 0) {
+						exercisePTList
+								.addAll(iExerciseRepository.findByProgressTestIdAndStatusNotOrderByExerciseNameAsc(
+										progressTest.getId(), DELETE_STATUS));
+						progressTestMap.put(progressTest.getProgressTestName(), exerciseSize);
 					}
 				}
+			}
 
-				if (!studentProfileList.isEmpty()) {
-					for (int i = 0; i < studentProfileList.size(); i++) {
-						Cell noValueCell = createOneNormalCell(workbook, sheet.getRow(i + 8), 0, CellType.NUMERIC,
-								HorizontalAlignment.CENTER);
-						noValueCell.setCellValue(i + 1);
+			Workbook workbook = new XSSFWorkbook();
+			if (!classesList.isEmpty()) {
+				for (Classes classes : classesList) {
+					List<StudentProfile> studentProfileList = new ArrayList<>();
+					if (!classesList.isEmpty()) {
+						if (!iStudentProfileRepository.findByClassesIdAndStatusNot(classes.getId(), DELETE_STATUS)
+								.isEmpty()) {
+							studentProfileList.addAll(iStudentProfileRepository
+									.findByClassesIdAndStatusNot(classes.getId(), DELETE_STATUS));
+						}
+					}
 
-						Cell studentIdValueCell = createOneNormalCell(workbook, sheet.getRow(i + 8), 1, CellType.STRING,
-								HorizontalAlignment.CENTER);
-						studentIdValueCell
-								.setCellValue("MJ" + String.format("%06d", studentProfileList.get(i).getId()));
+					Sheet sheet = workbook.createSheet(classes.getClassName());
+					sheet.setColumnWidth(0, 1500);
+					sheet.setColumnWidth(1, 3500);
+					sheet.setColumnWidth(2, 9000);
+					for (int i = 3; i < exerciseList.size() + exercisePTList.size() + 3; i++) {
+						sheet.setColumnWidth(i, 3500);
+					}
 
-						Cell fullNameValueCell = createOneNormalCell(workbook, sheet.getRow(i + 8), 2, CellType.STRING,
-								HorizontalAlignment.LEFT);
-						fullNameValueCell.setCellValue(studentProfileList.get(i).getAccount().getFullName());
+					for (int i = 0; i < studentProfileList.size() + 10; i++) {
+						if (i == 6) {
+							continue;
+						}
+						sheet.createRow(i);
+					}
 
-						Cell DoBValueCell = createOneNormalCell(workbook, sheet.getRow(i + 8), 3, CellType.STRING,
-								HorizontalAlignment.CENTER);
-						DoBValueCell.setCellValue(studentProfileList.get(i).getDOB());
-						Cell genderValueCell = createOneNormalCell(workbook, sheet.getRow(i + 8), 4, CellType.STRING,
-								HorizontalAlignment.CENTER);
-						genderValueCell.setCellValue(studentProfileList.get(i).getGender());
-						Cell parentNameValueCell = createOneNormalCell(workbook, sheet.getRow(i + 8), 5,
-								CellType.STRING, HorizontalAlignment.LEFT);
-						parentNameValueCell.setCellValue(studentProfileList.get(i).getParentName());
-						Cell contactValueCell = createOneNormalCell(workbook, sheet.getRow(i + 8), 6, CellType.STRING,
-								HorizontalAlignment.LEFT);
-						contactValueCell.setCellValue(studentProfileList.get(i).getContact());
-						int scoreColumnBegin = 7;
-						if (!subjectMap.isEmpty()) {
-							for (Entry<Subject, Integer> entry : subjectMap.entrySet()) {
-								List<Unit> unitList = iUnitRepository
-										.findBySubjectIdAndIsDisableFalse(entry.getKey().getId());
-								if (!unitList.isEmpty()) {
+					createArrangeInfoCell(workbook, sheet, sheet.getRow(0), 2, 0, 0, 2, 5, "SCORE EXPORT TABLE", 0);
 
-									System.out.println(unitList.size() + " unit");
-									for (int j = scoreColumnBegin; j < unitList.size() + scoreColumnBegin; j++) {
-										StudentRecord studentRecord = iStudentRecordRepository.findByUnitIdAndAccountId(
-												unitList.get(j - scoreColumnBegin).getId(),
+					// create Table Information
+					createOneInfoCell(workbook, sheet.getRow(1), 2, "School Name:");
+					createArrangeInfoCell(workbook, sheet, sheet.getRow(1), 3, 1, 1, 3, 5, schoolName, 0);
+					createOneInfoCell(workbook, sheet.getRow(2), 2, "School Code:");
+					createArrangeInfoCell(workbook, sheet, sheet.getRow(2), 3, 2, 2, 3, 5, schoolCode, 0);
+					createOneInfoCell(workbook, sheet.getRow(3), 2, "Grade:");
+					createArrangeInfoCell(workbook, sheet, sheet.getRow(3), 3, 3, 3, 3, 5, "", gradeName);
+					createOneInfoCell(workbook, sheet.getRow(4), 2, "Export Date:");
+					createArrangeInfoCell(workbook, sheet, sheet.getRow(4), 3, 4, 4, 3, 5, exportDate, 0);
+					createOneInfoCell(workbook, sheet.getRow(5), 2, "Subject Name:");
+					createArrangeInfoCell(workbook, sheet, sheet.getRow(5), 3, 5, 5, 3, 5, subjectName, 0);
+
+					// create Header
+					createArrangeHeaderCell(workbook, sheet, sheet.getRow(7), 0, 7, 9, 0, 0, "No.");
+					createArrangeHeaderCell(workbook, sheet, sheet.getRow(7), 1, 7, 9, 1, 1, "StudentID");
+					createArrangeHeaderCell(workbook, sheet, sheet.getRow(7), 2, 7, 9, 2, 2, "Fullname");
+
+					// unit
+					int beginColumn = 3;
+					if (unitMap != null) {
+						if (!unitMap.isEmpty()) {
+							for (Entry<String, Integer> entry : unitMap.entrySet()) {
+								if (entry.getValue() > 1) {
+									createArrangeHeaderCell(workbook, sheet, sheet.getRow(7), beginColumn, 7, 7,
+											beginColumn, beginColumn + entry.getValue() - 1, entry.getKey());
+									beginColumn += entry.getValue();
+								} else {
+									createOneHeaderCell(workbook, sheet.getRow(7), beginColumn, entry.getKey());
+									beginColumn += entry.getValue();
+								}
+							}
+						}
+					}
+
+					// lesson
+					beginColumn = 3;
+					if (lessonMap != null) {
+						if (!lessonMap.isEmpty()) {
+							for (Map.Entry<Lesson, Integer> entry : lessonMap.entrySet()) {
+								if (entry.getValue() > 1) {
+									createArrangeHeaderCell(workbook, sheet, sheet.getRow(8), beginColumn, 8, 8,
+											beginColumn, beginColumn + entry.getValue() - 1,
+											"Lesson " + entry.getKey().getLessonName());
+									beginColumn += entry.getValue();
+								} else {
+									createOneHeaderCell(workbook, sheet.getRow(8), beginColumn,
+											"Lesson " + entry.getKey().getLessonName());
+									beginColumn += entry.getValue();
+								}
+							}
+						}
+					}
+
+					// exercise
+					for (int i = 3; i < exerciseList.size() + 3; i++) {
+						createOneHeaderCell(workbook, sheet.getRow(9), i,
+								"Exercise " + exerciseList.get(i - 3).getExerciseName());
+					}
+
+					// progressTest
+					int beginProgressTestColumn = exerciseList.size() + 3;
+
+					// exercise
+					for (int i = beginProgressTestColumn; i < exercisePTList.size() + beginProgressTestColumn; i++) {
+						createOneHeaderCell(workbook, sheet.getRow(9), i,
+								"Exercise " + exerciseList.get(i - exerciseList.size() - 3).getExerciseName());
+					}
+
+					if (progressTestMap != null) {
+						if (!progressTestMap.isEmpty()) {
+							for (Map.Entry<String, Integer> entry : progressTestMap.entrySet()) {
+								System.out.println("name = " + entry.getKey() + " exercise = " + entry.getValue());
+								System.out.println(beginProgressTestColumn);
+								if (entry.getValue() >= 1) {
+									createArrangeHeaderCell(workbook, sheet, sheet.getRow(7), beginProgressTestColumn,
+											7, 8, beginProgressTestColumn,
+											beginProgressTestColumn + entry.getValue() - 1, entry.getKey());
+									beginProgressTestColumn += entry.getValue();
+								}
+							}
+						}
+					}
+
+					if (!studentProfileList.isEmpty()) {
+						for (int i = 0; i < studentProfileList.size(); i++) {
+							System.out.println(studentProfileList.get(i).getId());
+
+							Cell noValueCell = createOneNormalCell(workbook, sheet.getRow(i + 10), 0, CellType.NUMERIC,
+									HorizontalAlignment.CENTER);
+							noValueCell.setCellValue(i + 1);
+
+							Cell studentIdValueCell = createOneNormalCell(workbook, sheet.getRow(i + 10), 1,
+									CellType.STRING, HorizontalAlignment.CENTER);
+							studentIdValueCell
+									.setCellValue("MJ" + String.format("%06d", studentProfileList.get(i).getId()));
+
+							Cell fullNameValueCell = createOneNormalCell(workbook, sheet.getRow(i + 10), 2,
+									CellType.STRING, HorizontalAlignment.LEFT);
+							fullNameValueCell.setCellValue(studentProfileList.get(i).getAccount().getFullName());
+
+							for (int j = 3; j < exerciseList.size() + 3; j++) {
+								System.out.println(exerciseList.get(j).getId() + " exercise");
+								List<ExerciseTaken> exerciseTakenList = iExerciseTakenRepository
+										.findByExerciseIdAndAccountId(exerciseList.get(j - 3).getId(),
 												studentProfileList.get(i).getAccount().getId());
-										double score = 0;
-										if (studentRecord != null) {
-											score = studentRecord.getAverageScore();
-										}
-										Cell exerciseValueCell = createOneNormalCell(workbook, sheet.getRow(i + 8), j,
-												CellType.NUMERIC, HorizontalAlignment.CENTER);
-										exerciseValueCell.setCellValue(score);
+								boolean isTaken = false;
+								double score = 0;
+								if (!exerciseTakenList.isEmpty()) {
+									double sumTotalScore = 0;
+									for (ExerciseTaken exerciseTaken : exerciseTakenList) {
+										System.out.println(exerciseTaken.getId());
+										sumTotalScore += exerciseTaken.getTotalScore();
 									}
 
-									scoreColumnBegin += unitList.size();
+									score = sumTotalScore / exerciseTakenList.size();
+									score = Double.valueOf(new DecimalFormat("#.#").format(score));
 
-									List<ProgressTest> progressTestList = iProgressTestRepository
+									isTaken = true;
+								}
+
+								if (isTaken) {
+									Cell exerciseValueCell = createOneNormalCell(workbook, sheet.getRow(i + 10), j,
+											CellType.NUMERIC, HorizontalAlignment.CENTER);
+									exerciseValueCell.setCellValue(score);
+								} else {
+									createOneWarningCell(workbook, sheet.getRow(i + 10), j, "Not yet!");
+								}
+							}
+
+							for (int j = exerciseList.size() + 3; j < exercisePTList.size() + exerciseList.size()
+									+ 3; j++) {
+								List<ExerciseTaken> exerciseTakenList = iExerciseTakenRepository
+										.findByExerciseIdAndAccountId(
+												exerciseList.get(j - exerciseList.size() - 3).getId(),
+												studentProfileList.get(i).getAccount().getId());
+								boolean isTaken = false;
+								double score = 0;
+								if (!exerciseTakenList.isEmpty()) {
+									double sumTotalScore = 0;
+									for (ExerciseTaken exerciseTaken : exerciseTakenList) {
+										sumTotalScore += exerciseTaken.getTotalScore();
+									}
+
+									score = sumTotalScore / exerciseTakenList.size();
+									score = Double.valueOf(new DecimalFormat("#.#").format(score));
+
+									isTaken = true;
+								}
+
+								if (isTaken) {
+									Cell exerciseValueCell = createOneNormalCell(workbook, sheet.getRow(i + 10), j,
+											CellType.NUMERIC, HorizontalAlignment.CENTER);
+									exerciseValueCell.setCellValue(score);
+								} else {
+									createOneWarningCell(workbook, sheet.getRow(i + 10), j, "Not yet!");
+								}
+							}
+						}
+					}
+				}
+				response.put("EXPORT SUCCESS", workbook);
+				
+				FileOutputStream fileOut = new FileOutputStream(
+						"E:\\" + schoolName + "-" + gradeName + "-ScoreExport.xlsx");
+				workbook.write(fileOut);
+				fileOut.close();
+			}
+		} catch (Exception e) {
+			if (e instanceof ResourceNotFoundException) {
+				response.put("NOT FOUND", null);
+			} else {
+				response.put("GRADUATE FAIL", null);
+			}
+		}
+		
+		return response;
+	}
+
+	// tìm tất cả các lớp dựa trên schoolId và gradeId --> tất cả hs
+	// tìm tất cả các subject, unit và progressTest
+	// in ra điểm trung bình của unit và progressTest của từng hs
+	@Override
+	public Map<String, Workbook> exportFinalScore(long schoolId, int gradeId) {
+		Map<String, Workbook> response = new HashedMap<>();
+		try {
+			School school = iSchoolRepository.findByIdAndStatusNot(schoolId, DELETE_STATUS);
+			if (school == null) {
+				throw new ResourceNotFoundException();
+			}
+			Grade grade = iGradeRepository.findById(gradeId).orElseThrow(() -> new ResourceNotFoundException());
+			SchoolGrade schoolGrade = iSchoolGradeRepository.findByGradeIdAndSchoolIdAndStatusNot(gradeId, schoolId,
+					DELETE_STATUS);
+			List<Classes> classesList = iClassRepository
+					.findBySchoolGradeIdAndStatusNotOrderByStatusAscClassNameAsc(schoolGrade.getId(), DELETE_STATUS);
+			if (!classesList.isEmpty()) {
+				for (int i = 0; i < classesList.size(); i++) {
+					if (classesList.get(i).getClassName().equals(PENDING_STATUS)) {
+						classesList.remove(classesList.get(i));
+						break;
+					}
+				}
+			}
+
+			Map<Subject, Integer> subjectMap = new LinkedHashMap<>();
+			List<Subject> subjectList = iSubjectRepository.findByGradeIdAndIsDisableFalse(gradeId);
+			List<String> unitName = new ArrayList<>();
+
+			if (!subjectList.isEmpty()) {
+				for (Subject subject : subjectList) {
+					int totalUnit = 0;
+					List<Unit> unitList = iUnitRepository
+							.findBySubjectIdAndIsDisableFalseOrderByUnitNameAsc(subject.getId());
+					if (!unitList.isEmpty()) {
+						for (Unit unit : unitList) {
+							unitName.add("Unit " + unit.getUnitName());
+						}
+						totalUnit += unitList.size();
+					}
+					List<ProgressTest> progressTestList = iProgressTestRepository
+							.findBySubjectIdAndIsDisableFalseOrderByProgressTestName(subject.getId());
+					if (!progressTestList.isEmpty()) {
+						for (ProgressTest progressTest : progressTestList) {
+							unitName.add(progressTest.getProgressTestName());
+						}
+						totalUnit += progressTestList.size();
+					}
+
+					if (totalUnit > 0) {
+						subjectMap.put(subject, totalUnit);
+					}
+				}
+			}
+
+			// header value content
+			String schoolName = school.getSchoolName();
+			String schoolCode = school.getSchoolCode() + school.getSchoolCount();
+			int gradeName = grade.getGradeName();
+			SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-yyyy");
+			String exportDate = sdf.format(new Date());
+
+			Workbook workbook = new XSSFWorkbook();
+			if (!classesList.isEmpty()) {
+				for (Classes classes : classesList) {
+					List<StudentProfile> studentProfileList = new ArrayList<>();
+					if (!classesList.isEmpty()) {
+						if (!iStudentProfileRepository.findByClassesIdAndStatusNot(classes.getId(), DELETE_STATUS)
+								.isEmpty()) {
+							studentProfileList.addAll(iStudentProfileRepository
+									.findByClassesIdAndStatusNot(classes.getId(), DELETE_STATUS));
+						}
+					}
+
+					Sheet sheet = workbook.createSheet(classes.getClassName());
+					sheet.setColumnWidth(0, 1500);
+					sheet.setColumnWidth(1, 3700);
+					sheet.setColumnWidth(2, 9000);
+					sheet.setColumnWidth(3, 3700);
+					sheet.setColumnWidth(4, 3700);
+					sheet.setColumnWidth(5, 9000);
+					sheet.setColumnWidth(6, 9000);
+					for (int i = 7; i < unitName.size() + 7; i++) {
+						sheet.setColumnWidth(i, 3500);
+					}
+
+					for (int i = 0; i < studentProfileList.size() + 10; i++) {
+						if (i == 5) {
+							continue;
+						}
+						sheet.createRow(i);
+					}
+
+					createArrangeInfoCell(workbook, sheet, sheet.getRow(0), 2, 0, 0, 2, 5,
+							"FINAL SCORE GRADUATE EXPORT TABLE", 0);
+
+					// create Table Information
+					createOneInfoCell(workbook, sheet.getRow(1), 2, "School Name:");
+					createArrangeInfoCell(workbook, sheet, sheet.getRow(1), 3, 1, 1, 3, 5, schoolName, 0);
+					createOneInfoCell(workbook, sheet.getRow(2), 2, "School Code:");
+					createArrangeInfoCell(workbook, sheet, sheet.getRow(2), 3, 2, 2, 3, 5, schoolCode, 0);
+					createOneInfoCell(workbook, sheet.getRow(3), 2, "Grade:");
+					createArrangeInfoCell(workbook, sheet, sheet.getRow(3), 3, 3, 3, 3, 5, "", gradeName);
+					createOneInfoCell(workbook, sheet.getRow(4), 2, "Export Date:");
+					createArrangeInfoCell(workbook, sheet, sheet.getRow(4), 3, 4, 4, 3, 5, exportDate, 0);
+
+					// create Header
+					createArrangeHeaderCell(workbook, sheet, sheet.getRow(6), 0, 6, 7, 0, 0, "No.");
+					createArrangeHeaderCell(workbook, sheet, sheet.getRow(6), 1, 6, 7, 1, 1, "StudentID");
+					createArrangeHeaderCell(workbook, sheet, sheet.getRow(6), 2, 6, 7, 2, 2, "Fullname");
+					createArrangeHeaderCell(workbook, sheet, sheet.getRow(6), 3, 6, 7, 3, 3, "DoB");
+					createArrangeHeaderCell(workbook, sheet, sheet.getRow(6), 4, 6, 7, 4, 4, "Gender");
+					createArrangeHeaderCell(workbook, sheet, sheet.getRow(6), 5, 6, 7, 5, 5, "Parent Name");
+					createArrangeHeaderCell(workbook, sheet, sheet.getRow(6), 6, 6, 7, 6, 6, "Contact");
+
+					int subjectBeginColumn = 7;
+
+					if (!subjectMap.isEmpty()) {
+						for (Entry<Subject, Integer> entry : subjectMap.entrySet()) {
+							if (entry.getValue() > 1) {
+								createArrangeHeaderCell(workbook, sheet, sheet.getRow(6), subjectBeginColumn, 6, 6,
+										subjectBeginColumn, subjectBeginColumn + entry.getValue() - 1,
+										entry.getKey().getSubjectName());
+								subjectBeginColumn += entry.getValue();
+							} else {
+								createOneHeaderCell(workbook, sheet.getRow(6), subjectBeginColumn,
+										entry.getKey().getSubjectName());
+								subjectBeginColumn += entry.getValue();
+							}
+						}
+					}
+
+					// unit
+					int unitColumnBegin = 7;
+					if (!unitName.isEmpty()) {
+						for (int i = unitColumnBegin; i < unitName.size() + unitColumnBegin; i++) {
+							createOneHeaderCell(workbook, sheet.getRow(7), i, unitName.get(i - unitColumnBegin));
+						}
+					}
+
+					if (!studentProfileList.isEmpty()) {
+						for (int i = 0; i < studentProfileList.size(); i++) {
+							Cell noValueCell = createOneNormalCell(workbook, sheet.getRow(i + 8), 0, CellType.NUMERIC,
+									HorizontalAlignment.CENTER);
+							noValueCell.setCellValue(i + 1);
+
+							Cell studentIdValueCell = createOneNormalCell(workbook, sheet.getRow(i + 8), 1,
+									CellType.STRING, HorizontalAlignment.CENTER);
+							studentIdValueCell
+									.setCellValue("MJ" + String.format("%06d", studentProfileList.get(i).getId()));
+
+							Cell fullNameValueCell = createOneNormalCell(workbook, sheet.getRow(i + 8), 2,
+									CellType.STRING, HorizontalAlignment.LEFT);
+							fullNameValueCell.setCellValue(studentProfileList.get(i).getAccount().getFullName());
+
+							Cell DoBValueCell = createOneNormalCell(workbook, sheet.getRow(i + 8), 3, CellType.STRING,
+									HorizontalAlignment.CENTER);
+							DoBValueCell.setCellValue(studentProfileList.get(i).getDOB());
+							Cell genderValueCell = createOneNormalCell(workbook, sheet.getRow(i + 8), 4,
+									CellType.STRING, HorizontalAlignment.CENTER);
+							genderValueCell.setCellValue(studentProfileList.get(i).getGender());
+							Cell parentNameValueCell = createOneNormalCell(workbook, sheet.getRow(i + 8), 5,
+									CellType.STRING, HorizontalAlignment.LEFT);
+							parentNameValueCell.setCellValue(studentProfileList.get(i).getParentName());
+							Cell contactValueCell = createOneNormalCell(workbook, sheet.getRow(i + 8), 6,
+									CellType.STRING, HorizontalAlignment.LEFT);
+							contactValueCell.setCellValue(studentProfileList.get(i).getContact());
+							int scoreColumnBegin = 7;
+							if (!subjectMap.isEmpty()) {
+								for (Entry<Subject, Integer> entry : subjectMap.entrySet()) {
+									List<Unit> unitList = iUnitRepository
 											.findBySubjectIdAndIsDisableFalse(entry.getKey().getId());
-									if (!progressTestList.isEmpty()) {
-										System.out.println(progressTestList.size() + " progressTestList");
-										for (int j = scoreColumnBegin; j < progressTestList.size()
-												+ scoreColumnBegin; j++) {
+									if (!unitList.isEmpty()) {
+
+										System.out.println(unitList.size() + " unit");
+										for (int j = scoreColumnBegin; j < unitList.size() + scoreColumnBegin; j++) {
 											StudentRecord studentRecord = iStudentRecordRepository
-													.findByProgressTestIdAndAccountId(
-															progressTestList.get(j - scoreColumnBegin).getId(),
+													.findByUnitIdAndAccountId(
+															unitList.get(j - scoreColumnBegin).getId(),
 															studentProfileList.get(i).getAccount().getId());
 											double score = 0;
 											if (studentRecord != null) {
@@ -1326,57 +1384,63 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 													j, CellType.NUMERIC, HorizontalAlignment.CENTER);
 											exerciseValueCell.setCellValue(score);
 										}
-										scoreColumnBegin += progressTestList.size();
 
-//										for (ProgressTest progressTest : progressTestList) {
-//											for (int j = scoreColumnBegin; j < progressTestList.size()
-//													+ scoreColumnBegin; j++) {
-//												List<ExerciseTaken> exerciseTakenList = iExerciseTakenRepository
-//														.findByProgressTestIdAndAccountId(progressTest.getId(),
-//																studentProfileList.get(i).getAccount().getId());
-//
-//												double score = 0;
-//												if (!exerciseTakenList.isEmpty()) {
-//													double sumTotalScore = 0;
-//													for (ExerciseTaken exerciseTaken : exerciseTakenList) {
-//														sumTotalScore += exerciseTaken.getTotalScore();
-//													}
-//
-//													score = sumTotalScore / exerciseTakenList.size();
-//													score = Double.valueOf(new DecimalFormat("#.#").format(score));
-//
-////														isTaken = true;
-//												}
-//
-////													if (isTaken) {
-//												Cell exerciseValueCell = createOneNormalCell(workbook,
-//														sheet.getRow(i + 8), j, CellType.NUMERIC,
-//														HorizontalAlignment.CENTER);
-//												exerciseValueCell.setCellValue(score);
-////													}
-////												else {
-////													createOneWarningCell(workbook, sheet.getRow(i + 10), j, "Not yet!");
-////												}
-//											}
-//										}
+										scoreColumnBegin += unitList.size();
 
+										List<ProgressTest> progressTestList = iProgressTestRepository
+												.findBySubjectIdAndIsDisableFalse(entry.getKey().getId());
+										if (!progressTestList.isEmpty()) {
+											System.out.println(progressTestList.size() + " progressTestList");
+											for (int j = scoreColumnBegin; j < progressTestList.size()
+													+ scoreColumnBegin; j++) {
+												StudentRecord studentRecord = iStudentRecordRepository
+														.findByProgressTestIdAndAccountId(
+																progressTestList.get(j - scoreColumnBegin).getId(),
+																studentProfileList.get(i).getAccount().getId());
+												double score = 0;
+												if (studentRecord != null) {
+													score = studentRecord.getAverageScore();
+												}
+												Cell exerciseValueCell = createOneNormalCell(workbook,
+														sheet.getRow(i + 8), j, CellType.NUMERIC,
+														HorizontalAlignment.CENTER);
+												exerciseValueCell.setCellValue(score);
+											}
+											scoreColumnBegin += progressTestList.size();
+
+										}
 									}
 								}
 							}
-						}
 
-						changeStatusOneStudent(studentProfileList.get(i).getId(), PENDING_STATUS);
+							changeStatusOneStudent(studentProfileList.get(i).getId(), PENDING_STATUS);
+						}
 					}
 				}
-//				
-			}
 
+				response.put("GRADUATE SUCCESS", workbook);
+				FileOutputStream fileOut = new FileOutputStream(
+						"E:\\" + schoolName + "-" + gradeName + "-FinalScoreExport.xlsx");
+				workbook.write(fileOut);
+				fileOut.close();
+			}
+		} catch (Exception e) {
+			if (e instanceof ResourceNotFoundException) {
+				response.put("NOT FOUND", null);
+			} else {
+				response.put("GRADUATE FAIL", null);
+			}
 		}
 
-		FileOutputStream fileOut = new FileOutputStream(
-				"E:\\" + schoolName + "-" + gradeName + "-FinalScoreExport.xlsx");
-		workbook.write(fileOut);
-		fileOut.close();
+		return response;
+	}
+
+	@Override
+	public void writeFileOS(HttpServletResponse httpServletResponse, Workbook workbook) throws IOException {
+		ServletOutputStream outputStream = httpServletResponse.getOutputStream();
+		workbook.write(outputStream);
+		workbook.close();
+		outputStream.close();
 	}
 
 	private Cell createOneInfoCell(Workbook workbook, Row row, int column, String cellValue) {
