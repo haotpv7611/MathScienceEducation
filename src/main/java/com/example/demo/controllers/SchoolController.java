@@ -32,23 +32,39 @@ public class SchoolController {
 	private ISchoolService iSchoolService;
 
 	@GetMapping("/{id}")
-	public ResponseEntity<SchoolResponseDTO> findSchoolById(@PathVariable long id) {
+	public ResponseEntity<Object> findSchoolById(@PathVariable long id) {
+		Object response = iSchoolService.findSchoolById(id);
+		if (response.equals("NOT FOUND!")) {
 
-		return ResponseEntity.ok(iSchoolService.findSchoolById(id));
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
+		if (response.equals("FIND FAIL!")) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+
+		return ResponseEntity.ok(response);
 	}
 
-	@PostMapping("/check")
-	public ResponseEntity<String> checkSchoolIsExisted(@Valid @RequestBody SchoolRequestDTO schoolRequestDTO,
-			BindingResult bindingResult) {
-		if (bindingResult.hasErrors()) {
-			String error = "";
-			for (ObjectError object : bindingResult.getAllErrors()) {
-				error += "\n" + object.getDefaultMessage();
-			}
+	@GetMapping("/all")
+	public ResponseEntity<List<SchoolResponseDTO>> findAllSchools() {
+		List<SchoolResponseDTO> response = iSchoolService.findAllSchool();
+		if (response == null) {
 
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
 		}
-		String response = iSchoolService.checkSchoolExisted(schoolRequestDTO);
+
+		return ResponseEntity.ok(response);
+
+	}
+
+	@GetMapping("/all/active")
+	public ResponseEntity<List<SchoolResponseDTO>> findSchoolByStatusActive() {
+		List<SchoolResponseDTO> response = iSchoolService.findSchoolByStatusActive();
+		if (response == null) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
 
 		return ResponseEntity.ok(response);
 	}
@@ -67,28 +83,47 @@ public class SchoolController {
 
 		String response = iSchoolService.createSchool(schoolRequestDTO);
 
+		if (response.contains("NOT FOUND")) {
+
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
+		if (response.contains("FAIL")) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+		if (response.contains("EXISTED")) {
+
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+		}
+
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 
 	@PutMapping("/{id}")
 	public ResponseEntity<String> updateSchool(@PathVariable long id,
 			@Valid @RequestBody SchoolRequestDTO schoolRequestDTO, BindingResult bindingResult) {
+		if (bindingResult.hasErrors()) {
+			String error = "";
+			for (ObjectError object : bindingResult.getAllErrors()) {
+				error += "\n" + object.getDefaultMessage();
+			}
+
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
+		}
+
 		String response = iSchoolService.updateSchool(id, schoolRequestDTO);
+		if (response.contains("NOT FOUND")) {
 
-		return ResponseEntity.ok(response);
-	}
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
+		if (response.contains("FAIL")) {
 
-	@GetMapping("/all")
-	public ResponseEntity<List<SchoolResponseDTO>> findAllSchools() {
-		List<SchoolResponseDTO> response = iSchoolService.findAllSchool();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+		if (response.contains("EXISTED")) {
 
-		return ResponseEntity.ok(response);
-
-	}
-
-	@GetMapping("/all/active")
-	public ResponseEntity<List<SchoolResponseDTO>> findSchoolByStatusActive() {
-		List<SchoolResponseDTO> response = iSchoolService.findSchoolByStatusActive();
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+		}
 
 		return ResponseEntity.ok(response);
 	}
@@ -109,7 +144,16 @@ public class SchoolController {
 
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("STATUS INVALID!");
 		}
+
 		String response = iSchoolService.changeStatusSchool(idAndStatusDTO);
+		if (response.contains("NOT FOUND")) {
+
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
+		if (response.contains("FAIL")) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
 
 		return ResponseEntity.ok(response);
 	}

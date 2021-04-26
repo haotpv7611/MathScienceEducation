@@ -30,6 +30,8 @@ import com.example.demo.services.ISchoolGradeService;
 @Service
 public class SchoolGradeServiceImpl implements ISchoolGradeService {
 	Logger logger = LoggerFactory.getLogger(SchoolGradeServiceImpl.class);
+	private final String ACTIVE_STATUS = "ACTIVE";
+	private final String INACTIVE_STATUS = "INACTIVE";
 	private final String DELETED_STATUS = "DELETED";
 
 	@Autowired
@@ -55,7 +57,7 @@ public class SchoolGradeServiceImpl implements ISchoolGradeService {
 		List<SchoolResponseDTO> schoolResponseDTOList = new ArrayList<>();
 		try {
 			List<SchoolGrade> schoolGradeList = iSchoolGradeRepository
-					.findByGradeIdAndStatusNotOrderByStatusAsc(gradeId, "DELETED");
+					.findByGradeIdAndStatusNotOrderByStatusAsc(gradeId, DELETED_STATUS);
 			if (!schoolGradeList.isEmpty()) {
 				for (SchoolGrade schoolGrade : schoolGradeList) {
 					SchoolResponseDTO schoolResponseDTO = (modelMapper.map(schoolGrade.getSchool(),
@@ -74,77 +76,6 @@ public class SchoolGradeServiceImpl implements ISchoolGradeService {
 		}
 
 		return schoolResponseDTOList;
-	}
-
-	// done
-	@Override
-	public String linkGradeAndSchool(SchoolGradeDTO schoolGradeDTO) {
-		int gradeId = schoolGradeDTO.getGradeId();
-		long schoolId = schoolGradeDTO.getSchoolId();
-		try {
-			Grade grade = iGradeRepository.findById(gradeId).orElseThrow(() -> new ResourceNotFoundException());
-			School school = iSchoolRepository.findByIdAndStatusNot(schoolId, "DELETED");
-			if (school == null) {
-				throw new ResourceNotFoundException();
-			}
-
-			SchoolGrade schoolGrade = iSchoolGradeRepository.findByGradeIdAndSchoolIdAndStatusNot(gradeId, schoolId,
-					"DELETED");
-			if (schoolGrade != null) {
-				return "EXISTED!";
-			}
-			schoolGrade = new SchoolGrade();
-			schoolGrade.setGrade(grade);
-			schoolGrade.setSchool(school);
-			schoolGrade.setStatus("ACTIVE");
-			iSchoolGradeRepository.save(schoolGrade);
-		} catch (Exception e) {
-			logger.error("LINK: schoolId = " + schoolId + " and gradeId = " + gradeId + "! " + e.getMessage());
-			if (e instanceof ResourceNotFoundException) {
-
-				return "NOT FOUND!";
-			}
-
-			return "FIND FAIL!";
-		}
-
-		return "LINK SUCCESS!";
-	}
-
-//	 validate before remove
-//	 add function active
-	@Override
-	@Transactional
-	public void changeStatusGradeAndSchool(ListIdAndStatusDTO listIdAndStatusDTO) {
-		int gradeId = Math.toIntExact(listIdAndStatusDTO.getIds().get(0));
-		long schoolId = listIdAndStatusDTO.getIds().get(1);
-		try {
-			iGradeRepository.findById(gradeId).orElseThrow(() -> new ResourceNotFoundException());
-			School school = iSchoolRepository.findByIdAndStatusNot(schoolId, "DELETED");
-			if (school == null) {
-				throw new ResourceNotFoundException();
-			}
-			SchoolGrade schoolGrade = iSchoolGradeRepository.findByGradeIdAndSchoolIdAndStatusNot(gradeId, schoolId,
-					"DELETED");
-			if (schoolGrade == null) {
-				throw new ResourceNotFoundException();
-			}
-
-			String status = listIdAndStatusDTO.getStatus();
-
-			List<Classes> classesList = iClassRepository.findBySchoolGradeIdAndStatusNot(schoolGrade.getId(),
-					DELETED_STATUS);
-			for (Classes classes : classesList) {
-				iClassService.changeStatusOneClass(classes.getId(), status);
-			}
-
-			schoolGrade.setStatus(status);
-			iSchoolGradeRepository.save(schoolGrade);
-		} catch (Exception e) {
-			logger.error("Change status " + listIdAndStatusDTO.getStatus() + " with schoolId = " + schoolId
-					+ " and gradeId = " + gradeId + "! " + e.getMessage());
-			throw e;
-		}
 	}
 
 	// done
@@ -171,4 +102,76 @@ public class SchoolGradeServiceImpl implements ISchoolGradeService {
 
 		return gradeDTOList;
 	}
+
+	// done
+	@Override
+	public String linkGradeAndSchool(SchoolGradeDTO schoolGradeDTO) {
+		int gradeId = schoolGradeDTO.getGradeId();
+		long schoolId = schoolGradeDTO.getSchoolId();
+		try {
+			Grade grade = iGradeRepository.findById(gradeId).orElseThrow(() -> new ResourceNotFoundException());
+			School school = iSchoolRepository.findByIdAndStatusNot(schoolId, DELETED_STATUS);
+			if (school == null) {
+				throw new ResourceNotFoundException();
+			}
+
+			if (school.getStatus().equalsIgnoreCase(INACTIVE_STATUS)) {
+				return "CANNOT LINK INACTIVE SCHOOL";
+			}
+
+			SchoolGrade schoolGrade = iSchoolGradeRepository.findByGradeIdAndSchoolIdAndStatusNot(gradeId, schoolId,
+					DELETED_STATUS);
+			if (schoolGrade != null) {
+
+				return "EXISTED!";
+			}
+			schoolGrade = new SchoolGrade();
+			schoolGrade.setGrade(grade);
+			schoolGrade.setSchool(school);
+			schoolGrade.setStatus(ACTIVE_STATUS);
+			iSchoolGradeRepository.save(schoolGrade);
+		} catch (Exception e) {
+			logger.error("LINK: schoolId = " + schoolId + " and gradeId = " + gradeId + "! " + e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
+
+				return "NOT FOUND!";
+			}
+
+			return "FIND FAIL!";
+		}
+
+		return "LINK SUCCESS!";
+	}
+
+//	 validate before remove
+//	 add function active
+	@Override
+	@Transactional
+	public void changeStatusGradeAndSchool(ListIdAndStatusDTO listIdAndStatusDTO) {
+		int gradeId = Math.toIntExact(listIdAndStatusDTO.getIds().get(0));
+		long schoolId = listIdAndStatusDTO.getIds().get(1);
+		try {
+			SchoolGrade schoolGrade = iSchoolGradeRepository.findByGradeIdAndSchoolIdAndStatusNot(gradeId, schoolId,
+					DELETED_STATUS);
+			if (schoolGrade == null) {
+				throw new ResourceNotFoundException();
+			}
+
+			String status = listIdAndStatusDTO.getStatus();
+
+			List<Classes> classesList = iClassRepository.findBySchoolGradeIdAndStatusNot(schoolGrade.getId(),
+					DELETED_STATUS);
+			for (Classes classes : classesList) {
+				iClassService.changeStatusOneClass(classes.getId(), status);
+			}
+
+			schoolGrade.setStatus(status);
+			iSchoolGradeRepository.save(schoolGrade);
+		} catch (Exception e) {
+			logger.error("Change status " + listIdAndStatusDTO.getStatus() + " with schoolId = " + schoolId
+					+ " and gradeId = " + gradeId + "! " + e.getMessage());
+			throw e;
+		}
+	}
+
 }

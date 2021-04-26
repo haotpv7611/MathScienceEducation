@@ -27,7 +27,7 @@ public class SubjectController {
 	private final int DESCRIPTION_MAX_LENGTH = 50;
 
 	@Autowired
-	ISubjectService iSubjectService;
+	private ISubjectService iSubjectService;
 
 	@GetMapping("/subject/{id}")
 	public ResponseEntity<?> findSubjectById(@PathVariable long id) {

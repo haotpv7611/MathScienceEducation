@@ -58,7 +58,7 @@ public class SchoolGradeController {
 	}
 
 	@PutMapping("/schoolGrade")
-	public ResponseEntity<String> removeLinkGradeAndSchool(@RequestBody ListIdAndStatusDTO listIdAndStatusDTO) {
+	public ResponseEntity<String> changeStatusGradeAndSchool(@RequestBody ListIdAndStatusDTO listIdAndStatusDTO) {
 		try {
 			iSchoolGradeService.changeStatusGradeAndSchool(listIdAndStatusDTO);
 
@@ -69,7 +69,7 @@ public class SchoolGradeController {
 				return ResponseEntity.status(HttpStatus.NOT_FOUND).body("NOT FOUND");
 			}
 
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("DELETE FAIL!");
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("CHANGE FAIL!");
 		}
 	}
 

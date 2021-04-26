@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +16,7 @@ import com.example.demo.dtos.SchoolResponseDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.School;
 import com.example.demo.models.SchoolGrade;
+import com.example.demo.models.SchoolLevel;
 import com.example.demo.repositories.ISchoolGradeRepository;
 import com.example.demo.repositories.ISchoolLevelRepository;
 import com.example.demo.repositories.ISchoolRepository;
@@ -22,9 +25,9 @@ import com.example.demo.services.ISchoolService;
 
 @Service
 public class SchoolServiceImpl implements ISchoolService {
+	Logger logger = LoggerFactory.getLogger(SchoolServiceImpl.class);
 	private final String ACTIVE_STATUS = "ACTIVE";
 	private final String DELETED_STATUS = "DELETED";
-	
 
 	@Autowired
 	private ISchoolRepository iSchoolRepository;
@@ -41,136 +44,212 @@ public class SchoolServiceImpl implements ISchoolService {
 	@Autowired
 	private ModelMapper modelMapper;
 
-	// done
 	@Override
-	public SchoolResponseDTO findSchoolById(long id) {
-		School school = iSchoolRepository.findByIdAndStatusNot(id, "DELETED");
-		if (school == null) {
-			throw new ResourceNotFoundException();
+	public Object findSchoolById(long id) {
+		SchoolResponseDTO schoolResponseDTO = null;
+		try {
+			School school = iSchoolRepository.findByIdAndStatusNot(id, DELETED_STATUS);
+			if (school == null) {
+				throw new ResourceNotFoundException();
+			}
+			String schoolName = school.getSchoolName();
+			String schoolStreet = school.getSchoolStreet();
+			String schoolDistrict = school.getSchoolDistrict();
+			String schoolLevel = school.getSchoolLevel().getDescription();
+			schoolResponseDTO = new SchoolResponseDTO(schoolName, schoolStreet, schoolDistrict, schoolLevel);
+
+		} catch (Exception e) {
+			logger.error("FIND: school by id = " + id + "! " + e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
+
+				return "NOT FOUND!";
+			}
+
+			return "FIND FAIL!";
 		}
-		String schoolName = school.getSchoolName();
-		String schoolStreet = school.getSchoolStreet();
-		String schoolDistrict = school.getSchoolDistrict();
-		String schoolLevel = school.getSchoolLevel().getDescription();
-		SchoolResponseDTO schoolResponseDTO = new SchoolResponseDTO(schoolName, schoolStreet, schoolDistrict,
-				schoolLevel);
 
 		return schoolResponseDTO;
 	}
 
-	// done
 	@Override
-	public String checkSchoolExisted(SchoolRequestDTO schoolRequestDTO) {
-		String schoolLevel = schoolRequestDTO.getSchoolLevel();
-		String schoolName = schoolRequestDTO.getSchoolName();
-		String district = schoolRequestDTO.getSchoolDistrict();
+	public List<SchoolResponseDTO> findAllSchool() {
+		List<SchoolResponseDTO> schoolDTOList = new ArrayList<>();
 
-		int schoolLevelId = iSchoolLevelRepository.findByDescription(schoolLevel).getId();
-		List<School> schoolList = iSchoolRepository.findBySchoolNameAndSchoolDistrictAndSchoolLevelIdAndStatusNot(
-				schoolName, district, schoolLevelId, "DELETED");
-		if (!schoolList.isEmpty()) {
+		try {
+			// 1. connect database through repository
+			// 2. find all entities are not disable
+			List<School> schoolList = iSchoolRepository.findByStatusNotOrderByStatusAsc(DELETED_STATUS);
+			if (!schoolList.isEmpty()) {
+				for (School school : schoolList) {
+					SchoolResponseDTO schoolResponseDTO = modelMapper.map(school, SchoolResponseDTO.class);
+					String schoolCount = String.valueOf(school.getSchoolCount());
+					schoolResponseDTO.setSchoolCode(school.getSchoolCode() + schoolCount);
+					schoolResponseDTO.setSchoolLevel(school.getSchoolLevel().getDescription());
+					schoolDTOList.add(schoolResponseDTO);
+				}
+			}
+		} catch (Exception e) {
+			logger.error("FIND: all school! " + e.getMessage());
 
-			return "EXISTED";
+			return null;
 		}
 
-		return "OK";
+		return schoolDTOList;
 	}
 
-	// done
+	@Override
+	public List<SchoolResponseDTO> findSchoolByStatusActive() {
+		List<SchoolResponseDTO> schoolDTOList = new ArrayList<>();
+
+		try {
+			List<School> schoolList = iSchoolRepository.findByStatus(ACTIVE_STATUS);
+			if (!schoolList.isEmpty()) {
+				for (School school : schoolList) {
+					SchoolResponseDTO schoolResponseDTO = modelMapper.map(school, SchoolResponseDTO.class);
+					schoolDTOList.add(schoolResponseDTO);
+				}
+			}
+		} catch (Exception e) {
+			logger.error("FIND: all school status active ! " + e.getMessage());
+
+			return null;
+		}
+
+		return schoolDTOList;
+	}
+
 	@Override
 	public String createSchool(SchoolRequestDTO schoolRequestDTO) {
-		String schoolCode = generateSchoolCode(schoolRequestDTO.getSchoolName());
-		int schoolCount = generateSchoolCount(schoolCode);
-		String schoolLevel = schoolRequestDTO.getSchoolLevel();
-		School school = modelMapper.map(schoolRequestDTO, School.class);
-		school.setSchoolCode(schoolCode);
-		school.setSchoolCount(schoolCount);
-		school.setSchoolLevel(iSchoolLevelRepository.findByDescription(schoolLevel));
-		school.setStatus("ACTIVE");
-		iSchoolRepository.save(school);
+		String schoolName = schoolRequestDTO.getSchoolName();
+		String schoolDistrict = schoolRequestDTO.getSchoolDistrict();
+		try {
+			SchoolLevel schoolLevel = iSchoolLevelRepository.findByDescription(schoolRequestDTO.getSchoolLevel());
+			if (schoolLevel == null) {
+				throw new ResourceNotFoundException();
+			}
+			boolean isExisted = checkSchoolExisted(schoolRequestDTO.getSchoolLevel(), schoolName, schoolDistrict);
+			if (isExisted) {
+
+				return "EXISTED";
+			}
+
+			String schoolCode = generateSchoolCode(schoolRequestDTO.getSchoolName());
+			int schoolCount = generateSchoolCount(schoolCode);
+			School school = modelMapper.map(schoolRequestDTO, School.class);
+
+			school.setSchoolCode(schoolCode);
+			school.setSchoolCount(schoolCount);
+			school.setSchoolLevel(schoolLevel);
+			school.setStatus(ACTIVE_STATUS);
+			iSchoolRepository.save(school);
+
+		} catch (Exception e) {
+			logger.error("CREATE: school with name = " + schoolName + ", in schoolLevel =  "
+					+ schoolRequestDTO.getSchoolLevel() + " and District = " + schoolDistrict + "! " + e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
+
+				return "NOT FOUND!";
+			}
+
+			return "CREATE FAIL!";
+		}
 
 		return "CREATE SUCCESS!";
 	}
 
-	// done
 	@Override
 	public String updateSchool(long id, SchoolRequestDTO schoolRequestDTO) {
-		School school = iSchoolRepository.findByIdAndStatusNot(id, "DELETED");
-		if (school == null) {
-			throw new ResourceNotFoundException();
+		String schoolDistrict = schoolRequestDTO.getSchoolDistrict();
+		try {
+			School school = iSchoolRepository.findByIdAndStatusNot(id, DELETED_STATUS);
+			if (school == null) {
+				throw new ResourceNotFoundException();
+			}
+			SchoolLevel schoolLevel = iSchoolLevelRepository.findByDescription(schoolRequestDTO.getSchoolLevel());
+			if (schoolLevel == null) {
+				throw new ResourceNotFoundException();
+			}
+
+			if (!school.getSchoolDistrict().equalsIgnoreCase(schoolDistrict)
+					|| !schoolLevel.getDescription().equalsIgnoreCase(schoolRequestDTO.getSchoolLevel())) {
+				boolean isExisted = checkSchoolExisted(schoolRequestDTO.getSchoolLevel(),
+						schoolRequestDTO.getSchoolName(), schoolRequestDTO.getSchoolDistrict());
+				if (isExisted) {
+
+					return "EXISTED";
+				}
+			}
+			school.setSchoolStreet(schoolRequestDTO.getSchoolStreet());
+			school.setSchoolDistrict(schoolRequestDTO.getSchoolDistrict());
+			school.setSchoolLevel(schoolLevel);
+			school = iSchoolRepository.save(school);
+		} catch (Exception e) {
+			logger.error("UPDATE: schoolId = " + id + "! " + e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
+
+				return "NOT FOUND!";
+			}
+
+			return "UPDATE FAIL!";
 		}
-		school.setSchoolStreet(schoolRequestDTO.getSchoolStreet());
-		school.setSchoolDistrict(schoolRequestDTO.getSchoolDistrict());
-		String schoolLevel = schoolRequestDTO.getSchoolLevel();
-		school.setSchoolLevel(iSchoolLevelRepository.findByDescription(schoolLevel));
-		school = iSchoolRepository.save(school);
 
 		return "UPDATE SUCCESS!";
 	}
 
 	@Override
 	public String changeStatusSchool(IdAndStatusDTO idAndStatusDTO) {
-		School school = iSchoolRepository.findByIdAndStatusNot(idAndStatusDTO.getId(), "DELETED");
-		if (school == null) {
-			throw new ResourceNotFoundException();
-		}
-
-		List<SchoolGrade> schoolGradeList = iSchoolGradeRepository.findBySchoolIdAndStatusNot(school.getId(),
-				DELETED_STATUS);
-		if (!schoolGradeList.isEmpty()) {
-			for (SchoolGrade schoolGrade : schoolGradeList) {
-				List<Long> ids = new ArrayList<>();
-				ids.add(Long.valueOf(schoolGrade.getGrade().getId()));
-				ids.add(school.getId());
-				ListIdAndStatusDTO listIdAndStatusDTO = new ListIdAndStatusDTO();
-				listIdAndStatusDTO.setIds(ids);
-				listIdAndStatusDTO.setStatus(idAndStatusDTO.getStatus());
-
-				iSchoolGradeService.changeStatusGradeAndSchool(listIdAndStatusDTO);
+		try {
+			School school = iSchoolRepository.findByIdAndStatusNot(idAndStatusDTO.getId(), "DELETED");
+			if (school == null) {
+				throw new ResourceNotFoundException();
 			}
+
+			List<SchoolGrade> schoolGradeList = iSchoolGradeRepository.findBySchoolIdAndStatusNot(school.getId(),
+					DELETED_STATUS);
+			if (!schoolGradeList.isEmpty()) {
+				for (SchoolGrade schoolGrade : schoolGradeList) {
+					List<Long> ids = new ArrayList<>();
+					ids.add(Long.valueOf(schoolGrade.getGrade().getId()));
+					ids.add(school.getId());
+					ListIdAndStatusDTO listIdAndStatusDTO = new ListIdAndStatusDTO();
+					listIdAndStatusDTO.setIds(ids);
+					listIdAndStatusDTO.setStatus(idAndStatusDTO.getStatus());
+
+					iSchoolGradeService.changeStatusGradeAndSchool(listIdAndStatusDTO);
+				}
+			}
+			school.setStatus(idAndStatusDTO.getStatus());
+			iSchoolRepository.save(school);
+		} catch (Exception e) {
+			logger.error("Change status school with id = " + idAndStatusDTO.getId() + "! " + e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
+
+				return "NOT FOUND!";
+			}
+
+			return "DELETE FAIL!";
 		}
-		school.setStatus(idAndStatusDTO.getStatus());
-		iSchoolRepository.save(school);
 
 		return "CHANGE SUCCESS!";
 	}
 
-	// done
-	@Override
-	public List<SchoolResponseDTO> findAllSchool() {
-
-		// 1. connect database through repository
-		// 2. find all entities are not disable
-		List<School> schoolList = iSchoolRepository.findByStatusNotOrderByStatusAsc("DELETED");
-		List<SchoolResponseDTO> schoolDTOList = new ArrayList<>();
-
-		if (schoolList != null) {
-			for (School school : schoolList) {
-				SchoolResponseDTO schoolResponseDTO = modelMapper.map(school, SchoolResponseDTO.class);
-				String schoolCount = String.valueOf(school.getSchoolCount());
-//				if (school.getSchoolCount() == 1) {
-//					schoolCount = "";
-//				}
-				schoolResponseDTO.setSchoolCode(school.getSchoolCode() + schoolCount);
-				schoolResponseDTO.setSchoolLevel(school.getSchoolLevel().getDescription());
-				schoolDTOList.add(schoolResponseDTO);
+	private boolean checkSchoolExisted(String schoolLevel, String schoolName, String district) {
+		schoolLevel = schoolLevel.trim().replaceAll("\\s+", " ");
+		schoolName = schoolName.trim().replaceAll("\\s+", " ");
+		district = district.trim().replaceAll("\\s+", " ");
+		boolean isExisted = false;
+		try {
+			int schoolLevelId = iSchoolLevelRepository.findByDescription(schoolLevel).getId();
+			List<School> schoolList = iSchoolRepository.findBySchoolNameAndSchoolDistrictAndSchoolLevelIdAndStatusNot(
+					schoolName, district, schoolLevelId, DELETED_STATUS);
+			if (!schoolList.isEmpty()) {
+				isExisted = true;
 			}
+		} catch (Exception e) {
+			throw e;
 		}
 
-		return schoolDTOList;
-	}
-	
-	@Override
-	public List<SchoolResponseDTO> findSchoolByStatusActive(){
-		List<School> schoolList = iSchoolRepository.findByStatus(ACTIVE_STATUS);
-		List<SchoolResponseDTO> schoolDTOList = new ArrayList<>();
-		if (schoolList != null) {
-			for (School school : schoolList) {
-				SchoolResponseDTO schoolResponseDTO = modelMapper.map(school, SchoolResponseDTO.class);				
-				schoolDTOList.add(schoolResponseDTO);
-			}
-		}
-		return schoolDTOList;
+		return isExisted;
 	}
 
 	private String generateSchoolCode(String schoolName) {
@@ -187,7 +266,6 @@ public class SchoolServiceImpl implements ISchoolService {
 	}
 
 	private int generateSchoolCount(String schoolCode) {
-
 		// connect db, find school by code with count max
 		School school = iSchoolRepository.findFirstBySchoolCodeOrderBySchoolCountDesc(schoolCode);
 

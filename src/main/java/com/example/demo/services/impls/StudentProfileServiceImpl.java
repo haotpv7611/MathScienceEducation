@@ -1078,61 +1078,65 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 									CellType.STRING, HorizontalAlignment.LEFT);
 							fullNameValueCell.setCellValue(studentProfileList.get(i).getAccount().getFullName());
 
-							for (int j = 3; j < exerciseList.size() + 3; j++) {
-								System.out.println(exerciseList.get(j - 3).getId() + " exercise");
-								List<ExerciseTaken> exerciseTakenList = iExerciseTakenRepository
-										.findByExerciseIdAndAccountId(exerciseList.get(j - 3).getId(),
-												studentProfileList.get(i).getAccount().getId());
-								boolean isTaken = false;
-								double score = 0;
-								if (!exerciseTakenList.isEmpty()) {
-									double sumTotalScore = 0;
-									for (ExerciseTaken exerciseTaken : exerciseTakenList) {
-										System.out.println(exerciseTaken.getId());
-										sumTotalScore += exerciseTaken.getTotalScore();
+							if (!exerciseList.isEmpty()) {
+								for (int j = 3; j < exerciseList.size() + 3; j++) {
+									System.out.println(exerciseList.get(j - 3).getId() + " exercise");
+									List<ExerciseTaken> exerciseTakenList = iExerciseTakenRepository
+											.findByExerciseIdAndAccountId(exerciseList.get(j - 3).getId(),
+													studentProfileList.get(i).getAccount().getId());
+									boolean isTaken = false;
+									double score = 0;
+									if (!exerciseTakenList.isEmpty()) {
+										double sumTotalScore = 0;
+										for (ExerciseTaken exerciseTaken : exerciseTakenList) {
+											System.out.println(exerciseTaken.getId());
+											sumTotalScore += exerciseTaken.getTotalScore();
+										}
+
+										score = sumTotalScore / exerciseTakenList.size();
+										score = Double.valueOf(new DecimalFormat("#.#").format(score));
+
+										isTaken = true;
 									}
 
-									score = sumTotalScore / exerciseTakenList.size();
-									score = Double.valueOf(new DecimalFormat("#.#").format(score));
-
-									isTaken = true;
-								}
-
-								if (isTaken) {
-									Cell exerciseValueCell = createOneNormalCell(workbook, sheet.getRow(i + 10), j,
-											CellType.NUMERIC, HorizontalAlignment.CENTER);
-									exerciseValueCell.setCellValue(score);
-								} else {
-									createOneWarningCell(workbook, sheet.getRow(i + 10), j, "Not yet!");
+									if (isTaken) {
+										Cell exerciseValueCell = createOneNormalCell(workbook, sheet.getRow(i + 10), j,
+												CellType.NUMERIC, HorizontalAlignment.CENTER);
+										exerciseValueCell.setCellValue(score);
+									} else {
+										createOneWarningCell(workbook, sheet.getRow(i + 10), j, "Not yet!");
+									}
 								}
 							}
 
-							for (int j = exerciseList.size() + 3; j < exercisePTList.size() + exerciseList.size()
-									+ 3; j++) {
-								List<ExerciseTaken> exerciseTakenList = iExerciseTakenRepository
-										.findByExerciseIdAndAccountId(
-												exerciseList.get(j - exerciseList.size() - 3).getId(),
-												studentProfileList.get(i).getAccount().getId());
-								boolean isTaken = false;
-								double score = 0;
-								if (!exerciseTakenList.isEmpty()) {
-									double sumTotalScore = 0;
-									for (ExerciseTaken exerciseTaken : exerciseTakenList) {
-										sumTotalScore += exerciseTaken.getTotalScore();
+							if (!exercisePTList.isEmpty()) {
+								for (int j = exerciseList.size() + 3; j < exercisePTList.size() + exerciseList.size()
+										+ 3; j++) {
+									List<ExerciseTaken> exerciseTakenList = iExerciseTakenRepository
+											.findByExerciseIdAndAccountId(
+													exercisePTList.get(j - exerciseList.size() - 3).getId(),
+													studentProfileList.get(i).getAccount().getId());
+									boolean isTaken = false;
+									double score = 0;
+									if (!exerciseTakenList.isEmpty()) {
+										double sumTotalScore = 0;
+										for (ExerciseTaken exerciseTaken : exerciseTakenList) {
+											sumTotalScore += exerciseTaken.getTotalScore();
+										}
+
+										score = sumTotalScore / exerciseTakenList.size();
+										score = Double.valueOf(new DecimalFormat("#.#").format(score));
+
+										isTaken = true;
 									}
 
-									score = sumTotalScore / exerciseTakenList.size();
-									score = Double.valueOf(new DecimalFormat("#.#").format(score));
-
-									isTaken = true;
-								}
-
-								if (isTaken) {
-									Cell exerciseValueCell = createOneNormalCell(workbook, sheet.getRow(i + 10), j,
-											CellType.NUMERIC, HorizontalAlignment.CENTER);
-									exerciseValueCell.setCellValue(score);
-								} else {
-									createOneWarningCell(workbook, sheet.getRow(i + 10), j, "Not yet!");
+									if (isTaken) {
+										Cell exerciseValueCell = createOneNormalCell(workbook, sheet.getRow(i + 10), j,
+												CellType.NUMERIC, HorizontalAlignment.CENTER);
+										exerciseValueCell.setCellValue(score);
+									} else {
+										createOneWarningCell(workbook, sheet.getRow(i + 10), j, "Not yet!");
+									}
 								}
 							}
 						}
@@ -1546,26 +1550,6 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 		return cellStyle;
 	}
 
-	private String getCellValue(Cell cell) {
-		String cellValue = null;
-		if (cell != null) {
-			switch (cell.getCellType()) {
-
-			case NUMERIC:
-				System.out.println(cell.getNumericCellValue());
-				cellValue = String.valueOf(cell.getNumericCellValue());
-				break;
-			case STRING:
-				System.out.println(cell.getStringCellValue());
-				cellValue = cell.getStringCellValue();
-				break;
-			default:
-				break;
-			}
-		}
-		return cellValue;
-	}
-
 	private String generateUsername(Classes classes) {
 		int gradeName = classes.getSchoolGrade().getGrade().getGradeName();
 		String schoolCode = classes.getSchoolGrade().getSchool().getSchoolCode()
@@ -1613,32 +1597,6 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 
 		return fileName;
 	}
-
-//	private String parseToCell(int rowIndex, int columnIndex) {
-//		String columnName = "";
-//		switch (columnIndex) {
-//		case 1:
-//			columnName = "B";
-//			break;
-//		case 2:
-//			columnName = "C";
-//			break;
-//		case 3:
-//			columnName = "D";
-//			break;
-//		case 4:
-//			columnName = "E";
-//			break;
-//		case 5:
-//			columnName = "F";
-//			break;
-//		case 6:
-//			columnName = "G";
-//			break;
-//		}
-//
-//		return (columnName + rowIndex);
-//	}
 
 	private long countStudent(Classes classes) {
 		String className = classes.getClassName();
