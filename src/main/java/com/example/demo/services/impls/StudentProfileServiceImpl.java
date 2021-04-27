@@ -543,7 +543,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				}
 			}
 
-			if (cellList.isEmpty()) {
+			if (!cellList.isEmpty()) {
 				response.put("ERROR", workbook);
 			} else {
 				response.put("OK", null);
