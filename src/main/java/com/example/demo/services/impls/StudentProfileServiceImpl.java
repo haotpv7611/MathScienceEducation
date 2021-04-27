@@ -837,10 +837,11 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 							String fullName = row.getCell(2).getStringCellValue();
 							fullName = fullName.trim().replaceAll("\\s+", " ");
 							String DoB = "";
-							if (row.getCell(2).getCellType() == CellType.STRING) {
+							System.out.println(row.getCell(3).toString());
+							if (row.getCell(3).getCellType() == CellType.STRING) {
 								DoB = row.getCell(3).getStringCellValue();
-							} else if (row.getCell(2).getCellType() == CellType.NUMERIC) {
-								SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/YYYY");
+							} else if (row.getCell(3).getCellType() == CellType.NUMERIC) {
+								SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 								DoB = sdf.format(row.getCell(3).getDateCellValue());
 							}
 							String gender = row.getCell(4).getStringCellValue();
@@ -885,14 +886,14 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				response.put("ERROR", workbook);
 			} else {
 				response.put("IMPORT SUCCESS", null);
-				workbook.close();
+//				workbook.close();
 			}
 			String fileName = file.getOriginalFilename();
 			FileOutputStream fileOut = new FileOutputStream("E:\\" + "Not existed StudentId-" + fileName);
 			workbook.write(fileOut);
 			fileOut.close();
 		} catch (Exception e) {
-			logger.error("Import file with schoolId = " + schoolId + " and gradeId" + gradeId + "! " + e.getMessage());
+			logger.error("Import file with schoolId = " + schoolId + " and gradeId " + gradeId + "! " + e.getMessage());
 			if (e instanceof ResourceNotFoundException) {
 				response.put("NOT FOUND", null);
 			} else {
