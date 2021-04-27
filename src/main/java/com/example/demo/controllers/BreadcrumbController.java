@@ -13,6 +13,7 @@ import com.example.demo.services.IClassService;
 import com.example.demo.services.IExerciseService;
 import com.example.demo.services.IGameService;
 import com.example.demo.services.ILessonService;
+import com.example.demo.services.IProgressTestService;
 import com.example.demo.services.ISubjectService;
 import com.example.demo.services.IUnitService;
 
@@ -25,6 +26,9 @@ public class BreadcrumbController {
 
 	@Autowired
 	private ISubjectService iSubjectService;
+	
+	@Autowired
+	private IProgressTestService iProgressTestService;
 
 	@Autowired
 	private IUnitService iUnitService;
@@ -48,6 +52,13 @@ public class BreadcrumbController {
 	@GetMapping("/subject")
 	public ResponseEntity<Map<Long, String>> findAllSubjectBreadcrumb() {
 		Map<Long, String> response = iSubjectService.findAllSubject();
+
+		return ResponseEntity.ok(response);
+	}
+	
+	@GetMapping("/progressTest")
+	public ResponseEntity<Map<Long, String>> findAllProgressTestBreadcrumb() {
+		Map<Long, String> response = iProgressTestService.findAllProgressTest();
 
 		return ResponseEntity.ok(response);
 	}

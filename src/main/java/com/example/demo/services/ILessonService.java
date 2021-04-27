@@ -11,6 +11,8 @@ public interface ILessonService {
 	Object findById(long id);
 
 	List<LessonResponseDTO> findByUnitIdOrderByLessonNameAsc(long unitId);
+	
+	Map<String, List<LessonResponseDTO>> findByUnitIdStudentView(long unitId);
 
 	Map<Long, Integer> findAllLesson();
 

@@ -1,7 +1,9 @@
 package com.example.demo.services.impls;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
@@ -10,9 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.demo.dtos.ProgressTestResponseDTO;
 import com.example.demo.dtos.IdAndStatusDTO;
 import com.example.demo.dtos.ProgressTestRequestDTO;
+import com.example.demo.dtos.ProgressTestResponseDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.Exercise;
 import com.example.demo.models.ProgressTest;
@@ -93,6 +95,22 @@ public class ProgressTestServiceImpl implements IProgressTestService {
 		}
 
 		return progressTestResponseDTOList;
+	}
+	
+	@Override
+	public Map<Long, String> findAllProgressTest() {
+		Map<Long, String> progressTestMap = new HashMap<>();
+		try {
+
+			List<ProgressTest> progressTestList = iProgressTestRepository.findByIsDisableFalse();
+			for (ProgressTest progressTest : progressTestList) {
+				progressTestMap.put(progressTest.getId(), progressTest.getProgressTestName());
+			}
+		} catch (Exception e) {
+			logger.error("Find all progressTest! " + e.getMessage());
+		}
+
+		return progressTestMap;
 	}
 
 	@Override

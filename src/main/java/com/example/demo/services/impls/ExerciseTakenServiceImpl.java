@@ -39,7 +39,6 @@ import com.example.demo.services.IExerciseTakenService;
 @Service
 public class ExerciseTakenServiceImpl implements IExerciseTakenService {
 	Logger logger = LoggerFactory.getLogger(ExerciseTakenServiceImpl.class);
-
 	private final String ACTIVE_STATUS = "ACTIVE";
 	private final String DELETED_STATUS = "DELETED";
 
@@ -98,6 +97,28 @@ public class ExerciseTakenServiceImpl implements IExerciseTakenService {
 		return exerciseTakenResponseDTOList;
 	}
 
+	private Exercise createExerciseTaken(ExerciseTakenRequestDTO exerciseTakenRequestDTO) {
+		Exercise exercise = null;
+		try {
+			Account account = iAccountRepository.findByIdAndStatus(exerciseTakenRequestDTO.getAccountId(),
+					ACTIVE_STATUS);
+			if (account == null) {
+				throw new ResourceNotFoundException();
+			}
+			exercise = iExerciseRepository.findByIdAndStatusNot(exerciseTakenRequestDTO.getExerciseId(),
+					DELETED_STATUS);
+			if (exercise == null) {
+				throw new ResourceNotFoundException();
+			}
+
+			ExerciseTaken exerciseTaken = modelMapper.map(exerciseTakenRequestDTO, ExerciseTaken.class);
+			iExerciseTakenRepository.save(exerciseTaken);
+		} catch (Exception e) {
+			throw e;
+		}
+		return exercise;
+	}
+
 	@Override
 	@Transactional
 	public String doExercise(ExerciseTakenRequestDTO exerciseTakenRequestDTO) {
@@ -105,64 +126,119 @@ public class ExerciseTakenServiceImpl implements IExerciseTakenService {
 		long exerciseId = exerciseTakenRequestDTO.getExerciseId();
 
 		try {
-			Account account = iAccountRepository.findByIdAndStatus(accountId, ACTIVE_STATUS);
-			if (account == null) {
-				throw new ResourceNotFoundException();
-			}
-			Exercise exercise = iExerciseRepository.findByIdAndStatusNot(exerciseId, DELETED_STATUS);
-			if (exercise == null) {
-				throw new ResourceNotFoundException();
-			}
+//			Account account = iAccountRepository.findByIdAndStatus(accountId, ACTIVE_STATUS);
+//			if (account == null) {
+//				throw new ResourceNotFoundException();
+//			}
+//			Exercise exercise = iExerciseRepository.findByIdAndStatusNot(exerciseId, DELETED_STATUS);
+//			if (exercise == null) {
+//				throw new ResourceNotFoundException();
+//			}
+//
+//			ExerciseTaken exerciseTaken = modelMapper.map(exerciseTakenRequestDTO, ExerciseTaken.class);
+//			iExerciseTakenRepository.save(exerciseTaken);
 
-			ExerciseTaken exerciseTaken = modelMapper.map(exerciseTakenRequestDTO, ExerciseTaken.class);
-
-			iExerciseTakenRepository.save(exerciseTaken);
-
-			long lessonId = exercise.getLessonId();
-			long unitId = 0;
-			if (lessonId != 0) {
-				Lesson lesson = iLessonRepository.findByIdAndIsDisableFalse(lessonId);
-				if (lesson != null) {
-					unitId = lesson.getUnitId();
-				}
-			}
-			long progressTestId = exercise.getProgressTestId();
-
-			StudentRecord studentRecord = iStudentRecordRepository.findByUnitIdAndAccountId(unitId, accountId);
-			if (studentRecord == null) {
-				studentRecord = new StudentRecord();
-				studentRecord.setAccountId(accountId);
-				if (exercise.isProgressTest()) {
-					studentRecord.setProgressTestId(progressTestId);
-					studentRecord.setUnitId(0);
-				} else {
-					studentRecord.setProgressTestId(0);
-					studentRecord.setUnitId(unitId);
-				}
-				studentRecord.setListExerciseTakenScore(String.valueOf(exerciseTakenRequestDTO.getTotalScore() + " "));
-				studentRecord.setAverageScore(exerciseTakenRequestDTO.getTotalScore());
-				iStudentRecordRepository.save(studentRecord);
-			} else {
-				String listExerciseTakenScore = studentRecord.getListExerciseTakenScore();
-				listExerciseTakenScore += String.valueOf(" " + exerciseTakenRequestDTO.getTotalScore() + " ");
-				String[] scoreList = listExerciseTakenScore.split(" ");
-
-				float totalScore = 0;
-				if (scoreList.length > 0) {
-					for (String score : scoreList) {
-						System.out.println("start debug: " + score);
-						
-						totalScore += Double.parseDouble(score);
-						System.out.println("error");
+			Exercise exercise = createExerciseTaken(exerciseTakenRequestDTO);
+			if (exercise != null) {
+				long lessonId = exercise.getLessonId();
+				long unitId = 0;
+				if (lessonId != 0) {
+					Lesson lesson = iLessonRepository.findByIdAndIsDisableFalse(lessonId);
+					if (lesson != null) {
+						unitId = lesson.getUnitId();
 					}
-					studentRecord.setAverageScore(totalScore / scoreList.length);
 				}
+				long progressTestId = exercise.getProgressTestId();
 
-				studentRecord.setListExerciseTakenScore(listExerciseTakenScore);
-				iStudentRecordRepository.save(studentRecord);
+				StudentRecord studentRecord = null;
+				if (exercise.isProgressTest()) {
+					studentRecord = iStudentRecordRepository.findByProgressTestIdAndAccountId(unitId, accountId);
+				} else {
+					studentRecord = iStudentRecordRepository.findByUnitIdAndAccountId(unitId, accountId);
+				}
+				if (studentRecord == null) {
+					studentRecord = new StudentRecord();
+					studentRecord.setAccountId(accountId);
+					if (exercise.isProgressTest()) {
+						studentRecord.setProgressTestId(progressTestId);
+						studentRecord.setUnitId(0);
+					} else {
+						studentRecord.setProgressTestId(0);
+						studentRecord.setUnitId(unitId);
+					}
+
+					// key:value --> exerciseId:averageScore of exercise
+					String exerciseTakenScore = String.valueOf(exercise.getId())
+							+ String.valueOf(exerciseTakenRequestDTO.getTotalScore());
+					studentRecord.setListExerciseTakenScore(exerciseTakenScore + " ");
+					studentRecord.setAverageScore(exerciseTakenRequestDTO.getTotalScore());
+					iStudentRecordRepository.save(studentRecord);
+				} else {
+					String listExerciseTakenScore = studentRecord.getListExerciseTakenScore();
+
+					// cắt chuỗi để lấy các cặp key:value
+					String[] exerciseIdScoreList = listExerciseTakenScore.split(" ");
+					boolean isExerciseExisted = false;
+					for (int i = 0; i < exerciseIdScoreList.length; i++) {
+						// cắt chuỗi để kiểm tra exerciseId đã tồn tại hay chưa?
+						// nếu đã tồn tại thì tính lại điểm trung bình của exercise rồi cập nhật lại
+						String[] exerciseIdScore = exerciseIdScoreList[i].split(":");
+						if (Long.parseLong(exerciseIdScore[0]) == exercise.getId()) {
+							List<ExerciseTaken> exerciseTakenList = iExerciseTakenRepository
+									.findByExerciseIdAndAccountId(exerciseId, accountId);
+							float totalScore = 0;
+							for (ExerciseTaken exerciseTaken : exerciseTakenList) {
+								totalScore += exerciseTaken.getTotalScore();
+							}
+							float exerciseScoreAverage = totalScore / exerciseTakenList.size();
+							exerciseIdScoreList[i] = exercise.getId() + ":" + exerciseScoreAverage;
+							isExerciseExisted = true;
+							break;
+						}
+					}
+
+					//nối lại chuỗi exerciseId:Score và lưu xuống db
+					String newlistExerciseTakenScore = "";
+					for (String exerciseIdScore : exerciseIdScoreList) {
+						newlistExerciseTakenScore += exerciseIdScore + " ";
+					}
+					if (isExerciseExisted == false) {
+						newlistExerciseTakenScore += exercise.getId() + ":" + exerciseTakenRequestDTO.getTotalScore()
+								+ " ";
+					}
+					studentRecord.setListExerciseTakenScore(newlistExerciseTakenScore);
+
+					// tính lại điểm trung bình unit và lưu xuống db
+					String[] newExerciseIdScoreList = newlistExerciseTakenScore.split(" ");
+					float totalScore = 0;
+					for (String newExerciseIdScore : newExerciseIdScoreList) {
+						totalScore += Double.parseDouble(newExerciseIdScore.split(":")[1]);
+					}
+					studentRecord.setAverageScore(totalScore / newExerciseIdScoreList.length);
+					iStudentRecordRepository.save(studentRecord);
+
+//					listExerciseTakenScore += String.valueOf(" " + exerciseTakenRequestDTO.getTotalScore() + " ");
+//					String[] scoreList = listExerciseTakenScore.split(" ");
+//
+//					float totalScore = 0;
+//					if (scoreList.length > 0) {
+//						for (String score : scoreList) {
+//							System.out.println("start debug: " + score);
+//
+//							totalScore += Double.parseDouble(score);
+//							System.out.println("error");
+//						}
+//						studentRecord.setAverageScore(totalScore / scoreList.length);
+//					}
+//
+//					studentRecord.setListExerciseTakenScore(listExerciseTakenScore);
+					
+				}
 			}
 
-		} catch (Exception e) {
+		} catch (
+
+		Exception e) {
 			logger.error("DO EXERICSE: id = " + exerciseId + " by accountId =  " + accountId + "! " + e.getMessage());
 			if (e instanceof ResourceNotFoundException) {
 
@@ -261,8 +337,8 @@ public class ExerciseTakenServiceImpl implements IExerciseTakenService {
 							List<ExerciseResponseDTO> exerciseResponseDTOList = new ArrayList<>();
 							List<Exercise> exerciseList = new ArrayList<>();
 							long lessonId = lesson.getId();
-							exerciseList
-									.addAll(iExerciseRepository.findByLessonIdAndStatusNotOrderByExerciseNameAsc(lessonId, DELETED_STATUS));
+							exerciseList.addAll(iExerciseRepository
+									.findByLessonIdAndStatusNotOrderByExerciseNameAsc(lessonId, DELETED_STATUS));
 							totalExericse += exerciseList.size();
 
 							if (!exerciseList.isEmpty()) {

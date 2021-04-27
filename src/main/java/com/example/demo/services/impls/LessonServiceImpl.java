@@ -34,25 +34,25 @@ public class LessonServiceImpl implements ILessonService {
 	private final String DELETED_STATUS = "DELETED";
 
 	@Autowired
-	ILessonRepository iLessonRepository;
+	private ILessonRepository iLessonRepository;
 
 	@Autowired
-	IUnitRepository iUnitRepository;
+	private IUnitRepository iUnitRepository;
 
 	@Autowired
-	ModelMapper modelMapper;
+	private ModelMapper modelMapper;
 
 	@Autowired
-	IExerciseRepository iExerciseRepository;
+	private IExerciseRepository iExerciseRepository;
 
 	@Autowired
-	IExerciseService iExerciseService;
+	private IExerciseService iExerciseService;
 
 	@Autowired
-	IGameRepository iGameRepository;
+	private IGameRepository iGameRepository;
 
 	@Autowired
-	IGameService iGameService;
+	private IGameService iGameService;
 
 	// done
 	@Override
@@ -98,13 +98,42 @@ public class LessonServiceImpl implements ILessonService {
 		return lessonResponseDTOList;
 	}
 
+	// done
+	@Override
+	public Map<String, List<LessonResponseDTO>> findByUnitIdStudentView(long unitId) {
+		Map<String, List<LessonResponseDTO>> lessonMap = new HashMap<>();		
+		try {
+			List<Lesson> lessonList = iLessonRepository.findByUnitIdAndIsDisableFalseOrderByLessonNameAsc(unitId);
+			if (!lessonList.isEmpty()) {
+				List<LessonResponseDTO> lessonResponseDTOList = new ArrayList<>();
+				for (Lesson lesson : lessonList) {
+					LessonResponseDTO lessonResponseDTO = modelMapper.map(lesson, LessonResponseDTO.class);
+					lessonResponseDTOList.add(lessonResponseDTO);
+				}
+				
+				Unit unit = iUnitRepository.findByIdAndIsDisableFalse(unitId);
+				String unitName = "";
+				if (unit != null) {
+					unitName = "Unit " + unit.getUnitName();
+				}
+				lessonMap.put(unitName, lessonResponseDTOList);
+			}
+		} catch (Exception e) {
+			logger.error("FIND: all lesson student view by unitId = " + unitId + "! " + e.getMessage());
+
+			return null;
+		}
+
+		return lessonMap;
+	}
+
 	@Override
 	public Map<Long, Integer> findAllLesson() {
 		Map<Long, Integer> lessonMap = new HashMap<>();
 		try {
 
-			List<Lesson> unitList = iLessonRepository.findByIsDisableFalse();
-			for (Lesson lesson : unitList) {
+			List<Lesson> lessonList = iLessonRepository.findByIsDisableFalse();
+			for (Lesson lesson : lessonList) {
 				lessonMap.put(lesson.getId(), lesson.getLessonName());
 			}
 		} catch (Exception e) {

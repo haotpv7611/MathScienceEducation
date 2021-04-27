@@ -6,6 +6,7 @@ import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -1340,9 +1341,19 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 													.findByUnitIdAndAccountId(
 															unitList.get(j - scoreColumnBegin).getId(),
 															studentProfileList.get(i).getAccount().getId());
+
 											double score = 0;
-											if (studentRecord != null) {
-												score = studentRecord.getAverageScore();
+											String listExerciseTakenScore = studentRecord.getListExerciseTakenScore();
+											int countExerciseTakenRemain = checkExerciseTakenRemain(
+													listExerciseTakenScore, unitList.get(j - scoreColumnBegin).getId());
+
+											if (countExerciseTakenRemain == 0) {
+												if (studentRecord != null) {
+													score = studentRecord.getAverageScore();
+												}
+											} else {
+												score = calculateAverageScore(listExerciseTakenScore,
+														countExerciseTakenRemain);
 											}
 											Cell exerciseValueCell = createOneNormalCell(workbook, sheet.getRow(i + 8),
 													j, CellType.NUMERIC, HorizontalAlignment.CENTER);
@@ -1397,6 +1408,51 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 		}
 
 		return response;
+	}
+
+	private int checkExerciseTakenRemain(String listExerciseTakenScore, long unitId) {
+		int countExerciseTakenRemain = 0;
+
+		List<Lesson> lessonList = iLessonRepository.findByUnitIdAndIsDisableFalse(unitId);
+		if (!lessonList.isEmpty()) {
+			List<Exercise> exerciseList = new ArrayList<>();
+			// quét lại toàn bộ exercise
+			for (Lesson lesson : lessonList) {
+				if (iExerciseRepository.findByLessonIdAndStatusNot(lesson.getId(), DELETE_STATUS).size() > 0) {
+					exerciseList.addAll(iExerciseRepository.findByLessonIdAndStatusNot(lesson.getId(), DELETE_STATUS));
+				}
+			}
+			//// quét lại toàn bộ exercise trong student record
+			// nếu số lượng bằng nhau thì trả về 0
+			// nếu số lượng khác nhau thì đếm số exercise còn thiếu trong student record
+			String[] exerciseIdScoreList = listExerciseTakenScore.split(" ");
+			if (exerciseIdScoreList.length != exerciseList.size()) {
+				List<Long> exerciseIdList = new ArrayList<>();
+				for (String exerciseIdScore : exerciseIdScoreList) {
+					exerciseIdList.add(Long.valueOf(exerciseIdScore.split(":")[0]));
+				}
+
+				if (!exerciseIdList.isEmpty()) {
+					for (Exercise exercise : exerciseList) {
+						if (!exerciseIdList.contains(exercise.getId())) {
+							countExerciseTakenRemain++;
+						}
+					}
+				}
+			}
+		}
+
+		return countExerciseTakenRemain;
+	}
+
+	private float calculateAverageScore(String listExerciseTakenScore, int countExerciseTakenRemain) {
+		String[] exerciseIdScoreList = listExerciseTakenScore.split(" ");
+		float totalScore = 0;
+		for (String exerciseIdScore : exerciseIdScoreList) {
+			totalScore += Double.parseDouble(exerciseIdScore.split(":")[1]);
+		}
+		float average = totalScore / (exerciseIdScoreList.length + countExerciseTakenRemain);
+		return average;
 	}
 
 	@Override

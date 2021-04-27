@@ -19,4 +19,6 @@ public interface IProgressTestRepository extends JpaRepository<ProgressTest, Lon
 	List<ProgressTest> findBySubjectIdAndIsDisableFalse(long subjectId);
 
 	List<ProgressTest> findBySubjectIdAndIsDisableFalseOrderByProgressTestName(long subjectId);
+	
+	List<ProgressTest> findByIsDisableFalse();
 }

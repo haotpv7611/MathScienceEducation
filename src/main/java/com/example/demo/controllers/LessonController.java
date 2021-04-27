@@ -1,6 +1,7 @@
 package com.example.demo.controllers;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.validation.Valid;
 
@@ -48,6 +49,17 @@ public class LessonController {
 	@GetMapping("/unit/{unitId}/lessons")
 	public ResponseEntity<List<LessonResponseDTO>> findLessonByUnitId(@PathVariable long unitId) {
 		List<LessonResponseDTO> response = iLessonService.findByUnitIdOrderByLessonNameAsc(unitId);
+		if (response == null) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+
+		return ResponseEntity.ok(response);
+	}
+	
+	@GetMapping("/unit/{unitId}/lessons/student")
+	public ResponseEntity<Map<String, List<LessonResponseDTO>>> findLessonByUnitIdStudentView(@PathVariable long unitId) {
+		Map<String, List<LessonResponseDTO>> response = iLessonService.findByUnitIdStudentView(unitId);
 		if (response == null) {
 
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
