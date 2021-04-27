@@ -38,9 +38,13 @@ public class StudentProfileController {
 	IStudentProfileService iStudentProfileService;
 
 	@GetMapping("/student/{id}")
-	public ResponseEntity<StudentResponseDTO> findStudentById(@PathVariable long id) {
-		StudentResponseDTO response = iStudentProfileService.findStudentById(id);
-		if (response == null) {
+	public ResponseEntity<Object> findStudentById(@PathVariable long id) {
+		Object response = iStudentProfileService.findStudentById(id);
+		if (response.equals("NOT FOUND!")) {
+
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
+		if (response.equals("FIND FAIL!")) {
 
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
 		}
@@ -65,8 +69,13 @@ public class StudentProfileController {
 
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
 		}
+		List<StudentResponseDTO> response = iStudentProfileService.findStudentByListId(ids);
+		if (response == null) {
 
-		return ResponseEntity.ok(iStudentProfileService.findStudentByListId(ids));
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+
+		return ResponseEntity.ok(response);
 	}
 
 	@PostMapping("/student")
@@ -80,8 +89,31 @@ public class StudentProfileController {
 
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
 		}
-		return ResponseEntity.status(HttpStatus.CREATED)
-				.body(iStudentProfileService.createStudenProfile(studentRequestDTO));
+		String error = "";
+		String fullName = studentRequestDTO.getFullName().trim().replaceAll("\\s+", " ");
+		if (!fullName.matches("^[\\p{L} .'-]+$")) {
+			error += "\nFullName is invalid!";
+		}
+		String parentName = studentRequestDTO.getParentName().trim().replaceAll("\\s+", " ");
+		if (!parentName.matches("^[\\p{L} .'-]+$")) {
+			error += "\nParentName is invalid!";
+		}
+		if (!error.isEmpty()) {
+
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
+		}
+
+		String response = iStudentProfileService.createStudenProfile(studentRequestDTO);
+		if (response.contains("NOT FOUND")) {
+
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
+		if (response.contains("FAIL")) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+
+		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 
 	@PutMapping("/student/{id}")
@@ -95,7 +127,97 @@ public class StudentProfileController {
 
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
 		}
-		return ResponseEntity.status(HttpStatus.OK).body(iStudentProfileService.updateStudent(id, studentRequestDTO));
+		String error = "";
+		String fullName = studentRequestDTO.getFullName().trim().replaceAll("\\s+", " ");
+		if (!fullName.matches("^[\\p{L} .'-]+$")) {
+			error += "\nFullName is invalid!";
+		}
+		String parentName = studentRequestDTO.getParentName().trim().replaceAll("\\s+", " ");
+		if (!parentName.matches("^[\\p{L} .'-]+$")) {
+			error += "\nParentName is invalid!";
+		}
+		if (!error.isEmpty()) {
+
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
+		}
+
+		String response = iStudentProfileService.updateStudent(id, studentRequestDTO);
+		if (response.contains("NOT FOUND")) {
+
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
+		if (response.contains("FAIL")) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+		if (response.contains("EXISTED")) {
+
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+		}
+
+		return ResponseEntity.ok(response);
+	}
+
+	@PutMapping("/student")
+	public ResponseEntity<String> changeStatusStudent(@Valid @RequestBody ListIdAndStatusDTO idAndStatusDTOList,
+			BindingResult bindingResult) {
+		if (bindingResult.hasErrors()) {
+			String error = "";
+			for (ObjectError object : bindingResult.getAllErrors()) {
+				error += "\n" + object.getDefaultMessage();
+			}
+
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
+		}
+		String status = idAndStatusDTOList.getStatus();
+		if (!status.equals("ACTIVE") && !status.equals("INACTIVE") && !status.equals("DELETED")
+				&& !status.equals("PENDING")) {
+
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("STATUS INVALID!");
+		}
+		try {
+			String response = iStudentProfileService.changeStatusStudent(idAndStatusDTOList);
+
+			return ResponseEntity.ok(response);
+		} catch (Exception e) {
+			if (e instanceof ResourceNotFoundException) {
+
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).body("NOT FOUND!");
+			}
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("FAIL!");
+		}
+	}
+
+	@PutMapping("/student/changeClass")
+	public ResponseEntity<String> changeClassForStudent(@RequestParam List<Long> studentIdList,
+			@RequestParam long classesId) {
+		String error = "";
+		if (studentIdList == null) {
+			error += "\nStudentIds INVALID";
+		} else {
+			if (studentIdList.isEmpty()) {
+				error += "\nStudentIds INVALID";
+			}
+		}
+
+		if (!error.isEmpty()) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
+		}
+
+		try {
+			String response = iStudentProfileService.changeClassForStudent(studentIdList, classesId);
+
+			return ResponseEntity.ok(response);
+		} catch (Exception e) {
+			if (e instanceof ResourceNotFoundException) {
+
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).body("NOT FOUND!");
+			}
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("FAIL!");
+		}
+
 	}
 
 	@PostMapping("/student/validate")
@@ -194,59 +316,6 @@ public class StudentProfileController {
 				iStudentProfileService.writeFileOS(httpServletResponse, entry.getValue());
 			}
 		}
-	}
-
-	@PutMapping("/student")
-	public ResponseEntity<String> changeStatusStudent(@Valid @RequestBody ListIdAndStatusDTO idAndStatusDTOList,
-			BindingResult bindingResult) {
-		if (bindingResult.hasErrors()) {
-			String error = "";
-			for (ObjectError object : bindingResult.getAllErrors()) {
-				error += "\n" + object.getDefaultMessage();
-			}
-
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
-		}
-		String status = idAndStatusDTOList.getStatus();
-		if (!status.equals("ACTIVE") && !status.equals("INACTIVE") && !status.equals("DELETED")
-				&& !status.equals("PENDING")) {
-
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("STATUS INVALID!");
-		}
-		String response = iStudentProfileService.changeStatusStudent(idAndStatusDTOList);
-
-		return ResponseEntity.ok(response);
-	}
-
-	@PutMapping("/student/changeClass")
-	public ResponseEntity<String> changeClassForStudent(@RequestParam List<Long> studentIdList,
-			@RequestParam long classesId) {
-		String error = "";
-		if (studentIdList == null) {
-			error += "\nStudentIds INVALID";
-		} else {
-			if (studentIdList.isEmpty()) {
-				error += "\nStudentIds INVALID";
-			}
-		}
-
-		if (!error.isEmpty()) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.trim());
-		}
-
-		try {
-			String response = iStudentProfileService.changeClassForStudent(studentIdList, classesId);
-
-			return ResponseEntity.ok(response);
-		} catch (Exception e) {
-			if (e instanceof ResourceNotFoundException) {
-
-				return ResponseEntity.status(HttpStatus.NOT_FOUND).body("NOT FOUND!");
-			}
-
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("FAIL!");
-		}
-
 	}
 
 }

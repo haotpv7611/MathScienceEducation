@@ -16,7 +16,7 @@ import com.example.demo.dtos.StudentResponseDTO;
 
 public interface IStudentProfileService {
 
-	StudentResponseDTO findStudentById(long id);
+	Object findStudentById(long id);
 
 	StudentResponseDTO findStudentByAccountId(long accountId);
 
@@ -38,7 +38,7 @@ public interface IStudentProfileService {
 
 	Map<String, Workbook> exportScoreBySubjectId(long schoolId, int gradeId, long subjectId);
 
-	Map<String, Workbook> exportFinalScore(long schoolId, int gradeId);
+	Map<String, Workbook> exportFinalScore(long schoolId, int gradeId) throws IOException;
 
 	String generateFileNameExport(long schoolId, int gradeId, long subjectId);
 

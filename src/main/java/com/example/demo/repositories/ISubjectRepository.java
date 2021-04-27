@@ -15,6 +15,8 @@ public interface ISubjectRepository extends JpaRepository<Subject, Long> {
 	Subject findByGradeIdAndSubjectNameIgnoreCaseAndIsDisableFalse(int gradeId, String subjectName);
 
 	List<Subject> findByGradeIdAndIsDisableFalse(int gradeId);
+	
+	List<Subject> findByGradeIdAndIsDisableFalseOrderBySubjectName(int gradeId);
 
 	List<Subject> findByIsDisableFalse();
 
