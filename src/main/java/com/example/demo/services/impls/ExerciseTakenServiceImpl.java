@@ -168,7 +168,7 @@ public class ExerciseTakenServiceImpl implements IExerciseTakenService {
 					}
 
 					// key:value --> exerciseId:averageScore of exercise
-					String exerciseTakenScore = String.valueOf(exercise.getId())
+					String exerciseTakenScore = String.valueOf(exercise.getId()) + ":"
 							+ String.valueOf(exerciseTakenRequestDTO.getTotalScore());
 					studentRecord.setListExerciseTakenScore(exerciseTakenScore + " ");
 					studentRecord.setAverageScore(exerciseTakenRequestDTO.getTotalScore());
