@@ -43,7 +43,7 @@ public class OptionQuestion {
 	@PrePersist
 	public void onCreate() {
 		this.createdDate = LocalDateTime.now(ZoneId.of("UTC+7"));
-		this.modifiedDate = LocalDateTime.now(ZoneId.of("UTC+7"));
+		this.modifiedDate = null;
 	}
 
 	@PreUpdate
