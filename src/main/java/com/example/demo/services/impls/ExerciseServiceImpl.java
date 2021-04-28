@@ -49,16 +49,16 @@ public class ExerciseServiceImpl implements IExerciseService {
 	private IProgressTestRepository iProgressTestRepository;
 
 	@Autowired
-	ILessonRepository iLessonRepository;
+	private ILessonRepository iLessonRepository;
 
 	@Autowired
-	IExerciseTakenRepository iExerciseTakenRepository;
+	private IExerciseTakenRepository iExerciseTakenRepository;
 
 	@Autowired
 	private ModelMapper modelMapper;
 
 	@Override
-	public String findStatusById(long id) {
+	public String findExerciseStatusById(long id) {
 		String status = null;
 		try {
 			Exercise exercise = iExerciseRepository.findByIdAndStatusNot(id, DELETED_STATUS);

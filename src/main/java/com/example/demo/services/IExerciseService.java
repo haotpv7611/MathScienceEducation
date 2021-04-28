@@ -9,7 +9,7 @@ import com.example.demo.dtos.ExerciseRequestDTO;
 
 public interface IExerciseService {
 
-	String findStatusById(long id);
+	String findExerciseStatusById(long id);
 
 	List<ExerciseResponseDTO> findByLessonIdOrderByExerciseNameAsc(long lessonId);
 

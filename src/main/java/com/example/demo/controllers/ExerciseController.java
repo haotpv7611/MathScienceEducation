@@ -29,11 +29,12 @@ import com.example.demo.services.IExerciseService;
 public class ExerciseController {
 
 	@Autowired
-	IExerciseService iExerciseService;
+	private IExerciseService iExerciseService;
 	
+	//sử dụng để thay đổi nội dung nút open và close game
 	@GetMapping("/exercise/{id}/status")
-	public ResponseEntity<String> findStatusById(@PathVariable long id){
-		String response = iExerciseService.findStatusById(id);
+	public ResponseEntity<String> findExerciseStatusById(@PathVariable long id){
+		String response = iExerciseService.findExerciseStatusById(id);
 		if (response == null) {
 
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);

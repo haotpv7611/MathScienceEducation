@@ -35,6 +35,8 @@ public interface IStudentProfileService {
 	Map<String, Workbook> validateStudentFile(MultipartFile file, long schoolId, int gradeId) throws ParseException;
 
 	Map<String, Workbook> importStudent(MultipartFile file, long schoolId, int gradeId);
+	
+	Map<String, Workbook> exportStudentAccount(long schoolId, int gradeId);
 
 	Map<String, Workbook> exportScoreBySubjectId(long schoolId, int gradeId, long subjectId);
 

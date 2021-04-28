@@ -34,28 +34,28 @@ public class SubjectServiceImpl implements ISubjectService {
 	Logger logger = LoggerFactory.getLogger(SubjectServiceImpl.class);
 
 	@Autowired
-	ISubjectRepository iSubjectRepository;
+	private ISubjectRepository iSubjectRepository;
 
 	@Autowired
-	IGradeRepository iGradeRepository;
+	private IGradeRepository iGradeRepository;
 
 	@Autowired
-	IUnitRepository iUnitRepository;
+	private IUnitRepository iUnitRepository;
 
 	@Autowired
-	IUnitService iUnitService;
+	private IUnitService iUnitService;
 
 	@Autowired
-	IProgressTestRepository iProgressTestRepository;
+	private IProgressTestRepository iProgressTestRepository;
 
 	@Autowired
-	IProgressTestService iProgressTestService;
+	private IProgressTestService iProgressTestService;
 
 	@Autowired
-	ModelMapper modelMapper;
+	private ModelMapper modelMapper;
 
 	@Autowired
-	IFirebaseService iFirebaseService;
+	private IFirebaseService iFirebaseService;
 
 	@Override
 	public Object findById(long id) {
@@ -126,7 +126,7 @@ public class SubjectServiceImpl implements ISubjectService {
 			// check subjectName existed in grade
 			iGradeRepository.findById(gradeId).orElseThrow(() -> new ResourceNotFoundException());
 			if (iSubjectRepository.findByGradeIdAndSubjectNameIgnoreCaseAndIsDisableFalse(gradeId,
-					subjectName) != null) {
+					subjectName.trim()) != null) {
 
 				return "EXISTED";
 			}
@@ -177,12 +177,17 @@ public class SubjectServiceImpl implements ISubjectService {
 				if (!file.isEmpty()) {
 					subject.setImageUrl(iFirebaseService.uploadFile(file));
 				}
+				if (subjectImageUrl != null) {
+					if (!subjectImageUrl.isEmpty()) {
+						iFirebaseService.deleteFile(subjectImageUrl);
+					}
+				}
 			}
 			if (description != null) {
 				subject.setDescription(description);
 			}
 			iSubjectRepository.save(subject);
-			iFirebaseService.deleteFile(subjectImageUrl);
+
 		} catch (Exception e) {
 			logger.error("Update subject with id = " + id + "! " + e.getMessage());
 			if (e instanceof ResourceNotFoundException) {
@@ -196,7 +201,7 @@ public class SubjectServiceImpl implements ISubjectService {
 		return "UPDATE SUCCESS!";
 	}
 
-	//delete progressTest --> unit --> delete subject
+	// delete progressTest --> unit --> delete subject
 	@Override
 	@Transactional
 	public String deleteSubject(long id) {

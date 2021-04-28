@@ -1,15 +1,18 @@
 package com.example.demo.dtos;
 
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.Length;
 
 public class NewsRequestDTO {
 	@NotNull(message = "NewsTitle must be not null!")
+	@NotEmpty(message = "Input cannot blank!")
 	@Length(max = 70, message = "NewsTitle length must be less than 70!")
 	private String newsTitle;
 	@Length(max = 100, message = "ShortDescription length must be less than 100!")
 	private String shortDescription;
+	@NotEmpty(message = "Input cannot blank!")
 	@NotNull(message = "NewsContent must be not null!")
 	private String newsContent;
 	private long accountId;

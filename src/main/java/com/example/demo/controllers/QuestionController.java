@@ -47,7 +47,12 @@ public class QuestionController {
 	@GetMapping("/game/{gameId}/questions")
 	public ResponseEntity<List<Object>> getListQuestionByGameId(@PathVariable long gameId){
 		List<Object> response = iQuestionService.findQuestionByGameId(gameId);
-		return ResponseEntity.status(HttpStatus.OK).body(response);
+		if (response == null) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+		
+		return ResponseEntity.ok(response);
 	}
 
 	@GetMapping("exerciseOrGame/{id}/questions")

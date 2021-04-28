@@ -1,11 +1,13 @@
 package com.example.demo.dtos;
 
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.Length;
 
 public class ProgressTestRequestDTO {
 	@NotNull(message = "Progress Test Name must be not null !")
+	@NotEmpty(message = "Input cannot blank!")
 	@Length(max = 20, message = "ProgressTest Name length must be less than 20!")
 	private String progressTestName;
 	private long unitAfterId;

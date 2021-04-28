@@ -9,7 +9,7 @@ public class ClassRequestDTO {
 	private int gradeId;
 	private long schoolId;
 	@NotNull(message = "ClassName must be not null!")
-	@NotEmpty(message = "ClassName must not blank!")
+	@NotEmpty(message = "Input cannot blank!")
 	@Length(max = 20, message = "ClassName length must be less than 20!")
 	private String className;
 

@@ -2,6 +2,7 @@ package com.example.demo.services.impls;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.modelmapper.ModelMapper;
@@ -60,15 +61,21 @@ public class SchoolGradeServiceImpl implements ISchoolGradeService {
 					.findByGradeIdAndStatusNotOrderByStatusAsc(gradeId, DELETED_STATUS);
 			if (!schoolGradeList.isEmpty()) {
 				for (SchoolGrade schoolGrade : schoolGradeList) {
-					SchoolResponseDTO schoolResponseDTO = (modelMapper.map(schoolGrade.getSchool(),
-							SchoolResponseDTO.class));
-					schoolResponseDTO.setSchoolCode(schoolGrade.getSchool().getSchoolCode() + schoolGrade.getSchool().getSchoolCount());
-					schoolResponseDTO.setSchoolStreet(null);
-					schoolResponseDTO.setSchoolDistrict(null);
-					schoolResponseDTO.setSchoolLevel(schoolGrade.getSchool().getSchoolLevel().getDescription());
-					schoolResponseDTO.setStatus(schoolGrade.getStatus());
-					schoolResponseDTOList.add(schoolResponseDTO);
+					School school = schoolGrade.getSchool();
+					if (!school.getStatus().equalsIgnoreCase(DELETED_STATUS)) {
+						SchoolResponseDTO schoolResponseDTO = (modelMapper.map(school, SchoolResponseDTO.class));
+						schoolResponseDTO.setSchoolCode(
+								schoolGrade.getSchool().getSchoolCode() + schoolGrade.getSchool().getSchoolCount());
+						schoolResponseDTO.setSchoolStreet(null);
+						schoolResponseDTO.setSchoolDistrict(null);
+						schoolResponseDTO.setSchoolLevel(schoolGrade.getSchool().getSchoolLevel().getDescription());
+						schoolResponseDTO.setStatus(schoolGrade.getStatus());
+						schoolResponseDTOList.add(schoolResponseDTO);
+					}
 				}
+
+				schoolResponseDTOList.sort(Comparator.comparing(SchoolResponseDTO::getStatus)
+						.thenComparing(SchoolResponseDTO::getSchoolName));
 			}
 		} catch (Exception e) {
 			logger.error("FIND: all school linked by gradeId = " + gradeId + "! " + e.getMessage());

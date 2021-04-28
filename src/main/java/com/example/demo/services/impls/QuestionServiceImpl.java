@@ -179,6 +179,7 @@ public class QuestionServiceImpl implements IQuestionService {
 					questionResponseDTO.setQuestionType(question.getQuestionType().getDescription());
 					questionResponseDTOList.add(questionResponseDTO);
 				}
+
 			}
 		} catch (Exception e) {
 			logger.error("FIND: all question by" + (isExercise ? "exerciseId = " : "gameId = ") + id + "! "
@@ -244,10 +245,12 @@ public class QuestionServiceImpl implements IQuestionService {
 						if (!optionQuestionExerciseDTOList.isEmpty()) {
 							QuestionExerciseViewDTO questionExerciseViewDTO = modelMapper.map(question,
 									QuestionExerciseViewDTO.class);
+							Collections.shuffle(optionQuestionExerciseDTOList);
 							questionExerciseViewDTO.setOptionList(optionQuestionExerciseDTOList);
 							questionExerciseViewDTOList.add(questionExerciseViewDTO);
 						}
 					}
+					Collections.shuffle(questionExerciseViewDTOList);
 				}
 			}
 		} catch (Exception e) {
@@ -264,71 +267,75 @@ public class QuestionServiceImpl implements IQuestionService {
 	@Override
 	public List<Object> findQuestionByGameId(long gameId) {
 		List<Object> questionGameViewDTOList = new ArrayList<>();
+		try {
+			List<ExerciseGameQuestion> exerciseGameQuestionList = iExerciseGameQuestionRepository
+					.findByGameIdAndIsDisableFalse(gameId);
 
-		List<ExerciseGameQuestion> exerciseGameQuestionList = iExerciseGameQuestionRepository
-				.findByGameIdAndIsDisableFalse(gameId);
+			// find all question in game
+			List<Question> questionList = new ArrayList<>();
+			if (!exerciseGameQuestionList.isEmpty()) {
+				for (ExerciseGameQuestion exerciseGameQuestion : exerciseGameQuestionList) {
+					Question question = iQuestionRepository
+							.findByIdAndIsDisableFalse(exerciseGameQuestion.getQuestionId());
+					questionList.add(question);
+				}
 
-		// find all question in game
-		List<Question> questionList = new ArrayList<>();
-
-		if (!exerciseGameQuestionList.isEmpty()) {
-			for (ExerciseGameQuestion exerciseGameQuestion : exerciseGameQuestionList) {
-				Question question = iQuestionRepository.findByIdAndIsDisableFalse(exerciseGameQuestion.getQuestionId());
-				questionList.add(question);
 			}
 
-		}
+			if (!questionList.isEmpty()) {
+				for (Question question : questionList) {
+					// find all option by questionId
+					List<Object> optionQuestionGameDTOList = new ArrayList<>();
+					List<OptionQuestion> optionQuestionList = iOptionQuestionRepository
+							.findByQuestionIdAndIsDisableFalse(question.getId());
+					if (!optionQuestionList.isEmpty()) {
+						String questionType = question.getQuestionType().getDescription();
+						if (questionType.equals("SWAP") || questionType.equals("MATCH")) {
+							List<Integer> integerList = IntStream.rangeClosed(0, optionQuestionList.size() - 1).boxed()
+									.collect(Collectors.toList());
+							Collections.shuffle(integerList);
 
-		if (!questionList.isEmpty()) {
-			for (Question question : questionList) {
+							for (int i = 0; i < optionQuestionList.size(); i++) {
 
-				// find all option by questionId
-				List<Object> optionQuestionGameDTOList = new ArrayList<>();
-				List<OptionQuestion> optionQuestionList = iOptionQuestionRepository
-						.findByQuestionIdAndIsDisableFalse(question.getId());
-				if (!optionQuestionList.isEmpty()) {
-					String questionType = question.getQuestionType().getDescription();
-					if (questionType.equals("SWAP") || questionType.equals("MATCH")) {
-						List<Integer> integerList = IntStream.rangeClosed(0, optionQuestionList.size() - 1).boxed()
-								.collect(Collectors.toList());
-						Collections.shuffle(integerList);
-
-						for (int i = 0; i < optionQuestionList.size(); i++) {
-
-							OptionQuestionGameDTO optionQuestionGameDTO = modelMapper.map(optionQuestionList.get(i),
-									OptionQuestionGameDTO.class);
-							optionQuestionGameDTO
-									.setWrongOptionText(optionQuestionList.get(integerList.get(i)).getOptionText());
-							optionQuestionGameDTOList.add(optionQuestionGameDTO);
+								OptionQuestionGameDTO optionQuestionGameDTO = modelMapper.map(optionQuestionList.get(i),
+										OptionQuestionGameDTO.class);
+								optionQuestionGameDTO
+										.setWrongOptionText(optionQuestionList.get(integerList.get(i)).getOptionText());
+								optionQuestionGameDTOList.add(optionQuestionGameDTO);
+							}
 						}
-					}
 
-					if (questionType.equals("CHOOSE")) {
-						Collections.shuffle(optionQuestionList);
-						for (OptionQuestion optionQuestion : optionQuestionList) {
-							OptionQuestionChooseDTO optionQuestionChooseDTO = modelMapper.map(optionQuestion,
-									OptionQuestionChooseDTO.class);
-							optionQuestionGameDTOList.add(optionQuestionChooseDTO);
+						if (questionType.equals("CHOOSE")) {
+							Collections.shuffle(optionQuestionList);
+							for (OptionQuestion optionQuestion : optionQuestionList) {
+								OptionQuestionChooseDTO optionQuestionChooseDTO = modelMapper.map(optionQuestion,
+										OptionQuestionChooseDTO.class);
+								optionQuestionGameDTOList.add(optionQuestionChooseDTO);
+							}
 						}
-					}
-					// chưa viết
-					if (questionType.equals("FILL")) {
-						for (OptionQuestion optionQuestion : optionQuestionList) {
-							OptionQuestionFillDTO optionQuestionFillDTO = new OptionQuestionFillDTO();
-							optionQuestionFillDTO.setText(optionQuestion.getOptionText());
-							optionQuestionFillDTO.setOptionInputType(optionQuestion.getOptionInputType());
-							optionQuestionGameDTOList.add(optionQuestionFillDTO);
-						}
-					}
 
-					QuestionGameViewDTO questionGameViewDTO = new QuestionGameViewDTO();
-					questionGameViewDTO.setQuestionType(question.getQuestionType().getDescription());
-					questionGameViewDTO.setQuestionTitle(question.getQuestionTitle());
-					questionGameViewDTO.setQuestionImageUrl(question.getQuestionImageUrl());
-					questionGameViewDTO.setOptionQuestion(optionQuestionGameDTOList);
-					questionGameViewDTOList.add(questionGameViewDTO);
+						if (questionType.equals("FILL")) {
+							for (OptionQuestion optionQuestion : optionQuestionList) {
+								OptionQuestionFillDTO optionQuestionFillDTO = new OptionQuestionFillDTO();
+								optionQuestionFillDTO.setText(optionQuestion.getOptionText());
+								optionQuestionFillDTO.setOptionInputType(optionQuestion.getOptionInputType());
+								optionQuestionGameDTOList.add(optionQuestionFillDTO);
+							}
+						}
+
+						QuestionGameViewDTO questionGameViewDTO = new QuestionGameViewDTO();
+						questionGameViewDTO.setQuestionType(question.getQuestionType().getDescription());
+						questionGameViewDTO.setQuestionTitle(question.getQuestionTitle());
+						questionGameViewDTO.setQuestionImageUrl(question.getQuestionImageUrl());
+						questionGameViewDTO.setOptionQuestion(optionQuestionGameDTOList);
+						questionGameViewDTOList.add(questionGameViewDTO);
+					}
 				}
 			}
+		} catch (Exception e) {
+			logger.error("FIND: all question by gameId = " + gameId + "! " + e.getMessage());
+
+			return null;
 		}
 		return questionGameViewDTOList;
 
@@ -532,11 +539,12 @@ public class QuestionServiceImpl implements IQuestionService {
 							isCorrectList.get(i));
 				}
 			}
-			
+
 			if (optionIdDeleteList != null) {
 				if (!optionIdDeleteList.isEmpty()) {
 					for (long optionIdDelete : optionIdDeleteList) {
-						OptionQuestion optionQuestion = iOptionQuestionRepository.findByIdAndIsDisableFalse(optionIdDelete);
+						OptionQuestion optionQuestion = iOptionQuestionRepository
+								.findByIdAndIsDisableFalse(optionIdDelete);
 						if (optionQuestion == null) {
 							throw new ResourceNotFoundException();
 						}
@@ -711,13 +719,13 @@ public class QuestionServiceImpl implements IQuestionService {
 			question.setQuestionAudioUrl(null);
 			iQuestionRepository.save(question);
 			if (questionImageUrl != null) {
-
 				iFirebaseService.deleteFile(questionImageUrl);
 			}
 			if (questionAudioUrl != null) {
 				iFirebaseService.deleteFile(questionAudioUrl);
 			}
 		} catch (Exception e) {
+			logger.error("DELETE: one question with questionId = " + id + "! " + e.getMessage());
 			throw e;
 		}
 	}
@@ -786,17 +794,23 @@ public class QuestionServiceImpl implements IQuestionService {
 	private long createQuestion(MultipartFile imageFile, MultipartFile audioFile, String questionTitle,
 			String description, float score, long unitId, int questionTypeId)
 			throws SizeLimitExceededException, IOException {
-		QuestionType questionType = iQuestionTypeRepository.findById(questionTypeId)
-				.orElseThrow(() -> new ResourceNotFoundException());
-		Question question = new Question(questionTitle, description, score, unitId, false);
-		if (imageFile != null) {
-			question.setQuestionImageUrl(iFirebaseService.uploadFile(imageFile));
+		Question question = null;
+		try {
+			QuestionType questionType = iQuestionTypeRepository.findById(questionTypeId)
+					.orElseThrow(() -> new ResourceNotFoundException());
+			question = new Question(questionTitle, description, score, unitId, false);
+			if (imageFile != null) {
+				question.setQuestionImageUrl(iFirebaseService.uploadFile(imageFile));
+			}
+			if (audioFile != null) {
+				question.setQuestionAudioUrl(iFirebaseService.uploadFile(audioFile));
+			}
+			question.setQuestionType(questionType);
+			iQuestionRepository.save(question);
+		} catch (Exception e) {
+			logger.error("Create question with unitId = " + unitId + "! " + e.getMessage());
+			throw e;
 		}
-		if (audioFile != null) {
-			question.setQuestionAudioUrl(iFirebaseService.uploadFile(audioFile));
-		}
-		question.setQuestionType(questionType);
-		iQuestionRepository.save(question);
 
 		return question.getId();
 	}
@@ -804,50 +818,59 @@ public class QuestionServiceImpl implements IQuestionService {
 	@Transactional
 	private void updateQuestion(long id, MultipartFile imageFile, MultipartFile audioFile, String questionTitle,
 			String description, float score) throws SizeLimitExceededException, IOException {
-		Question question = iQuestionRepository.findByIdAndIsDisableFalse(id);
-		question.setQuestionTitle(questionTitle);
-		question.setDescription(description);
-		question.setScore(score);
-		String questionImageUrl = question.getQuestionImageUrl();
-		String questionAudioUrl = question.getQuestionAudioUrl();
+		try {
+			Question question = iQuestionRepository.findByIdAndIsDisableFalse(id);
+			question.setQuestionTitle(questionTitle);
+			question.setDescription(description);
+			question.setScore(score);
+			String questionImageUrl = question.getQuestionImageUrl();
+			String questionAudioUrl = question.getQuestionAudioUrl();
 
-		// file đầu vào là fake --> nếu trước đó có file thì xóa, k có file thì k làm gì
-		// file đầu vào k phải là fake thì update file mới và xóa file cũ
-		if (imageFile != null) {
-			if (imageFile.getOriginalFilename().equalsIgnoreCase("fakeFile")) {
-				if (questionImageUrl != null) {
-					if (!questionImageUrl.isEmpty()) {
-						iFirebaseService.deleteFile(questionImageUrl);
-						question.setQuestionImageUrl(null);
-					}
-				}
-			} else {				
-				question.setQuestionImageUrl(iFirebaseService.uploadFile(imageFile));
-				if (questionImageUrl != null) {
-					if (!questionImageUrl.isEmpty()) {
-						iFirebaseService.deleteFile(questionImageUrl);
-					}
-				}
-			}
-		}
-		if (audioFile != null) {
-			if (audioFile.getOriginalFilename().equalsIgnoreCase("fakeFile")) {
-				if (questionAudioUrl != null) {
-					if (!questionAudioUrl.isEmpty()) {
-						iFirebaseService.deleteFile(questionAudioUrl);
-						question.setQuestionAudioUrl(null);
-					}
-				}
-			} else {
-				question.setQuestionAudioUrl(iFirebaseService.uploadFile(audioFile));
-				if (questionAudioUrl != null) {
-					if (!questionAudioUrl.isEmpty()) {
-						iFirebaseService.deleteFile(questionAudioUrl);
+			// file đầu vào là fake --> nếu trước đó có file thì xóa, k có file thì k làm gì
+			// file đầu vào k phải là fake thì update file mới và xóa file cũ
+			if (imageFile != null) {
+				if (!imageFile.isEmpty()) {
+					if (imageFile.getOriginalFilename().equalsIgnoreCase("fakeFile")) {
+						if (questionImageUrl != null) {
+							if (!questionImageUrl.isEmpty()) {
+								iFirebaseService.deleteFile(questionImageUrl);
+								question.setQuestionImageUrl(null);
+							}
+						}
+					} else {
+						question.setQuestionImageUrl(iFirebaseService.uploadFile(imageFile));
+						if (questionImageUrl != null) {
+							if (!questionImageUrl.isEmpty()) {
+								iFirebaseService.deleteFile(questionImageUrl);
+							}
+						}
 					}
 				}
 			}
+			if (audioFile != null) {
+				if (!imageFile.isEmpty()) {
+					if (audioFile.getOriginalFilename().equalsIgnoreCase("fakeFile")) {
+						if (questionAudioUrl != null) {
+							if (!questionAudioUrl.isEmpty()) {
+								iFirebaseService.deleteFile(questionAudioUrl);
+								question.setQuestionAudioUrl(null);
+							}
+						}
+					} else {
+						question.setQuestionAudioUrl(iFirebaseService.uploadFile(audioFile));
+						if (questionAudioUrl != null) {
+							if (!questionAudioUrl.isEmpty()) {
+								iFirebaseService.deleteFile(questionAudioUrl);
+							}
+						}
+					}
+				}
+			}
+			iQuestionRepository.save(question);
+		} catch (Exception e) {
+			logger.error("Update question with questionId = " + id + "! " + e.getMessage());
+			throw e;
 		}
-		iQuestionRepository.save(question);
 
 	}
 

@@ -271,6 +271,29 @@ public class StudentProfileController {
 			}
 		}
 	}
+	
+	@GetMapping("/student/export/account")
+	public void exportStudentAccount(HttpServletResponse httpServletResponse, @RequestParam long schoolId,
+			@RequestParam int gradeId) throws IOException {
+		Map<String, Workbook> response = iStudentProfileService.exportStudentAccount(schoolId, gradeId);
+		for (Entry<String, Workbook> entry : response.entrySet()) {
+			if (entry.getKey().contains("FAIL")) {
+
+				httpServletResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			} else if (entry.getKey().contains("NOT FOUND")) {
+
+				httpServletResponse.setStatus(HttpServletResponse.SC_NOT_FOUND);
+			} else {
+				httpServletResponse.setContentType("application/octet-stream");
+				String headerKey = "Content-Disposition";
+				String headerValue = "attachment; filename="
+						+ iStudentProfileService.generateFileNameExport(schoolId, gradeId, 0) + "Student Account.xlsx";
+				httpServletResponse.setHeader(headerKey, headerValue);
+
+				iStudentProfileService.writeFileOS(httpServletResponse, entry.getValue());
+			}
+		}
+	}
 
 	@GetMapping("/student/export")
 	public void exportScore(HttpServletResponse httpServletResponse, @RequestParam long schoolId,

@@ -13,6 +13,8 @@ public interface IStudentProfileRepository extends JpaRepository<StudentProfile,
 	StudentProfile findByIdAndStatusNot(long accountId, String status);
 
 	List<StudentProfile> findByClassesIdAndStatusNot(long classId, String status);
+	
+	List<StudentProfile> findByClassesIdAndStatus(long classId, String status);
 
 	StudentProfile findFirstByClassesIdAndStatusLikeOrderByStudentCountDesc(long classId, String status);
 
