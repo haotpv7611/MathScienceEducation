@@ -106,6 +106,8 @@ public class SchoolServiceImpl implements ISchoolService {
 			if (!schoolList.isEmpty()) {
 				for (School school : schoolList) {
 					SchoolResponseDTO schoolResponseDTO = modelMapper.map(school, SchoolResponseDTO.class);
+					schoolResponseDTO.setSchoolName(
+							school.getSchoolName() + " - " + school.getSchoolCode() + school.getSchoolCount());
 					schoolResponseDTO.setSchoolLevel(school.getSchoolLevel().getDescription());
 					schoolDTOList.add(schoolResponseDTO);
 				}
