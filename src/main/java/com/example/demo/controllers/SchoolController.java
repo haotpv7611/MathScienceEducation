@@ -58,9 +58,9 @@ public class SchoolController {
 
 	}
 
-	@GetMapping("/all/active")
-	public ResponseEntity<List<SchoolResponseDTO>> findSchoolByStatusActive() {
-		List<SchoolResponseDTO> response = iSchoolService.findSchoolByStatusActive();
+	@GetMapping("/all/{gradeId}")
+	public ResponseEntity<List<SchoolResponseDTO>> findSchoolUnlinkByGradeId(@PathVariable int gradeId) {
+		List<SchoolResponseDTO> response = iSchoolService.findSchoolUnlinkByGradeId(gradeId);
 		if (response == null) {
 
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);

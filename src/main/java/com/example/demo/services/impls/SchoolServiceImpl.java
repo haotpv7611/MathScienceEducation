@@ -98,18 +98,21 @@ public class SchoolServiceImpl implements ISchoolService {
 	}
 
 	@Override
-	public List<SchoolResponseDTO> findSchoolByStatusActive() {
-		List<SchoolResponseDTO> schoolDTOList = new ArrayList<>();
+	public List<SchoolResponseDTO> findSchoolUnlinkByGradeId(int gradeId) {
+		List<SchoolResponseDTO> schoolResponseDTOList = new ArrayList<>();
 
 		try {
 			List<School> schoolList = iSchoolRepository.findByStatus(ACTIVE_STATUS);
 			if (!schoolList.isEmpty()) {
 				for (School school : schoolList) {
-					SchoolResponseDTO schoolResponseDTO = modelMapper.map(school, SchoolResponseDTO.class);
-					schoolResponseDTO.setSchoolName(
-							school.getSchoolName() + " - " + school.getSchoolCode() + school.getSchoolCount() + " - " + school.getSchoolDistrict());
-					schoolResponseDTO.setSchoolLevel(school.getSchoolLevel().getDescription());
-					schoolDTOList.add(schoolResponseDTO);
+					if (iSchoolGradeRepository.findByGradeIdAndSchoolIdAndStatusNot(gradeId, school.getId(),
+							DELETED_STATUS) == null) {
+						SchoolResponseDTO schoolResponseDTO = modelMapper.map(school, SchoolResponseDTO.class);
+						schoolResponseDTO.setSchoolName(school.getSchoolName() + " - " + school.getSchoolCode()
+								+ school.getSchoolCount() + " - " + school.getSchoolDistrict());
+						schoolResponseDTO.setSchoolLevel(school.getSchoolLevel().getDescription());
+						schoolResponseDTOList.add(schoolResponseDTO);
+					}
 				}
 			}
 		} catch (Exception e) {
@@ -118,7 +121,7 @@ public class SchoolServiceImpl implements ISchoolService {
 			return null;
 		}
 
-		return schoolDTOList;
+		return schoolResponseDTOList;
 	}
 
 	@Override

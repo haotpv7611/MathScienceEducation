@@ -18,6 +18,6 @@ public interface ISchoolService {
 
 	List<SchoolResponseDTO> findAllSchool();
 
-	List<SchoolResponseDTO> findSchoolByStatusActive();
+	List<SchoolResponseDTO> findSchoolUnlinkByGradeId(int gradeId);
 
 }
