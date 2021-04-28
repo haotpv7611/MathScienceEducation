@@ -1,5 +1,6 @@
 package com.example.demo.dtos;
 
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.Length;
@@ -8,6 +9,7 @@ public class ClassRequestDTO {
 	private int gradeId;
 	private long schoolId;
 	@NotNull(message = "ClassName must be not null!")
+	@NotEmpty(message = "ClassName must not blank!")
 	@Length(max = 20, message = "ClassName length must be less than 20!")
 	private String className;
 
