@@ -17,7 +17,7 @@ public interface ISchoolRepository extends JpaRepository<School, Long> {
 	List<School> findBySchoolNameAndSchoolDistrictAndSchoolLevelIdAndStatusNot(String schoolName, String District,
 			int schoolLevelId, String status);
 
-	List<School> findByStatusNotOrderByStatusAscOrderBySchoolNameAsc(String status);
+	List<School> findByStatusNotOrderByStatusAscSchoolNameAsc(String status);
 	
 //	List<School> findByStatusNotOrderByStatusAsc(String status);
 

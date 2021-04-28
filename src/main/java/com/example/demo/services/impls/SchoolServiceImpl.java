@@ -78,7 +78,7 @@ public class SchoolServiceImpl implements ISchoolService {
 		try {
 			// 1. connect database through repository
 			// 2. find all entities are not disable
-			List<School> schoolList = iSchoolRepository.findByStatusNotOrderByStatusAscOrderBySchoolNameAsc(DELETED_STATUS);
+			List<School> schoolList = iSchoolRepository.findByStatusNotOrderByStatusAscSchoolNameAsc(DELETED_STATUS);
 			if (!schoolList.isEmpty()) {
 				for (School school : schoolList) {
 					SchoolResponseDTO schoolResponseDTO = modelMapper.map(school, SchoolResponseDTO.class);
