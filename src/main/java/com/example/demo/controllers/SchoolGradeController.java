@@ -53,6 +53,10 @@ public class SchoolGradeController {
 
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 		}
+		if (response.contains("INACTIVE")) {
+			
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+		}
 
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
