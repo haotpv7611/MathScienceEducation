@@ -59,12 +59,14 @@ public class ClassServiceImpl implements IClassService {
 		try {
 			SchoolGrade schoolGrade = iSchoolGradeRepository.findByGradeIdAndSchoolIdAndStatusNot(gradeId, schoolId,
 					"DELETED");
-			List<Classes> classList = iClassRepository
-					.findBySchoolGradeIdAndStatusNotOrderByStatusAscClassNameAsc(schoolGrade.getId(), DELETED_STATUS);
-			if (!classList.isEmpty()) {
-				for (Classes classes : classList) {
-					ClassResponseDTO classResponseDTO = modelMapper.map(classes, ClassResponseDTO.class);
-					classResponseDTOList.add(classResponseDTO);
+			if (schoolGrade != null) {
+				List<Classes> classList = iClassRepository.findBySchoolGradeIdAndStatusNotOrderByStatusAscClassNameAsc(
+						schoolGrade.getId(), DELETED_STATUS);
+				if (!classList.isEmpty()) {
+					for (Classes classes : classList) {
+						ClassResponseDTO classResponseDTO = modelMapper.map(classes, ClassResponseDTO.class);
+						classResponseDTOList.add(classResponseDTO);
+					}
 				}
 			}
 		} catch (Exception e) {
