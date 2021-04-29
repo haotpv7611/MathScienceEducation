@@ -16,6 +16,6 @@ public interface IStudentProfileRepository extends JpaRepository<StudentProfile,
 	
 	List<StudentProfile> findByClassesIdAndStatus(long classId, String status);
 
-	StudentProfile findFirstByClassesIdAndStatusLikeOrderByStudentCountDesc(long classId, String status);
+	StudentProfile findFirstByClassesIdAndStatusContainingOrderByStudentCountDesc(long classId, String status);
 
 }

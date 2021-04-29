@@ -1817,6 +1817,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 		long studentCount = countStudent(classes);
 		String username = schoolCode.toLowerCase() + String.format("%02d", gradeName)
 				+ String.format("%04d", studentCount);
+		System.out.println(username);
 		return username;
 	}
 
@@ -1873,15 +1874,18 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 					List<StudentProfile> studentProfileList = new ArrayList<>();
 					for (Classes classes2 : classesList) {
 						StudentProfile studentProfile = iStudentProfileRepository
-								.findFirstByClassesIdAndStatusLikeOrderByStudentCountDesc(classes2.getId(),
+								.findFirstByClassesIdAndStatusContainingOrderByStudentCountDesc(classes2.getId(),
 										ACTIVE_STATUS);
 						if (studentProfile != null) {
+							System.out.println(classes2.getClassName() + " - " + studentProfile.getId());
 							studentProfileList.add(studentProfile);
 						}
 					}
 					if (!studentProfileList.isEmpty()) {
 						for (StudentProfile studentProfile : studentProfileList) {
+							System.out.println(studentProfile.getId() + " - " + studentProfile.getStudentCount());
 							if (studentProfile.getStudentCount() > studentCount) {
+								
 								studentCount = studentProfile.getStudentCount();
 							}
 						}
@@ -1890,7 +1894,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				}
 			} else {
 				StudentProfile studentProfile = iStudentProfileRepository
-						.findFirstByClassesIdAndStatusLikeOrderByStudentCountDesc(classes.getId(), classes.getStatus());
+						.findFirstByClassesIdAndStatusContainingOrderByStudentCountDesc(classes.getId(), classes.getStatus());
 
 				if (studentProfile != null) {
 					studentCount = studentProfile.getStudentCount() + 1;
