@@ -88,7 +88,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 	private final String INACTIVE_STATUS = "INACTIVE";
 	private final String DELETE_STATUS = "DELETED";
 	private final String PENDING_STATUS = "PENDING";
-	private final String DEFAULT_PASSWORD = "abc123456";
+	private final String DEFAULT_PASSWORD = "123456";
 	private final int STUDENT_ROLE = 3;
 	private final int FIRST_STUDENT_ROW = 7;
 	private final int FIRST_COLUMN = 1;
@@ -487,10 +487,12 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 					String username = generateUsername(newClasses);
 					Account account = studentProfile.getAccount();
 					account.setUsername(username);
+					account.setStatus(ACTIVE_STATUS);
 					iAccountRepository.save(account);
 
 					studentProfile.setClasses(newClasses);
 					studentProfile.setStudentCount(countStudent(newClasses));
+					studentProfile.setStatus(ACTIVE_STATUS);
 					iStudentProfileRepository.save(studentProfile);
 				}
 			}
