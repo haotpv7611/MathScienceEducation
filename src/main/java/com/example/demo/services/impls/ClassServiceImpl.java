@@ -89,53 +89,50 @@ public class ClassServiceImpl implements IClassService {
 				SchoolGrade schoolGrade = iSchoolGradeRepository.findByGradeIdAndSchoolIdAndStatusNot(gradeId, schoolId,
 						DELETED_STATUS);
 				if (schoolGrade != null) {
-					List<ClassChangeDTO> classChangeDTOList = new ArrayList<>();
-					List<Classes> classesList = iClassRepository
-							.findBySchoolGradeIdAndStatusOrderByClassName(schoolGrade.getId(), ACTIVE_STATUS);
-					if (!classesList.isEmpty()) {
-						for (Classes classes : classesList) {
-							ClassChangeDTO classChangeDTO = new ClassChangeDTO(classes.getId(), classes.getClassName());
-							classChangeDTOList.add(classChangeDTO);
-						}
-					}
-					GradeClassDTO gradeClassDTO = new GradeClassDTO(schoolGrade.getGrade().getId(),
-							schoolGrade.getGrade().getGradeName(), classChangeDTOList);
-					gradeClassDTOList.add(gradeClassDTO);
-					if (!gradeClassDTOList.isEmpty()) {
-						gradeClassDTOList.sort(Comparator.comparing(GradeClassDTO::getName));
-					}
+					findClassInSchoolGrade(schoolGrade, gradeClassDTOList);
 				}
 			} else {
+				Classes classes = iClassRepository.findByIdAndStatusNot(classesId, DELETED_STATUS);
+				if (classes != null) {
+					String className = classes.getClassName();
+					if (className.equalsIgnoreCase(PENDING_STATUS)) {
+						List<SchoolGrade> schoolGradeList = iSchoolGradeRepository.findBySchoolIdAndStatusNot(schoolId,
+								DELETED_STATUS);
+						if (!schoolGradeList.isEmpty()) {
+							for (SchoolGrade schoolGrade : schoolGradeList) {
+//								List<ClassChangeDTO> classChangeDTOList = new ArrayList<>();
+//								// lấy class active và inactive
+//								List<Classes> classesList = new ArrayList<>();
+//
+//								if (iClassRepository.findBySchoolGradeIdAndStatusOrderByClassName(schoolGrade.getId(),
+//										ACTIVE_STATUS).size() > 0) {
+//									classesList.addAll(iClassRepository.findBySchoolGradeIdAndStatusOrderByClassName(
+//											schoolGrade.getId(), ACTIVE_STATUS));
+//								}
+//
+//								if (!classesList.isEmpty()) {
+//									for (Classes classes : classesList) {
+//										ClassChangeDTO classChangeDTO = new ClassChangeDTO(classes.getId(),
+//												classes.getClassName());
+//										classChangeDTOList.add(classChangeDTO);
+//									}
+//								}
+//								GradeClassDTO gradeClassDTO = new GradeClassDTO(schoolGrade.getGrade().getId(),
+//										schoolGrade.getGrade().getGradeName(), classChangeDTOList);
+//								gradeClassDTOList.add(gradeClassDTO);
+								findClassInSchoolGrade(schoolGrade, gradeClassDTOList);
+							}
 
-				List<SchoolGrade> schoolGradeList = iSchoolGradeRepository.findBySchoolIdAndStatusNot(schoolId,
-						DELETED_STATUS);
-				if (!schoolGradeList.isEmpty()) {
-					for (SchoolGrade schoolGrade : schoolGradeList) {
-						List<ClassChangeDTO> classChangeDTOList = new ArrayList<>();
-						// lấy class active và inactive
-						List<Classes> classesList = new ArrayList<>();
-
-						if (iClassRepository
-								.findBySchoolGradeIdAndStatusOrderByClassName(schoolGrade.getId(), ACTIVE_STATUS)
-								.size() > 0) {
-							classesList.addAll(iClassRepository
-									.findBySchoolGradeIdAndStatusOrderByClassName(schoolGrade.getId(), ACTIVE_STATUS));
-						}
-
-						if (!classesList.isEmpty()) {
-							for (Classes classes : classesList) {
-								ClassChangeDTO classChangeDTO = new ClassChangeDTO(classes.getId(),
-										classes.getClassName());
-								classChangeDTOList.add(classChangeDTO);
+							if (!gradeClassDTOList.isEmpty()) {
+								gradeClassDTOList.sort(Comparator.comparing(GradeClassDTO::getName));
 							}
 						}
-						GradeClassDTO gradeClassDTO = new GradeClassDTO(schoolGrade.getGrade().getId(),
-								schoolGrade.getGrade().getGradeName(), classChangeDTOList);
-						gradeClassDTOList.add(gradeClassDTO);
-					}
-
-					if (!gradeClassDTOList.isEmpty()) {
-						gradeClassDTOList.sort(Comparator.comparing(GradeClassDTO::getName));
+					} else {
+						SchoolGrade schoolGrade = iSchoolGradeRepository.findByGradeIdAndSchoolIdAndStatusNot(gradeId,
+								schoolId, DELETED_STATUS);
+						if (schoolGrade != null) {
+							findClassInSchoolGrade(schoolGrade, gradeClassDTOList);
+						}
 					}
 				}
 			}
@@ -146,6 +143,25 @@ public class ClassServiceImpl implements IClassService {
 		}
 
 		return gradeClassDTOList;
+	}
+
+	private List<GradeClassDTO> findClassInSchoolGrade(SchoolGrade schoolGrade, List<GradeClassDTO> gradeClassDTOList) {
+
+		List<ClassChangeDTO> classChangeDTOList = new ArrayList<>();
+		List<Classes> classesList = iClassRepository.findBySchoolGradeIdAndStatusOrderByClassName(schoolGrade.getId(),
+				ACTIVE_STATUS);
+		if (!classesList.isEmpty()) {
+			for (Classes classes : classesList) {
+				ClassChangeDTO classChangeDTO = new ClassChangeDTO(classes.getId(), classes.getClassName());
+				classChangeDTOList.add(classChangeDTO);
+			}
+		}
+		GradeClassDTO gradeClassDTO = new GradeClassDTO(schoolGrade.getGrade().getId(),
+				schoolGrade.getGrade().getGradeName(), classChangeDTOList);
+		gradeClassDTOList.add(gradeClassDTO);
+
+		return gradeClassDTOList;
+
 	}
 
 	@Override

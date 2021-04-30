@@ -597,6 +597,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 			while (sheetIterator.hasNext()) {
 				Sheet sheet = sheetIterator.next();
 				int countStudentImport = countStudentImport(sheet);
+				System.out.println(countStudentImport + " import");
 				Classes classes = iClassRepository.findBySchoolGradeIdAndClassNameIgnoreCaseAndStatusNot(
 						schoolGrade.getId(), sheet.getSheetName(), DELETE_STATUS);
 				List<StudentProfile> studentProfileList = new ArrayList<>();
@@ -610,6 +611,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				if (countStudentImport + studentProfileList.size() > 60) {
 					response.put("EXCEED LIMIT", null);
 				}
+				System.out.println(countStudentImport + studentProfileList.size() + " - total");
 
 				cellList = validateSheetData(sheet, schoolName, schoolCode, gradeName);
 				if (!cellList.isEmpty()) {
@@ -663,6 +665,9 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 		Iterator<Row> rowIterator = sheet.rowIterator();
 		while (rowIterator.hasNext()) {
 			Row row = rowIterator.next();
+			if (row.getRowNum() < FIRST_STUDENT_ROW) {
+				continue;
+			}
 			int totalEmptyCell = 0;
 			for (int i = FIRST_COLUMN; i < (LAST_COLUMN + 1); i++) {
 				Cell cell = row.getCell(i);
@@ -705,7 +710,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 							if (cell.getCellType() != CellType.STRING) {
 								cellList.add(cell);
 							} else {
-								if (!cell.getStringCellValue().equalsIgnoreCase(schoolName)) {
+								if (!cell.getStringCellValue().equals(schoolName)) {
 									cellList.add(cell);
 								}
 							}
@@ -726,7 +731,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 							if (cell.getCellType() != CellType.STRING) {
 								cellList.add(cell);
 							} else {
-								if (!cell.getStringCellValue().equalsIgnoreCase(schoolCode)) {
+								if (!cell.getStringCellValue().equals(schoolCode)) {
 									cellList.add(cell);
 								}
 							}

@@ -53,6 +53,7 @@ public class SchoolServiceImpl implements ISchoolService {
 				throw new ResourceNotFoundException();
 			}
 			schoolResponseDTO = modelMapper.map(school, SchoolResponseDTO.class);
+			schoolResponseDTO.setSchoolLevel(school.getSchoolLevel().getDescription());
 			schoolResponseDTO.setSchoolCode(school.getSchoolCode() + school.getSchoolCount());
 
 		} catch (Exception e) {
