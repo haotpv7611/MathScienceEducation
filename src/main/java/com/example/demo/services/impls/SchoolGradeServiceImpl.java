@@ -155,7 +155,7 @@ public class SchoolGradeServiceImpl implements ISchoolGradeService {
 //	 add function active
 	@Override
 	@Transactional
-	public void changeStatusGradeAndSchool(ListIdAndStatusDTO listIdAndStatusDTO) {
+	public String changeStatusGradeAndSchool(ListIdAndStatusDTO listIdAndStatusDTO) {
 		int gradeId = Math.toIntExact(listIdAndStatusDTO.getIds().get(0));
 		long schoolId = listIdAndStatusDTO.getIds().get(1);
 		try {
@@ -170,7 +170,11 @@ public class SchoolGradeServiceImpl implements ISchoolGradeService {
 			List<Classes> classesList = iClassRepository.findBySchoolGradeIdAndStatusNot(schoolGrade.getId(),
 					DELETED_STATUS);
 			for (Classes classes : classesList) {
-				iClassService.changeStatusOneClass(classes.getId(), status);
+				String response = iClassService.changeStatusOneClass(classes.getId(), status);
+				if (response.equalsIgnoreCase("OK")) {
+
+					return response;
+				}
 			}
 
 			schoolGrade.setStatus(status);
@@ -180,6 +184,8 @@ public class SchoolGradeServiceImpl implements ISchoolGradeService {
 					+ " and gradeId = " + gradeId + "! " + e.getMessage());
 			throw e;
 		}
+		
+		return "CHANGE SUCCESS!";
 	}
 
 }

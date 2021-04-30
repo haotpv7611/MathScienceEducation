@@ -248,7 +248,11 @@ public class ClassServiceImpl implements IClassService {
 		// 3. if not existed throw exception
 		for (long id : ids) {
 			try {
-				changeStatusOneClass(id, status);
+				String response = changeStatusOneClass(id, status);
+				if (response.equalsIgnoreCase("OK")) {
+
+					return response;
+				}
 			} catch (Exception e) {
 				logger.error("Change status: list classId = " + ids.toString() + "! " + e.getMessage());
 				throw e;
@@ -262,7 +266,7 @@ public class ClassServiceImpl implements IClassService {
 	// class pending only delete
 	@Override
 	@Transactional
-	public void changeStatusOneClass(long id, String status) {
+	public String changeStatusOneClass(long id, String status) {
 		try {
 			Classes classes = iClassRepository.findByIdAndStatusNot(id, DELETED_STATUS);
 			if (classes == null) {
@@ -274,7 +278,11 @@ public class ClassServiceImpl implements IClassService {
 						DELETED_STATUS);
 				if (!studentProfileList.isEmpty()) {
 					for (StudentProfile studentProfile : studentProfileList) {
-						iStudentProfileService.changeStatusOneStudent(studentProfile.getId(), status);
+						String response = iStudentProfileService.changeStatusOneStudent(studentProfile.getId(), status);
+						if (response.equalsIgnoreCase("OK")) {
+
+							return response;
+						}
 					}
 				}
 				classes.setStatus(status);
@@ -295,5 +303,7 @@ public class ClassServiceImpl implements IClassService {
 			logger.error("Change status: one classesId = " + id + "! " + e.getMessage());
 			throw e;
 		}
+
+		return "CHANGE SUCCESS!";
 	}
 }

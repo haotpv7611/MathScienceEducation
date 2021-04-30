@@ -30,7 +30,7 @@ public class AccountController {
 		return ResponseEntity.ok(response);
 	}
 
-	@PostMapping("/PWreset")
+	@PostMapping("/password/reset")
 	public ResponseEntity<String> resetPassword(@PathVariable long studentId) {
 		String response = iAccountService.resetPassword(studentId);
 		if (response.contains("NOT FOUND")) {

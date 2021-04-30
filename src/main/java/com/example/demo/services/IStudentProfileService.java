@@ -28,7 +28,7 @@ public interface IStudentProfileService {
 
 	String changeStatusStudent(ListIdAndStatusDTO listIdAndStatusDTO);
 
-	void changeStatusOneStudent(long id, String status);
+	String changeStatusOneStudent(long id, String status);
 
 	Map<String, List<Long>> changeClassForStudent(List<Long> studentIdList, long classesId);
 

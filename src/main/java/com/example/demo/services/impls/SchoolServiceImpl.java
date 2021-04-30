@@ -218,7 +218,11 @@ public class SchoolServiceImpl implements ISchoolService {
 					listIdAndStatusDTO.setIds(ids);
 					listIdAndStatusDTO.setStatus(idAndStatusDTO.getStatus());
 
-					iSchoolGradeService.changeStatusGradeAndSchool(listIdAndStatusDTO);
+					String response = iSchoolGradeService.changeStatusGradeAndSchool(listIdAndStatusDTO);
+					if (response.equalsIgnoreCase("OK")) {
+
+						return response;
+					}
 				}
 			}
 			school.setStatus(idAndStatusDTO.getStatus());

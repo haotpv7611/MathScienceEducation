@@ -47,7 +47,8 @@ public class ClassController {
 	}
 
 	@GetMapping("/{schoolId}")
-	public ResponseEntity<List<GradeClassDTO>> findGradeClassBySchoolId(@RequestParam long schoolId, @RequestParam int gradeId, @RequestParam long classesId) {
+	public ResponseEntity<List<GradeClassDTO>> findGradeClassBySchoolId(@RequestParam long schoolId,
+			@RequestParam int gradeId, @RequestParam long classesId) {
 		List<GradeClassDTO> response = iClassService.findGradeClassBySchoolId(schoolId, gradeId, classesId);
 		if (response == null) {
 
@@ -132,6 +133,10 @@ public class ClassController {
 		}
 		try {
 			String response = iClassService.changeStatusClass(idAndStatusDTOList);
+			if (response.contains("CANNOT")) {
+
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+			}
 
 			return ResponseEntity.ok(response);
 

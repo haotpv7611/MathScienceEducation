@@ -692,6 +692,13 @@ public class QuestionServiceImpl implements IQuestionService {
 	public String deleteQuestion(List<Long> ids) {
 		for (long id : ids) {
 			try {
+				List<ExerciseGameQuestion> exerciseGameQuestionList = iExerciseGameQuestionRepository
+						.findByQuestionIdAndIsDisableFalse(id);
+				if (!exerciseGameQuestionList.isEmpty()) {
+					
+					return "CANNOT DELETE";
+				}
+				
 				deleteOneQuestion(id);
 			} catch (Exception e) {
 				logger.error("DELETE: questionId = " + id + "! " + e.getMessage());
@@ -704,7 +711,7 @@ public class QuestionServiceImpl implements IQuestionService {
 			}
 		}
 
-		return "DELETE SUCCESS!";
+		return "DELETED SUCCESS!";
 	}
 
 	// done ok
@@ -724,14 +731,14 @@ public class QuestionServiceImpl implements IQuestionService {
 				iOptionsService.deleteOptionQuestion(optionQuestion.getId());
 			}
 
-			List<ExerciseGameQuestion> exerciseGameQuestionList = iExerciseGameQuestionRepository
-					.findByQuestionIdAndIsDisableFalse(id);
-			if (!exerciseGameQuestionList.isEmpty()) {
-				for (ExerciseGameQuestion exerciseGameQuestion : exerciseGameQuestionList) {
-					exerciseGameQuestion.setDisable(true);
-					iExerciseGameQuestionRepository.save(exerciseGameQuestion);
-				}
-			}
+//			List<ExerciseGameQuestion> exerciseGameQuestionList = iExerciseGameQuestionRepository
+//					.findByQuestionIdAndIsDisableFalse(id);
+//			if (!exerciseGameQuestionList.isEmpty()) {
+//				for (ExerciseGameQuestion exerciseGameQuestion : exerciseGameQuestionList) {
+//					exerciseGameQuestion.setDisable(true);
+//					iExerciseGameQuestionRepository.save(exerciseGameQuestion);
+//				}
+//			}
 
 			// last: delete question
 			String questionImageUrl = question.getQuestionImageUrl();

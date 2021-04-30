@@ -54,7 +54,7 @@ public class SchoolGradeController {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 		}
 		if (response.contains("INACTIVE")) {
-			
+
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 		}
 
@@ -63,8 +63,17 @@ public class SchoolGradeController {
 
 	@PutMapping("/schoolGrade")
 	public ResponseEntity<String> changeStatusGradeAndSchool(@RequestBody ListIdAndStatusDTO listIdAndStatusDTO) {
+		String status = listIdAndStatusDTO.getStatus();
+		if (!status.equals("ACTIVE") && !status.equals("INACTIVE") && !status.equals("DELETED")) {
+
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("STATUS INVALID!");
+		}
 		try {
-			iSchoolGradeService.changeStatusGradeAndSchool(listIdAndStatusDTO);
+			String response = iSchoolGradeService.changeStatusGradeAndSchool(listIdAndStatusDTO);
+			if (response.contains("CANNOT")) {
+
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+			}
 
 			return ResponseEntity.ok("CHANGE SUCCESS!");
 		} catch (Exception e) {

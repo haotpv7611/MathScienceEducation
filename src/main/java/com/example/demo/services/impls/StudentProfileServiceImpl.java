@@ -388,20 +388,24 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 	public String changeStatusStudent(ListIdAndStatusDTO listIdAndStatusDTO) {
 		List<Long> ids = listIdAndStatusDTO.getIds();
 		String status = listIdAndStatusDTO.getStatus();
-		for (long id : ids) {
-			changeStatusOneStudent(id, status);
+		for (long id : ids) {			
+			String response = changeStatusOneStudent(id, status);
+			if (!response.equalsIgnoreCase("OK")) {
+				
+				return response;
+			}
 		}
 
 		return "CHANGE SUCCESS!";
 	}
 
 	// active <--> inactive
-	// active, inactive --> deleted
-	// graduate: active, inactive --> pending
+	// active, pending --> deleted, inactive --X--> deleted
+	// graduate: active, inactive --> pending, class --> inactive
 	// active và inactive thì k thay đổi username
 	// delete và pending thì thay đổi username và classesId
 	@Override
-	public void changeStatusOneStudent(long id, String status) {
+	public String changeStatusOneStudent(long id, String status) {
 		try {
 			StudentProfile studentProfile = iStudentProfileRepository.findByIdAndStatusNot(id, DELETE_STATUS);
 			if (studentProfile == null) {
@@ -417,6 +421,11 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				iStudentProfileRepository.save(studentProfile);
 			}
 			if (status.equalsIgnoreCase(DELETE_STATUS)) {
+				if (iStudentProfileRepository.findByIdAndStatus(id, ACTIVE_STATUS) != null) {
+
+					return "CANNOT DELETE";
+				}
+				
 				Classes deleteClass = iClassRepository.findById(0L).orElseThrow(() -> new ResourceNotFoundException());
 				studentProfile.setClasses(deleteClass);
 				studentProfile.setStudentCount(countStudent(deleteClass));
@@ -434,7 +443,6 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				Classes pendingClass = iClassRepository.findBySchoolGradeIdAndClassNameIgnoreCaseAndStatusNot(
 						schoolGrade.getId(), PENDING_STATUS, DELETE_STATUS);
 				if (pendingClass == null) {
-
 					pendingClass = new Classes(PENDING_STATUS, PENDING_STATUS, schoolGrade);
 					iClassRepository.save(pendingClass);
 				}
@@ -453,6 +461,8 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 			logger.error("Change status studentId = " + id + "with status = " + status + "! " + e.getMessage());
 			throw e;
 		}
+		
+		return "OK";
 	}
 
 	// chuyển giữa các lớp đang active, chuyển từ lớp pending sang lớp active
@@ -566,10 +576,12 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 						schoolGrade.getId(), sheet.getSheetName(), DELETE_STATUS);
 				List<StudentProfile> studentProfileList = new ArrayList<>();
 				if (classes != null) {
-					studentProfileList.addAll(iStudentProfileRepository.findByClassesIdAndStatus(classes.getId(), ACTIVE_STATUS));
-					studentProfileList.addAll(iStudentProfileRepository.findByClassesIdAndStatus(classes.getId(), INACTIVE_STATUS));
+					studentProfileList
+							.addAll(iStudentProfileRepository.findByClassesIdAndStatus(classes.getId(), ACTIVE_STATUS));
+					studentProfileList.addAll(
+							iStudentProfileRepository.findByClassesIdAndStatus(classes.getId(), INACTIVE_STATUS));
 				}
-				
+
 				if (countStudentImport + studentProfileList.size() > 60) {
 					response.put("EXCEED LIMIT", null);
 				}

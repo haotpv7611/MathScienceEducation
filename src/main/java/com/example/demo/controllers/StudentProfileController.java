@@ -181,6 +181,10 @@ public class StudentProfileController {
 		}
 		try {
 			String response = iStudentProfileService.changeStatusStudent(idAndStatusDTOList);
+			if (response.contains("CANNOT")) {
+
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+			}
 
 			return ResponseEntity.ok(response);
 		} catch (Exception e) {
@@ -238,7 +242,7 @@ public class StudentProfileController {
 			} else if (entry.getKey().contains("OK")) {
 
 				httpServletResponse.setStatus(HttpServletResponse.SC_OK);
-			}else if (entry.getKey().contains("EXCEED")) {
+			} else if (entry.getKey().contains("EXCEED")) {
 
 				httpServletResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 			} else {
@@ -278,7 +282,7 @@ public class StudentProfileController {
 			}
 		}
 	}
-	
+
 	@GetMapping("/student/export/account")
 	public void exportStudentAccount(HttpServletResponse httpServletResponse, @RequestParam long schoolId,
 			@RequestParam int gradeId) throws IOException {

@@ -154,6 +154,10 @@ public class SchoolController {
 
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
 		}
+		if (response.contains("CANNOT")) {
+
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+		}
 
 		return ResponseEntity.ok(response);
 	}
