@@ -295,7 +295,7 @@ public class ClassServiceImpl implements IClassService {
 				if (!studentProfileList.isEmpty()) {
 					for (StudentProfile studentProfile : studentProfileList) {
 						String response = iStudentProfileService.changeStatusOneStudent(studentProfile.getId(), status);
-						if (response.equalsIgnoreCase("OK")) {
+						if (!response.equalsIgnoreCase("OK")) {
 
 							return response;
 						}

@@ -328,6 +328,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				}
 
 				String username = generateUsername(classes);
+				System.out.println(username);
 				if (iAccountRepository.findByUsername(username) != null) {
 
 					return "EXISTED";
@@ -597,7 +598,6 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 			while (sheetIterator.hasNext()) {
 				Sheet sheet = sheetIterator.next();
 				int countStudentImport = countStudentImport(sheet);
-				System.out.println(countStudentImport + " import");
 				Classes classes = iClassRepository.findBySchoolGradeIdAndClassNameIgnoreCaseAndStatusNot(
 						schoolGrade.getId(), sheet.getSheetName(), DELETE_STATUS);
 				List<StudentProfile> studentProfileList = new ArrayList<>();
@@ -611,7 +611,6 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				if (countStudentImport + studentProfileList.size() > 60) {
 					response.put("EXCEED LIMIT", null);
 				}
-				System.out.println(countStudentImport + studentProfileList.size() + " - total");
 
 				cellList = validateSheetData(sheet, schoolName, schoolCode, gradeName);
 				if (!cellList.isEmpty()) {
@@ -629,7 +628,6 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 					ctSheetView.setTopLeftCell("A1");
 					sheet.setActiveCell(new CellAddress("A1"));
 					workbook.setActiveSheet(0);
-
 				}
 			}
 

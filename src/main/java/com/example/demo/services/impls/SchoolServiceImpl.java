@@ -220,7 +220,7 @@ public class SchoolServiceImpl implements ISchoolService {
 					listIdAndStatusDTO.setStatus(idAndStatusDTO.getStatus());
 
 					String response = iSchoolGradeService.changeStatusGradeAndSchool(listIdAndStatusDTO);
-					if (response.equalsIgnoreCase("OK")) {
+					if (!response.equalsIgnoreCase("OK")) {
 
 						return response;
 					}

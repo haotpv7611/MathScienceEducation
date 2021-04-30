@@ -171,7 +171,7 @@ public class SchoolGradeServiceImpl implements ISchoolGradeService {
 					DELETED_STATUS);
 			for (Classes classes : classesList) {
 				String response = iClassService.changeStatusOneClass(classes.getId(), status);
-				if (response.equalsIgnoreCase("OK")) {
+				if (!response.equalsIgnoreCase("OK")) {
 
 					return response;
 				}
