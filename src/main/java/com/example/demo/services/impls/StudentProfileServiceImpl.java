@@ -318,6 +318,15 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				throw new ResourceNotFoundException();
 			}
 
+			List<StudentProfile> studentProfileList = iStudentProfileRepository.findByClassesIdAndStatus(classId,
+					ACTIVE_STATUS);
+			studentProfileList.addAll(iStudentProfileRepository.findByClassesIdAndStatus(classId, INACTIVE_STATUS));
+
+			if (studentProfileList.size() > 60) {
+
+				return "EXCEED LIMIT";
+			}
+
 			String username = generateUsername(classes);
 			String fullName = studentRequestDTO.getFullName().trim().replaceAll("\\s+", " ");
 			Account account = new Account(username, DEFAULT_PASSWORD, fullName, STUDENT_ROLE, ACTIVE_STATUS);
@@ -450,7 +459,8 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 	// cùng khối, lớp cũ k phải lớp pending thì giữ nguyên account
 	// khác khối hoặc pending thì đổi account
 	@Override
-	public String changeClassForStudent(List<Long> studentIdList, long classesId) {
+	public Map<String, List<Long>> changeClassForStudent(List<Long> studentIdList, long classesId) {
+		Map<String, List<Long>> map = new HashedMap<>();
 		try {
 			Classes newClasses = iClassRepository.findByIdAndStatusNot(classesId, DELETE_STATUS);
 			if (newClasses == null) {
@@ -458,11 +468,22 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 			}
 			Grade newGrade = newClasses.getSchoolGrade().getGrade();
 
+			List<Long> studentIdExisted = new ArrayList<>();
 			for (long studentId : studentIdList) {
 				StudentProfile studentProfile = iStudentProfileRepository.findByIdAndStatusNot(studentId,
 						DELETE_STATUS);
 				if (studentProfile == null) {
 					throw new ResourceNotFoundException();
+				}
+
+				List<StudentProfile> studentProfileList = iStudentProfileRepository.findByClassesIdAndStatus(classesId,
+						ACTIVE_STATUS);
+				studentProfileList
+						.addAll(iStudentProfileRepository.findByClassesIdAndStatus(classesId, INACTIVE_STATUS));
+				if (studentProfileList.size() + studentIdList.size() > 60) {
+
+					map.put("EXCEED LIMIT", null);
+					return map;
 				}
 
 				Grade oldGrade = studentProfile.getClasses().getSchoolGrade().getGrade();
@@ -479,8 +500,12 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 						studentProfile.setStatus(ACTIVE_STATUS);
 						iStudentProfileRepository.save(studentProfile);
 					} else {
-						studentProfile.setClasses(newClasses);
-						iStudentProfileRepository.save(studentProfile);
+						if (studentProfile.getClasses().getId() == classesId) {
+							studentIdExisted.add(studentProfile.getId());
+						} else {
+							studentProfile.setClasses(newClasses);
+							iStudentProfileRepository.save(studentProfile);
+						}
 					}
 
 				} else {
@@ -496,13 +521,18 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 					iStudentProfileRepository.save(studentProfile);
 				}
 			}
+			if (studentIdExisted.isEmpty()) {
+				map.put("CHANGE SUCCESS!", null);
+			} else {
+				map.put("HAVE PROBLEM", studentIdExisted);
+			}
 		} catch (Exception e) {
 			logger.error("Change studentListId =  " + studentIdList.toString() + " to classId = " + classesId + "! "
 					+ e.getMessage());
 			throw e;
 		}
 
-		return "CHANGE SUCCESS!";
+		return map;
 	}
 
 	@Override
@@ -522,8 +552,8 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 			int gradeName = schoolGrade.getGrade().getGradeName();
 			String schoolName = school.getSchoolName();
 			String schoolCode = school.getSchoolCode() + school.getSchoolCount();
-			List<Classes> classesList = iClassRepository.findBySchoolGradeIdAndStatusNot(schoolGrade.getId(),
-					DELETE_STATUS);
+//			List<Classes> classesList = iClassRepository.findBySchoolGradeIdAndStatusNot(schoolGrade.getId(),
+//					DELETE_STATUS);
 
 			// validate all sheet in excel file
 			Workbook workbook = new XSSFWorkbook(file.getInputStream());
@@ -531,7 +561,20 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 			List<Cell> cellList = new ArrayList<>();
 			while (sheetIterator.hasNext()) {
 				Sheet sheet = sheetIterator.next();
-				cellList = validateSheetData(sheet, classesList, schoolName, schoolCode, gradeName);
+				int countStudentImport = countStudentImport(sheet);
+				Classes classes = iClassRepository.findBySchoolGradeIdAndClassNameIgnoreCaseAndStatusNot(
+						schoolGrade.getId(), sheet.getSheetName(), DELETE_STATUS);
+				List<StudentProfile> studentProfileList = new ArrayList<>();
+				if (classes != null) {
+					studentProfileList.addAll(iStudentProfileRepository.findByClassesIdAndStatus(classes.getId(), ACTIVE_STATUS));
+					studentProfileList.addAll(iStudentProfileRepository.findByClassesIdAndStatus(classes.getId(), INACTIVE_STATUS));
+				}
+				
+				if (countStudentImport + studentProfileList.size() > 60) {
+					response.put("EXCEED LIMIT", null);
+				}
+
+				cellList = validateSheetData(sheet, schoolName, schoolCode, gradeName);
 				if (!cellList.isEmpty()) {
 
 					CellStyle cellStyle = formatErrorCell(workbook);
@@ -577,10 +620,36 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 		return response;
 	}
 
-	private List<Cell> validateSheetData(Sheet sheet, List<Classes> classesList, String schoolName, String schoolCode,
-			int gradeName) throws ParseException {
-		List<Cell> cellList = new ArrayList<>();
+	private int countStudentImport(Sheet sheet) {
+		int countStudentImport = 0;
 
+		Iterator<Row> rowIterator = sheet.rowIterator();
+		while (rowIterator.hasNext()) {
+			Row row = rowIterator.next();
+			int totalEmptyCell = 0;
+			for (int i = FIRST_COLUMN; i < (LAST_COLUMN + 1); i++) {
+				Cell cell = row.getCell(i);
+
+				if (cell == null) {
+					totalEmptyCell++;
+				} else {
+					if (cell.getCellType() == CellType.BLANK || cell.toString().trim().isEmpty()) {
+						totalEmptyCell++;
+					}
+				}
+			}
+			if (totalEmptyCell == 6) {
+				continue;
+			} else {
+				countStudentImport++;
+			}
+		}
+		return countStudentImport;
+	}
+
+	private List<Cell> validateSheetData(Sheet sheet, String schoolName, String schoolCode, int gradeName)
+			throws ParseException {
+		List<Cell> cellList = new ArrayList<>();
 		try {
 
 			Iterator<Row> rowIterator = sheet.rowIterator();
@@ -1047,10 +1116,12 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				List<Classes> classesList = iClassRepository
 						.findBySchoolGradeIdAndStatusNotOrderByStatusAscClassNameAsc(schoolGrade.getId(),
 								DELETE_STATUS);
-				for (int i = 0; i < classesList.size(); i++) {
-					if (classesList.get(i).getClassName().equals(PENDING_STATUS)) {
-						classesList.remove(classesList.get(i));
-						break;
+				if (!classesList.isEmpty()) {
+					for (int i = 0; i < classesList.size(); i++) {
+						if (classesList.get(i).getClassName().equals(PENDING_STATUS)) {
+							classesList.remove(classesList.get(i));
+							break;
+						}
 					}
 				}
 
@@ -1115,12 +1186,11 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				if (!classesList.isEmpty()) {
 					for (Classes classes : classesList) {
 						List<StudentProfile> studentProfileList = new ArrayList<>();
-						if (!classesList.isEmpty()) {
-							if (!iStudentProfileRepository.findByClassesIdAndStatusNot(classes.getId(), DELETE_STATUS)
-									.isEmpty()) {
-								studentProfileList.addAll(iStudentProfileRepository
-										.findByClassesIdAndStatusNot(classes.getId(), DELETE_STATUS));
-							}
+
+						if (!iStudentProfileRepository.findByClassesIdAndStatusNot(classes.getId(), DELETE_STATUS)
+								.isEmpty()) {
+							studentProfileList.addAll(iStudentProfileRepository
+									.findByClassesIdAndStatusNot(classes.getId(), DELETE_STATUS));
 						}
 
 						Sheet sheet = workbook.createSheet(classes.getClassName());
@@ -1212,8 +1282,6 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 						if (progressTestMap != null) {
 							if (!progressTestMap.isEmpty()) {
 								for (Map.Entry<String, Integer> entry : progressTestMap.entrySet()) {
-									System.out.println("name = " + entry.getKey() + " exercise = " + entry.getValue());
-									System.out.println(beginProgressTestColumn);
 									if (entry.getValue() >= 1) {
 										createArrangeHeaderCell(workbook, sheet, sheet.getRow(7),
 												beginProgressTestColumn, 7, 8, beginProgressTestColumn,
@@ -1226,7 +1294,6 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 
 						if (!studentProfileList.isEmpty()) {
 							for (int i = 0; i < studentProfileList.size(); i++) {
-								System.out.println(studentProfileList.get(i).getId());
 
 								Cell noValueCell = createOneNormalCell(workbook, sheet.getRow(i + 10), 0,
 										CellType.NUMERIC, HorizontalAlignment.CENTER);
@@ -1249,13 +1316,20 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 										boolean isTaken = false;
 										double score = 0;
 										if (!exerciseTakenList.isEmpty()) {
-											double sumTotalScore = 0;
+//											double sumTotalScore = 0;
 											for (ExerciseTaken exerciseTaken : exerciseTakenList) {
-												sumTotalScore += exerciseTaken.getTotalScore();
+												if (exerciseTaken.getTotalScore() == 10) {
+													System.out.println("MAX");
+													score = 10;
+													break;
+												} else if (exerciseTaken.getTotalScore() > score) {
+													score = exerciseTaken.getTotalScore();
+												}
+//												sumTotalScore += exerciseTaken.getTotalScore();
 											}
 
-											score = sumTotalScore / exerciseTakenList.size();
-											score = Double.valueOf(new DecimalFormat("#.#").format(score));
+//											score = sumTotalScore / exerciseTakenList.size();
+//											score = Double.valueOf(new DecimalFormat("#.#").format(score));
 
 											isTaken = true;
 										}
@@ -1280,13 +1354,21 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 										boolean isTaken = false;
 										double score = 0;
 										if (!exerciseTakenList.isEmpty()) {
-											double sumTotalScore = 0;
+//											double sumTotalScore = 0;
 											for (ExerciseTaken exerciseTaken : exerciseTakenList) {
-												sumTotalScore += exerciseTaken.getTotalScore();
+												if (exerciseTaken.getTotalScore() == 10) {
+													System.out.println("MAX");
+													score = 10;
+													break;
+												} else if (exerciseTaken.getTotalScore() > score) {
+													score = exerciseTaken.getTotalScore();
+												}
+
+//												sumTotalScore += exerciseTaken.getTotalScore();
 											}
 
-											score = sumTotalScore / exerciseTakenList.size();
-											score = Double.valueOf(new DecimalFormat("#.#").format(score));
+//											score = sumTotalScore / exerciseTakenList.size();
+//											score = Double.valueOf(new DecimalFormat("#.#").format(score));
 
 											isTaken = true;
 										}
@@ -1328,6 +1410,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 	// tìm tất cả các subject, unit và progressTest
 	// in ra điểm trung bình của unit và progressTest của từng hs
 	@Override
+	@Transactional
 	public Map<String, Workbook> exportFinalScore(long schoolId, int gradeId) throws IOException {
 		Map<String, Workbook> response = new HashedMap<>();
 		try {
@@ -1389,13 +1472,14 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 			Workbook workbook = new XSSFWorkbook();
 			if (!classesList.isEmpty()) {
 				for (Classes classes : classesList) {
+					classes.setStatus(INACTIVE_STATUS);
+					iClassRepository.save(classes);
+
 					List<StudentProfile> studentProfileList = new ArrayList<>();
-					if (!classesList.isEmpty()) {
-						if (!iStudentProfileRepository.findByClassesIdAndStatusNot(classes.getId(), DELETE_STATUS)
-								.isEmpty()) {
-							studentProfileList.addAll(iStudentProfileRepository
-									.findByClassesIdAndStatusNot(classes.getId(), DELETE_STATUS));
-						}
+					if (!iStudentProfileRepository.findByClassesIdAndStatusNot(classes.getId(), DELETE_STATUS)
+							.isEmpty()) {
+						studentProfileList.addAll(
+								iStudentProfileRepository.findByClassesIdAndStatusNot(classes.getId(), DELETE_STATUS));
 					}
 
 					Sheet sheet = workbook.createSheet(classes.getClassName());
@@ -1887,7 +1971,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 						for (StudentProfile studentProfile : studentProfileList) {
 							System.out.println(studentProfile.getId() + " - " + studentProfile.getStudentCount());
 							if (studentProfile.getStudentCount() > studentCount) {
-								
+
 								studentCount = studentProfile.getStudentCount();
 							}
 						}
@@ -1896,7 +1980,8 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				}
 			} else {
 				StudentProfile studentProfile = iStudentProfileRepository
-						.findFirstByClassesIdAndStatusContainingOrderByStudentCountDesc(classes.getId(), classes.getStatus());
+						.findFirstByClassesIdAndStatusContainingOrderByStudentCountDesc(classes.getId(),
+								classes.getStatus());
 
 				if (studentProfile != null) {
 					studentCount = studentProfile.getStudentCount() + 1;

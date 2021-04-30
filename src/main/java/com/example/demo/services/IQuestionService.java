@@ -41,7 +41,7 @@ public interface IQuestionService {
 			List<Boolean> isCorrectList, List<Long> optionIdDeleteList) throws SizeLimitExceededException, IOException;
 
 	String updateGameFillInBlankQuestion(long id, MultipartFile imageFile, String questionTitle, String description,
-			float score, List<Long> optionIdList, List<String> optionTextList, List<String> optionInputTypeList)
+			float score, List<Long> optionIdList, List<String> optionTextList, List<String> optionInputTypeList, List<Long> optionIdDeleteList)
 			throws SizeLimitExceededException, IOException;
 
 	String updateGameSwappingMatchingChoosingQuestion(long id, String questionTitle, String description, float score,

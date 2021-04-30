@@ -193,10 +193,10 @@ public class QuestionController {
 			@RequestParam(required = false) MultipartFile imageFile, @RequestParam String questionTitle,
 			@RequestParam(required = false) String description, @RequestParam float score,
 			@RequestParam List<Long> optionIdList, @RequestParam List<String> optionTextList,
-			@RequestParam List<String> optionInputTypeList) throws SizeLimitExceededException, IOException {
+			@RequestParam List<String> optionInputTypeList,@RequestParam List<Long> optionIdDeleteList) throws SizeLimitExceededException, IOException {
 
 		String response = iQuestionService.updateGameFillInBlankQuestion(id, imageFile, questionTitle, description,
-				score, optionIdList, optionTextList, optionInputTypeList);
+				score, optionIdList, optionTextList, optionInputTypeList, optionIdDeleteList);
 		if (response.contains("NOT FOUND")) {
 
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);

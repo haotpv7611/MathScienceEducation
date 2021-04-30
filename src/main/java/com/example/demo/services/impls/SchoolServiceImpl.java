@@ -52,11 +52,8 @@ public class SchoolServiceImpl implements ISchoolService {
 			if (school == null) {
 				throw new ResourceNotFoundException();
 			}
-			String schoolName = school.getSchoolName();
-			String schoolStreet = school.getSchoolStreet();
-			String schoolDistrict = school.getSchoolDistrict();
-			String schoolLevel = school.getSchoolLevel().getDescription();
-			schoolResponseDTO = new SchoolResponseDTO(schoolName, schoolStreet, schoolDistrict, schoolLevel);
+			schoolResponseDTO = modelMapper.map(school, SchoolResponseDTO.class);
+			schoolResponseDTO.setSchoolCode(school.getSchoolCode() + school.getSchoolCount());
 
 		} catch (Exception e) {
 			logger.error("FIND: school by id = " + id + "! " + e.getMessage());

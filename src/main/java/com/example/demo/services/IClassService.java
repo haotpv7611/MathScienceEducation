@@ -12,7 +12,7 @@ import com.example.demo.dtos.SchoolGradeDTO;
 public interface IClassService {
 	List<ClassResponseDTO> findBySchoolGradeId(SchoolGradeDTO schoolGradeDTO);
 
-	List<GradeClassDTO> findGradeClassBySchoolId(long schoolId);
+	List<GradeClassDTO> findGradeClassBySchoolId(long schoolId, int gradeId, long classesId);
 
 	String createClass(ClassRequestDTO classRequestDTO);
 

@@ -45,7 +45,7 @@ public class ExerciseGameQuestionController {
 
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
 		}
-		if (response.contains("EXISTED")) {
+		if (response.contains("EXISTED") || response.contains("EXCEED")) {
 
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 		}

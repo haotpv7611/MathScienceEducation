@@ -30,7 +30,7 @@ public interface IStudentProfileService {
 
 	void changeStatusOneStudent(long id, String status);
 
-	String changeClassForStudent(List<Long> studentIdList, long classesId);
+	Map<String, List<Long>> changeClassForStudent(List<Long> studentIdList, long classesId);
 
 	Map<String, Workbook> validateStudentFile(MultipartFile file, long schoolId, int gradeId) throws ParseException;
 

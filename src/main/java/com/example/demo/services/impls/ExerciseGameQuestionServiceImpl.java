@@ -58,12 +58,21 @@ public class ExerciseGameQuestionServiceImpl implements IExerciseGameQuestionSer
 				Exercise exercise = iExerciseRepository.findByIdAndStatusNot(exerciseId, DELETED_STATUS);
 				if (exercise == null) {
 					throw new ResourceNotFoundException();
-				}
+				}				
+				
 				for (long questionId : questionIds) {
 					if (iExerciseGameQuestionRepository.findByQuestionIdAndExerciseIdAndIsDisableFalse(questionId,
 							exerciseId) != null) {
 
 						return "EXISTED";
+					}
+				}
+				
+				List<ExerciseGameQuestion> exerciseGameQuestionList = iExerciseGameQuestionRepository.findByExerciseIdAndIsDisableFalse(exerciseId);
+				if (!exerciseGameQuestionList.isEmpty()) {
+					if (exerciseGameQuestionList.size() + questionIds.size() > 10) {
+						
+						return "EXCEED LIMIT";
 					}
 				}
 			} else {

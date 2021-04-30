@@ -84,7 +84,7 @@ public class SubjectServiceImpl implements ISubjectService {
 		List<SubjectResponseDTO> subjectResponseDTOList = new ArrayList<>();
 		try {
 			// find all subjects and return
-			List<Subject> subjectList = iSubjectRepository.findByGradeIdAndIsDisableFalse(gradeId);
+			List<Subject> subjectList = iSubjectRepository.findByGradeIdAndIsDisableFalseOrderBySubjectName(gradeId);
 			if (!subjectList.isEmpty()) {
 				for (Subject subject : subjectList) {
 					SubjectResponseDTO subjectResponseDTO = modelMapper.map(subject, SubjectResponseDTO.class);

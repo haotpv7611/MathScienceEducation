@@ -570,7 +570,8 @@ public class QuestionServiceImpl implements IQuestionService {
 	@Transactional
 	public String updateGameFillInBlankQuestion(long id, MultipartFile imageFile, String questionTitle,
 			String description, float score, List<Long> optionIdList, List<String> optionTextList,
-			List<String> optionInputTypeList) throws SizeLimitExceededException, IOException {
+			List<String> optionInputTypeList, List<Long> optionIdDeleteList)
+			throws SizeLimitExceededException, IOException {
 		// validate question data input
 
 		String error = validateQuestionInput(questionTitle, description, score);
@@ -600,8 +601,25 @@ public class QuestionServiceImpl implements IQuestionService {
 
 			// last: update list option and return
 			for (int i = 0; i < optionIdList.size(); i++) {
-				iOptionsService.updateGameFillInBlankOptionQuestion(optionIdList.get(i), optionTextList.get(i),
-						optionInputTypeList.get(i));
+				if (optionIdList.get(i) == 0) {
+					iOptionsService.createGameFillInBlankOptionQuestion(question.getId(), optionTextList.get(i),
+							optionInputTypeList.get(i));
+				} else {
+					iOptionsService.updateGameFillInBlankOptionQuestion(optionIdList.get(i), optionTextList.get(i),
+							optionInputTypeList.get(i));
+				}
+			}
+			if (optionIdDeleteList != null) {
+				if (!optionIdDeleteList.isEmpty()) {
+					for (long optionIdDelete : optionIdDeleteList) {
+						OptionQuestion optionQuestion = iOptionQuestionRepository
+								.findByIdAndIsDisableFalse(optionIdDelete);
+						if (optionQuestion == null) {
+							throw new ResourceNotFoundException();
+						}
+						iOptionsService.deleteOptionQuestion(optionIdDelete);
+					}
+				}
 			}
 		} catch (Exception e) {
 			logger.error("UPDATE: questionId = " + id + "! " + e.getMessage());

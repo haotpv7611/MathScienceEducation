@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dtos.ClassRequestDTO;
@@ -46,8 +47,8 @@ public class ClassController {
 	}
 
 	@GetMapping("/{schoolId}")
-	public ResponseEntity<List<GradeClassDTO>> findGradeClassBySchoolId(@PathVariable long schoolId) {
-		List<GradeClassDTO> response = iClassService.findGradeClassBySchoolId(schoolId);
+	public ResponseEntity<List<GradeClassDTO>> findGradeClassBySchoolId(@RequestParam long schoolId, @RequestParam int gradeId, @RequestParam long classesId) {
+		List<GradeClassDTO> response = iClassService.findGradeClassBySchoolId(schoolId, gradeId, classesId);
 		if (response == null) {
 
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);

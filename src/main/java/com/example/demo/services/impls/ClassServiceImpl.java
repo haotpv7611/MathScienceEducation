@@ -82,24 +82,16 @@ public class ClassServiceImpl implements IClassService {
 	// get all grade linked by gradeName
 	// get all class by gradeId
 	@Override
-	public List<GradeClassDTO> findGradeClassBySchoolId(long schoolId) {
+	public List<GradeClassDTO> findGradeClassBySchoolId(long schoolId, int gradeId, long classesId) {
 		List<GradeClassDTO> gradeClassDTOList = new ArrayList<>();
 		try {
-			List<SchoolGrade> schoolGradeList = iSchoolGradeRepository.findBySchoolIdAndStatusNot(schoolId,
-					DELETED_STATUS);
-			if (!schoolGradeList.isEmpty()) {
-				for (SchoolGrade schoolGrade : schoolGradeList) {
+			if (classesId == 0) {
+				SchoolGrade schoolGrade = iSchoolGradeRepository.findByGradeIdAndSchoolIdAndStatusNot(gradeId, schoolId,
+						DELETED_STATUS);
+				if (schoolGrade != null) {
 					List<ClassChangeDTO> classChangeDTOList = new ArrayList<>();
-					// lấy class active và inactive
-					List<Classes> classesList = new ArrayList<>();
-
-					if (iClassRepository
-							.findBySchoolGradeIdAndStatusOrderByClassName(schoolGrade.getId(), ACTIVE_STATUS)
-							.size() > 0) {
-						classesList.addAll(iClassRepository
-								.findBySchoolGradeIdAndStatusOrderByClassName(schoolGrade.getId(), ACTIVE_STATUS));
-					}
-
+					List<Classes> classesList = iClassRepository
+							.findBySchoolGradeIdAndStatusOrderByClassName(schoolGrade.getId(), ACTIVE_STATUS);
 					if (!classesList.isEmpty()) {
 						for (Classes classes : classesList) {
 							ClassChangeDTO classChangeDTO = new ClassChangeDTO(classes.getId(), classes.getClassName());
@@ -109,10 +101,42 @@ public class ClassServiceImpl implements IClassService {
 					GradeClassDTO gradeClassDTO = new GradeClassDTO(schoolGrade.getGrade().getId(),
 							schoolGrade.getGrade().getGradeName(), classChangeDTOList);
 					gradeClassDTOList.add(gradeClassDTO);
+					if (!gradeClassDTOList.isEmpty()) {
+						gradeClassDTOList.sort(Comparator.comparing(GradeClassDTO::getName));
+					}
 				}
+			} else {
 
-				if (!gradeClassDTOList.isEmpty()) {
-					gradeClassDTOList.sort(Comparator.comparing(GradeClassDTO::getName));
+				List<SchoolGrade> schoolGradeList = iSchoolGradeRepository.findBySchoolIdAndStatusNot(schoolId,
+						DELETED_STATUS);
+				if (!schoolGradeList.isEmpty()) {
+					for (SchoolGrade schoolGrade : schoolGradeList) {
+						List<ClassChangeDTO> classChangeDTOList = new ArrayList<>();
+						// lấy class active và inactive
+						List<Classes> classesList = new ArrayList<>();
+
+						if (iClassRepository
+								.findBySchoolGradeIdAndStatusOrderByClassName(schoolGrade.getId(), ACTIVE_STATUS)
+								.size() > 0) {
+							classesList.addAll(iClassRepository
+									.findBySchoolGradeIdAndStatusOrderByClassName(schoolGrade.getId(), ACTIVE_STATUS));
+						}
+
+						if (!classesList.isEmpty()) {
+							for (Classes classes : classesList) {
+								ClassChangeDTO classChangeDTO = new ClassChangeDTO(classes.getId(),
+										classes.getClassName());
+								classChangeDTOList.add(classChangeDTO);
+							}
+						}
+						GradeClassDTO gradeClassDTO = new GradeClassDTO(schoolGrade.getGrade().getId(),
+								schoolGrade.getGrade().getGradeName(), classChangeDTOList);
+						gradeClassDTOList.add(gradeClassDTO);
+					}
+
+					if (!gradeClassDTOList.isEmpty()) {
+						gradeClassDTOList.sort(Comparator.comparing(GradeClassDTO::getName));
+					}
 				}
 			}
 		} catch (Exception e) {

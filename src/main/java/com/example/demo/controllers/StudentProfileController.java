@@ -35,7 +35,7 @@ import com.example.demo.services.IStudentProfileService;
 @RestController
 public class StudentProfileController {
 	@Autowired
-	IStudentProfileService iStudentProfileService;
+	private IStudentProfileService iStudentProfileService;
 
 	@GetMapping("/student/{id}")
 	public ResponseEntity<Object> findStudentById(@PathVariable long id) {
@@ -111,6 +111,10 @@ public class StudentProfileController {
 		if (response.contains("FAIL")) {
 
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+		if (response.contains("EXCEED")) {
+
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 		}
 
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -190,7 +194,7 @@ public class StudentProfileController {
 	}
 
 	@PutMapping("/student/changeClass")
-	public ResponseEntity<String> changeClassForStudent(@RequestParam List<Long> studentIdList,
+	public ResponseEntity<?> changeClassForStudent(@RequestParam List<Long> studentIdList,
 			@RequestParam long classesId) {
 		String error = "";
 		if (studentIdList == null) {
@@ -206,7 +210,7 @@ public class StudentProfileController {
 		}
 
 		try {
-			String response = iStudentProfileService.changeClassForStudent(studentIdList, classesId);
+			Map<String, List<Long>> response = iStudentProfileService.changeClassForStudent(studentIdList, classesId);
 
 			return ResponseEntity.ok(response);
 		} catch (Exception e) {
@@ -234,6 +238,9 @@ public class StudentProfileController {
 			} else if (entry.getKey().contains("OK")) {
 
 				httpServletResponse.setStatus(HttpServletResponse.SC_OK);
+			}else if (entry.getKey().contains("EXCEED")) {
+
+				httpServletResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 			} else {
 				httpServletResponse.setContentType("application/octet-stream");
 				String headerKey = "Content-Disposition";
