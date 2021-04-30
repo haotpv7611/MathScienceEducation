@@ -584,9 +584,13 @@ public class QuestionServiceImpl implements IQuestionService {
 			}
 			// validate option data input
 			for (long optionId : optionIdList) {
-				OptionQuestion optionQuestion = iOptionQuestionRepository.findByIdAndIsDisableFalse(optionId);
-				if (optionQuestion == null) {
-					throw new ResourceNotFoundException();
+				if (optionId == 0) {
+					continue;
+				} else {
+					OptionQuestion optionQuestion = iOptionQuestionRepository.findByIdAndIsDisableFalse(optionId);
+					if (optionQuestion == null) {
+						throw new ResourceNotFoundException();
+					}
 				}
 			}
 			String optionError = validateGameFillInBlankOptionInput(optionTextList, optionInputTypeList);
