@@ -265,7 +265,7 @@ public class ClassServiceImpl implements IClassService {
 		for (long id : ids) {
 			try {
 				String response = changeStatusOneClass(id, status);
-				if (response.equalsIgnoreCase("OK")) {
+				if (!response.equalsIgnoreCase("OK")) {
 
 					return response;
 				}
