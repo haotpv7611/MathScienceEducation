@@ -6,6 +6,8 @@ import java.util.List;
 
 import org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,38 +26,42 @@ import com.example.demo.utils.Util;
 
 @Service
 public class BannerImageServiceImpl implements IBannerImageService {
+	Logger logger = LoggerFactory.getLogger(BannerImageServiceImpl.class);
 	private final int DESCRIPTION_MAX_LENGTH = 150;
+	private final String DELETED_STATUS = "DELETED";
 
 	@Autowired
-	IBannerImageRepository iBannerImageRepositoy;
+	private IBannerImageRepository iBannerImageRepositoy;
 
 	@Autowired
-	IAccountRepository iAccountRepository;
+	private IAccountRepository iAccountRepository;
 
 	@Autowired
-	IFirebaseService iFirebaseService;
+	private IFirebaseService iFirebaseService;
 
 	@Autowired
-	ModelMapper modelMapper;
+	private ModelMapper modelMapper;
 
 	// done
 	@Override
 	public String createBannerImage(String description, MultipartFile file, long accountId)
 			throws SizeLimitExceededException, IOException {
-		// 1. validate data input
-		Account account = iAccountRepository.findByIdAndStatusNot(accountId, "DELETED");
-		if (account == null) {
-			throw new ResourceNotFoundException();
-		}
-		String error = validateRequiredFile(file, "image", "File is invalid!",
-				"Not supported this file type for image!");
-		error += Util.validateString(description, DESCRIPTION_MAX_LENGTH, "\nDescription is invalid!");
-		if (!error.isEmpty()) {
-			return error.trim();
-		}
-		if (account.getRoleId() != 1) {
-			return "You do not have permission!";
-		}
+		try {
+
+			// 1. validate data input
+			Account account = iAccountRepository.findByIdAndStatusNot(accountId, DELETED_STATUS);
+			if (account == null) {
+				throw new ResourceNotFoundException();
+			}
+			String error = validateRequiredFile(file, "image", "File is invalid!",
+					"Not supported this file type for image!");
+			error += Util.validateString(description, DESCRIPTION_MAX_LENGTH, "\nDescription is invalid!");
+			if (!error.isEmpty()) {
+				return error.trim();
+			}
+			if (account.getRoleId() != 1) {
+				return "You do not have permission!";
+			}
 //				String error = "";
 //		if (file.isEmpty()) {
 //			error += "File is invalid!";
@@ -63,24 +69,26 @@ public class BannerImageServiceImpl implements IBannerImageService {
 //			error += "Not supported this file type for image!";
 //		}
 
-		// 2. connect database through repository
-		// 3. find entity by Id
-		// 4. if not found throw not found exception
+			// 2. connect database through repository
+			// 3. find entity by Id
+			// 4. if not found throw not found exception
 
-		// 5. if role is not admin, return error no permission
+			// 5. if role is not admin, return error no permission
 
-		// 6. create new entity and return SUCCESS
-		BannerImage bannerImage = new BannerImage();
-		if (description != null) {
-			if (!description.trim().isEmpty()) {
-				bannerImage.setDescription(description.trim());
+			// 6. create new entity and return SUCCESS
+			BannerImage bannerImage = new BannerImage();
+			if (description != null) {
+				if (!description.trim().isEmpty()) {
+					bannerImage.setDescription(description.trim());
+				}
 			}
-		}		
-		bannerImage.setImageUrl(iFirebaseService.uploadFile(file));
-		bannerImage.setStatus("ACTIVE");
-		bannerImage.setAccountId(accountId);
-		iBannerImageRepositoy.save(bannerImage);
-
+			bannerImage.setImageUrl(iFirebaseService.uploadFile(file));
+			bannerImage.setStatus("ACTIVE");
+			bannerImage.setAccountId(accountId);
+			iBannerImageRepositoy.save(bannerImage);
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
 		return "CREATE SUCCESS!";
 
 	}
@@ -89,7 +97,7 @@ public class BannerImageServiceImpl implements IBannerImageService {
 	public List<BannerImageDTO> findAll() {
 		// 1. connect database through repository
 		// 2. find all entities
-		List<BannerImage> bannerImageList = iBannerImageRepositoy.findByStatusNotOrderByStatusAsc("DELETED");
+		List<BannerImage> bannerImageList = iBannerImageRepositoy.findByStatusNotOrderByStatusAsc(DELETED_STATUS);
 		List<BannerImageDTO> bannerImageDTOList = new ArrayList<>();
 		// 3. convert all entities to dtos
 		// 4. add all dtos to bannerImageDTOList
@@ -115,9 +123,17 @@ public class BannerImageServiceImpl implements IBannerImageService {
 		// 2. find entity by id
 		// 3. if not existed throw exception
 		for (Long id : ids) {
-			BannerImage bannerImage = iBannerImageRepositoy.findByIdAndStatusNot(id, "DELETED");
+			BannerImage bannerImage = iBannerImageRepositoy.findByIdAndStatusNot(id, DELETED_STATUS);
 			if (bannerImage == null) {
 				throw new ResourceNotFoundException();
+			}
+
+			if (status.equalsIgnoreCase(DELETED_STATUS)) {
+				String imageURL = bannerImage.getImageUrl();
+				bannerImage.setImageUrl(DELETED_STATUS);
+				if (!imageURL.isEmpty()) {
+					iFirebaseService.deleteFile(imageURL);
+				}
 			}
 
 			// 4. update entity with isDisable = true
@@ -135,7 +151,7 @@ public class BannerImageServiceImpl implements IBannerImageService {
 		// 3. if not found throw not found exception
 		// 4. else convert entity to dto
 		// 5. return
-		BannerImage bannerImage = iBannerImageRepositoy.findByIdAndStatusNot(id, "DELETED");
+		BannerImage bannerImage = iBannerImageRepositoy.findByIdAndStatusNot(id, DELETED_STATUS);
 		if (bannerImage == null) {
 			throw new ResourceNotFoundException();
 		}
@@ -147,7 +163,7 @@ public class BannerImageServiceImpl implements IBannerImageService {
 	@Override
 	public String updateBannerImage(long id, String description, MultipartFile file)
 			throws SizeLimitExceededException, IOException {
-		BannerImage bannerImage = iBannerImageRepositoy.findByIdAndStatusNot(id, "DELETED");
+		BannerImage bannerImage = iBannerImageRepositoy.findByIdAndStatusNot(id, DELETED_STATUS);
 		if (bannerImage == null) {
 			throw new ResourceNotFoundException();
 		}
@@ -181,7 +197,13 @@ public class BannerImageServiceImpl implements IBannerImageService {
 
 		bannerImage.setDescription(description.trim());
 		if (file != null) {
-			bannerImage.setImageUrl(iFirebaseService.uploadFile(file));
+			if (!file.isEmpty()) {
+				String imageUrl = bannerImage.getImageUrl();
+				bannerImage.setImageUrl(iFirebaseService.uploadFile(file));
+				if (!imageUrl.isEmpty()) {
+					iFirebaseService.deleteFile(imageUrl);
+				}
+			}
 		}
 		iBannerImageRepositoy.save(bannerImage);
 

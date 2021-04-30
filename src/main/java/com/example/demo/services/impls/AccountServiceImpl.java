@@ -24,22 +24,22 @@ public class AccountServiceImpl implements IAccountService {
 	@Autowired
 	private IStudentProfileRepository iStudentProfileRepository;
 
-	@Override
-	public String createAccount(String username, String password, String fullName) {
-		Account checkUsername = iAccountRepository.findByUsernameAndStatusNot(username, "DELETED");
-		if (checkUsername != null) {
-
-			return "EXISTED";
-		}
-		Account account = new Account();
-		account.setUsername(username);
-		account.setPassword(password);
-		account.setFullName(fullName);
-		account.setRoleId(3);
-		account.setStatus("ACTIVE");
-		iAccountRepository.save(account);
-		return null;
-	}
+//	@Override
+//	public String createAccount(String username, String password, String fullName) {
+//		Account checkUsername = iAccountRepository.findByUsernameAndStatusNot(username, "DELETED");
+//		if (checkUsername != null) {
+//
+//			return "EXISTED";
+//		}
+//		Account account = new Account();
+//		account.setUsername(username);
+//		account.setPassword(password);
+//		account.setFullName(fullName);
+//		account.setRoleId(3);
+//		account.setStatus("ACTIVE");
+//		iAccountRepository.save(account);
+//		return null;
+//	}
 
 	@Override
 	public String resetPassword(long studentId) {

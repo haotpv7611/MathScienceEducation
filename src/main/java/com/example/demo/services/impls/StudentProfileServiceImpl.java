@@ -317,28 +317,36 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 			if (classes == null) {
 				throw new ResourceNotFoundException();
 			}
+			if (classes.getStatus().equalsIgnoreCase(ACTIVE_STATUS)) {
+				List<StudentProfile> studentProfileList = iStudentProfileRepository.findByClassesIdAndStatus(classId,
+						ACTIVE_STATUS);
+				studentProfileList.addAll(iStudentProfileRepository.findByClassesIdAndStatus(classId, INACTIVE_STATUS));
 
-			List<StudentProfile> studentProfileList = iStudentProfileRepository.findByClassesIdAndStatus(classId,
-					ACTIVE_STATUS);
-			studentProfileList.addAll(iStudentProfileRepository.findByClassesIdAndStatus(classId, INACTIVE_STATUS));
+				if (studentProfileList.size() > 60) {
 
-			if (studentProfileList.size() > 60) {
+					return "EXCEED LIMIT";
+				}
 
-				return "EXCEED LIMIT";
+				String username = generateUsername(classes);
+				if (iAccountRepository.findByUsername(username) != null) {
+
+					return "EXISTED";
+				}
+				String fullName = studentRequestDTO.getFullName().trim().replaceAll("\\s+", " ");
+				Account account = new Account(username, DEFAULT_PASSWORD, fullName, STUDENT_ROLE, ACTIVE_STATUS);
+				iAccountRepository.save(account);
+
+				String DoB = studentRequestDTO.getDoB();
+				String gender = studentRequestDTO.getGender().trim().replaceAll("\\s+", " ");
+				String parentName = studentRequestDTO.getParentName().trim().replaceAll("\\s+", " ");
+				String contact = studentRequestDTO.getContact().trim().replaceAll("\\s+", " ");
+				StudentProfile studentProfile = new StudentProfile(DoB, gender, parentName, contact, ACTIVE_STATUS,
+						countStudent(classes), account, classes);
+				iStudentProfileRepository.save(studentProfile);
+			} else {
+
+				return "CANNOT CREATE!";
 			}
-
-			String username = generateUsername(classes);
-			String fullName = studentRequestDTO.getFullName().trim().replaceAll("\\s+", " ");
-			Account account = new Account(username, DEFAULT_PASSWORD, fullName, STUDENT_ROLE, ACTIVE_STATUS);
-			iAccountRepository.save(account);
-
-			String DoB = studentRequestDTO.getDoB();
-			String gender = studentRequestDTO.getGender().trim().replaceAll("\\s+", " ");
-			String parentName = studentRequestDTO.getParentName().trim().replaceAll("\\s+", " ");
-			String contact = studentRequestDTO.getContact().trim().replaceAll("\\s+", " ");
-			StudentProfile studentProfile = new StudentProfile(DoB, gender, parentName, contact, ACTIVE_STATUS,
-					countStudent(classes), account, classes);
-			iStudentProfileRepository.save(studentProfile);
 		} catch (Exception e) {
 			logger.error("CREATE: student in classId =  " + classId + "! " + e.getMessage());
 			if (e instanceof ResourceNotFoundException) {
@@ -388,10 +396,10 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 	public String changeStatusStudent(ListIdAndStatusDTO listIdAndStatusDTO) {
 		List<Long> ids = listIdAndStatusDTO.getIds();
 		String status = listIdAndStatusDTO.getStatus();
-		for (long id : ids) {			
+		for (long id : ids) {
 			String response = changeStatusOneStudent(id, status);
 			if (!response.equalsIgnoreCase("OK")) {
-				
+
 				return response;
 			}
 		}
@@ -425,12 +433,16 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 
 					return "CANNOT DELETE";
 				}
-				
+
 				Classes deleteClass = iClassRepository.findById(0L).orElseThrow(() -> new ResourceNotFoundException());
 				studentProfile.setClasses(deleteClass);
 				studentProfile.setStudentCount(countStudent(deleteClass));
 
 				String username = generateUsernameDELPEND(DELETE_STATUS, deleteClass);
+				if (iAccountRepository.findByUsername(username) != null) {
+
+					return "EXISTED";
+				}
 				account.setUsername(username);
 				account.setStatus(status);
 				iAccountRepository.save(account);
@@ -450,6 +462,10 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				studentProfile.setStudentCount(countStudent(pendingClass));
 
 				String username = generateUsernameDELPEND(PENDING_STATUS, pendingClass);
+				if (iAccountRepository.findByUsername(username) != null) {
+
+					return "EXISTED";
+				}
 				account.setUsername(username);
 				account.setStatus(status);
 				iAccountRepository.save(account);
@@ -461,7 +477,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 			logger.error("Change status studentId = " + id + "with status = " + status + "! " + e.getMessage());
 			throw e;
 		}
-		
+
 		return "OK";
 	}
 
@@ -500,6 +516,10 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				if (oldGrade.equals(newGrade)) {
 					if (studentProfile.getClasses().getClassName().equalsIgnoreCase("PENDING")) {
 						String username = generateUsername(newClasses);
+						if (iAccountRepository.findByUsername(username) != null) {
+							map.put("EXISTED", null);
+							return map;
+						}
 						Account account = studentProfile.getAccount();
 						account.setUsername(username);
 						account.setStatus(ACTIVE_STATUS);
@@ -520,6 +540,11 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 
 				} else {
 					String username = generateUsername(newClasses);
+					if (iAccountRepository.findByUsername(username) != null) {
+
+						map.put("EXISTED", null);
+						return map;
+					}
 					Account account = studentProfile.getAccount();
 					account.setUsername(username);
 					account.setStatus(ACTIVE_STATUS);
@@ -944,6 +969,10 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 							} else {
 
 								String username = generateUsername(classes);
+								if (iAccountRepository.findByUsername(username) != null) {
+									response.put("EXISTED", null);
+									return response;
+								}
 								Account account = studentProfile.getAccount();
 								account.setUsername(username);
 								iAccountRepository.save(account);

@@ -296,7 +296,6 @@ public class QuestionServiceImpl implements IQuestionService {
 							Collections.shuffle(integerList);
 
 							for (int i = 0; i < optionQuestionList.size(); i++) {
-
 								OptionQuestionGameDTO optionQuestionGameDTO = modelMapper.map(optionQuestionList.get(i),
 										OptionQuestionGameDTO.class);
 								optionQuestionGameDTO

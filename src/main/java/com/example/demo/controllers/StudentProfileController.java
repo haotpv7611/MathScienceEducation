@@ -112,7 +112,7 @@ public class StudentProfileController {
 
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
 		}
-		if (response.contains("EXCEED")) {
+		if (response.contains("EXCEED") || response.contains("EXISTED")) {
 
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 		}
@@ -181,7 +181,7 @@ public class StudentProfileController {
 		}
 		try {
 			String response = iStudentProfileService.changeStatusStudent(idAndStatusDTOList);
-			if (response.contains("CANNOT")) {
+			if (response.contains("CANNOT") || response.contains("EXISTED")) {
 
 				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 			}
@@ -215,7 +215,12 @@ public class StudentProfileController {
 
 		try {
 			Map<String, List<Long>> response = iStudentProfileService.changeClassForStudent(studentIdList, classesId);
+			for (Entry<String, List<Long>> entry : response.entrySet()) {
+				if (entry.getKey().contains("EXISTED")) {
 
+					return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+				}
+			}
 			return ResponseEntity.ok(response);
 		} catch (Exception e) {
 			if (e instanceof ResourceNotFoundException) {
@@ -271,7 +276,10 @@ public class StudentProfileController {
 			} else if (entry.getKey().contains("SUCCESS")) {
 
 				httpServletResponse.setStatus(HttpServletResponse.SC_CREATED);
-			} else {
+			} else if (entry.getKey().contains("EXISTED")) {
+
+				httpServletResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+			}else {
 				httpServletResponse.setContentType("application/octet-stream");
 				String headerKey = "Content-Disposition";
 				String headerValue = "attachment; filename="

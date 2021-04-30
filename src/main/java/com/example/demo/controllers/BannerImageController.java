@@ -26,21 +26,18 @@ import com.example.demo.dtos.BannerImageDTO;
 import com.example.demo.dtos.ListIdAndStatusDTO;
 import com.example.demo.services.IBannerImageService;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 @CrossOrigin
 @RestController
 @RequestMapping("/bannerImage")
 public class BannerImageController {
-	Logger logger = LoggerFactory.getLogger(BannerImageController.class);
 
 	@Autowired
-	IBannerImageService iBannerImageService;
+	private IBannerImageService iBannerImageService;
 
 	@PostMapping
-	public ResponseEntity<String> createBannerImage(@RequestParam(required = false) String description, @RequestParam MultipartFile file,
-			@RequestParam long accountId) throws SizeLimitExceededException, IOException {
+	public ResponseEntity<String> createBannerImage(@RequestParam(required = false) String description,
+			@RequestParam MultipartFile file, @RequestParam long accountId)
+			throws SizeLimitExceededException, IOException {
 		String response = iBannerImageService.createBannerImage(description, file, accountId);
 		if (response.contains("permission")) {
 
@@ -85,7 +82,7 @@ public class BannerImageController {
 	@GetMapping("/{id}")
 	public ResponseEntity<BannerImageDTO> findBannerImageById(@PathVariable long id) {
 		BannerImageDTO response = iBannerImageService.findById(id);
-		
+
 		return ResponseEntity.ok(response);
 	}
 
@@ -98,11 +95,11 @@ public class BannerImageController {
 
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 		}
-		
+
 		return ResponseEntity.ok(response);
 	}
 
-	//student role
+	// student role
 	@GetMapping("/url")
 	public ResponseEntity<List<String>> showBannerImage() {
 		List<String> response = iBannerImageService.showBannerImage();
