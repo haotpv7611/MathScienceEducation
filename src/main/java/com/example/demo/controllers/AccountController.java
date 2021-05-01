@@ -64,7 +64,7 @@ public class AccountController {
 	}
 	
 	@GetMapping("/credential")
-	public ResponseEntity<AccountResponseDTO>  getUserCredential(@RequestBody String token) {
+	public ResponseEntity<AccountResponseDTO>  getUserCredential(@RequestParam String token) {
 		AccountResponseDTO response = iAccountService.getUserCredential(token);
 //		if (response.contains("NOT FOUND")) {
 //
