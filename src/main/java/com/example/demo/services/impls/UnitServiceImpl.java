@@ -316,7 +316,11 @@ public class UnitServiceImpl implements IUnitService {
 		try {
 			ProgressTest progressTest = iProgressTestRepository.findByUnitAfterIdAndIsDisableFalse(id);
 			if (progressTest == null) {
-				deleteOneUnit(id);
+				String response = deleteOneUnit(id);
+				if (!response.equalsIgnoreCase("OK")) {
+
+					return response;
+				}
 			} else {
 
 				return "Have progressTest LINKED!";
@@ -332,7 +336,7 @@ public class UnitServiceImpl implements IUnitService {
 	// delete lesson --> question --> delete unit
 	@Override
 	@Transactional
-	public void deleteOneUnit(long id) {
+	public String deleteOneUnit(long id) {
 		try {
 			// validate unitId
 			Unit unit = iUnitRepository.findByIdAndIsDisableFalse(id);
@@ -343,13 +347,21 @@ public class UnitServiceImpl implements IUnitService {
 			List<Lesson> lessonList = iLessonRepository.findByUnitIdAndIsDisableFalse(id);
 			if (!lessonList.isEmpty()) {
 				for (Lesson lesson : lessonList) {
-					iLessonService.deleteOneLesson(lesson.getId());
+					String response = iLessonService.deleteOneLesson(lesson.getId());
+					if (!response.equalsIgnoreCase("OK")) {
+
+						return response;
+					}
 				}
 			}
 			List<Question> questionList = iQuestionRepository.findByUnitIdAndIsDisableFalse(id);
 			if (questionList.isEmpty()) {
 				for (Question question : questionList) {
-					iQuestionService.deleteOneQuestion(question.getId());
+					String response = iQuestionService.deleteOneQuestion(question.getId());
+					if (!response.equalsIgnoreCase("OK")) {
+
+						return response;
+					}
 				}
 			}
 
@@ -359,6 +371,8 @@ public class UnitServiceImpl implements IUnitService {
 			logger.error("DELETE: unitId = " + id + "! " + e.getMessage());
 			throw e;
 		}
+		
+		return "OK";
 	}
 
 }

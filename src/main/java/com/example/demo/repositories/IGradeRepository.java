@@ -8,5 +8,5 @@ import com.example.demo.models.Grade;
 
 @Repository
 public interface IGradeRepository extends JpaRepository<Grade, Integer> {
-
+	Grade findByGradeName(int gradeName);
 }

@@ -215,7 +215,7 @@ public class LessonServiceImpl implements ILessonService {
 
 	@Override
 	@Transactional
-	public void deleteOneLesson(long id) {
+	public String deleteOneLesson(long id) {
 		try {
 			// validate lessonId
 			Lesson lesson = iLessonRepository.findByIdAndIsDisableFalse(id);
@@ -227,14 +227,22 @@ public class LessonServiceImpl implements ILessonService {
 			if (!exerciseList.isEmpty()) {
 				for (Exercise exercise : exerciseList) {
 					IdAndStatusDTO idAndStatusDTO = new IdAndStatusDTO(exercise.getId(), DELETED_STATUS);
-					iExerciseService.changeOneExerciseStatus(idAndStatusDTO);
+					String response = iExerciseService.changeOneExerciseStatus(idAndStatusDTO);
+					if (!response.equalsIgnoreCase("OK")) {
+
+						return response;
+					}
 				}
 			}
 			List<Game> gameList = iGameRepository.findByLessonIdAndStatusNot(id, DELETED_STATUS);
 			if (!gameList.isEmpty()) {
 				for (Game game : gameList) {
 					IdAndStatusDTO idAndStatusDTO = new IdAndStatusDTO(game.getId(), DELETED_STATUS);
-					iGameService.changeOneGameStatus(idAndStatusDTO);
+					String response = iGameService.changeOneGameStatus(idAndStatusDTO);
+					if (!response.equalsIgnoreCase("OK")) {
+
+						return response;
+					}
 				}
 			}
 
@@ -244,6 +252,8 @@ public class LessonServiceImpl implements ILessonService {
 			logger.error("DELETE: lessonId = " + id + "! " + e.getMessage());
 			throw e;
 		}
+		
+		return "OK";
 	}
 
 }

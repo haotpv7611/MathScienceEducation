@@ -23,7 +23,7 @@ public interface IUnitService {
 
 	String updateUnit(long id, UnitRequestDTO unitRequestDTO);
 
-	void deleteOneUnit(long id);
+	String deleteOneUnit(long id);
 
 	String deleteUnit(long id);
 }

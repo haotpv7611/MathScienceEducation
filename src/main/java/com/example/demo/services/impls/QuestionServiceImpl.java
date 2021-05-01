@@ -716,12 +716,19 @@ public class QuestionServiceImpl implements IQuestionService {
 	// done ok
 	@Override
 	@Transactional
-	public void deleteOneQuestion(long id) {
+	public String deleteOneQuestion(long id) {
 		// validate questionId
 		try {
 			Question question = iQuestionRepository.findByIdAndIsDisableFalse(id);
 			if (question == null) {
 				throw new ResourceNotFoundException();
+			}
+			
+			List<ExerciseGameQuestion> exerciseGameQuestionList = iExerciseGameQuestionRepository
+					.findByQuestionIdAndIsDisableFalse(id);
+			if (!exerciseGameQuestionList.isEmpty()) {
+				
+				return "CANNOT DELETE";
 			}
 
 			// first: delete all active option by questionId
@@ -756,6 +763,8 @@ public class QuestionServiceImpl implements IQuestionService {
 			logger.error("DELETE: one question with questionId = " + id + "! " + e.getMessage());
 			throw e;
 		}
+		
+		return "OK";
 	}
 
 	private String validateQuestionInput(String questionTitle, String description, float score) {

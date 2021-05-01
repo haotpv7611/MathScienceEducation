@@ -151,11 +151,13 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 			Account account = studentProfile.getAccount();
 			String className = studentProfile.getClasses().getClassName();
 			String schoolName = studentProfile.getClasses().getSchoolGrade().getSchool().getSchoolName();
+			String studentId = "MJ" + String.format("%06d", studentProfile.getId());
 
 			studentResponseDTO = modelMapper.map(studentProfile, StudentResponseDTO.class);
 			studentResponseDTO.setFullName(account.getFullName());
 			studentResponseDTO.setClassName(className);
 			studentResponseDTO.setSchoolName(schoolName);
+			studentResponseDTO.setStudentId(studentId);
 		} catch (Exception e) {
 			logger.error("FIND: student by studentId = " + id + "! " + e.getMessage());
 			if (e instanceof ResourceNotFoundException) {
@@ -327,8 +329,8 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 					return "EXCEED LIMIT";
 				}
 
-				String username = generateUsername(classes);
-				System.out.println(username);
+				long studentCount = countStudent(classes);
+				String username = generateUsername(classes, studentCount);
 				if (iAccountRepository.findByUsername(username) != null) {
 
 					return "EXISTED";
@@ -342,7 +344,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				String parentName = studentRequestDTO.getParentName().trim().replaceAll("\\s+", " ");
 				String contact = studentRequestDTO.getContact().trim().replaceAll("\\s+", " ");
 				StudentProfile studentProfile = new StudentProfile(DoB, gender, parentName, contact, ACTIVE_STATUS,
-						countStudent(classes), account, classes);
+						studentCount, account, classes);
 				iStudentProfileRepository.save(studentProfile);
 			} else {
 
@@ -430,7 +432,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				iStudentProfileRepository.save(studentProfile);
 			}
 			if (status.equalsIgnoreCase(DELETE_STATUS)) {
-				if (iStudentProfileRepository.findByIdAndStatus(id, ACTIVE_STATUS) != null) {
+				if (studentProfile.getStatus().equalsIgnoreCase(ACTIVE_STATUS)) {
 
 					return "CANNOT DELETE";
 				}
@@ -516,7 +518,8 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				Grade oldGrade = studentProfile.getClasses().getSchoolGrade().getGrade();
 				if (oldGrade.equals(newGrade)) {
 					if (studentProfile.getClasses().getClassName().equalsIgnoreCase("PENDING")) {
-						String username = generateUsername(newClasses);
+						long studentCount = countStudent(newClasses);
+						String username = generateUsername(newClasses, studentCount);
 						if (iAccountRepository.findByUsername(username) != null) {
 							map.put("EXISTED", null);
 							return map;
@@ -526,7 +529,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 						account.setStatus(ACTIVE_STATUS);
 						iAccountRepository.save(account);
 
-						studentProfile.setStudentCount(countStudent(newClasses));
+						studentProfile.setStudentCount(studentCount);
 						studentProfile.setClasses(newClasses);
 						studentProfile.setStatus(ACTIVE_STATUS);
 						iStudentProfileRepository.save(studentProfile);
@@ -540,7 +543,8 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 					}
 
 				} else {
-					String username = generateUsername(newClasses);
+					long studentCount = countStudent(newClasses);
+					String username = generateUsername(newClasses, studentCount);
 					if (iAccountRepository.findByUsername(username) != null) {
 
 						map.put("EXISTED", null);
@@ -552,7 +556,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 					iAccountRepository.save(account);
 
 					studentProfile.setClasses(newClasses);
-					studentProfile.setStudentCount(countStudent(newClasses));
+					studentProfile.setStudentCount(studentCount);
 					studentProfile.setStatus(ACTIVE_STATUS);
 					iStudentProfileRepository.save(studentProfile);
 				}
@@ -919,6 +923,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 
 				Classes classes = iClassRepository.findBySchoolGradeIdAndClassNameIgnoreCaseAndStatusNot(
 						schoolGrade.getId(), sheet.getSheetName(), DELETE_STATUS);
+
 				if (classes == null) {
 					classes = new Classes(sheet.getSheetName(), ACTIVE_STATUS, schoolGrade);
 					iClassRepository.save(classes);
@@ -947,7 +952,6 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 							String fullName = row.getCell(2).getStringCellValue();
 							fullName = fullName.trim().replaceAll("\\s+", " ");
 							String DoB = "";
-							System.out.println(row.getCell(3).toString());
 							if (row.getCell(3).getCellType() == CellType.STRING) {
 								DoB = row.getCell(3).getStringCellValue();
 							} else if (row.getCell(3).getCellType() == CellType.NUMERIC) {
@@ -962,16 +966,17 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 							StudentRequestDTO studentRequestDTO = new StudentRequestDTO(classes.getId(), fullName, DoB,
 									gender, parentName, contact);
 							createStudenProfile(studentRequestDTO);
+							sheet.removeRow(row);
 						} else {
 							StudentProfile studentProfile = iStudentProfileRepository.findByIdAndStatusNot(studentId,
 									DELETE_STATUS);
 							if (studentProfile == null) {
 								cellList.add(row.getCell(1));
-
-								continue;
+							} else if (studentProfile.getClasses().getSchoolGrade().getSchool().getId() != schoolId) {
+								cellList.add(row.getCell(1));
 							} else {
-
-								String username = generateUsername(classes);
+								long studentCount = countStudent(classes);
+								String username = generateUsername(classes, studentCount);
 								if (iAccountRepository.findByUsername(username) != null) {
 									response.put("EXISTED", null);
 									return response;
@@ -981,9 +986,11 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 								iAccountRepository.save(account);
 
 								studentProfile.setClasses(classes);
-								studentProfile.setStudentCount(countStudent(classes));
+								studentProfile.setStudentCount(studentCount);
 								iStudentProfileRepository.save(studentProfile);
+								sheet.removeRow(row);
 							}
+
 						}
 					}
 				}
@@ -1006,7 +1013,9 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 			FileOutputStream fileOut = new FileOutputStream("E:\\" + "Not existed StudentId-" + fileName);
 			workbook.write(fileOut);
 			fileOut.close();
-		} catch (Exception e) {
+		} catch (
+
+		Exception e) {
 			logger.error("Import file with schoolId = " + schoolId + " and gradeId " + gradeId + "! " + e.getMessage());
 			if (e instanceof ResourceNotFoundException) {
 				response.put("NOT FOUND", null);
@@ -1026,7 +1035,6 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 			if (school == null) {
 				throw new ResourceNotFoundException();
 			}
-			System.out.println(school.getId());
 			Grade grade = iGradeRepository.findById(gradeId).orElseThrow(() -> new ResourceNotFoundException());
 
 			String schoolName = school.getSchoolName();
@@ -1037,7 +1045,6 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 
 			SchoolGrade schoolGrade = iSchoolGradeRepository.findByGradeIdAndSchoolIdAndStatusNot(gradeId, schoolId,
 					DELETE_STATUS);
-			System.out.println(schoolGrade);
 			if (schoolGrade != null) {
 				List<Classes> classesList = iClassRepository
 						.findBySchoolGradeIdAndStatusOrderByClassName(schoolGrade.getId(), ACTIVE_STATUS);
@@ -1114,11 +1121,9 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 						fileOut.close();
 					}
 				} else {
-					System.out.println("class");
 					response.put("EXPORT FAIL", null);
 				}
 			} else {
-				System.out.println("schoolgrade");
 				response.put("EXPORT FAIL", null);
 			}
 		} catch (Exception e) {
@@ -1363,7 +1368,6 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 //											double sumTotalScore = 0;
 											for (ExerciseTaken exerciseTaken : exerciseTakenList) {
 												if (exerciseTaken.getTotalScore() == 10) {
-													System.out.println("MAX");
 													score = 10;
 													break;
 												} else if (exerciseTaken.getTotalScore() > score) {
@@ -1401,7 +1405,6 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 //											double sumTotalScore = 0;
 											for (ExerciseTaken exerciseTaken : exerciseTakenList) {
 												if (exerciseTaken.getTotalScore() == 10) {
-													System.out.println("MAX");
 													score = 10;
 													break;
 												} else if (exerciseTaken.getTotalScore() > score) {
@@ -1939,15 +1942,14 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 		return cellStyle;
 	}
 
-	private String generateUsername(Classes classes) {
+	private String generateUsername(Classes classes, long studentCount) {
 		int gradeName = classes.getSchoolGrade().getGrade().getGradeName();
 		String schoolCode = classes.getSchoolGrade().getSchool().getSchoolCode()
 				+ classes.getSchoolGrade().getSchool().getSchoolCount();
 
-		long studentCount = countStudent(classes);
+//		long studentCount = countStudent(classes);
 		String username = schoolCode.toLowerCase() + String.format("%02d", gradeName)
 				+ String.format("%04d", studentCount);
-		System.out.println(username);
 		return username;
 	}
 
@@ -2007,13 +2009,11 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 								.findFirstByClassesIdAndStatusContainingOrderByStudentCountDesc(classes2.getId(),
 										ACTIVE_STATUS);
 						if (studentProfile != null) {
-							System.out.println(classes2.getClassName() + " - " + studentProfile.getId());
 							studentProfileList.add(studentProfile);
 						}
 					}
 					if (!studentProfileList.isEmpty()) {
 						for (StudentProfile studentProfile : studentProfileList) {
-							System.out.println(studentProfile.getId() + " - " + studentProfile.getStudentCount());
 							if (studentProfile.getStudentCount() > studentCount) {
 
 								studentCount = studentProfile.getStudentCount();

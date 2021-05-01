@@ -141,7 +141,10 @@ public class UnitController {
 	public ResponseEntity<String> deleteUnit(@RequestParam long id) {
 		try {
 			String response = iUnitService.deleteUnit(id);
+			if (response.contains("CANNOT")) {
 
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+			}
 			if (response.contains("SUCCESS")) {
 				
 				return ResponseEntity.ok(response);

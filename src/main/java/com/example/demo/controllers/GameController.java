@@ -134,7 +134,11 @@ public class GameController {
 	@Transactional
 	public ResponseEntity<String> changeGameStatus(@RequestBody IdAndStatusDTO idAndStatusDTO) {
 		try {
-			iGameService.changeOneGameStatus(idAndStatusDTO);
+			String response = iGameService.changeOneGameStatus(idAndStatusDTO);
+			if (response.contains("CANNOT")) {
+
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+			}
 
 			return ResponseEntity.ok("DELETE SUCESS!");
 		} catch (Exception e) {

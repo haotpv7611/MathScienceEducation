@@ -20,5 +20,5 @@ public interface ILessonService {
 
 	String updateLesson(long id, LessonRequestDTO lessonRequestDTO);
 
-	void deleteOneLesson(long id);
+	String deleteOneLesson(long id);
 }

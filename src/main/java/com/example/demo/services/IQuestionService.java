@@ -50,6 +50,6 @@ public interface IQuestionService {
 
 	String deleteQuestion(List<Long> ids);
 
-	void deleteOneQuestion(long id);
+	String deleteOneQuestion(long id);
 
 }

@@ -115,7 +115,11 @@ public class ProgressTestController {
 	@PutMapping("progressTest/delete")
 	public ResponseEntity<String> deleteProgressTest(@RequestParam long id) {
 		try {
-			iProgressTestService.deleteOneProgressTest(id);
+			String response = iProgressTestService.deleteOneProgressTest(id);
+			if (response.contains("CANNOT")) {
+
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+			}
 
 			return ResponseEntity.ok("DELETE SUCCESS!");
 		} catch (Exception e) {

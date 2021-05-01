@@ -197,7 +197,7 @@ public class GameServiceImpl implements IGameService {
 
 	@Override
 	@Transactional
-	public void changeOneGameStatus(IdAndStatusDTO idAndStatusDTO) {
+	public String changeOneGameStatus(IdAndStatusDTO idAndStatusDTO) {
 		long id = idAndStatusDTO.getId();
 		String status = idAndStatusDTO.getStatus();
 		try {
@@ -209,6 +209,10 @@ public class GameServiceImpl implements IGameService {
 
 			// if delete must delete question in exercise first
 			if (status.equals(DELETED_STATUS)) {
+				if (game.getStatus().equalsIgnoreCase(ACTIVE_STATUS)) {
+
+					return "CANNOT DELETE";
+				}
 				List<ExerciseGameQuestion> exerciseGameQuestionList = iExerciseGameQuestionRepository
 						.findByGameIdAndIsDisableFalse(id);
 				if (!exerciseGameQuestionList.isEmpty()) {
@@ -222,6 +226,8 @@ public class GameServiceImpl implements IGameService {
 		} catch (Exception e) {
 			throw e;
 		}
+		
+		return "OK";
 	}
 
 }

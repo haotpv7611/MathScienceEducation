@@ -198,7 +198,7 @@ public class ProgressTestServiceImpl implements IProgressTestService {
 
 	@Override
 	@Transactional
-	public void deleteOneProgressTest(long id) {
+	public String deleteOneProgressTest(long id) {
 		try {
 			// validate progressTestId
 			ProgressTest progressTest = iProgressTestRepository.findByIdAndIsDisableFalse(id);
@@ -210,7 +210,11 @@ public class ProgressTestServiceImpl implements IProgressTestService {
 			if (!exerciseList.isEmpty()) {
 				for (Exercise exercise : exerciseList) {
 					IdAndStatusDTO idAndStatusDTO = new IdAndStatusDTO(exercise.getId(), DELETED_STATUS);
-					iExerciseService.changeOneExerciseStatus(idAndStatusDTO);
+					String response = iExerciseService.changeOneExerciseStatus(idAndStatusDTO);
+					if (!response.equalsIgnoreCase("OK")) {
+
+						return response;
+					}
 				}
 			}
 			// delete progressTest
@@ -220,6 +224,8 @@ public class ProgressTestServiceImpl implements IProgressTestService {
 			logger.error("Delete progressTest with id = " + id + "! " + e.getMessage());
 			throw e;
 		}
+		
+		return "OK";
 	}
 
 }

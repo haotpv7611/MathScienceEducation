@@ -126,7 +126,11 @@ public class LessonController {
 	@PutMapping("/lesson")
 	public ResponseEntity<String> deleteLesson(@RequestParam long id) {
 		try {
-			iLessonService.deleteOneLesson(id);
+			String response = iLessonService.deleteOneLesson(id);
+			if (response.contains("CANNOT")) {
+
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+			}
 
 			return ResponseEntity.ok("DELETE SUCCESS!");
 		} catch (Exception e) {

@@ -152,8 +152,12 @@ public class ExerciseController {
 	@PutMapping("/exercise/delete")
 	public ResponseEntity<String> changeExerciseStatus(@RequestBody IdAndStatusDTO idAndStatusDTO) {
 		try {
-			iExerciseService.changeOneExerciseStatus(idAndStatusDTO);
+			String response = iExerciseService.changeOneExerciseStatus(idAndStatusDTO);
+			if (response.contains("CANNOT")) {
 
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+			}
+			
 			return ResponseEntity.ok("DELETE SUCCESS!");
 		} catch (Exception e) {
 			if (e instanceof ResourceNotFoundException) {

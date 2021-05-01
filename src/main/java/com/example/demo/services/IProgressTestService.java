@@ -18,6 +18,6 @@ public interface IProgressTestService {
 
 	String updateProgressTest(long id, ProgressTestRequestDTO progressTestRequestDTO);
 
-	void deleteOneProgressTest(long id);
+	String deleteOneProgressTest(long id);
 
 }

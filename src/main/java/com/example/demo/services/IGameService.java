@@ -21,5 +21,5 @@ public interface IGameService {
 
 	String createGame(GameRequestDTO gameRequestDTO);
 
-	void changeOneGameStatus(IdAndStatusDTO idAndStatusDTO);
+	String changeOneGameStatus(IdAndStatusDTO idAndStatusDTO);
 }

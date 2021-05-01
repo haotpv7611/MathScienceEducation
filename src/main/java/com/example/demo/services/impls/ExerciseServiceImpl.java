@@ -311,7 +311,7 @@ public class ExerciseServiceImpl implements IExerciseService {
 
 	@Override
 	@Transactional
-	public void changeOneExerciseStatus(IdAndStatusDTO idAndStatusDTO) {
+	public String changeOneExerciseStatus(IdAndStatusDTO idAndStatusDTO) {
 		long id = idAndStatusDTO.getId();
 		String status = idAndStatusDTO.getStatus();
 		try {
@@ -323,6 +323,10 @@ public class ExerciseServiceImpl implements IExerciseService {
 
 			// if delete must delete question in exercise first
 			if (status.equals(DELETED_STATUS)) {
+				if (exercise.getStatus().equalsIgnoreCase(ACTIVE_STATUS)) {
+
+					return "CANNOT DELETE";
+				}
 				List<ExerciseGameQuestion> exerciseGameQuestionList = iExerciseGameQuestionRepository
 						.findByExerciseIdAndIsDisableFalse(exercise.getId());
 				if (!exerciseGameQuestionList.isEmpty()) {
@@ -337,6 +341,8 @@ public class ExerciseServiceImpl implements IExerciseService {
 		} catch (Exception e) {
 			throw e;
 		}
+		
+		return "OK";
 	}
 
 }

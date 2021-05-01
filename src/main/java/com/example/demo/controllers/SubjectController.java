@@ -122,6 +122,10 @@ public class SubjectController {
 	@PutMapping("subject/delete/{id}")
 	public ResponseEntity<String> deleteSubject(@PathVariable long id) {
 		String response = iSubjectService.deleteSubject(id);
+		if (response.contains("CANNOT")) {
+
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+		}
 		if (response.contains("NOT FOUND")) {
 
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);

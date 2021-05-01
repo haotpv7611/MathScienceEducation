@@ -20,7 +20,7 @@ public class GradeServiceImpl implements IGradeService {
 	Logger logger = LoggerFactory.getLogger(GradeServiceImpl.class);
 
 	@Autowired
-	IGradeRepository iGradeRepository;
+	private IGradeRepository iGradeRepository;
 
 	@Autowired
 	private ModelMapper modelMapper;
@@ -44,5 +44,26 @@ public class GradeServiceImpl implements IGradeService {
 
 		return gradeResponseDTOList;
 	}
+
+//	public String createGrade(int gradeName) {
+//		try {
+//			// validate subjectId and check unitName existed
+//			if (iGradeRepository.findByGradeName(gradeName) != null) {
+//
+//				return "EXISTED";
+//			}
+//
+//			// save data and return
+//			Grade grade = new Grade();
+//			grade.setGradeName(gradeName);
+//			iGradeRepository.save(grade);
+//		} catch (Exception e) {
+//			logger.error("CREATE: gradeName = " + gradeName + "! " + e.getMessage());
+//
+//			return "CREATE FAIL!";
+//		}
+//
+//		return "CREATE SUCCESS!";
+//	}
 
 }

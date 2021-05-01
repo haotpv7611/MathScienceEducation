@@ -216,13 +216,21 @@ public class SubjectServiceImpl implements ISubjectService {
 			List<ProgressTest> progresssTestList = iProgressTestRepository.findBySubjectIdAndIsDisableFalse(id);
 			if (!progresssTestList.isEmpty()) {
 				for (ProgressTest progressTest : progresssTestList) {
-					iProgressTestService.deleteOneProgressTest(progressTest.getId());
+					String response = iProgressTestService.deleteOneProgressTest(progressTest.getId());
+					if (!response.equalsIgnoreCase("OK")) {
+
+						return response;
+					}
 				}
 			}
 			List<Unit> listUnitList = iUnitRepository.findBySubjectIdAndIsDisableFalse(id);
 			if (!listUnitList.isEmpty()) {
 				for (Unit unit : listUnitList) {
-					iUnitService.deleteOneUnit(unit.getId());
+					String response = iUnitService.deleteOneUnit(unit.getId());
+					if (!response.equalsIgnoreCase("OK")) {
+
+						return response;
+					}
 				}
 			}
 

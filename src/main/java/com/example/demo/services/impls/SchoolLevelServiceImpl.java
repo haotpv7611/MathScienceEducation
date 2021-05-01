@@ -17,10 +17,10 @@ import com.example.demo.services.ISchoolLevelService;
 @Service
 public class SchoolLevelServiceImpl implements ISchoolLevelService {
 	Logger logger = LoggerFactory.getLogger(SchoolLevelServiceImpl.class);
-	
+
 	@Autowired
 	private ISchoolLevelRepository iSchoolLevelRepository;
-	
+
 	@Autowired
 	private ModelMapper modelMapper;
 
@@ -31,7 +31,8 @@ public class SchoolLevelServiceImpl implements ISchoolLevelService {
 			List<SchoolLevel> schoolLevelList = iSchoolLevelRepository.findAll();
 			if (!schoolLevelList.isEmpty()) {
 				for (SchoolLevel schoolLevel : schoolLevelList) {
-					SchoolLevelResponseDTO schoolLevelResponseDTO = modelMapper.map(schoolLevel, SchoolLevelResponseDTO.class);
+					SchoolLevelResponseDTO schoolLevelResponseDTO = modelMapper.map(schoolLevel,
+							SchoolLevelResponseDTO.class);
 					schoolLevelResponseDTOList.add(schoolLevelResponseDTO);
 				}
 			}
@@ -42,5 +43,26 @@ public class SchoolLevelServiceImpl implements ISchoolLevelService {
 		}
 		return schoolLevelResponseDTOList;
 	}
-	
+
+//	public String createSchoolLevel(String description) {
+//		try {
+//			// validate subjectId and check unitName existed
+//			if (iSchoolLevelRepository.findByDescription(description) != null) {
+//
+//				return "EXISTED";
+//			}
+//
+//			// save data and return
+//			SchoolLevel schoolLevel = new SchoolLevel();
+//			schoolLevel.setDescription(description);
+//			iSchoolLevelRepository.save(schoolLevel);
+//		} catch (Exception e) {
+//			logger.error("CREATE: schoolLevel with description = " + description + "! " + e.getMessage());
+//
+//			return "CREATE FAIL!";
+//		}
+//
+//		return "CREATE SUCCESS!";
+//	}
+
 }
