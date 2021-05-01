@@ -124,7 +124,7 @@ public class SchoolGradeServiceImpl implements ISchoolGradeService {
 			}
 
 			if (school.getStatus().equalsIgnoreCase(INACTIVE_STATUS)) {
-				
+
 				return "CANNOT LINK INACTIVE SCHOOL";
 			}
 
@@ -178,10 +178,10 @@ public class SchoolGradeServiceImpl implements ISchoolGradeService {
 						return response;
 					}
 				}
-
-				schoolGrade.setStatus(status);
-				iSchoolGradeRepository.save(schoolGrade);
 			}
+			schoolGrade.setStatus(status);
+			iSchoolGradeRepository.save(schoolGrade);
+
 		} catch (
 
 		Exception e) {

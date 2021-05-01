@@ -613,6 +613,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				}
 
 				if (countStudentImport + studentProfileList.size() > 60) {
+					
 					response.put("EXCEED LIMIT", null);
 				}
 
@@ -966,7 +967,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 							StudentRequestDTO studentRequestDTO = new StudentRequestDTO(classes.getId(), fullName, DoB,
 									gender, parentName, contact);
 							createStudenProfile(studentRequestDTO);
-							sheet.removeRow(row);
+//							sheet.removeRow(row);
 						} else {
 							StudentProfile studentProfile = iStudentProfileRepository.findByIdAndStatusNot(studentId,
 									DELETE_STATUS);
@@ -988,7 +989,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 								studentProfile.setClasses(classes);
 								studentProfile.setStudentCount(studentCount);
 								iStudentProfileRepository.save(studentProfile);
-								sheet.removeRow(row);
+//								sheet.removeRow(row);
 							}
 
 						}
