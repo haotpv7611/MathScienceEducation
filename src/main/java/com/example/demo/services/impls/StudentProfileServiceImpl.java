@@ -59,6 +59,7 @@ import com.example.demo.models.ExerciseTaken;
 import com.example.demo.models.Grade;
 import com.example.demo.models.Lesson;
 import com.example.demo.models.ProgressTest;
+import com.example.demo.models.Role;
 import com.example.demo.models.School;
 import com.example.demo.models.SchoolGrade;
 import com.example.demo.models.StudentProfile;
@@ -78,6 +79,7 @@ import com.example.demo.repositories.IStudentProfileRepository;
 import com.example.demo.repositories.IStudentRecordRepository;
 import com.example.demo.repositories.ISubjectRepository;
 import com.example.demo.repositories.IUnitRepository;
+import com.example.demo.repositories.IRoleRepository;
 import com.example.demo.services.IClassService;
 import com.example.demo.services.IStudentProfileService;
 
@@ -132,6 +134,9 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 
 	@Autowired
 	private IStudentRecordRepository iStudentRecordRepository;
+	
+	@Autowired
+	private IRoleRepository iRoleRepository;
 
 	@Autowired
 	private IClassService iClassService;
@@ -336,7 +341,8 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 					return "EXISTED";
 				}
 				String fullName = studentRequestDTO.getFullName().trim().replaceAll("\\s+", " ");
-				Account account = new Account(username, DEFAULT_PASSWORD, fullName, STUDENT_ROLE, ACTIVE_STATUS);
+				Role role = iRoleRepository.findById(STUDENT_ROLE).orElseThrow(() -> new ResourceNotFoundException());
+				Account account = new Account(username, DEFAULT_PASSWORD, fullName, role, ACTIVE_STATUS);
 				iAccountRepository.save(account);
 
 				String DoB = studentRequestDTO.getDoB();

@@ -9,6 +9,8 @@ import javax.persistence.EntityListeners;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
@@ -29,7 +31,7 @@ public class Account {
 	private String username;
 	private String password;
 	private String fullName;
-	private int roleId;
+//	private int roleId;
 
 	@CreatedDate
 	private LocalDateTime createdDate;
@@ -55,16 +57,29 @@ public class Account {
 	@OneToOne(mappedBy = "account")
 	private StudentProfile studentProfile;
 
+	@ManyToOne
+	@JoinColumn(name = "roleId")
+	private Role role;
+
 	public Account() {
 
 	}
 
-	public Account(String username, String password, String fullName, int roleId, String status) {
+//	public Account(String username, String password, String fullName, int roleId, String status) {
+//		super();
+//		this.username = username;
+//		this.password = password;
+//		this.fullName = fullName;
+//		this.roleId = roleId;
+//		this.status = status;
+//	}
+
+	public Account(String username, String password, String fullName, Role role, String status) {
 		super();
 		this.username = username;
 		this.password = password;
 		this.fullName = fullName;
-		this.roleId = roleId;
+		this.role = role;
 		this.status = status;
 	}
 
@@ -100,25 +115,39 @@ public class Account {
 		this.fullName = fullName;
 	}
 
-	/**
-	 * @return the roleId
-	 */
-	public int getRoleId() {
-		return roleId;
-	}
-
-	/**
-	 * @param roleId the roleId to set
-	 */
-	public void setRoleId(int roleId) {
-		this.roleId = roleId;
-	}
+//	/**
+//	 * @return the roleId
+//	 */
+//	public int getRoleId() {
+//		return roleId;
+//	}
+//
+//	/**
+//	 * @param roleId the roleId to set
+//	 */
+//	public void setRoleId(int roleId) {
+//		this.roleId = roleId;
+//	}
 
 	/**
 	 * @return the createDate
 	 */
 	public LocalDateTime getCreatedDate() {
 		return createdDate;
+	}
+
+	/**
+	 * @return the role
+	 */
+	public Role getRole() {
+		return role;
+	}
+
+	/**
+	 * @param role the role to set
+	 */
+	public void setRole(Role role) {
+		this.role = role;
 	}
 
 	/**

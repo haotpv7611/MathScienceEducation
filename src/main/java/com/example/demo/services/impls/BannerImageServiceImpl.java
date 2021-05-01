@@ -59,9 +59,9 @@ public class BannerImageServiceImpl implements IBannerImageService {
 			if (!error.isEmpty()) {
 				return error.trim();
 			}
-			if (account.getRoleId() != 1) {
-				return "You do not have permission!";
-			}
+//			if (account.getRoleId() != 1) {
+//				return "You do not have permission!";
+//			}
 //				String error = "";
 //		if (file.isEmpty()) {
 //			error += "File is invalid!";
