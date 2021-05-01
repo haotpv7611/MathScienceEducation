@@ -124,6 +124,7 @@ public class SchoolGradeServiceImpl implements ISchoolGradeService {
 			}
 
 			if (school.getStatus().equalsIgnoreCase(INACTIVE_STATUS)) {
+				
 				return "CANNOT LINK INACTIVE SCHOOL";
 			}
 
@@ -169,22 +170,26 @@ public class SchoolGradeServiceImpl implements ISchoolGradeService {
 
 			List<Classes> classesList = iClassRepository.findBySchoolGradeIdAndStatusNot(schoolGrade.getId(),
 					DELETED_STATUS);
-			for (Classes classes : classesList) {
-				String response = iClassService.changeStatusOneClass(classes.getId(), status);
-				if (!response.equalsIgnoreCase("OK")) {
+			if (!classesList.isEmpty()) {
+				for (Classes classes : classesList) {
+					String response = iClassService.changeStatusOneClass(classes.getId(), status);
+					if (!response.equalsIgnoreCase("OK")) {
 
-					return response;
+						return response;
+					}
 				}
-			}
 
-			schoolGrade.setStatus(status);
-			iSchoolGradeRepository.save(schoolGrade);
-		} catch (Exception e) {
+				schoolGrade.setStatus(status);
+				iSchoolGradeRepository.save(schoolGrade);
+			}
+		} catch (
+
+		Exception e) {
 			logger.error("Change status " + listIdAndStatusDTO.getStatus() + " with schoolId = " + schoolId
 					+ " and gradeId = " + gradeId + "! " + e.getMessage());
 			throw e;
 		}
-		
+
 		return "CHANGE SUCCESS!";
 	}
 
