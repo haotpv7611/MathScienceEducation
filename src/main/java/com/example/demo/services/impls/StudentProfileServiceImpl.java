@@ -938,6 +938,23 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 					if (row.getRowNum() < FIRST_STUDENT_ROW) {
 						continue;
 					} else {
+						int totalEmptyCell = 0;
+						for (int i = FIRST_COLUMN; i < (LAST_COLUMN + 1); i++) {
+
+							Cell cell = row.getCell(i);
+
+							if (cell == null) {
+								totalEmptyCell++;
+							} else {
+								if (cell.getCellType() == CellType.BLANK || cell.toString().trim().isEmpty()) {
+									totalEmptyCell++;
+								}
+							}
+						}
+						if (totalEmptyCell == 6) {
+							continue;
+						}						
+						
 						// get accountId user input
 						long studentId = 0;
 						if (row.getCell(1) != null) {

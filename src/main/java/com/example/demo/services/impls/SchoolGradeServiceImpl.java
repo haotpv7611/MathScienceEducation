@@ -182,9 +182,7 @@ public class SchoolGradeServiceImpl implements ISchoolGradeService {
 			schoolGrade.setStatus(status);
 			iSchoolGradeRepository.save(schoolGrade);
 
-		} catch (
-
-		Exception e) {
+		} catch (Exception e) {
 			logger.error("Change status " + listIdAndStatusDTO.getStatus() + " with schoolId = " + schoolId
 					+ " and gradeId = " + gradeId + "! " + e.getMessage());
 			throw e;

@@ -320,6 +320,6 @@ public class ClassServiceImpl implements IClassService {
 			throw e;
 		}
 
-		return "OK!";
+		return "OK";
 	}
 }
