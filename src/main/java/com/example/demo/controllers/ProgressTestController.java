@@ -32,7 +32,7 @@ public class ProgressTestController {
 	private IProgressTestService iProgressTestService;
 
 	@GetMapping("/progressTest/{id}")
-	@PreAuthorize("hasRole('admin') or hasRole('staff')")
+	//@PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<?> findProgressTestById(@PathVariable long id) {
 		Object response = iProgressTestService.findById(id);
 		if (response.equals("NOT FOUND!")) {
@@ -59,7 +59,7 @@ public class ProgressTestController {
 	}
 
 	@PostMapping("/progressTest")
-	@PreAuthorize("hasRole('admin') or hasRole('staff')")
+	//@PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<String> createProgressTest(@Valid @RequestBody ProgressTestRequestDTO progressTestRequestDTO,
 			BindingResult bindingResult) {
 		if (bindingResult.hasErrors()) {
@@ -88,7 +88,7 @@ public class ProgressTestController {
 	}
 
 	@PutMapping("progressTest/{id}")
-	@PreAuthorize("hasRole('admin') or hasRole('staff')")
+	//@PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<String> updateProgressTest(@PathVariable long id,
 			@Valid @RequestBody ProgressTestRequestDTO progressTestRequestDTO, BindingResult bindingResult) {
 		if (bindingResult.hasErrors()) {
@@ -117,7 +117,7 @@ public class ProgressTestController {
 	}
 
 	@PutMapping("progressTest/delete")
-	@PreAuthorize("hasRole('admin') or hasRole('staff')")
+	//@PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<String> deleteProgressTest(@RequestParam long id) {
 		try {
 			String response = iProgressTestService.deleteOneProgressTest(id);

@@ -33,6 +33,7 @@ public class UserPrinciple implements UserDetails {
 	}
 
 	public static UserPrinciple build(Account account) {
+		System.out.println("run here");
 		List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
 		authorities.add(new SimpleGrantedAuthority("admin"));
 		authorities.add(new SimpleGrantedAuthority("staff"));

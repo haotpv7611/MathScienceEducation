@@ -92,6 +92,7 @@ public class AccountServiceImpl implements IAccountService {
 
 	@Override
 	public String login(AccountRequestDTO accountRequestDTO) {
+		System.out.println("run here");
 		String username = accountRequestDTO.getUsername();
 		String password = accountRequestDTO.getPassword();
 
@@ -105,7 +106,7 @@ public class AccountServiceImpl implements IAccountService {
 	}
 
 	public AccountResponseDTO getUserCredential(String token) {
-
+		
 		String username = jwtProvider.getUserNameFromJwtToken(token);
 		Account account = iAccountRepository.findByUsernameAndStatus(username, ACTIVE_STATUS);
 		AccountResponseDTO accountResponseDTO = new AccountResponseDTO();

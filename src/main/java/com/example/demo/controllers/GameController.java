@@ -32,7 +32,7 @@ public class GameController {
 	private IGameService iGameService;
 
 	@GetMapping("/game/{id}")
-	@PreAuthorize("hasRole('admin') or hasRole('staff')")
+	//@PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<Object> findOneById(@PathVariable long id) {
 		Object response = iGameService.findGameById(id);
 		if (response.equals("NOT FOUND!")) {
@@ -48,7 +48,7 @@ public class GameController {
 	}
 
 	@GetMapping("/lesson/{lessonId}/game/all")
-	@PreAuthorize("hasRole('admin') or hasRole('staff')")
+	//@PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<List<GameResponseDTO>> findAllByLessonId(@PathVariable long lessonId) {
 		List<GameResponseDTO> response = iGameService.findAllByLessonId(lessonId);
 		if (response == null) {
@@ -60,7 +60,7 @@ public class GameController {
 	}
 
 	@GetMapping("/lesson/{lessonId}/game/student")
-	@PreAuthorize("hasRole('student')")
+	//@PreAuthorize("hasRole('student')")
 	public ResponseEntity<List<GameResponseDTO>> findAllByLessonIdStudentView(@PathVariable long lessonId) {
 		List<GameResponseDTO> response = iGameService.findAllByLessonIdStudentView(lessonId);
 
@@ -73,7 +73,7 @@ public class GameController {
 	}
 
 	@PostMapping("/game")
-	@PreAuthorize("hasRole('admin') or hasRole('staff')")
+	//@PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<String> createGame(@Valid @RequestBody GameRequestDTO gameRequestDTO,
 			BindingResult bindingResult) {
 		if (bindingResult.hasErrors()) {
@@ -103,7 +103,7 @@ public class GameController {
 	}
 
 	@PutMapping("/game/{id}")
-	@PreAuthorize("hasRole('admin') or hasRole('staff')")
+	//@PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<String> updateGame(@PathVariable long id, @Valid @RequestBody GameRequestDTO gameRequestDTO,
 			BindingResult bindingResult) {
 		if (bindingResult.hasErrors()) {
@@ -133,7 +133,7 @@ public class GameController {
 	}
 
 	@PutMapping("/game")
-	@PreAuthorize("hasRole('admin') or hasRole('staff')")
+	//@PreAuthorize("hasRole('admin') or hasRole('staff')")
 	@Transactional
 	public ResponseEntity<String> changeGameStatus(@RequestBody IdAndStatusDTO idAndStatusDTO) {
 		try {
