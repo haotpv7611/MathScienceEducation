@@ -7,6 +7,7 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -32,6 +33,7 @@ public class UnitController {
 	private IUnitService iUnitService;
 
 	@GetMapping("/unit/{id}")
+	@PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<Object> findUnitById(@PathVariable long id) {
 		Object response = iUnitService.findById(id);
 		if (response.equals("NOT FOUND!")) {
@@ -47,6 +49,7 @@ public class UnitController {
 	}
 
 	@GetMapping("/subject/{subjectId}/units")
+	@PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<List<UnitResponseDTO>> findBySubjectId(@PathVariable long subjectId) {
 		List<UnitResponseDTO> response = iUnitService.findBySubjectId(subjectId);
 		if (response == null) {
@@ -58,6 +61,7 @@ public class UnitController {
 	}
 
 	@GetMapping("/subject/{subjectId}/unitAterIds")
+	@PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<List<UnitResponseDTO>> findAllUnitAfterIdsBySubjectId(@PathVariable long subjectId) {
 		List<UnitResponseDTO> response = iUnitService.findAllUnitAfterIdsBySubjectId(subjectId);
 		if (response == null) {
@@ -69,6 +73,7 @@ public class UnitController {
 	}
 
 	@PostMapping("/subject/{subjectId}/unitView")
+	@PreAuthorize("hasRole('student')")
 	public ResponseEntity<List<UnitViewDTO>> showUnitViewBySubjectId(@PathVariable long subjectId,
 			@RequestParam long accountId) {
 		List<UnitViewDTO> response = iUnitService.showUnitViewBySubjectId(subjectId, accountId);
@@ -81,6 +86,7 @@ public class UnitController {
 	}
 
 	@PostMapping("/unit")
+	@PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<String> createUnit(@Valid @RequestBody UnitRequestDTO unitRequestDTO,
 			BindingResult bindingResult) {
 		if (bindingResult.hasErrors()) {
@@ -110,6 +116,7 @@ public class UnitController {
 	}
 
 	@PutMapping("/unit/{id}")
+	@PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<String> updateUnit(@PathVariable long id, @Valid @RequestBody UnitRequestDTO unitRequestDTO,
 			BindingResult bindingResult) {
 		if (bindingResult.hasErrors()) {
@@ -138,6 +145,7 @@ public class UnitController {
 	}
 
 	@PutMapping("unit/delete")
+	@PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<String> deleteUnit(@RequestParam long id) {
 		try {
 			String response = iUnitService.deleteUnit(id);

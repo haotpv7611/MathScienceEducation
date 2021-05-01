@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -43,6 +44,7 @@ public class BreadcrumbController {
 	private IGameService iGameService;
 
 	@GetMapping("/classes")
+	@PreAuthorize("hasRole('admin') or hasRole('staff') or hasRole('student')")
 	public ResponseEntity<Map<Long, String>> findAllClassesBreadcrumb() {
 		Map<Long, String> response = iClassService.findAllClass();
 
@@ -50,6 +52,7 @@ public class BreadcrumbController {
 	}
 
 	@GetMapping("/subject")
+	@PreAuthorize("hasRole('admin') or hasRole('staff') or hasRole('student')")
 	public ResponseEntity<Map<Long, String>> findAllSubjectBreadcrumb() {
 		Map<Long, String> response = iSubjectService.findAllSubject();
 
@@ -57,6 +60,7 @@ public class BreadcrumbController {
 	}
 	
 	@GetMapping("/progressTest")
+	@PreAuthorize("hasRole('admin') or hasRole('staff') or hasRole('student')")
 	public ResponseEntity<Map<Long, String>> findAllProgressTestBreadcrumb() {
 		Map<Long, String> response = iProgressTestService.findAllProgressTest();
 
@@ -64,6 +68,7 @@ public class BreadcrumbController {
 	}
 
 	@GetMapping("/unit")
+	@PreAuthorize("hasRole('admin') or hasRole('staff') or hasRole('student')")
 	public ResponseEntity<Map<Long, Integer>> findAllUnitBreadcrumb() {
 		Map<Long, Integer> response = iUnitService.findAllUnit();
 
@@ -71,6 +76,7 @@ public class BreadcrumbController {
 	}
 
 	@GetMapping("/lesson")
+	@PreAuthorize("hasRole('admin') or hasRole('staff') or hasRole('student')")
 	public ResponseEntity<Map<Long, Integer>> findAllLessonBreadcrumb() {
 		Map<Long, Integer> response = iLessonService.findAllLesson();
 
@@ -78,6 +84,7 @@ public class BreadcrumbController {
 	}
 
 	@GetMapping("/exercise")
+	@PreAuthorize("hasRole('admin') or hasRole('staff') or hasRole('student')")
 	public ResponseEntity<Map<Long, Integer>> findAllExerciseBreadcrumb() {
 		Map<Long, Integer> response = iExerciseService.findAllExercise();
 
@@ -85,6 +92,7 @@ public class BreadcrumbController {
 	}
 
 	@GetMapping("/game")
+	@PreAuthorize("hasRole('admin') or hasRole('staff') or hasRole('student')")
 	public ResponseEntity<Map<Long, Integer>> findAllGameBreadcrumb() {
 		Map<Long, Integer> response = iGameService.findAllGame();
 

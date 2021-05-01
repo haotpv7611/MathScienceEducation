@@ -7,6 +7,7 @@ import org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,6 +31,7 @@ public class SubjectController {
 	private ISubjectService iSubjectService;
 
 	@GetMapping("/subject/{id}")
+	@PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<?> findSubjectById(@PathVariable long id) {
 		Object response = iSubjectService.findById(id);
 		if (response.equals("NOT FOUND!")) {
@@ -45,6 +47,7 @@ public class SubjectController {
 	}
 
 	@GetMapping("/grade/{gradeId}/subjects")
+	@PreAuthorize("hasRole('student')")
 	public ResponseEntity<List<SubjectResponseDTO>> findSubjectsByGradeId(@PathVariable int gradeId) {
 		List<SubjectResponseDTO> response = iSubjectService.findSubjectsByGradeId(gradeId);
 		if (response == null) {
@@ -56,6 +59,7 @@ public class SubjectController {
 	}
 
 	@PostMapping("/subject")
+	@PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<String> createSubject(@RequestParam String subjectName,
 			@RequestParam MultipartFile multipartFile, @RequestParam(required = false) String description,
 			@RequestParam int gradeId) throws SizeLimitExceededException, IOException {
@@ -88,6 +92,7 @@ public class SubjectController {
 	}
 
 	@PutMapping("/subject/{id}")
+	@PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<String> updateSubject(@PathVariable long id, @RequestParam String subjectName,
 			@RequestParam(required = false) MultipartFile multipartFile,
 			@RequestParam(required = false) String description, @RequestParam int gradeId)
@@ -120,6 +125,7 @@ public class SubjectController {
 	}
 
 	@PutMapping("subject/delete/{id}")
+	@PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<String> deleteSubject(@PathVariable long id) {
 		String response = iSubjectService.deleteSubject(id);
 		if (response.contains("CANNOT")) {

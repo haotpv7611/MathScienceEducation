@@ -5,6 +5,7 @@ import java.io.IOException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,6 +23,7 @@ public class FirebaseController {
 	private IFirebaseService iFirebaseService;
 
 	@PostMapping("/file")
+	@PreAuthorize("hasRole('admin')")
 	public ResponseEntity<String> uploadImage(@RequestParam MultipartFile multipartFile) throws IOException {
 		String error = "";
 
@@ -49,6 +51,7 @@ public class FirebaseController {
 	}
 
 	@DeleteMapping("/file")
+	@PreAuthorize("hasRole('admin')")
 	public ResponseEntity<String> deleteImage(@RequestParam String fileUrl) {
 		try {
 			iFirebaseService.deleteFile(fileUrl);

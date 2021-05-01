@@ -9,6 +9,7 @@ import org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -35,6 +36,7 @@ public class BannerImageController {
 	private IBannerImageService iBannerImageService;
 
 	@PostMapping
+	@PreAuthorize("hasRole('admin')")
 	public ResponseEntity<String> createBannerImage(@RequestParam(required = false) String description,
 			@RequestParam MultipartFile file, @RequestParam long accountId)
 			throws SizeLimitExceededException, IOException {
@@ -52,6 +54,7 @@ public class BannerImageController {
 	}
 
 	@GetMapping("/all")
+	@PreAuthorize("hasRole('admin')")
 	public ResponseEntity<List<BannerImageDTO>> findAllBannerImage() {
 		List<BannerImageDTO> response = iBannerImageService.findAll();
 
@@ -59,6 +62,7 @@ public class BannerImageController {
 	}
 
 	@PutMapping
+	@PreAuthorize("hasRole('admin')")
 	public ResponseEntity<String> changeStatusBannerImage(@Valid @RequestBody ListIdAndStatusDTO listIdAndStatusDTO,
 			BindingResult bindingResult) {
 		if (bindingResult.hasErrors()) {
@@ -80,6 +84,7 @@ public class BannerImageController {
 	}
 
 	@GetMapping("/{id}")
+	@PreAuthorize("hasRole('admin')")
 	public ResponseEntity<BannerImageDTO> findBannerImageById(@PathVariable long id) {
 		BannerImageDTO response = iBannerImageService.findById(id);
 
@@ -87,6 +92,7 @@ public class BannerImageController {
 	}
 
 	@PutMapping("/{id}")
+	@PreAuthorize("hasRole('admin')")
 	public ResponseEntity<String> updateBannerImage(@PathVariable long id,
 			@RequestParam(required = false) String description, @RequestParam(required = false) MultipartFile file)
 			throws SizeLimitExceededException, IOException {
@@ -101,6 +107,7 @@ public class BannerImageController {
 
 	// student role
 	@GetMapping("/url")
+	@PreAuthorize("hasRole('admin') or hasRole('staff') or hasRole('student')")
 	public ResponseEntity<List<String>> showBannerImage() {
 		List<String> response = iBannerImageService.showBannerImage();
 

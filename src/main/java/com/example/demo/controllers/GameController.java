@@ -7,6 +7,7 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
@@ -22,19 +23,16 @@ import com.example.demo.dtos.GameRequestDTO;
 import com.example.demo.dtos.GameResponseDTO;
 import com.example.demo.dtos.IdAndStatusDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
-import com.example.demo.repositories.IExerciseGameQuestionRepository;
 import com.example.demo.services.IGameService;
 
 @CrossOrigin
 @RestController
 public class GameController {
 	@Autowired
-	IGameService iGameService;
-
-	@Autowired
-	IExerciseGameQuestionRepository iExerciseGameQuestionRepository;
+	private IGameService iGameService;
 
 	@GetMapping("/game/{id}")
+	@PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<Object> findOneById(@PathVariable long id) {
 		Object response = iGameService.findGameById(id);
 		if (response.equals("NOT FOUND!")) {
@@ -50,6 +48,7 @@ public class GameController {
 	}
 
 	@GetMapping("/lesson/{lessonId}/game/all")
+	@PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<List<GameResponseDTO>> findAllByLessonId(@PathVariable long lessonId) {
 		List<GameResponseDTO> response = iGameService.findAllByLessonId(lessonId);
 		if (response == null) {
@@ -61,6 +60,7 @@ public class GameController {
 	}
 
 	@GetMapping("/lesson/{lessonId}/game/student")
+	@PreAuthorize("hasRole('student')")
 	public ResponseEntity<List<GameResponseDTO>> findAllByLessonIdStudentView(@PathVariable long lessonId) {
 		List<GameResponseDTO> response = iGameService.findAllByLessonIdStudentView(lessonId);
 
@@ -73,6 +73,7 @@ public class GameController {
 	}
 
 	@PostMapping("/game")
+	@PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<String> createGame(@Valid @RequestBody GameRequestDTO gameRequestDTO,
 			BindingResult bindingResult) {
 		if (bindingResult.hasErrors()) {
@@ -102,6 +103,7 @@ public class GameController {
 	}
 
 	@PutMapping("/game/{id}")
+	@PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<String> updateGame(@PathVariable long id, @Valid @RequestBody GameRequestDTO gameRequestDTO,
 			BindingResult bindingResult) {
 		if (bindingResult.hasErrors()) {
@@ -131,6 +133,7 @@ public class GameController {
 	}
 
 	@PutMapping("/game")
+	@PreAuthorize("hasRole('admin') or hasRole('staff')")
 	@Transactional
 	public ResponseEntity<String> changeGameStatus(@RequestBody IdAndStatusDTO idAndStatusDTO) {
 		try {

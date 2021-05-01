@@ -19,7 +19,7 @@ import com.example.demo.services.IGradeService;
 public class GradeController {
 	
 	@Autowired
-	IGradeService iGradeService;
+	private IGradeService iGradeService;
 
 	@GetMapping("/all")
 	public ResponseEntity<List<GradeResponseDTO>> findAllGrades() {

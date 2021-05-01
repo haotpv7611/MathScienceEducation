@@ -7,6 +7,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,9 +25,10 @@ import com.example.demo.services.IExerciseTakenService;
 @RestController
 public class ExerciseTakenController {
 	@Autowired
-	IExerciseTakenService iExerciseTakenService;
+	private IExerciseTakenService iExerciseTakenService;
 
 	@GetMapping("/exerciseTaken/{id}")
+	@PreAuthorize("hasRole('admin') or hasRole('staff') or hasRole('student')")
 	public ResponseEntity<Map<String, String>> findTakenObjectById(@PathVariable long id) {
 		String response = iExerciseTakenService.findTakenObjectById(id);
 		HashMap<String, String> map = new HashMap<>();
@@ -36,6 +38,7 @@ public class ExerciseTakenController {
 	}
 
 	@PostMapping("/exerciseTaken/all")
+	@PreAuthorize("hasRole('student')")
 	public ResponseEntity<List<ExerciseTakenResponseDTO>> findAllByExerciseId(@RequestParam long exerciseId,
 			@RequestParam long accountId) {
 		List<ExerciseTakenResponseDTO> response = iExerciseTakenService.findAllByExerciseId(exerciseId, accountId);
@@ -44,6 +47,7 @@ public class ExerciseTakenController {
 	}
 
 	@PostMapping("/exericseTaken")
+	@PreAuthorize("hasRole('student')")
 	public ResponseEntity<String> doExericse(@RequestBody ExerciseTakenRequestDTO exerciseTakenRequestDTO) {
 		String response = iExerciseTakenService.doExercise(exerciseTakenRequestDTO);
 		
@@ -51,6 +55,7 @@ public class ExerciseTakenController {
 	}
 	
 	@PostMapping("subject/{subjectId}/score")
+	@PreAuthorize("hasRole('student')")
 	public ResponseEntity<List<ScoreResponseDTO>> findAllScoreBySubjectId(@PathVariable long subjectId,
 			@RequestParam long accountId) {
 		List<ScoreResponseDTO> response = iExerciseTakenService.findAllExerciseScoreBySubjectId(subjectId, accountId);

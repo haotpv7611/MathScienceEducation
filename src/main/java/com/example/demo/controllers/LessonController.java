@@ -8,6 +8,7 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -29,9 +30,10 @@ import com.example.demo.services.ILessonService;
 public class LessonController {
 
 	@Autowired
-	ILessonService iLessonService;
+	private ILessonService iLessonService;
 
 	@GetMapping("/lesson/{id}")
+	@PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<?> findLessonById(@PathVariable long id) {
 		Object response = iLessonService.findById(id);
 		if (response.equals("NOT FOUND!")) {
@@ -47,6 +49,7 @@ public class LessonController {
 	}
 
 	@GetMapping("/unit/{unitId}/lessons")
+	@PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<List<LessonResponseDTO>> findLessonByUnitId(@PathVariable long unitId) {
 		List<LessonResponseDTO> response = iLessonService.findByUnitIdOrderByLessonNameAsc(unitId);
 		if (response == null) {
@@ -58,6 +61,7 @@ public class LessonController {
 	}
 	
 	@GetMapping("/unit/{unitId}/lessons/student")
+	@PreAuthorize("hasRole('student')")
 	public ResponseEntity<Map<String, List<LessonResponseDTO>>> findLessonByUnitIdStudentView(@PathVariable long unitId) {
 		Map<String, List<LessonResponseDTO>> response = iLessonService.findByUnitIdStudentView(unitId);
 		if (response == null) {
@@ -69,6 +73,7 @@ public class LessonController {
 	}
 
 	@PostMapping("/lesson")
+	@PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<String> createLesson(@Valid @RequestBody LessonRequestDTO lessonRequestDTO,
 			BindingResult bingdingResult) {
 		if (bingdingResult.hasErrors()) {
@@ -96,6 +101,7 @@ public class LessonController {
 	}
 
 	@PutMapping("/lesson/{id}")
+	@PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<String> updateLesson(@PathVariable long id,
 			@Valid @RequestBody LessonRequestDTO lessonRequestDTO, BindingResult bindingResult) {
 		if (bindingResult.hasErrors()) {
@@ -124,6 +130,7 @@ public class LessonController {
 	}
 
 	@PutMapping("/lesson")
+	@PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<String> deleteLesson(@RequestParam long id) {
 		try {
 			String response = iLessonService.deleteOneLesson(id);

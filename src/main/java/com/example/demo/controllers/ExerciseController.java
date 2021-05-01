@@ -7,6 +7,7 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -33,6 +34,7 @@ public class ExerciseController {
 	
 	//sử dụng để thay đổi nội dung nút open và close game
 	@GetMapping("/exercise/{id}/status")
+	@PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<String> findExerciseStatusById(@PathVariable long id){
 		String response = iExerciseService.findExerciseStatusById(id);
 		if (response == null) {
@@ -44,6 +46,7 @@ public class ExerciseController {
 	}
 
 	@GetMapping("/lesson/{lessonId}/exercises")
+	@PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<List<ExerciseResponseDTO>> findByLessonIdOrderByExerciseNameAsc(@PathVariable long lessonId) {
 		List<ExerciseResponseDTO> response = iExerciseService.findByLessonIdOrderByExerciseNameAsc(lessonId);
 		if (response == null) {
@@ -55,6 +58,7 @@ public class ExerciseController {
 	}
 
 	@PostMapping("/lesson/{lessonId}/exercises/student")
+	@PreAuthorize("hasRole('student')")
 	public ResponseEntity<List<ExerciseResponseDTO>> findByLessonIdStudentView(@PathVariable long lessonId,
 			@RequestParam long accountId) {
 		List<ExerciseResponseDTO> response = iExerciseService.findByLessonIdStudentView(lessonId, accountId);
@@ -67,6 +71,7 @@ public class ExerciseController {
 	}
 
 	@GetMapping("/progressTest/{progressTestId}/exercises")
+	@PreAuthorize("hasRole('admin') or hasRole('staff') or hasRole('student')")
 	public ResponseEntity<List<ExerciseResponseDTO>> findByProgressTestIdOrderByExerciseNameAsc(
 			@PathVariable long progressTestId) {
 		List<ExerciseResponseDTO> response = iExerciseService
@@ -80,6 +85,7 @@ public class ExerciseController {
 	}
 
 	@PostMapping("/progressTest/{progressTestId}/exercises/student")
+	@PreAuthorize("hasRole('student')")
 	public ResponseEntity<List<ExerciseResponseDTO>> findByProgressTestIdStudentView(@PathVariable long progressTestId,
 			@RequestParam long accountId) {
 		List<ExerciseResponseDTO> response = iExerciseService.findByProgressTestIdStudentView(progressTestId,
@@ -93,6 +99,7 @@ public class ExerciseController {
 	}
 
 	@PostMapping("/exercise")
+	@PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<String> createExercise(@Valid @RequestBody ExerciseRequestDTO exerciseRequestDTO,
 			BindingResult bindingResult) {
 		if (bindingResult.hasErrors()) {
@@ -121,6 +128,7 @@ public class ExerciseController {
 	}
 
 	@PutMapping("/exercise/{id}")
+	@PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<String> updateExercise(@PathVariable long id,
 			@Valid @RequestBody ExerciseRequestDTO exerciseRequestDTO, BindingResult bindingResult) {
 		if (bindingResult.hasErrors()) {
@@ -150,6 +158,7 @@ public class ExerciseController {
 	}
 
 	@PutMapping("/exercise/delete")
+	@PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<String> changeExerciseStatus(@RequestBody IdAndStatusDTO idAndStatusDTO) {
 		try {
 			String response = iExerciseService.changeOneExerciseStatus(idAndStatusDTO);

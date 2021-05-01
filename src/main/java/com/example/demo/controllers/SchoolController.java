@@ -7,6 +7,7 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -32,6 +33,7 @@ public class SchoolController {
 	private ISchoolService iSchoolService;
 
 	@GetMapping("/{id}")
+	@PreAuthorize("hasRole('admin')")
 	public ResponseEntity<Object> findSchoolById(@PathVariable long id) {
 		Object response = iSchoolService.findSchoolById(id);
 		if (response.equals("NOT FOUND!")) {
@@ -47,6 +49,7 @@ public class SchoolController {
 	}
 
 	@GetMapping("/all")
+	@PreAuthorize("hasRole('admin')")
 	public ResponseEntity<List<SchoolResponseDTO>> findAllSchools() {
 		List<SchoolResponseDTO> response = iSchoolService.findAllSchool();
 		if (response == null) {
@@ -59,6 +62,7 @@ public class SchoolController {
 	}
 
 	@GetMapping("/all/{gradeId}")
+	@PreAuthorize("hasRole('admin')")
 	public ResponseEntity<List<SchoolResponseDTO>> findSchoolUnlinkByGradeId(@PathVariable int gradeId) {
 		List<SchoolResponseDTO> response = iSchoolService.findSchoolUnlinkByGradeId(gradeId);
 		if (response == null) {
@@ -70,6 +74,7 @@ public class SchoolController {
 	}
 
 	@PostMapping
+	@PreAuthorize("hasRole('admin')")
 	public ResponseEntity<String> createSchool(@Valid @RequestBody SchoolRequestDTO schoolRequestDTO,
 			BindingResult bindingResult) {
 		if (bindingResult.hasErrors()) {
@@ -100,6 +105,7 @@ public class SchoolController {
 	}
 
 	@PutMapping("/{id}")
+	@PreAuthorize("hasRole('admin')")
 	public ResponseEntity<String> updateSchool(@PathVariable long id,
 			@Valid @RequestBody SchoolRequestDTO schoolRequestDTO, BindingResult bindingResult) {
 		if (bindingResult.hasErrors()) {
@@ -129,6 +135,7 @@ public class SchoolController {
 	}
 
 	@PutMapping("/changeStatus")
+	@PreAuthorize("hasRole('admin')")
 	public ResponseEntity<String> changeStatusSchool(@Valid @RequestBody IdAndStatusDTO idAndStatusDTO,
 			BindingResult bindingResult) {
 		if (bindingResult.hasErrors()) {

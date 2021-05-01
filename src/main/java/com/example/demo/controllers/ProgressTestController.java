@@ -7,6 +7,7 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -31,6 +32,7 @@ public class ProgressTestController {
 	private IProgressTestService iProgressTestService;
 
 	@GetMapping("/progressTest/{id}")
+	@PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<?> findProgressTestById(@PathVariable long id) {
 		Object response = iProgressTestService.findById(id);
 		if (response.equals("NOT FOUND!")) {
@@ -57,6 +59,7 @@ public class ProgressTestController {
 	}
 
 	@PostMapping("/progressTest")
+	@PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<String> createProgressTest(@Valid @RequestBody ProgressTestRequestDTO progressTestRequestDTO,
 			BindingResult bindingResult) {
 		if (bindingResult.hasErrors()) {
@@ -85,6 +88,7 @@ public class ProgressTestController {
 	}
 
 	@PutMapping("progressTest/{id}")
+	@PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<String> updateProgressTest(@PathVariable long id,
 			@Valid @RequestBody ProgressTestRequestDTO progressTestRequestDTO, BindingResult bindingResult) {
 		if (bindingResult.hasErrors()) {
@@ -113,6 +117,7 @@ public class ProgressTestController {
 	}
 
 	@PutMapping("progressTest/delete")
+	@PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<String> deleteProgressTest(@RequestParam long id) {
 		try {
 			String response = iProgressTestService.deleteOneProgressTest(id);
@@ -130,15 +135,6 @@ public class ProgressTestController {
 
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("DELETE FAIL!");
 		}
-
-//		if (response.contains("NOT FOUND")) {
-//
-//			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-//		}
-//		if (response.contains("FAIL")) {
-//
-//			return ;
-//		}
 
 	}
 }

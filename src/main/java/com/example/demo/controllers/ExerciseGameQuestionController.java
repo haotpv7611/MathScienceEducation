@@ -5,6 +5,7 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -24,6 +25,7 @@ public class ExerciseGameQuestionController {
 	IExerciseGameQuestionService iExerciseGameQuestionService;
 
 	@PostMapping("/exerciseGameQuestion")
+	@PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<String> addQuestionToGameQuestionExercise(
 			@Valid @RequestBody ExerciseGameQuestionRequestDTO exerciseGameQuestionRequestDTO,
 			BindingResult bindingResult) {
@@ -54,6 +56,7 @@ public class ExerciseGameQuestionController {
 	}
 
 	@PutMapping("/exerciseGameQuestion/delete")
+	@PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<String> deleteExerciseOrGameQuestion(
 			@Valid @RequestBody ExerciseGameQuestionRequestDTO exerciseGameQuestionRequestDTO,
 			BindingResult bindingResult) {

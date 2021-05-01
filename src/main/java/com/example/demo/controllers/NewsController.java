@@ -7,6 +7,7 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -32,6 +33,7 @@ public class NewsController {
 	private INewsService inewsService;
 
 	@PostMapping
+	@PreAuthorize("hasRole('admin')")
 	public ResponseEntity<String> createNews(@Valid @RequestBody NewsRequestDTO newsRequestDTO,
 			BindingResult bindingResult) {
 		if (bindingResult.hasErrors()) {
@@ -58,6 +60,7 @@ public class NewsController {
 
 	// both
 	@GetMapping("/all")
+	@PreAuthorize("hasRole('admin') or hasRole('student')")
 	public ResponseEntity<List<NewsResponseDTO>> findAllOrderByCreateDateDesc(@RequestParam boolean isStudent) {
 		List<NewsResponseDTO> response = inewsService.findAllNewsOrderByCreatedDateDesc(isStudent);
 		if (response == null) {
@@ -70,6 +73,7 @@ public class NewsController {
 
 	// both
 	@GetMapping("/{id}")
+	@PreAuthorize("hasRole('admin') or hasRole('student')")
 	public ResponseEntity<?> findNewsById(@PathVariable long id) {
 		Object response = inewsService.findNewsById(id);
 		if (response.equals("NOT FOUND!")) {
@@ -85,6 +89,7 @@ public class NewsController {
 	}
 
 	@PutMapping
+	@PreAuthorize("hasRole('admin')")
 	public ResponseEntity<String> deleteNews(@RequestBody List<Long> ids) {
 		if (ids == null) {
 
@@ -110,6 +115,7 @@ public class NewsController {
 
 	// student role
 	@GetMapping("/3newest")
+	@PreAuthorize("hasRole('student')")
 	public ResponseEntity<List<NewsResponseDTO>> findThreeOrderByCreateDateDesc() {
 		List<NewsResponseDTO> response = inewsService.findThreeNewsOrderByCreatedDateDesc();
 		if (response == null) {
