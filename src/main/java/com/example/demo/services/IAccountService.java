@@ -1,7 +1,7 @@
 package com.example.demo.services;
 
 import com.example.demo.dtos.AccountRequestDTO;
-import com.example.demo.dtos.AccountResponseDTO;
+import com.example.demo.dtos.CredentialDTO;
 
 public interface IAccountService {
 	

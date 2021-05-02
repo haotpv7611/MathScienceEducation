@@ -208,26 +208,44 @@ public class SchoolServiceImpl implements ISchoolService {
 				throw new ResourceNotFoundException();
 			}
 
-			List<SchoolGrade> schoolGradeList = iSchoolGradeRepository.findBySchoolIdAndStatusNot(school.getId(),
-					DELETED_STATUS);
-			if (!schoolGradeList.isEmpty()) {
-				for (SchoolGrade schoolGrade : schoolGradeList) {
-					List<Long> ids = new ArrayList<>();
-					ids.add(Long.valueOf(schoolGrade.getGrade().getId()));
-					ids.add(school.getId());
-					ListIdAndStatusDTO listIdAndStatusDTO = new ListIdAndStatusDTO();
-					listIdAndStatusDTO.setIds(ids);
-					listIdAndStatusDTO.setStatus(idAndStatusDTO.getStatus());
+			if (!idAndStatusDTO.getStatus().equalsIgnoreCase(ACTIVE_STATUS)) {
+				List<SchoolGrade> schoolGradeList = iSchoolGradeRepository.findBySchoolIdAndStatusNot(school.getId(),
+						DELETED_STATUS);
+				if (!schoolGradeList.isEmpty()) {
+					for (SchoolGrade schoolGrade : schoolGradeList) {
+						List<Long> ids = new ArrayList<>();
+						ids.add(Long.valueOf(schoolGrade.getGrade().getId()));
+						ids.add(school.getId());
+						ListIdAndStatusDTO listIdAndStatusDTO = new ListIdAndStatusDTO();
+						listIdAndStatusDTO.setIds(ids);
+						listIdAndStatusDTO.setStatus(idAndStatusDTO.getStatus());
 
-					String response = iSchoolGradeService.changeStatusGradeAndSchool(listIdAndStatusDTO);
-					if (!response.equalsIgnoreCase("CHANGE SUCCESS!")) {
+						String response = iSchoolGradeService.changeStatusGradeAndSchool(listIdAndStatusDTO);
+						if (!response.equalsIgnoreCase("CHANGE SUCCESS!")) {
 
-						return response;
+							return response;
+						}
+					}
+				}
+				school.setStatus(idAndStatusDTO.getStatus());
+				iSchoolRepository.save(school);
+			}else {
+				school.setStatus(idAndStatusDTO.getStatus());
+				iSchoolRepository.save(school);
+				List<SchoolGrade> schoolGradeList = iSchoolGradeRepository.findBySchoolIdAndStatusNot(school.getId(),
+						DELETED_STATUS);
+				if (!schoolGradeList.isEmpty()) {
+					for (SchoolGrade schoolGrade : schoolGradeList) {
+						List<Long> ids = new ArrayList<>();
+						ids.add(Long.valueOf(schoolGrade.getGrade().getId()));
+						ids.add(school.getId());
+						ListIdAndStatusDTO listIdAndStatusDTO = new ListIdAndStatusDTO();
+						listIdAndStatusDTO.setIds(ids);
+						listIdAndStatusDTO.setStatus(idAndStatusDTO.getStatus());
+						iSchoolGradeService.changeStatusGradeAndSchool(listIdAndStatusDTO);						
 					}
 				}
 			}
-			school.setStatus(idAndStatusDTO.getStatus());
-			iSchoolRepository.save(school);
 		} catch (Exception e) {
 			logger.error("Change status school with id = " + idAndStatusDTO.getId() + "! " + e.getMessage());
 			if (e instanceof ResourceNotFoundException) {

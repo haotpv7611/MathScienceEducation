@@ -1,50 +1,80 @@
 package com.example.demo.dtos;
 
 public class AccountResponseDTO {
-	long accountId;
-	int gradeId;
-	String description;
+	private long id;
+	private String username;
+	private String password;
+	private String role;
+	private String fullName;
 
 	/**
-	 * @return the accountId
+	 * @return the id
 	 */
-	public long getAccountId() {
-		return accountId;
+	public long getId() {
+		return id;
 	}
 
 	/**
-	 * @param accountId the accountId to set
+	 * @param id the id to set
 	 */
-	public void setAccountId(long accountId) {
-		this.accountId = accountId;
+	public void setId(long id) {
+		this.id = id;
 	}
 
 	/**
-	 * @return the gradeId
+	 * @return the username
 	 */
-	public int getGradeId() {
-		return gradeId;
+	public String getUsername() {
+		return username;
 	}
 
 	/**
-	 * @param gradeId the gradeId to set
+	 * @param username the username to set
 	 */
-	public void setGradeId(int gradeId) {
-		this.gradeId = gradeId;
+	public void setUsername(String username) {
+		this.username = username;
 	}
 
 	/**
-	 * @return the description
+	 * @return the password
 	 */
-	public String getDescription() {
-		return description;
+	public String getPassword() {
+		return password;
 	}
 
 	/**
-	 * @param description the description to set
+	 * @param password the password to set
 	 */
-	public void setDescription(String description) {
-		this.description = description;
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	/**
+	 * @return the role
+	 */
+	public String getRole() {
+		return role;
+	}
+
+	/**
+	 * @param role the role to set
+	 */
+	public void setRole(String role) {
+		this.role = role;
+	}
+
+	/**
+	 * @return the fullName
+	 */
+	public String getFullName() {
+		return fullName;
+	}
+
+	/**
+	 * @param fullName the fullName to set
+	 */
+	public void setFullName(String fullName) {
+		this.fullName = fullName;
 	}
 
 }

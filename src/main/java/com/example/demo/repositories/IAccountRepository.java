@@ -1,5 +1,7 @@
 package com.example.demo.repositories;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -13,6 +15,8 @@ public interface IAccountRepository extends JpaRepository<Account, Long> {
 	Account findByIdAndStatus(long id, String status);
 
 	Account findByUsername(String username);
+	
+	List<Account> findByRoldId(int roleId);
 
 	Account findByUsernameAndStatus(String username, String status);
 	
