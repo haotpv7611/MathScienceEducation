@@ -1,7 +1,6 @@
 package com.example.demo.models;
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
@@ -11,7 +10,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
 
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
@@ -44,14 +42,8 @@ public class Question {
 
 	@PrePersist
 	public void onCreate() {
-		this.createdDate = LocalDateTime.now(ZoneId.of("UTC+7"));
 		this.modifiedDate = null;
 		this.modifiedBy = null;
-	}
-
-	@PreUpdate
-	public void onUpdate() {
-		this.modifiedDate = LocalDateTime.now(ZoneId.of("UTC+7"));
 	}
 
 	@ManyToOne

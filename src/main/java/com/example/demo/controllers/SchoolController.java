@@ -49,7 +49,7 @@ public class SchoolController {
 	}
 
 	@GetMapping("/all")
-	//@PreAuthorize("hasRole('admin')")
+	@PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<List<SchoolResponseDTO>> findAllSchools() {
 		List<SchoolResponseDTO> response = iSchoolService.findAllSchool();
 		if (response == null) {

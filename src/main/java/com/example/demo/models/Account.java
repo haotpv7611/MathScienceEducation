@@ -1,7 +1,6 @@
 package com.example.demo.models;
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -14,7 +13,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
 
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
@@ -45,14 +43,8 @@ public class Account {
 
 	@PrePersist
 	public void onCreate() {
-		this.createdDate = LocalDateTime.now(ZoneId.of("UTC+7"));
 		this.modifiedDate = null;
 		this.modifiedBy = null;
-	}
-
-	@PreUpdate
-	public void onUpdate() {
-		this.modifiedDate = LocalDateTime.now(ZoneId.of("UTC+7"));
 	}
 
 	@OneToOne(mappedBy = "account")
@@ -65,15 +57,6 @@ public class Account {
 	public Account() {
 
 	}
-
-//	public Account(String username, String password, String fullName, int roleId, String status) {
-//		super();
-//		this.username = username;
-//		this.password = password;
-//		this.fullName = fullName;
-//		this.roleId = roleId;
-//		this.status = status;
-//	}
 
 	public Account(String username, String password, String fullName, Role role, String status) {
 		super();
@@ -115,20 +98,6 @@ public class Account {
 	public void setFullName(String fullName) {
 		this.fullName = fullName;
 	}
-
-//	/**
-//	 * @return the roleId
-//	 */
-//	public int getRoleId() {
-//		return roleId;
-//	}
-//
-//	/**
-//	 * @param roleId the roleId to set
-//	 */
-//	public void setRoleId(int roleId) {
-//		this.roleId = roleId;
-//	}
 
 	/**
 	 * @return the createDate
