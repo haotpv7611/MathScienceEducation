@@ -18,7 +18,7 @@ public interface IBannerImageService {
 
 	String changeStatusBannerImage(ListIdAndStatusDTO listIdAndStatusDTO);
 
-	BannerImageDTO findById(long id);
+	Object findById(long id);
 
 	String updateBannerImage(long id, String description, MultipartFile file)
 			throws SizeLimitExceededException, IOException;

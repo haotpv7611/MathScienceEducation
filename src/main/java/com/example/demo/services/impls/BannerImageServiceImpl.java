@@ -47,27 +47,17 @@ public class BannerImageServiceImpl implements IBannerImageService {
 	public String createBannerImage(String description, MultipartFile file, long accountId)
 			throws SizeLimitExceededException, IOException {
 		try {
-
 			// 1. validate data input
 			Account account = iAccountRepository.findByIdAndStatusNot(accountId, DELETED_STATUS);
 			if (account == null) {
 				throw new ResourceNotFoundException();
 			}
-			String error = validateRequiredFile(file, "image", "File is invalid!",
+			String error = Util.validateRequiredFile(file, "image", "File is invalid!",
 					"Not supported this file type for image!");
 			error += Util.validateString(description, DESCRIPTION_MAX_LENGTH, "\nDescription is invalid!");
 			if (!error.isEmpty()) {
 				return error.trim();
 			}
-//			if (account.getRoleId() != 1) {
-//				return "You do not have permission!";
-//			}
-//				String error = "";
-//		if (file.isEmpty()) {
-//			error += "File is invalid!";
-//		} else if (!file.getContentType().contains("image")) {
-//			error += "Not supported this file type for image!";
-//		}
 
 			// 2. connect database through repository
 			// 3. find entity by Id
@@ -87,26 +77,40 @@ public class BannerImageServiceImpl implements IBannerImageService {
 			bannerImage.setAccountId(accountId);
 			iBannerImageRepositoy.save(bannerImage);
 		} catch (Exception e) {
-			// TODO: handle exception
+			logger.error("Create banner! " + e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
+
+				return "NOT FOUND!";
+			}
+
+			return "CREATE FAIL";
 		}
+
 		return "CREATE SUCCESS!";
 
 	}
 
 	@Override
 	public List<BannerImageDTO> findAll() {
-		// 1. connect database through repository
-		// 2. find all entities
-		List<BannerImage> bannerImageList = iBannerImageRepositoy.findByStatusNotOrderByStatusAsc(DELETED_STATUS);
 		List<BannerImageDTO> bannerImageDTOList = new ArrayList<>();
-		// 3. convert all entities to dtos
-		// 4. add all dtos to bannerImageDTOList
-		if (!bannerImageList.isEmpty()) {
-			for (BannerImage bannerImage : bannerImageList) {
-				BannerImageDTO bannerImageDTO = modelMapper.map(bannerImage, BannerImageDTO.class);
-				bannerImageDTO.setAccountId(0);
-				bannerImageDTOList.add(bannerImageDTO);
+		try {
+
+			// 1. connect database through repository
+			// 2. find all entities
+			List<BannerImage> bannerImageList = iBannerImageRepositoy.findByStatusNotOrderByStatusAsc(DELETED_STATUS);
+			// 3. convert all entities to dtos
+			// 4. add all dtos to bannerImageDTOList
+			if (!bannerImageList.isEmpty()) {
+				for (BannerImage bannerImage : bannerImageList) {
+					BannerImageDTO bannerImageDTO = modelMapper.map(bannerImage, BannerImageDTO.class);
+					bannerImageDTO.setAccountId(0);
+					bannerImageDTOList.add(bannerImageDTO);
+				}
 			}
+		} catch (Exception e) {
+			logger.error("Find all banner! " + e.getMessage());
+
+			return null;
 		}
 
 		return bannerImageDTOList;
@@ -122,40 +126,63 @@ public class BannerImageServiceImpl implements IBannerImageService {
 		// 1. connect database through repository
 		// 2. find entity by id
 		// 3. if not existed throw exception
-		for (Long id : ids) {
-			BannerImage bannerImage = iBannerImageRepositoy.findByIdAndStatusNot(id, DELETED_STATUS);
-			if (bannerImage == null) {
-				throw new ResourceNotFoundException();
-			}
-
-			if (status.equalsIgnoreCase(DELETED_STATUS)) {
-				String imageURL = bannerImage.getImageUrl();
-				bannerImage.setImageUrl(DELETED_STATUS);
-				if (!imageURL.isEmpty()) {
-					iFirebaseService.deleteFile(imageURL);
+		try {
+			for (Long id : ids) {
+				BannerImage bannerImage = iBannerImageRepositoy.findByIdAndStatusNot(id, DELETED_STATUS);
+				if (bannerImage == null) {
+					throw new ResourceNotFoundException();
 				}
+
+				if (status.equalsIgnoreCase(DELETED_STATUS)) {
+					String imageURL = bannerImage.getImageUrl();
+					bannerImage.setImageUrl(DELETED_STATUS);
+					if (!imageURL.isEmpty()) {
+						iFirebaseService.deleteFile(imageURL);
+					}
+				}
+
+				// 4. update entity with isDisable = true
+				bannerImage.setStatus(status);
+				iBannerImageRepositoy.save(bannerImage);
+			}
+		} catch (Exception e) {
+			logger.error("Change banner status  ids = " + ids.toString() + "! " + e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
+
+				return "NOT FOUND!";
 			}
 
-			// 4. update entity with isDisable = true
-			bannerImage.setStatus(status);
-			iBannerImageRepositoy.save(bannerImage);
+			return "CHANGE FAIL";
 		}
 
 		return "CHANGE SUCCESS!";
 	}
 
 	@Override
-	public BannerImageDTO findById(long id) {
+	public Object findById(long id) {
 		// 1. connect database through repository
 		// 2. find entity by Id
 		// 3. if not found throw not found exception
 		// 4. else convert entity to dto
 		// 5. return
-		BannerImage bannerImage = iBannerImageRepositoy.findByIdAndStatusNot(id, DELETED_STATUS);
-		if (bannerImage == null) {
-			throw new ResourceNotFoundException();
+		BannerImageDTO bannerImageDTO = new BannerImageDTO();
+		try {
+
+			BannerImage bannerImage = iBannerImageRepositoy.findByIdAndStatusNot(id, DELETED_STATUS);
+			if (bannerImage == null) {
+				throw new ResourceNotFoundException();
+			}
+			bannerImageDTO = new BannerImageDTO(bannerImage.getDescription(), bannerImage.getImageUrl());
+
+		} catch (Exception e) {
+			logger.error("FIND: unitId = " + id + "! " + e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
+
+				return "NOT FOUND!";
+			}
+
+			return "FIND FAIL!";
 		}
-		BannerImageDTO bannerImageDTO = new BannerImageDTO(bannerImage.getDescription(), bannerImage.getImageUrl());
 
 		return bannerImageDTO;
 	}
@@ -163,49 +190,42 @@ public class BannerImageServiceImpl implements IBannerImageService {
 	@Override
 	public String updateBannerImage(long id, String description, MultipartFile file)
 			throws SizeLimitExceededException, IOException {
-		BannerImage bannerImage = iBannerImageRepositoy.findByIdAndStatusNot(id, DELETED_STATUS);
-		if (bannerImage == null) {
-			throw new ResourceNotFoundException();
-		}
-		String error = validateRequiredString(description, DESCRIPTION_MAX_LENGTH, "\nDescription is invalid!");
-		error += validateFile(file, "image", "Not supported this file type for image!");
-		if (!error.isEmpty()) {
+		try {
+			BannerImage bannerImage = iBannerImageRepositoy.findByIdAndStatusNot(id, DELETED_STATUS);
+			if (bannerImage == null) {
+				throw new ResourceNotFoundException();
+			}
+			String error = Util.validateRequiredString(description, DESCRIPTION_MAX_LENGTH,
+					"\nDescription is invalid!");
+			error += Util.validateFile(file, "image", "Not supported this file type for image!");
+			if (!error.isEmpty()) {
 
-			return error.trim();
-		}
-//		if (file != null) {
-//			if (!file.getContentType().contains("image")) {
-//				error += "Not supported this file type for image!";
-//			}
-//		}
+				return error.trim();
+			}
 
-		// 1. connect database through repository
-		// 2. find entity by id
-		// 3. if not existed throw exception
+			// 5. if parameter valid, update entity and return SUCCESS
+			// 6. else return error
 
-		// 4. validate parameter
-//		if (description == null) {
-//			error += "\nDescription is invalid!";
-//		} else {
-//			if (description.length() > DESCRIPTION_MAX_LENGTH) {
-//				error += "\nDescription is invalid!";
-//			}
-//		}
-
-		// 5. if parameter valid, update entity and return SUCCESS
-		// 6. else return error
-
-		bannerImage.setDescription(description.trim());
-		if (file != null) {
-			if (!file.isEmpty()) {
-				String imageUrl = bannerImage.getImageUrl();
-				bannerImage.setImageUrl(iFirebaseService.uploadFile(file));
-				if (!imageUrl.isEmpty()) {
-					iFirebaseService.deleteFile(imageUrl);
+			bannerImage.setDescription(description.trim());
+			if (file != null) {
+				if (!file.isEmpty()) {
+					String imageUrl = bannerImage.getImageUrl();
+					bannerImage.setImageUrl(iFirebaseService.uploadFile(file));
+					if (!imageUrl.isEmpty()) {
+						iFirebaseService.deleteFile(imageUrl);
+					}
 				}
 			}
+			iBannerImageRepositoy.save(bannerImage);
+		} catch (Exception e) {
+			logger.error("UPDATE: bannerId = " + id + "! " + e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
+
+				return "NOT FOUND!";
+			}
+
+			return "UPDATE FAIL!";
 		}
-		iBannerImageRepositoy.save(bannerImage);
 
 		return "UPDATE SUCCESS!";
 
@@ -213,56 +233,21 @@ public class BannerImageServiceImpl implements IBannerImageService {
 
 	@Override
 	public List<String> showBannerImage() {
-		List<BannerImage> listBannerImages = iBannerImageRepositoy.findByStatus("ACTIVE");
 		List<String> listUrls = new ArrayList<>();
-
-		if (!listBannerImages.isEmpty()) {
-			for (BannerImage bannerImage : listBannerImages) {
-				listUrls.add(bannerImage.getImageUrl());
+		try {
+			List<BannerImage> listBannerImages = iBannerImageRepositoy.findByStatus("ACTIVE");
+			if (!listBannerImages.isEmpty()) {
+				for (BannerImage bannerImage : listBannerImages) {
+					listUrls.add(bannerImage.getImageUrl());
+				}
 			}
+		} catch (Exception e) {
+			logger.error("Show all banner! " + e.getMessage());
+
+			return null;
 		}
 
 		return listUrls;
-	}
-
-	private String validateRequiredString(String property, int length, String errorMessage) {
-		String error = "";
-		if (property == null) {
-			error = errorMessage;
-		} else {
-			if (property.isEmpty() || property.length() > length) {
-				error = errorMessage;
-			}
-		}
-
-		return error;
-	}
-
-	private String validateFile(MultipartFile file, String contentType, String errorMessage) {
-		String error = "";
-		if (file != null) {
-			if (!file.getContentType().contains(contentType)) {
-				error += errorMessage;
-			}
-		}
-
-		return error;
-	}
-
-	private String validateRequiredFile(MultipartFile file, String contentType, String errorMessage,
-			String errorMessage2) {
-		String error = "";
-		if (file == null) {
-			error = errorMessage;
-		} else {
-			if (file.isEmpty()) {
-				error = errorMessage;
-			} else if (!file.getContentType().contains(contentType)) {
-				error += errorMessage2;
-			}
-		}
-
-		return error;
 	}
 
 }

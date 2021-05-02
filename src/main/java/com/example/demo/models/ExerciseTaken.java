@@ -1,12 +1,14 @@
 package com.example.demo.models;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.PrePersist;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -24,6 +26,11 @@ public class ExerciseTaken {
 
 	@CreatedDate
 	private LocalDateTime createdDate;
+
+	@PrePersist
+	public void onCreate() {
+		this.createdDate = LocalDateTime.now(ZoneId.of("UTC+7"));
+	}
 
 	/**
 	 * @return the id

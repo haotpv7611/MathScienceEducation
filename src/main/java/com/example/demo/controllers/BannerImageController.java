@@ -41,11 +41,11 @@ public class BannerImageController {
 			@RequestParam MultipartFile file, @RequestParam long accountId)
 			throws SizeLimitExceededException, IOException {
 		String response = iBannerImageService.createBannerImage(description, file, accountId);
-		if (response.contains("permission")) {
+		if (response.contains("NOT FOUND")) {
 
-			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 		}
-		if (!response.contains("SUCCESS")) {
+		if (response.contains("FAIL")) {
 
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 		}
@@ -57,6 +57,10 @@ public class BannerImageController {
 	// @PreAuthorize("hasRole('admin')")
 	public ResponseEntity<List<BannerImageDTO>> findAllBannerImage() {
 		List<BannerImageDTO> response = iBannerImageService.findAll();
+		if (response == null) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
 
 		return ResponseEntity.ok(response);
 	}
@@ -85,8 +89,16 @@ public class BannerImageController {
 
 	@GetMapping("/{id}")
 	// @PreAuthorize("hasRole('admin')")
-	public ResponseEntity<BannerImageDTO> findBannerImageById(@PathVariable long id) {
-		BannerImageDTO response = iBannerImageService.findById(id);
+	public ResponseEntity<Object> findBannerImageById(@PathVariable long id) {
+		Object response = iBannerImageService.findById(id);
+		if (response.equals("NOT FOUND!")) {
+
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
+		if (response.equals("FIND FAIL!")) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
 
 		return ResponseEntity.ok(response);
 	}
@@ -97,9 +109,13 @@ public class BannerImageController {
 			@RequestParam(required = false) String description, @RequestParam(required = false) MultipartFile file)
 			throws SizeLimitExceededException, IOException {
 		String response = iBannerImageService.updateBannerImage(id, description, file);
-		if (!response.contains("SUCCESS")) {
+		if (response.contains("NOT FOUND")) {
 
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
+		if (response.contains("FAIL")) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
 		}
 
 		return ResponseEntity.ok(response);
@@ -110,7 +126,11 @@ public class BannerImageController {
 	// @PreAuthorize("hasRole('student')")
 	public ResponseEntity<List<String>> showBannerImageForStudent() {
 		List<String> response = iBannerImageService.showBannerImage();
+		if (response == null) {
 
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+		
 		return ResponseEntity.ok(response);
 	}
 }
