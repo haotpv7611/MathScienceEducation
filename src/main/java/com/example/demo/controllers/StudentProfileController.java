@@ -276,11 +276,13 @@ public class StudentProfileController {
 	public void importStudent(HttpServletResponse httpServletResponse, @RequestParam MultipartFile file,
 			@RequestParam long schoolId, @RequestParam int gradeId) throws IOException {
 		Map<String, Workbook> response = iStudentProfileService.importStudent(file, schoolId, gradeId);
+		System.out.println("map size" + response.size());
 		for (Entry<String, Workbook> entry : response.entrySet()) {
-			if (entry.getKey().contains("FAIL")) {
-
-				httpServletResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-			} else if (entry.getKey().contains("NOT FOUND")) {
+//			if (entry.getKey().contains("FAIL")) {
+//
+//				
+//			} else 
+			if (entry.getKey().contains("NOT FOUND")) {
 
 				httpServletResponse.setStatus(HttpServletResponse.SC_NOT_FOUND);
 			} else if (entry.getKey().contains("SUCCESS")) {
@@ -289,7 +291,7 @@ public class StudentProfileController {
 			} else if (entry.getKey().contains("EXISTED")) {
 
 				httpServletResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-			}else {
+			} else if (entry.getKey().contains("ERROR")) {
 				httpServletResponse.setContentType("application/octet-stream");
 				String headerKey = "Content-Disposition";
 				String headerValue = "attachment; filename="
@@ -297,7 +299,10 @@ public class StudentProfileController {
 				httpServletResponse.setHeader(headerKey, headerValue);
 
 				iStudentProfileService.writeFileOS(httpServletResponse, entry.getValue());
+			} else {
+				httpServletResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			}
+
 		}
 	}
 
