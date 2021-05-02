@@ -19,7 +19,7 @@ public class MathScienceEducationApplication {
 			@Override
 			public void addCorsMappings(CorsRegistry registry) {
 				registry.addMapping("/").allowedOrigins("http://localhost:3000").exposedHeaders("*")
-						.allowCredentials(false).maxAge(10*3600*1000);
+						.allowCredentials(false).maxAge(1800);
 			}
 		};
 	}

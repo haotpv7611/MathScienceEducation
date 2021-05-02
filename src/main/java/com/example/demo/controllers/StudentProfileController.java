@@ -33,7 +33,7 @@ import com.example.demo.dtos.StudentResponseDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.services.IStudentProfileService;
 
-@CrossOrigin(exposedHeaders = "*", maxAge = 10*60*60*1000)
+@CrossOrigin(exposedHeaders = "*", maxAge = 1800)
 @RestController
 public class StudentProfileController {
 	@Autowired
@@ -275,7 +275,7 @@ public class StudentProfileController {
 	@PostMapping("/student/import")
 	// @PreAuthorize("hasRole('admin')")
 //	@Timed
-	@Transactional(timeout = 12000)
+//	@Transactional(timeout = 1800)
 	public void importStudent(HttpServletResponse httpServletResponse, @RequestParam MultipartFile file,
 			@RequestParam long schoolId, @RequestParam int gradeId) throws IOException {
 		Map<String, Workbook> response = iStudentProfileService.importStudent(file, schoolId, gradeId);
