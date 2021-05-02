@@ -5,6 +5,7 @@ import java.time.ZoneId;
 
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -14,7 +15,9 @@ import javax.persistence.OneToOne;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 
+import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -28,20 +31,23 @@ public class StudentProfile {
 	private String gender;
 	private String parentName;
 	private String contact;
+	private String status;
+	private long studentCount;
 
 	@CreatedDate
 	private LocalDateTime createdDate;
+	@CreatedBy
 	private String createdBy;
 	@LastModifiedDate
 	private LocalDateTime modifiedDate;
+	@LastModifiedBy
 	private String modifiedBy;
-	private String status;
-	private long studentCount;
 
 	@PrePersist
 	public void onCreate() {
 		this.createdDate = LocalDateTime.now(ZoneId.of("UTC+7"));
 		this.modifiedDate = null;
+		this.modifiedBy = null;
 	}
 
 	@PreUpdate
@@ -53,7 +59,7 @@ public class StudentProfile {
 	@JoinColumn(name = "accountId")
 	private Account account;
 
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "classesId")
 	private Classes classes;
 

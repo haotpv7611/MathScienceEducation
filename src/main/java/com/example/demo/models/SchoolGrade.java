@@ -6,6 +6,7 @@ import java.util.List;
 
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -15,7 +16,9 @@ import javax.persistence.OneToMany;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 
+import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -28,17 +31,18 @@ public class SchoolGrade {
 	private String status;
 	@CreatedDate
 	private LocalDateTime createdDate;
-//	@CreatedBy
+	@CreatedBy
 	private String createdBy;
 	@LastModifiedDate
 	private LocalDateTime modifiedDate;
-//	@LastModifiedBy
+	@LastModifiedBy
 	private String modifiedBy;
 
 	@PrePersist
 	public void onCreate() {
 		this.createdDate = LocalDateTime.now(ZoneId.of("UTC+7"));
 		this.modifiedDate = null;
+		this.modifiedBy = null;
 	}
 
 	@PreUpdate
@@ -46,15 +50,15 @@ public class SchoolGrade {
 		this.modifiedDate = LocalDateTime.now(ZoneId.of("UTC+7"));
 	}
 
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "schoolId")
 	School school;
 
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "gradeId")
 	Grade grade;
 
-	@OneToMany(mappedBy = "schoolGrade")
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "schoolGrade")
 	private List<Classes> classList;
 
 	/**

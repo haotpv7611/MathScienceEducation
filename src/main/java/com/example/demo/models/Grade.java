@@ -3,6 +3,7 @@ package com.example.demo.models;
 import java.util.Set;
 
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -15,7 +16,7 @@ public class Grade {
 	private int id;
 	private int gradeName;
 
-	@OneToMany(mappedBy = "grade")
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "grade")
 	private Set<SchoolGrade> schoolGrade;
 
 	public int getGradeName() {

@@ -6,6 +6,7 @@ import java.time.ZoneId;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -31,22 +32,22 @@ public class Account {
 	private String username;
 	private String password;
 	private String fullName;
-//	private int roleId;
+	private String status;
 
 	@CreatedDate
 	private LocalDateTime createdDate;
-//	@CreatedBy
+	@CreatedBy
 	private String createdBy;
 	@LastModifiedDate
 	private LocalDateTime modifiedDate;
-//	@LastModifiedBy
+	@LastModifiedBy
 	private String modifiedBy;
-	private String status;
 
 	@PrePersist
 	public void onCreate() {
 		this.createdDate = LocalDateTime.now(ZoneId.of("UTC+7"));
 		this.modifiedDate = null;
+		this.modifiedBy = null;
 	}
 
 	@PreUpdate
@@ -57,7 +58,7 @@ public class Account {
 	@OneToOne(mappedBy = "account")
 	private StudentProfile studentProfile;
 
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "roleId")
 	private Role role;
 

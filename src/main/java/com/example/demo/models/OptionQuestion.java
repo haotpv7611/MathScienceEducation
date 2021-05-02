@@ -33,17 +33,18 @@ public class OptionQuestion {
 
 	@CreatedDate
 	private LocalDateTime createdDate;
-//	@CreatedBy
+	@CreatedBy
 	private String createdBy;
 	@LastModifiedDate
 	private LocalDateTime modifiedDate;
-//	@LastModifiedBy
+	@LastModifiedBy
 	private String modifiedBy;
 
 	@PrePersist
 	public void onCreate() {
 		this.createdDate = LocalDateTime.now(ZoneId.of("UTC+7"));
 		this.modifiedDate = null;
+		this.modifiedBy = null;
 	}
 
 	@PreUpdate

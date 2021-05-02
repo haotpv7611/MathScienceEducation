@@ -11,7 +11,9 @@ import javax.persistence.Id;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 
+import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -28,17 +30,18 @@ public class Unit {
 
 	@CreatedDate
 	private LocalDateTime createdDate;
-//	@CreatedBy
+	@CreatedBy
 	private String createdBy;
 	@LastModifiedDate
 	private LocalDateTime modifiedDate;
-//	@LastModifiedBy
+	@LastModifiedBy
 	private String modifiedBy;
 
 	@PrePersist
 	public void onCreate() {
 		this.createdDate = LocalDateTime.now(ZoneId.of("UTC+7"));
 		this.modifiedDate = null;
+		this.modifiedBy = null;
 	}
 
 	@PreUpdate

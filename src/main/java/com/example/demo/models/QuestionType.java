@@ -3,6 +3,7 @@ package com.example.demo.models;
 import java.util.List;
 
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -15,7 +16,7 @@ public class QuestionType {
 	private int id;
 	private String description;
 
-	@OneToMany(mappedBy = "questionType")
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "questionType")
 	private List<Question> questionList;
 
 	/**
