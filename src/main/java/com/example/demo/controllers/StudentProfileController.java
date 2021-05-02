@@ -32,7 +32,7 @@ import com.example.demo.dtos.StudentResponseDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.services.IStudentProfileService;
 
-@CrossOrigin(exposedHeaders = "Content-Disposition")
+@CrossOrigin(exposedHeaders = "*", maxAge = 10*60*60*1000)
 @RestController
 public class StudentProfileController {
 	@Autowired
