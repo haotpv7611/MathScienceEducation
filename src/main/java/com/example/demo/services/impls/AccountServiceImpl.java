@@ -11,12 +11,13 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.dtos.AccountCredDTO;
 import com.example.demo.dtos.AccountRequestDTO;
 import com.example.demo.dtos.AccountResponseDTO;
-import com.example.demo.dtos.CredentialDTO;
 import com.example.demo.dtos.ListIdAndStatusDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.Account;
@@ -34,7 +35,7 @@ public class AccountServiceImpl implements IAccountService {
 	private final String ACTIVE_STATUS = "ACTIVE";
 	private final String DELETE_STATUS = "DELETED";
 	private final int ROLE_STAFF = 2;
-	private final String ADMIN_PASSWORD = "12345678";
+	private final String STAFF_PASSWORD = "12345678";
 	private final String DEFAULT_PASSWORD = "123456";
 
 	@Autowired
@@ -79,12 +80,14 @@ public class AccountServiceImpl implements IAccountService {
 		return jwt;
 	}
 
+	@Override
 	public Object findAccountById(long id) {
 		AccountResponseDTO accountResponseDTOList = new AccountResponseDTO();
 		try {
 			Account account = iAccountRepository.findByIdAndStatusNot(id, DELETE_STATUS);
 			if (account != null) {
 				AccountResponseDTO accountResponseDTO = modelMapper.map(account, AccountResponseDTO.class);
+//				accountResponseDTO.setPassword(bCryptPasswordEncoder.);
 				accountResponseDTO.setRole(account.getRole().getDescription());
 			}
 
@@ -97,10 +100,11 @@ public class AccountServiceImpl implements IAccountService {
 		return accountResponseDTOList;
 	}
 
+	@Override
 	public List<AccountResponseDTO> findAllAccount() {
 		List<AccountResponseDTO> accountResponseDTOList = new ArrayList<>();
 		try {
-			List<Account> accountList = iAccountRepository.findByRoldId(ROLE_STAFF);
+			List<Account> accountList = iAccountRepository.findByRoleId(ROLE_STAFF);
 			if (!accountList.isEmpty()) {
 				for (Account account : accountList) {
 					AccountResponseDTO accountResponseDTO = modelMapper.map(account, AccountResponseDTO.class);
@@ -119,19 +123,22 @@ public class AccountServiceImpl implements IAccountService {
 	}
 
 	@Override
-	public String createAccount(String username, String password, int roleId) {
+	public String createAccount(AccountRequestDTO accountRequestDTO) {
 		try {
-			Account checkUsername = iAccountRepository.findByUsernameAndStatusNot(username, "DELETED");
-			if (checkUsername != null) {
+			String username = accountRequestDTO.getUsername();
+			String fullname = accountRequestDTO.getFullName();
+			String password = accountRequestDTO.getPassword();
+			Account account = iAccountRepository.findByUsernameAndStatusNot(username, "DELETED");
+			if (account != null) {
 
 				return "EXISTED";
 			}
+			Role role = iRoleRepository.findById(ROLE_STAFF).orElseThrow(() -> new ResourceNotFoundException());
 
-			Role role = iRoleRepository.findById(roleId).orElseThrow(() -> new ResourceNotFoundException());
-			Account account = new Account();
+			account = new Account();
 			account.setUsername(username);
-			account.setPassword(passwordEncoder.encode(ADMIN_PASSWORD));
-			account.setFullName(username);
+			account.setPassword(passwordEncoder.encode(STAFF_PASSWORD));
+			account.setFullName(fullname);
 			account.setRole(role);
 			account.setStatus("ACTIVE");
 			iAccountRepository.save(account);
@@ -148,7 +155,33 @@ public class AccountServiceImpl implements IAccountService {
 		return "CREATE SUCCESS!";
 	}
 
-//	@Override
+	@Override
+	public String updateAccount(long id, AccountRequestDTO accountRequestDTO) {
+		try {
+			String password = accountRequestDTO.getPassword();
+			String fullName = accountRequestDTO.getFullName();
+			Account account = iAccountRepository.findByIdAndStatusNot(id, "DELETED");
+			if (account == null) {
+				throw new ResourceNotFoundException();
+			}
+
+			account.setPassword(passwordEncoder.encode(password));
+			account.setFullName(fullName);
+			iAccountRepository.save(account);
+		} catch (Exception e) {
+			logger.error("Create account! " + e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
+
+				return "NOT FOUND!";
+			}
+
+			return "CREATE FAIL";
+		}
+
+		return "CREATE SUCCESS!";
+	}
+
+	@Override
 	public String changeStatusAccount(ListIdAndStatusDTO listIdAndStatusDTO) {
 		try {
 			List<Long> ids = listIdAndStatusDTO.getIds();
@@ -200,7 +233,7 @@ public class AccountServiceImpl implements IAccountService {
 
 	@Override
 	public Object getUserCredential(String token) {
-		CredentialDTO credentialDTO = new CredentialDTO();
+		AccountCredDTO accountCredDTO = new AccountCredDTO();
 		try {
 
 			String username = jwtProvider.getUserNameFromJwtToken(token);
@@ -209,13 +242,13 @@ public class AccountServiceImpl implements IAccountService {
 			if (account == null) {
 				throw new ResourceNotFoundException();
 			}
-			credentialDTO.setAccountId(account.getId());
+			accountCredDTO.setAccountId(account.getId());
 			String role = account.getRole().getDescription();
-			credentialDTO.setDescription(role);
+			accountCredDTO.setDescription(role);
 			if (role.equals("student")) {
-				credentialDTO.setGradeId(account.getStudentProfile().getClasses().getSchoolGrade().getGrade().getId());
+				accountCredDTO.setGradeId(account.getStudentProfile().getClasses().getSchoolGrade().getGrade().getId());
 			} else {
-				credentialDTO.setGradeId(0);
+				accountCredDTO.setGradeId(0);
 			}
 
 		} catch (Exception e) {
@@ -228,7 +261,7 @@ public class AccountServiceImpl implements IAccountService {
 			return "GET CREDENTIAL FAIL!";
 		}
 
-		return credentialDTO;
+		return accountCredDTO;
 	}
 
 }

@@ -58,9 +58,8 @@ public class AccountController {
 	}
 
 	@PostMapping("/account/create")
-	public ResponseEntity<String> createAccount(@RequestParam String username, @RequestParam String password,
-			@RequestParam int role) {
-		String response = iAccountService.createAccount(username, password, role);
+	public ResponseEntity<String> createAccount(@RequestBody AccountRequestDTO accountRequestDTO) {
+		String response = iAccountService.createAccount(accountRequestDTO);
 		if (response.contains("EXISTED")) {
 
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);

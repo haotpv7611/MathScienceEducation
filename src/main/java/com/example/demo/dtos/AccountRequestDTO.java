@@ -3,6 +3,7 @@ package com.example.demo.dtos;
 public class AccountRequestDTO {
 	private String username;
 	private String password;
+	private String fullName;
 
 	/**
 	 * @return the username
@@ -30,6 +31,20 @@ public class AccountRequestDTO {
 	 */
 	public void setPassword(String password) {
 		this.password = password;
+	}
+
+	/**
+	 * @return the fullName
+	 */
+	public String getFullName() {
+		return fullName;
+	}
+
+	/**
+	 * @param fullName the fullName to set
+	 */
+	public void setFullName(String fullName) {
+		this.fullName = fullName;
 	}
 
 }

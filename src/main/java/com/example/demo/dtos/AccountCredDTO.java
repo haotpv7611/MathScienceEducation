@@ -1,6 +1,6 @@
 package com.example.demo.dtos;
 
-public class CredentialDTO {
+public class AccountCredDTO {
 	private long accountId;
 	private int gradeId;
 	private String description;
