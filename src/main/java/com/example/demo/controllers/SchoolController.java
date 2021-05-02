@@ -33,7 +33,7 @@ public class SchoolController {
 	private ISchoolService iSchoolService;
 
 	@GetMapping("/{id}")
-	//@PreAuthorize("hasRole('admin')")
+	@PreAuthorize("hasRole('admin')")
 	public ResponseEntity<Object> findSchoolById(@PathVariable long id) {
 		Object response = iSchoolService.findSchoolById(id);
 		if (response.equals("NOT FOUND!")) {
@@ -62,7 +62,7 @@ public class SchoolController {
 	}
 
 	@GetMapping("/all/{gradeId}")
-	//@PreAuthorize("hasRole('admin')")
+	@PreAuthorize("hasRole('admin')")
 	public ResponseEntity<List<SchoolResponseDTO>> findSchoolUnlinkByGradeId(@PathVariable int gradeId) {
 		List<SchoolResponseDTO> response = iSchoolService.findSchoolUnlinkByGradeId(gradeId);
 		if (response == null) {
@@ -74,7 +74,7 @@ public class SchoolController {
 	}
 
 	@PostMapping
-	//@PreAuthorize("hasRole('admin')")
+	@PreAuthorize("hasRole('admin')")
 	public ResponseEntity<String> createSchool(@Valid @RequestBody SchoolRequestDTO schoolRequestDTO,
 			BindingResult bindingResult) {
 		if (bindingResult.hasErrors()) {
@@ -105,7 +105,7 @@ public class SchoolController {
 	}
 
 	@PutMapping("/{id}")
-	//@PreAuthorize("hasRole('admin')")
+	@PreAuthorize("hasRole('admin')")
 	public ResponseEntity<String> updateSchool(@PathVariable long id,
 			@Valid @RequestBody SchoolRequestDTO schoolRequestDTO, BindingResult bindingResult) {
 		if (bindingResult.hasErrors()) {
@@ -135,7 +135,7 @@ public class SchoolController {
 	}
 
 	@PutMapping("/changeStatus")
-	//@PreAuthorize("hasRole('admin')")
+	@PreAuthorize("hasRole('admin')")
 	public ResponseEntity<String> changeStatusSchool(@Valid @RequestBody IdAndStatusDTO idAndStatusDTO,
 			BindingResult bindingResult) {
 		if (bindingResult.hasErrors()) {

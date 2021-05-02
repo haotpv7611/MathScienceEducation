@@ -35,7 +35,7 @@ public class AccountController {
 	}
 
 	@PostMapping("/password/reset")
-//	@PreAuthorize("hasRole('student')")
+	@PreAuthorize("hasRole('admin')")
 	public ResponseEntity<String> resetPassword(@PathVariable long studentId) {
 		String response = iAccountService.resetPassword(studentId);
 		if (response.contains("NOT FOUND")) {
@@ -49,9 +49,10 @@ public class AccountController {
 
 		return ResponseEntity.ok(response);
 	}
-	
+
 	@PostMapping("/account/create")
-	public ResponseEntity<String> createAccount(@RequestParam String username, @RequestParam String password, @RequestParam int role) {
+	public ResponseEntity<String> createAccount(@RequestParam String username, @RequestParam String password,
+			@RequestParam int role) {
 		String response = iAccountService.createAccount(username, password, role);
 //		if (response.contains("NOT FOUND")) {
 //
@@ -64,10 +65,9 @@ public class AccountController {
 
 		return ResponseEntity.ok(response);
 	}
-	
+
 	@GetMapping("/credential")
-//	@PreAuthorize("hasRole('admin') or hasRole('staff') or hasRole('student')")
-	public ResponseEntity<AccountResponseDTO>  getUserCredential(@RequestParam String token) {
+	public ResponseEntity<AccountResponseDTO> getUserCredential(@RequestParam String token) {
 		AccountResponseDTO response = iAccountService.getUserCredential(token);
 //		if (response.contains("NOT FOUND")) {
 //
@@ -80,6 +80,5 @@ public class AccountController {
 
 		return ResponseEntity.ok(response);
 	}
-	
-	
+
 }

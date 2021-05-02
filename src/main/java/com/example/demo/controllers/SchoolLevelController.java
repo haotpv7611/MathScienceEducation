@@ -22,7 +22,7 @@ public class SchoolLevelController {
 	private ISchoolLevelService iSchoolLevelService;
 
 	@GetMapping
-	//@PreAuthorize("hasRole('admin')")
+	@PreAuthorize("hasRole('admin')")
 	public ResponseEntity<List<SchoolLevelResponseDTO>> findAll() {
 		List<SchoolLevelResponseDTO> response = iSchoolLevelService.findAll();
 		if (response == null) {

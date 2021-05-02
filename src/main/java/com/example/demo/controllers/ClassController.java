@@ -37,7 +37,7 @@ public class ClassController {
 	private IClassService iClassService;
 
 	@PostMapping("/schoolGradeId")
-	//@PreAuthorize("hasRole('admin')")
+	@PreAuthorize("hasRole('admin')")
 	public ResponseEntity<List<ClassResponseDTO>> findBySchoolGradeId(@RequestBody SchoolGradeDTO schoolGradeDTO) {
 		List<ClassResponseDTO> response = iClassService.findBySchoolGradeId(schoolGradeDTO);
 		if (response == null) {
@@ -49,7 +49,7 @@ public class ClassController {
 	}
 
 	@GetMapping("/{schoolId}")
-	//@PreAuthorize("hasRole('admin')")
+	@PreAuthorize("hasRole('admin')")
 	public ResponseEntity<List<GradeClassDTO>> findGradeClassBySchoolId(@RequestParam long schoolId,
 			@RequestParam int gradeId, @RequestParam long classesId) {
 		List<GradeClassDTO> response = iClassService.findGradeClassBySchoolId(schoolId, gradeId, classesId);
@@ -62,7 +62,7 @@ public class ClassController {
 	}
 
 	@PostMapping
-	//@PreAuthorize("hasRole('admin')")
+	@PreAuthorize("hasRole('admin')")
 	public ResponseEntity<String> createClass(@Valid @RequestBody ClassRequestDTO classRequestDTO,
 			BindingResult bindingResult) {
 		if (bindingResult.hasErrors()) {
@@ -92,7 +92,7 @@ public class ClassController {
 	}
 
 	@PutMapping("/{id}")
-	//@PreAuthorize("hasRole('admin')")
+	@PreAuthorize("hasRole('admin')")
 	public ResponseEntity<String> updateClass(@PathVariable long id,
 			@Valid @RequestBody ClassRequestDTO classRequestDTO, BindingResult bindingResult) {
 		if (bindingResult.hasErrors()) {
@@ -121,7 +121,7 @@ public class ClassController {
 	}
 
 	@PutMapping("/changeStatus")
-	//@PreAuthorize("hasRole('admin')")
+	@PreAuthorize("hasRole('admin')")
 	public ResponseEntity<String> changeStatusClass(@Valid @RequestBody ListIdAndStatusDTO idAndStatusDTOList,
 			BindingResult bindingResult) {
 		if (bindingResult.hasErrors()) {

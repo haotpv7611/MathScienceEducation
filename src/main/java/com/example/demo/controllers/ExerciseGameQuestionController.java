@@ -25,7 +25,7 @@ public class ExerciseGameQuestionController {
 	IExerciseGameQuestionService iExerciseGameQuestionService;
 
 	@PostMapping("/exerciseGameQuestion")
-	//@PreAuthorize("hasRole('admin') or hasRole('staff')")
+	@PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<String> addQuestionToGameQuestionExercise(
 			@Valid @RequestBody ExerciseGameQuestionRequestDTO exerciseGameQuestionRequestDTO,
 			BindingResult bindingResult) {
@@ -56,7 +56,7 @@ public class ExerciseGameQuestionController {
 	}
 
 	@PutMapping("/exerciseGameQuestion/delete")
-	//@PreAuthorize("hasRole('admin') or hasRole('staff')")
+	@PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<String> deleteExerciseOrGameQuestion(
 			@Valid @RequestBody ExerciseGameQuestionRequestDTO exerciseGameQuestionRequestDTO,
 			BindingResult bindingResult) {
