@@ -10,7 +10,7 @@ public interface IAccountService {
 
 	Object findAccountById(long id);
 
-	List<AccountResponseDTO> findAllAccount();
+	List<AccountResponseDTO> findAllStaffAccount();
 
 	String createAccount(AccountRequestDTO accountRequestDTO);
 

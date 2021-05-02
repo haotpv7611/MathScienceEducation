@@ -15,11 +15,11 @@ public interface IAccountRepository extends JpaRepository<Account, Long> {
 	Account findByIdAndStatus(long id, String status);
 
 	Account findByUsername(String username);
-	
+
 	List<Account> findByRoleId(int roleId);
 
 	Account findByUsernameAndStatus(String username, String status);
-	
+
 	Account findByUsernameAndStatusNot(String username, String status);
 
 	Account findByIdAndStatusNot(long id, String status);

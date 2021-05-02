@@ -82,26 +82,31 @@ public class AccountServiceImpl implements IAccountService {
 
 	@Override
 	public Object findAccountById(long id) {
-		AccountResponseDTO accountResponseDTOList = new AccountResponseDTO();
+		AccountResponseDTO accountResponseDTO = new AccountResponseDTO();
 		try {
 			Account account = iAccountRepository.findByIdAndStatusNot(id, DELETE_STATUS);
-			if (account != null) {
-				AccountResponseDTO accountResponseDTO = modelMapper.map(account, AccountResponseDTO.class);
-//				accountResponseDTO.setPassword(bCryptPasswordEncoder.);
-				accountResponseDTO.setRole(account.getRole().getDescription());
+			if (account == null) {
+				throw new ResourceNotFoundException();
 			}
+			accountResponseDTO = modelMapper.map(account, AccountResponseDTO.class);
+//			accountResponseDTO.setPassword(bCryptPasswordEncoder.);
+			accountResponseDTO.setRole(account.getRole().getDescription());
 
 		} catch (Exception e) {
 			logger.error("Find all staff account! " + e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
+
+				return "NOT FOUND!";
+			}
 
 			return null;
 		}
 
-		return accountResponseDTOList;
+		return accountResponseDTO;
 	}
 
 	@Override
-	public List<AccountResponseDTO> findAllAccount() {
+	public List<AccountResponseDTO> findAllStaffAccount() {
 		List<AccountResponseDTO> accountResponseDTOList = new ArrayList<>();
 		try {
 			List<Account> accountList = iAccountRepository.findByRoleId(ROLE_STAFF);
@@ -127,7 +132,7 @@ public class AccountServiceImpl implements IAccountService {
 		try {
 			String username = accountRequestDTO.getUsername();
 			String fullname = accountRequestDTO.getFullName();
-			String password = accountRequestDTO.getPassword();
+//			String password = accountRequestDTO.getPassword();
 			Account account = iAccountRepository.findByUsernameAndStatusNot(username, "DELETED");
 			if (account != null) {
 
@@ -204,7 +209,7 @@ public class AccountServiceImpl implements IAccountService {
 			return "CHANGE FAIL";
 		}
 
-		return "CREATE SUCCESS!";
+		return "CHANGE SUCCESS!";
 	}
 
 	@Override
