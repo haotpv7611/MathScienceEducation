@@ -58,7 +58,8 @@ public class Account {
 	@OneToOne(mappedBy = "account")
 	private StudentProfile studentProfile;
 
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne
+//	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "roleId")
 	private Role role;
 

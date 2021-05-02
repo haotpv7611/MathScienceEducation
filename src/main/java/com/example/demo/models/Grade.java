@@ -16,7 +16,8 @@ public class Grade {
 	private int id;
 	private int gradeName;
 
-	@OneToMany(fetch = FetchType.LAZY, mappedBy = "grade")
+	@OneToMany(mappedBy = "grade")
+//	@OneToMany(fetch = FetchType.LAZY, mappedBy = "grade")
 	private Set<SchoolGrade> schoolGrade;
 
 	public int getGradeName() {

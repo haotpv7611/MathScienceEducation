@@ -57,10 +57,12 @@ public class School {
         this.modifiedDate = LocalDateTime.now(ZoneId.of("UTC+7"));
     }
 
-	@OneToMany(fetch = FetchType.LAZY, mappedBy = "school")
+	@OneToMany(mappedBy = "school")
+//	@OneToMany(fetch = FetchType.LAZY, mappedBy = "school")
 	private Set<SchoolGrade> schoolGrade;
 
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne
+//	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "schoolLevelId")
 	private SchoolLevel schoolLevel;
 

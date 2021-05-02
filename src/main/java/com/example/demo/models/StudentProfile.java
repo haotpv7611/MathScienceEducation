@@ -59,7 +59,8 @@ public class StudentProfile {
 	@JoinColumn(name = "accountId")
 	private Account account;
 
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne
+//	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "classesId")
 	private Classes classes;
 

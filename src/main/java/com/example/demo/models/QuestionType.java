@@ -16,7 +16,8 @@ public class QuestionType {
 	private int id;
 	private String description;
 
-	@OneToMany(fetch = FetchType.LAZY, mappedBy = "questionType")
+	@OneToMany(mappedBy = "questionType")
+//	@OneToMany(fetch = FetchType.LAZY, mappedBy = "questionType")
 	private List<Question> questionList;
 
 	/**

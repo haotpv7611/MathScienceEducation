@@ -31,11 +31,13 @@ public class Classes {
 	private String className;
 	private String status;
 
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne
+//	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "schoolGradeId")
 	private SchoolGrade schoolGrade;
 
-	@OneToMany(fetch = FetchType.LAZY, mappedBy = "classes")
+	@OneToMany(mappedBy = "classes")
+//	@OneToMany(fetch = FetchType.LAZY, mappedBy = "classes")
 	private List<StudentProfile> studentProfileList;
 
 	@CreatedDate

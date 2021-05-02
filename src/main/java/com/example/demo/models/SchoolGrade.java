@@ -50,15 +50,18 @@ public class SchoolGrade {
         this.modifiedDate = LocalDateTime.now(ZoneId.of("UTC+7"));
     }
 
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne
+//	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "schoolId")
 	School school;
 
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne
+//	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "gradeId")
 	Grade grade;
 
-	@OneToMany(fetch = FetchType.LAZY, mappedBy = "schoolGrade")
+	@OneToMany(mappedBy = "schoolGrade")
+//	@OneToMany(fetch = FetchType.LAZY, mappedBy = "schoolGrade")
 	private List<Classes> classList;
 
 	/**

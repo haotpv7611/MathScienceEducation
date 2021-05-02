@@ -16,7 +16,8 @@ public class SchoolLevel {
 	private int id;
 	private String description;
 
-	@OneToMany(fetch = FetchType.LAZY, mappedBy = "schoolLevel")
+	@OneToMany(mappedBy = "schoolLevel")
+//	@OneToMany(fetch = FetchType.LAZY, mappedBy = "schoolLevel")
 	private List<School> schoolList;
 
 	/**
