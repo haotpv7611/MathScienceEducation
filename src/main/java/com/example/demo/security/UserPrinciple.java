@@ -1,14 +1,17 @@
 package com.example.demo.security;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.example.demo.models.Account;
+import com.example.demo.models.Role;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class UserPrinciple implements UserDetails {
@@ -21,9 +24,10 @@ public class UserPrinciple implements UserDetails {
 	@JsonIgnore
 	private String password;
 
-	private List<GrantedAuthority> authorities;
+	private Collection<? extends GrantedAuthority> authorities;
 
-	public UserPrinciple(long id, String fullName, int gradeId, String username, String password, List<GrantedAuthority> authorities) {
+	public UserPrinciple(long id, String fullName, int gradeId, String username, String password,
+			Collection<GrantedAuthority> authorities) {
 		this.id = id;
 		this.fullName = fullName;
 		this.gradeId = gradeId;
@@ -32,22 +36,30 @@ public class UserPrinciple implements UserDetails {
 		this.authorities = authorities;
 	}
 
+	static Set<Role> roles = new HashSet<>();
+
 	public static UserPrinciple build(Account account) {
-		System.out.println("run here");
-		List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
-		authorities.add(new SimpleGrantedAuthority("admin"));
-		authorities.add(new SimpleGrantedAuthority("staff"));
-		authorities.add(new SimpleGrantedAuthority("student"));
+		roles.add(account.getRole());
+		Collection<GrantedAuthority> authorities = roles.stream()
+				.map(role -> new SimpleGrantedAuthority("ROLE_" + role.getDescription())).collect(Collectors.toList());
 
 		String role = account.getRole().getDescription();
 		if (role.equalsIgnoreCase("student")) {
 
 			return new UserPrinciple(account.getId(), account.getFullName(),
-					account.getStudentProfile().getClasses().getSchoolGrade().getGrade().getId(), account.getUsername(), account.getPassword(),
-					authorities);
+					account.getStudentProfile().getClasses().getSchoolGrade().getGrade().getId(), account.getUsername(),
+					account.getPassword(), authorities);
 		} else {
-			return new UserPrinciple(account.getId(), account.getFullName(), 0, account.getUsername(), account.getPassword(), authorities);
+			return new UserPrinciple(account.getId(), account.getFullName(), 0, account.getUsername(),
+					account.getPassword(), authorities);
 		}
+	}
+
+	/**
+	 * @return the authorities
+	 */
+	public Collection<? extends GrantedAuthority> getAuthorities() {
+		return authorities;
 	}
 
 	/**
@@ -69,11 +81,6 @@ public class UserPrinciple implements UserDetails {
 	@Override
 	public String getPassword() {
 		return password;
-	}
-
-	@Override
-	public Collection getAuthorities() {
-		return authorities;
 	}
 
 	@Override
@@ -108,6 +115,17 @@ public class UserPrinciple implements UserDetails {
 	 */
 	public void setFullName(String fullName) {
 		this.fullName = fullName;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (o == null || getClass() != o.getClass())
+			return false;
+
+		UserPrinciple user = (UserPrinciple) o;
+		return Objects.equals(id, user.id);
 	}
 
 }
