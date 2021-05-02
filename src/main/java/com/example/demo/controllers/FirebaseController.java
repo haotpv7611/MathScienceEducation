@@ -23,7 +23,7 @@ public class FirebaseController {
 	private IFirebaseService iFirebaseService;
 
 	@PostMapping("/file")
-	@PreAuthorize("hasRole('admin')")
+	// @PreAuthorize("hasRole('admin')")
 	public ResponseEntity<String> uploadImage(@RequestParam MultipartFile multipartFile) throws IOException {
 		String error = "";
 
@@ -51,7 +51,7 @@ public class FirebaseController {
 	}
 
 	@DeleteMapping("/file")
-	@PreAuthorize("hasRole('admin')")
+	// @PreAuthorize("hasRole('admin')")
 	public ResponseEntity<String> deleteImage(@RequestParam String fileUrl) {
 		try {
 			iFirebaseService.deleteFile(fileUrl);

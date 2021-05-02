@@ -29,7 +29,7 @@ public class QuestionController {
 	private IQuestionService iQuestionService;
 
 	@GetMapping("/question/{id}")
-	@PreAuthorize("hasRole('admin') or hasRole('staff')")
+	// @PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<?> findQuestionById(@PathVariable long id, @RequestParam String questionType) {
 		Object response = iQuestionService.findQuestionById(id, questionType);
 		if (response.equals("NOT FOUND!")) {
@@ -47,7 +47,7 @@ public class QuestionController {
 
 	
 	@GetMapping("/game/{gameId}/questions")
-	@PreAuthorize("hasRole('student')")
+	// @PreAuthorize("hasRole('student')")
 	public ResponseEntity<List<Object>> getListQuestionByGameId(@PathVariable long gameId){
 		List<Object> response = iQuestionService.findQuestionByGameId(gameId);
 		if (response == null) {
@@ -59,7 +59,7 @@ public class QuestionController {
 	}
 
 	@GetMapping("exerciseOrGame/{id}/questions")
-	@PreAuthorize("hasRole('admin') or hasRole('staff')")
+	// @PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<List<QuestionResponseDTO>> findQuestionByExerciseIdRoleAdmin(@PathVariable long id,
 			@RequestParam boolean isExericse) {
 		List<QuestionResponseDTO> response = iQuestionService.findQuestionByExerciseIdOrGameId(id, isExericse);
@@ -72,7 +72,7 @@ public class QuestionController {
 	}
 
 	@GetMapping("/unit/{unitId}/questions")
-	@PreAuthorize("hasRole('admin') or hasRole('staff')")
+	// @PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<List<QuestionResponseDTO>> findAllByUnitId(@PathVariable long unitId,
 			@RequestParam boolean isExercise) {
 		List<QuestionResponseDTO> response = iQuestionService.findAllByUnitId(unitId, isExercise);
@@ -85,7 +85,7 @@ public class QuestionController {
 	}
 
 	@GetMapping("/exersise/{exerciseId}/questions")
-	@PreAuthorize("hasRole('student')")
+	// @PreAuthorize("hasRole('student')")
 	public ResponseEntity<List<QuestionExerciseViewDTO>> findQuestionByExerciseId(@PathVariable long exerciseId) {
 		List<QuestionExerciseViewDTO> response = iQuestionService.findQuestionByExerciseId(exerciseId);
 		if (response == null) {
@@ -97,7 +97,7 @@ public class QuestionController {
 	}
 
 	@PostMapping("/question/exercise")
-	@PreAuthorize("hasRole('admin') or hasRole('staff')")
+	// @PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<String> createExerciseQuestion(@RequestParam(required = false) MultipartFile imageFile,
 			@RequestParam(required = false) MultipartFile audioFile, @RequestParam String questionTitle,
 			@RequestParam(required = false) String description, @RequestParam float score,
@@ -122,7 +122,7 @@ public class QuestionController {
 	}
 
 	@PostMapping("/question/game/fillInBlank")
-	@PreAuthorize("hasRole('admin') or hasRole('staff')")
+	// @PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<String> createGameFillInBlankQuestion(@RequestParam(required = false) MultipartFile imageFile,
 			@RequestParam String questionTitle, @RequestParam(required = false) String description,
 			@RequestParam float score, @RequestParam String questionType, @RequestParam long unitId,
@@ -147,7 +147,7 @@ public class QuestionController {
 	}
 
 	@PostMapping("/question/game/others")
-	@PreAuthorize("hasRole('admin') or hasRole('staff')")
+	// @PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<String> createGameSwappingMatchingChoosingQuestion(@RequestParam String questionTitle,
 			@RequestParam(required = false) String description, @RequestParam float score,
 			@RequestParam String questionType, @RequestParam long unitId,
@@ -172,7 +172,7 @@ public class QuestionController {
 	}
 
 	@PutMapping("/question/{id}/exercise")
-	@PreAuthorize("hasRole('admin') or hasRole('staff')")
+	// @PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<String> updateExerciseQuestion(@PathVariable long id,
 			@RequestParam(required = false) MultipartFile imageFile,
 			@RequestParam(required = false) MultipartFile audioFile, @RequestParam String questionTitle,
@@ -199,7 +199,7 @@ public class QuestionController {
 	}
 
 	@PutMapping("/question/{id}/game/fillInBlank")
-	@PreAuthorize("hasRole('admin') or hasRole('staff')")
+	// @PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<String> updateGameFillInBlankQuestion(@PathVariable long id,
 			@RequestParam(required = false) MultipartFile imageFile, @RequestParam String questionTitle,
 			@RequestParam(required = false) String description, @RequestParam float score,
@@ -225,7 +225,7 @@ public class QuestionController {
 	}
 
 	@PutMapping("/question/{id}/game/others")
-	@PreAuthorize("hasRole('admin') or hasRole('staff')")
+	// @PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<String> updateGameSwappingMatchingChoosingQuestion(@PathVariable long id,
 			@RequestParam String questionTitle, @RequestParam(required = false) String description,
 			@RequestParam float score, @RequestParam List<Long> optionIdList, @RequestParam List<String> optionTextList,
@@ -257,7 +257,7 @@ public class QuestionController {
 	}
 
 	@PutMapping("/question/delete")
-	@PreAuthorize("hasRole('admin') or hasRole('staff')")
+	// @PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<String> deleteQuestion(@RequestParam List<Long> ids) {
 		String response = iQuestionService.deleteQuestion(ids);
 		if (response.contains("NOT FOUND")) {

@@ -4,11 +4,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.dtos.AccountRequestDTO;
@@ -26,7 +24,6 @@ import com.example.demo.services.IAccountService;
 @Service
 public class AccountServiceImpl implements IAccountService {
 	Logger logger = LoggerFactory.getLogger(AccountServiceImpl.class);
-//	private final int ADMIN_ID = 1;
 	private final String ACTIVE_STATUS = "ACTIVE";
 	private final String DELETE_STATUS = "DELETED";
 	private final String ADMIN_PASSWORD = "12345678";
@@ -48,22 +45,54 @@ public class AccountServiceImpl implements IAccountService {
 	private JwtProvider jwtProvider;
 
 	@Override
-	public String createAccount(String username, String password, int roleId) {
-		Account checkUsername = iAccountRepository.findByUsernameAndStatusNot(username, "DELETED");
-		if (checkUsername != null) {
+	public String login(AccountRequestDTO accountRequestDTO) {
+		String username = accountRequestDTO.getUsername();
+		String password = accountRequestDTO.getPassword();
 
-			return "EXISTED";
+		String jwt = "";
+		try {
+
+			Authentication authentication = authenticationManager
+					.authenticate(new UsernamePasswordAuthenticationToken(username, password));
+			SecurityContextHolder.getContext().setAuthentication(authentication);
+
+			jwtProvider.generateJwtToken(authentication);
+		} catch (Exception e) {
+			logger.error("Login! " + e.getMessage());
+
+			return "LOGIN FAIL";
 		}
 
-		Role role = iRoleRepository.findById(roleId).orElseThrow(() -> new ResourceNotFoundException());
-		Account account = new Account();
-		account.setUsername(username);
-		account.setPassword(ADMIN_PASSWORD);
-		account.setFullName(username);
-		account.setRole(role);
-		account.setStatus("ACTIVE");
-		iAccountRepository.save(account);
-		return null;
+		return jwt;
+	}
+
+	@Override
+	public String createAccount(String username, String password, int roleId) {
+		try {
+			Account checkUsername = iAccountRepository.findByUsernameAndStatusNot(username, "DELETED");
+			if (checkUsername != null) {
+
+				return "EXISTED";
+			}
+
+			Role role = iRoleRepository.findById(roleId).orElseThrow(() -> new ResourceNotFoundException());
+			Account account = new Account();
+			account.setUsername(username);
+			account.setPassword(ADMIN_PASSWORD);
+			account.setFullName(username);
+			account.setRole(role);
+			account.setStatus("ACTIVE");
+			iAccountRepository.save(account);
+		} catch (Exception e) {
+			logger.error("Create account! " + e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
+
+				return "NOT FOUND!";
+			}
+
+			return "CREATE FAIL";
+		}
+		return "CREATE SUCCESS!";
 	}
 
 	@Override
@@ -91,26 +120,16 @@ public class AccountServiceImpl implements IAccountService {
 	}
 
 	@Override
-	public String login(AccountRequestDTO accountRequestDTO) {
-		System.out.println("run here");
-		String username = accountRequestDTO.getUsername();
-		String password = accountRequestDTO.getPassword();
-
-		Authentication authentication = authenticationManager
-				.authenticate(new UsernamePasswordAuthenticationToken(username, password));
-		SecurityContextHolder.getContext().setAuthentication(authentication);
-
-		String jwt = jwtProvider.generateJwtToken(authentication);
-
-		return jwt;
-	}
-
-	public AccountResponseDTO getUserCredential(String token) {
-		
-		String username = jwtProvider.getUserNameFromJwtToken(token);
-		Account account = iAccountRepository.findByUsernameAndStatus(username, ACTIVE_STATUS);
+	public Object getUserCredential(String token) {
 		AccountResponseDTO accountResponseDTO = new AccountResponseDTO();
-		if (account != null) {
+		try {
+
+			String username = jwtProvider.getUserNameFromJwtToken(token);
+			Account account = iAccountRepository.findByUsernameAndStatus(username, ACTIVE_STATUS);
+
+			if (account == null) {
+				throw new ResourceNotFoundException();
+			}
 			accountResponseDTO.setAccountId(account.getId());
 			String role = account.getRole().getDescription();
 			accountResponseDTO.setDescription(role);
@@ -120,7 +139,17 @@ public class AccountServiceImpl implements IAccountService {
 			} else {
 				accountResponseDTO.setGradeId(0);
 			}
+
+		} catch (Exception e) {
+			logger.error("Get credential! " + e.getMessage());
+			if (e instanceof ResourceNotFoundException) {
+
+				return "NOT FOUND!";
+			}
+
+			return "GET CREDENTIAL FAIL!";
 		}
+		
 		return accountResponseDTO;
 	}
 

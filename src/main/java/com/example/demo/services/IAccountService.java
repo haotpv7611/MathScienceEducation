@@ -11,5 +11,5 @@ public interface IAccountService {
 	
 	String login(AccountRequestDTO accountRequestDTO);
 	
-	AccountResponseDTO getUserCredential(String token);
+	Object getUserCredential(String token);
 }

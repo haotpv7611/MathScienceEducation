@@ -23,7 +23,7 @@ public class GradeController {
 	private IGradeService iGradeService;
 
 	@GetMapping("/all")
-	@PreAuthorize("hasRole('admin') or hasRole('staff')")
+	// @PreAuthorize("hasRole('admin') or hasRole('staff')")
 	public ResponseEntity<List<GradeResponseDTO>> findAllGrades() {
 		List<GradeResponseDTO> response = iGradeService.findAllGrades();
 		if (response == null) {

@@ -39,7 +39,7 @@ public class StudentProfileController {
 	private IStudentProfileService iStudentProfileService;
 
 	@GetMapping("/student/{id}")
-	@PreAuthorize("hasRole('admin')")
+	// @PreAuthorize("hasRole('admin')")
 	public ResponseEntity<Object> findStudentById(@PathVariable long id) {
 		Object response = iStudentProfileService.findStudentById(id);
 		if (response.equals("NOT FOUND!")) {
@@ -55,7 +55,7 @@ public class StudentProfileController {
 	}
 
 	@GetMapping("/student/account/{accountId}")
-	@PreAuthorize("hasRole('student')")
+	// @PreAuthorize("hasRole('student')")
 	public ResponseEntity<StudentResponseDTO> findStudentByAccountId(@PathVariable long accountId) {
 		StudentResponseDTO response = iStudentProfileService.findStudentByAccountId(accountId);
 		if (response == null) {
@@ -67,7 +67,7 @@ public class StudentProfileController {
 	}
 
 	@PostMapping("/student/all")
-	@PreAuthorize("hasRole('admin')")
+	// @PreAuthorize("hasRole('admin')")
 	public ResponseEntity<List<StudentResponseDTO>> findStudentByListId(@RequestBody List<Long> ids) {
 		if (ids.size() != 3) {
 
@@ -83,7 +83,7 @@ public class StudentProfileController {
 	}
 
 	@PostMapping("/student")
-	@PreAuthorize("hasRole('admin')")
+	// @PreAuthorize("hasRole('admin')")
 	public ResponseEntity<String> createStudent(@Valid @RequestBody StudentRequestDTO studentRequestDTO,
 			BindingResult bindingResult) {
 		if (bindingResult.hasErrors()) {
@@ -126,7 +126,7 @@ public class StudentProfileController {
 	}
 
 	@PutMapping("/student/{id}")
-	@PreAuthorize("hasRole('admin')")
+	// @PreAuthorize("hasRole('admin')")
 	public ResponseEntity<String> updateStudent(@PathVariable long id,
 			@Valid @RequestBody StudentRequestDTO studentRequestDTO, BindingResult bindingResult) {
 		if (bindingResult.hasErrors()) {
@@ -169,7 +169,7 @@ public class StudentProfileController {
 	}
 
 	@PutMapping("/student")
-	@PreAuthorize("hasRole('admin')")
+	// @PreAuthorize("hasRole('admin')")
 	public ResponseEntity<String> changeStatusStudent(@Valid @RequestBody ListIdAndStatusDTO idAndStatusDTOList,
 			BindingResult bindingResult) {
 		if (bindingResult.hasErrors()) {
@@ -205,7 +205,7 @@ public class StudentProfileController {
 	}
 
 	@PutMapping("/student/changeClass")
-	@PreAuthorize("hasRole('admin')")
+	// @PreAuthorize("hasRole('admin')")
 	public ResponseEntity<?> changeClassForStudent(@RequestParam List<Long> studentIdList,
 			@RequestParam long classesId) {
 		String error = "";
@@ -242,7 +242,7 @@ public class StudentProfileController {
 	}
 
 	@PostMapping("/student/validate")
-	@PreAuthorize("hasRole('admin')")
+	// @PreAuthorize("hasRole('admin')")
 	public void validateStudent(HttpServletResponse httpServletResponse, @RequestParam MultipartFile file,
 			@RequestParam long schoolId, @RequestParam int gradeId) throws IOException, ParseException {
 		Map<String, Workbook> response = iStudentProfileService.validateStudentFile(file, schoolId, gradeId);
@@ -272,7 +272,7 @@ public class StudentProfileController {
 	}
 
 	@PostMapping("/student/import")
-	@PreAuthorize("hasRole('admin')")
+	// @PreAuthorize("hasRole('admin')")
 	public void importStudent(HttpServletResponse httpServletResponse, @RequestParam MultipartFile file,
 			@RequestParam long schoolId, @RequestParam int gradeId) throws IOException {
 		Map<String, Workbook> response = iStudentProfileService.importStudent(file, schoolId, gradeId);
@@ -302,7 +302,7 @@ public class StudentProfileController {
 	}
 
 	@GetMapping("/student/export/account")
-	@PreAuthorize("hasRole('admin')")
+	// @PreAuthorize("hasRole('admin')")
 	public void exportStudentAccount(HttpServletResponse httpServletResponse, @RequestParam long schoolId,
 			@RequestParam int gradeId) throws IOException {
 		Map<String, Workbook> response = iStudentProfileService.exportStudentAccount(schoolId, gradeId);
@@ -326,7 +326,7 @@ public class StudentProfileController {
 	}
 
 	@GetMapping("/student/export")
-	@PreAuthorize("hasRole('admin')")
+	// @PreAuthorize("hasRole('admin')")
 	public void exportScore(HttpServletResponse httpServletResponse, @RequestParam long schoolId,
 			@RequestParam int gradeId, @RequestParam long subjectId) throws IOException {
 		Map<String, Workbook> response = iStudentProfileService.exportScoreBySubjectId(schoolId, gradeId, subjectId);
@@ -350,7 +350,7 @@ public class StudentProfileController {
 	}
 
 	@GetMapping("/student/export/scoreFinal")
-	@PreAuthorize("hasRole('admin')")
+	// @PreAuthorize("hasRole('admin')")
 	public void exportFinalScore(HttpServletResponse httpServletResponse, @RequestParam long schoolId,
 			@RequestParam int gradeId) throws IOException {
 		Map<String, Workbook> response = iStudentProfileService.exportFinalScore(schoolId, gradeId);

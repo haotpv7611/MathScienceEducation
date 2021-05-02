@@ -29,7 +29,7 @@ public class SchoolGradeController {
 	private ISchoolGradeService iSchoolGradeService;
 
 	@GetMapping("/grade/{gradeId}/school")
-	@PreAuthorize("hasRole('admin')")
+	// @PreAuthorize("hasRole('admin')")
 	public ResponseEntity<List<SchoolResponseDTO>> findSchoolByGradeId(@PathVariable int gradeId) {
 		List<SchoolResponseDTO> response = iSchoolGradeService.findSchoolLinkedByGradeId(gradeId);
 		if (response == null) {
@@ -41,7 +41,7 @@ public class SchoolGradeController {
 	}
 
 	@PostMapping("/schoolGrade")
-	@PreAuthorize("hasRole('admin')")
+	// @PreAuthorize("hasRole('admin')")
 	public ResponseEntity<String> linkGradeAndSchool(@RequestBody SchoolGradeDTO schoolGradeDTO) {
 		String response = iSchoolGradeService.linkGradeAndSchool(schoolGradeDTO);
 		if (response.contains("NOT FOUND")) {
@@ -65,7 +65,7 @@ public class SchoolGradeController {
 	}
 
 	@PutMapping("/schoolGrade")
-	@PreAuthorize("hasRole('admin')")
+	// @PreAuthorize("hasRole('admin')")
 	public ResponseEntity<String> changeStatusGradeAndSchool(@RequestBody ListIdAndStatusDTO listIdAndStatusDTO) {
 		String status = listIdAndStatusDTO.getStatus();
 		if (!status.equals("ACTIVE") && !status.equals("INACTIVE") && !status.equals("DELETED")) {
@@ -91,7 +91,7 @@ public class SchoolGradeController {
 	}
 
 	@GetMapping("/grade/{schoolId}")
-	@PreAuthorize("hasRole('admin')")
+	// @PreAuthorize("hasRole('admin')")
 	public ResponseEntity<List<GradeResponseDTO>> findGradeBySchoolId(@PathVariable long schoolId) {
 		List<GradeResponseDTO> response = iSchoolGradeService.findGradeLinkedBySchoolId(schoolId);
 		if (response == null) {
