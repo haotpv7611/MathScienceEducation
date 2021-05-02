@@ -167,22 +167,51 @@ public class SchoolGradeServiceImpl implements ISchoolGradeService {
 			}
 
 			String status = listIdAndStatusDTO.getStatus();
+			if (status.equalsIgnoreCase(DELETED_STATUS)) {
+				List<Classes> classesList = iClassRepository.findBySchoolGradeIdAndStatusNot(schoolGrade.getId(),
+						DELETED_STATUS);
+				if (!classesList.isEmpty()) {
+					for (Classes classes : classesList) {
+						String response = iClassService.changeStatusOneClass(classes.getId(), status);
+						if (!response.equalsIgnoreCase("OK")) {
 
-			List<Classes> classesList = iClassRepository.findBySchoolGradeIdAndStatusNot(schoolGrade.getId(),
-					DELETED_STATUS);
-			if (!classesList.isEmpty()) {
-				for (Classes classes : classesList) {
-					String response = iClassService.changeStatusOneClass(classes.getId(), status);
-					if (!response.equalsIgnoreCase("OK")) {
-
-						return response;
+							return response;
+						}
 					}
 				}
+				schoolGrade.setStatus(status);
+				iSchoolGradeRepository.save(schoolGrade);
 			}
-			schoolGrade.setStatus(status);
-			iSchoolGradeRepository.save(schoolGrade);
+			if (status.equalsIgnoreCase(INACTIVE_STATUS)) {
+				List<Classes> classesList = iClassRepository.findBySchoolGradeIdAndStatusNot(schoolGrade.getId(),
+						DELETED_STATUS);
+				if (!classesList.isEmpty()) {
+					for (Classes classes : classesList) {
+						iClassService.changeStatusOneClass(classes.getId(), status);
+					}
+				}
+				schoolGrade.setStatus(status);
+				iSchoolGradeRepository.save(schoolGrade);
+			}
+			if (status.equalsIgnoreCase(ACTIVE_STATUS)) {
+				if (schoolGrade.getSchool().getStatus().equalsIgnoreCase(ACTIVE_STATUS)) {
+					schoolGrade.setStatus(status);
+					iSchoolGradeRepository.save(schoolGrade);
+					List<Classes> classesList = iClassRepository.findBySchoolGradeIdAndStatusNot(schoolGrade.getId(),
+							DELETED_STATUS);
+					if (!classesList.isEmpty()) {
+						for (Classes classes : classesList) {
+							iClassService.changeStatusOneClass(classes.getId(), status);
+						}
+					}
+				} else {
 
-		} catch (Exception e) {
+					return "CANNOT ACTIVE";
+				}
+			}
+		} catch (
+
+		Exception e) {
 			logger.error("Change status " + listIdAndStatusDTO.getStatus() + " with schoolId = " + schoolId
 					+ " and gradeId = " + gradeId + "! " + e.getMessage());
 			throw e;

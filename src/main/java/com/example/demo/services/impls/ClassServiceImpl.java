@@ -33,6 +33,7 @@ import com.example.demo.services.IStudentProfileService;
 public class ClassServiceImpl implements IClassService {
 	Logger logger = LoggerFactory.getLogger(ClassServiceImpl.class);
 	private final String ACTIVE_STATUS = "ACTIVE";
+	private final String INACTIVE_STATUS = "INACTIVE";
 	private final String PENDING_STATUS = "PENDING";
 	private final String DELETED_STATUS = "DELETED";
 
@@ -302,19 +303,39 @@ public class ClassServiceImpl implements IClassService {
 					}
 				}
 				classes.setStatus(status);
+				iClassRepository.save(classes);
 			} else {
 				if (!classes.getClassName().equalsIgnoreCase(PENDING_STATUS)) {
-					List<StudentProfile> studentProfileList = iStudentProfileRepository.findByClassesIdAndStatusNot(id,
-							DELETED_STATUS);
-					if (!studentProfileList.isEmpty()) {
-						for (StudentProfile studentProfile : studentProfileList) {
-							iStudentProfileService.changeStatusOneStudent(studentProfile.getId(), status);
+					if (status.equalsIgnoreCase(INACTIVE_STATUS)) {
+						List<StudentProfile> studentProfileList = iStudentProfileRepository
+								.findByClassesIdAndStatusNot(id, DELETED_STATUS);
+						if (!studentProfileList.isEmpty()) {
+							for (StudentProfile studentProfile : studentProfileList) {
+								iStudentProfileService.changeStatusOneStudent(studentProfile.getId(), status);
+							}
+						}
+						classes.setStatus(status);
+						iClassRepository.save(classes);
+					}
+					if (status.equalsIgnoreCase(ACTIVE_STATUS)) {
+						if (classes.getSchoolGrade().getStatus().equalsIgnoreCase(ACTIVE_STATUS)) {
+							classes.setStatus(status);
+							iClassRepository.save(classes);
+							List<StudentProfile> studentProfileList = iStudentProfileRepository
+									.findByClassesIdAndStatusNot(id, DELETED_STATUS);
+							if (!studentProfileList.isEmpty()) {
+								for (StudentProfile studentProfile : studentProfileList) {
+									iStudentProfileService.changeStatusOneStudent(studentProfile.getId(), status);
+								}
+							}
+
+						} else {
+
+							return "CANNOT ACTIVE";
 						}
 					}
-					classes.setStatus(status);
 				}
 			}
-			iClassRepository.save(classes);
 		} catch (Exception e) {
 			logger.error("Change status: one classesId = " + id + "! " + e.getMessage());
 			throw e;

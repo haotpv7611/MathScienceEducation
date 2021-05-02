@@ -42,6 +42,7 @@ import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTWorksheet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -134,12 +135,15 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 
 	@Autowired
 	private IStudentRecordRepository iStudentRecordRepository;
-	
+
 	@Autowired
 	private IRoleRepository iRoleRepository;
 
 	@Autowired
 	private IClassService iClassService;
+
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 
 	@Autowired
 	private ModelMapper modelMapper;
@@ -342,7 +346,8 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				}
 				String fullName = studentRequestDTO.getFullName().trim().replaceAll("\\s+", " ");
 				Role role = iRoleRepository.findById(STUDENT_ROLE).orElseThrow(() -> new ResourceNotFoundException());
-				Account account = new Account(username, DEFAULT_PASSWORD, fullName, role, ACTIVE_STATUS);
+				Account account = new Account(username, passwordEncoder.encode(DEFAULT_PASSWORD), fullName, role,
+						ACTIVE_STATUS);
 				iAccountRepository.save(account);
 
 				String DoB = studentRequestDTO.getDoB();
@@ -430,7 +435,19 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 			}
 
 			Account account = studentProfile.getAccount();
-			if (status.contains(ACTIVE_STATUS)) {
+			if (status.equalsIgnoreCase(ACTIVE_STATUS)) {
+				if (studentProfile.getClasses().getStatus().equalsIgnoreCase(ACTIVE_STATUS)) {
+					account.setStatus(status);
+					iAccountRepository.save(account);
+
+					studentProfile.setStatus(status);
+					iStudentProfileRepository.save(studentProfile);
+				} else {
+					
+					return "CANNOT ACTIVE";
+				}
+			}
+			if (status.equalsIgnoreCase(INACTIVE_STATUS)) {
 				account.setStatus(status);
 				iAccountRepository.save(account);
 
@@ -619,7 +636,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				}
 
 				if (countStudentImport + studentProfileList.size() > 60) {
-					
+
 					response.put("EXCEED LIMIT", null);
 				}
 
@@ -959,8 +976,8 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 						}
 						if (totalEmptyCell == 6) {
 							continue;
-						}						
-						
+						}
+
 						// get accountId user input
 						long studentId = 0;
 						if (row.getCell(1) != null) {
@@ -990,7 +1007,6 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 							StudentRequestDTO studentRequestDTO = new StudentRequestDTO(classes.getId(), fullName, DoB,
 									gender, parentName, contact);
 							createStudenProfile(studentRequestDTO);
-//							sheet.removeRow(row);
 						} else {
 							StudentProfile studentProfile = iStudentProfileRepository.findByIdAndStatusNot(studentId,
 									DELETE_STATUS);
@@ -1012,7 +1028,6 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 								studentProfile.setClasses(classes);
 								studentProfile.setStudentCount(studentCount);
 								iStudentProfileRepository.save(studentProfile);
-//								sheet.removeRow(row);
 							}
 
 						}
