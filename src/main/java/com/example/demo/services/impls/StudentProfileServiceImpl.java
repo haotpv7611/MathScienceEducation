@@ -6,6 +6,7 @@ import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -50,6 +51,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.example.demo.dtos.ClassResponseDTO;
 import com.example.demo.dtos.ListIdAndStatusDTO;
 import com.example.demo.dtos.SchoolGradeDTO;
+import com.example.demo.dtos.SchoolResponseDTO;
 import com.example.demo.dtos.StudentRequestDTO;
 import com.example.demo.dtos.StudentResponseDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
@@ -274,6 +276,11 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 							studentResponseDTOList.addAll(findStudentByClassedId(classId, schoolName, gradeName));
 						}
 					}
+
+					studentResponseDTOList.sort(Comparator.comparing(StudentResponseDTO::getStatus)
+							.thenComparing(StudentResponseDTO::getClassName)
+							.thenComparing(StudentResponseDTO::getLastName)
+							.thenComparing(StudentResponseDTO::getFirstName));
 				}
 			} catch (Exception e) {
 				logger.error("FIND: student by schoolId = " + schoolId + ", gradeId = " + gradeId + " and classId = "
@@ -304,8 +311,16 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 					studentResponseDTO.setGradeName(gradeName);
 					studentResponseDTO.setClassName(className);
 					studentResponseDTO.setGender(studentProfile.getGender());
+					String fullName = account.getFullName();
+					studentResponseDTO.setFirstName(fullName.substring(0, fullName.lastIndexOf(" ")));
+					System.out.println(fullName.substring(0, fullName.lastIndexOf(" ")));
+					studentResponseDTO.setLastName(fullName.substring(fullName.lastIndexOf(" ") + 1));
+					System.out.println(fullName.substring(fullName.lastIndexOf(" ") + 1));
 					studentResponseDTOList.add(studentResponseDTO);
 				}
+				studentResponseDTOList.sort(Comparator.comparing(StudentResponseDTO::getStatus)
+						.thenComparing(StudentResponseDTO::getClassName).thenComparing(StudentResponseDTO::getLastName)
+						.thenComparing(StudentResponseDTO::getFirstName));
 			}
 		} catch (Exception e) {
 			logger.error("FIND: student by classesId = " + classesId + "! " + e.getMessage());
@@ -346,8 +361,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				}
 				String fullName = studentRequestDTO.getFullName().trim().replaceAll("\\s+", " ");
 				Role role = iRoleRepository.findById(STUDENT_ROLE).orElseThrow(() -> new ResourceNotFoundException());
-				Account account = new Account(username, DEFAULT_PASSWORD, fullName, role,
-						ACTIVE_STATUS);
+				Account account = new Account(username, DEFAULT_PASSWORD, fullName, role, ACTIVE_STATUS);
 				iAccountRepository.save(account);
 
 				String DoB = studentRequestDTO.getDoB();
@@ -443,7 +457,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 					studentProfile.setStatus(status);
 					iStudentProfileRepository.save(studentProfile);
 				} else {
-					
+
 					return "CANNOT ACTIVE";
 				}
 			}
