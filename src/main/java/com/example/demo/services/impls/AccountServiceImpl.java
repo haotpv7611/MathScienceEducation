@@ -108,7 +108,7 @@ public class AccountServiceImpl implements IAccountService {
 	public List<AccountResponseDTO> findAllStaffAccount() {
 		List<AccountResponseDTO> accountResponseDTOList = new ArrayList<>();
 		try {
-			List<Account> accountList = iAccountRepository.findByRoleId(ROLE_STAFF);
+			List<Account> accountList = iAccountRepository.findByRoleIdAndStatusNot(ROLE_STAFF, DELETE_STATUS);
 			if (!accountList.isEmpty()) {
 				for (Account account : accountList) {
 					AccountResponseDTO accountResponseDTO = modelMapper.map(account, AccountResponseDTO.class);
@@ -168,8 +168,9 @@ public class AccountServiceImpl implements IAccountService {
 			if (account == null) {
 				throw new ResourceNotFoundException();
 			}
-
-			account.setPassword(passwordEncoder.encode(password));
+			if (password != null) {
+				account.setPassword(passwordEncoder.encode(password));
+			}
 			account.setFullName(fullName);
 			iAccountRepository.save(account);
 		} catch (Exception e) {
@@ -273,6 +274,13 @@ public class AccountServiceImpl implements IAccountService {
 				if (account == null) {
 					throw new ResourceNotFoundException();
 				}
+				if (status.equalsIgnoreCase(DELETE_STATUS)) {
+					if (account.getStatus().equalsIgnoreCase(ACTIVE_STATUS)) {
+
+						return "CANNOT DELETE";
+					}
+				}
+
 				account.setStatus(status);
 				iAccountRepository.save(account);
 			}

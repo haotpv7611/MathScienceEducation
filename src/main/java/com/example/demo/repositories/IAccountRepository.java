@@ -16,7 +16,7 @@ public interface IAccountRepository extends JpaRepository<Account, Long> {
 
 	Account findByUsername(String username);
 
-	List<Account> findByRoleId(int roleId);
+	List<Account> findByRoleIdAndStatusNot(int roleId, String status);
 
 	Account findByUsernameAndStatus(String username, String status);
 
