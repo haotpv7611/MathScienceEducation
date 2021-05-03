@@ -25,6 +25,8 @@ public interface IExerciseRepository extends JpaRepository<Exercise, Long> {
 	List<Exercise> findByProgressTestIdAndStatusOrderByExerciseNameAsc(long progressTestId, String status);
 
 	Exercise findByIdAndStatusNot(long id, String status);
+	
+	Exercise findByIdAndStatus(long id, String status);
 
 	Exercise findByLessonIdAndExerciseNameAndStatusNot(long lessonId, int exerciseName, String status);
 

@@ -26,12 +26,16 @@ import com.example.demo.dtos.QuestionGameViewDTO;
 import com.example.demo.dtos.QuestionOptionResponseDTO;
 import com.example.demo.dtos.QuestionResponseDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
+import com.example.demo.models.Exercise;
 import com.example.demo.models.ExerciseGameQuestion;
+import com.example.demo.models.Game;
 import com.example.demo.models.OptionQuestion;
 import com.example.demo.models.Question;
 import com.example.demo.models.QuestionType;
 import com.example.demo.models.Unit;
 import com.example.demo.repositories.IExerciseGameQuestionRepository;
+import com.example.demo.repositories.IExerciseRepository;
+import com.example.demo.repositories.IGameRepository;
 import com.example.demo.repositories.IOptionQuestionRepository;
 import com.example.demo.repositories.IQuestionRepository;
 import com.example.demo.repositories.IQuestionTypeRepository;
@@ -44,6 +48,7 @@ import com.example.demo.utils.Util;
 @Service
 public class QuestionServiceImpl implements IQuestionService {
 	Logger logger = LoggerFactory.getLogger(QuestionServiceImpl.class);
+	private final String ACTIVE_STATUS = "ACTIVE";
 
 	private final int QUESTION_TITLE_LENGTH = 250;
 	private final int DESCRIPTION_LENGTH = 250;
@@ -72,6 +77,12 @@ public class QuestionServiceImpl implements IQuestionService {
 
 	@Autowired
 	private IExerciseGameQuestionRepository iExerciseGameQuestionRepository;
+	
+	@Autowired
+	private IExerciseRepository iExerciseRepository;
+	
+	@Autowired
+	private IGameRepository iGameRepository;
 
 	// done
 	@Override
@@ -506,6 +517,17 @@ public class QuestionServiceImpl implements IQuestionService {
 			if (question == null) {
 				throw new ResourceNotFoundException();
 			}
+			
+			List< ExerciseGameQuestion> exerciseGameQuestionList = iExerciseGameQuestionRepository.findByQuestionIdAndIsDisableFalse(id);
+			if (!exerciseGameQuestionList.isEmpty()) {				
+				for (ExerciseGameQuestion exerciseGameQuestion : exerciseGameQuestionList) {
+					Exercise exercise = iExerciseRepository.findByIdAndStatus(exerciseGameQuestion.getExerciseId(), ACTIVE_STATUS);
+					if (exercise != null) {
+						
+						return "CANNOT UPDATE";
+					}
+				}				
+			}
 			// validate option data input
 			for (int i = 0; i < optionIdList.size(); i++) {
 				if (optionIdList.get(i) == 0) {
@@ -581,6 +603,18 @@ public class QuestionServiceImpl implements IQuestionService {
 			if (question == null) {
 				throw new ResourceNotFoundException();
 			}
+			
+			List< ExerciseGameQuestion> exerciseGameQuestionList = iExerciseGameQuestionRepository.findByQuestionIdAndIsDisableFalse(id);
+			if (!exerciseGameQuestionList.isEmpty()) {				
+				for (ExerciseGameQuestion exerciseGameQuestion : exerciseGameQuestionList) {
+					Game game = iGameRepository.findByIdAndStatus(exerciseGameQuestion.getGameId(), ACTIVE_STATUS);
+					if (game != null) {
+						
+						return "CANNOT UPDATE";
+					}
+				}				
+			}
+			
 			// validate option data input
 			for (long optionId : optionIdList) {
 				if (optionId == 0) {
@@ -650,6 +684,17 @@ public class QuestionServiceImpl implements IQuestionService {
 			Question question = iQuestionRepository.findByIdAndIsDisableFalse(id);
 			if (question == null) {
 				throw new ResourceNotFoundException();
+			}
+			
+			List< ExerciseGameQuestion> exerciseGameQuestionList = iExerciseGameQuestionRepository.findByQuestionIdAndIsDisableFalse(id);
+			if (!exerciseGameQuestionList.isEmpty()) {				
+				for (ExerciseGameQuestion exerciseGameQuestion : exerciseGameQuestionList) {
+					Game game = iGameRepository.findByIdAndStatus(exerciseGameQuestion.getGameId(), ACTIVE_STATUS);
+					if (game != null) {
+						
+						return "CANNOT UPDATE";
+					}
+				}				
 			}
 			// validate option data input
 			for (long optionId : optionIdList) {

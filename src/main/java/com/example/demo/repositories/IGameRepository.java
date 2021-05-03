@@ -17,6 +17,8 @@ public interface IGameRepository extends JpaRepository<Game, Long> {
 	List<Game> findByLessonIdAndStatus(long lessonId, String status);
 
 	Game findByIdAndStatusNot(long id, String status);
+	
+	Game findByIdAndStatus(long id, String status);
 
 	Game findByLessonIdAndGameNameAndStatusNot(long lessonId, int gameName, String status);
 }
