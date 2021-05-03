@@ -638,6 +638,14 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 			long totalError = 0;
 			while (sheetIterator.hasNext()) {
 				Sheet sheet = sheetIterator.next();
+				
+				if (sheet == null) {
+					response.put("SHEET NULL", null);
+					
+					return response;
+				}
+				
+				
 				int countStudentImport = countStudentImport(sheet);
 				Classes classes = iClassRepository.findBySchoolGradeIdAndClassNameIgnoreCaseAndStatusNot(
 						schoolGrade.getId(), sheet.getSheetName(), DELETE_STATUS);

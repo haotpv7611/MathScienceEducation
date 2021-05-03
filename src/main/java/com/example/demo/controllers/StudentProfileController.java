@@ -257,7 +257,7 @@ public class StudentProfileController {
 			} else if (entry.getKey().contains("OK")) {
 
 				httpServletResponse.setStatus(HttpServletResponse.SC_OK);
-			} else if (entry.getKey().contains("EXCEED")) {
+			} else if (entry.getKey().contains("EXCEED") || entry.getKey().contains("NULL")) {
 
 				httpServletResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 			} else {
