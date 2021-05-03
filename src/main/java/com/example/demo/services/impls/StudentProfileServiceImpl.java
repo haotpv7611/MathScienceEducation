@@ -1166,11 +1166,11 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 								fullNameValueCell.setCellValue(studentProfileList.get(i).getAccount().getFullName());
 
 								Cell usernameValueCell = createOneNormalCell(workbook, sheet.getRow(i + 7), 3,
-										CellType.STRING, HorizontalAlignment.CENTER);
+										CellType.STRING, HorizontalAlignment.LEFT);
 								usernameValueCell.setCellValue(studentProfileList.get(i).getAccount().getUsername());
 
 								Cell passwordValueCell = createOneNormalCell(workbook, sheet.getRow(i + 7), 4,
-										CellType.STRING, HorizontalAlignment.CENTER);
+										CellType.STRING, HorizontalAlignment.LEFT);
 								passwordValueCell.setCellValue(DEFAULT_PASSWORD);
 							}
 						}
