@@ -1,6 +1,7 @@
 package com.example.demo.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -29,8 +30,8 @@ public class AccountController {
 	private AccountServiceImpl accountServiceImpl;
 
 	@PostMapping("/login")
-	public ResponseEntity<String> login(@RequestBody AccountRequestDTO accountRequestDTO) {
-		String response = accountServiceImpl.login(accountRequestDTO);
+	public ResponseEntity<String> login(@RequestParam String username, @RequestParam String password) {
+		String response = accountServiceImpl.login(username, password);
 		if (response.contains("NOT FOUND")) {
 
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);

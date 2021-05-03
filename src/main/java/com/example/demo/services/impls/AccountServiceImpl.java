@@ -11,7 +11,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -60,17 +59,17 @@ public class AccountServiceImpl implements IAccountService {
 	private PasswordEncoder passwordEncoder;
 
 	@Override
-	public String login(AccountRequestDTO accountRequestDTO) {
-		String username = accountRequestDTO.getUsername();
-		String password = accountRequestDTO.getPassword();
+	public String login(String username, String password) {
 
 		String jwt = "";
 		try {
+
 			Authentication authentication = authenticationManager
 					.authenticate(new UsernamePasswordAuthenticationToken(username, password));
 			SecurityContextHolder.getContext().setAuthentication(authentication);
 
 			jwt = jwtProvider.generateJwtToken(authentication);
+
 		} catch (Exception e) {
 			logger.error("Login! " + e.getMessage());
 
@@ -132,7 +131,6 @@ public class AccountServiceImpl implements IAccountService {
 		try {
 			String username = accountRequestDTO.getUsername();
 			String fullname = accountRequestDTO.getFullName();
-//			String password = accountRequestDTO.getPassword();
 			Account account = iAccountRepository.findByUsernameAndStatusNot(username, "DELETED");
 			if (account != null) {
 

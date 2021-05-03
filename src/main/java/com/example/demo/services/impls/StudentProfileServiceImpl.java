@@ -142,8 +142,8 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 	@Autowired
 	private IClassService iClassService;
 
-	@Autowired
-	private PasswordEncoder passwordEncoder;
+//	@Autowired
+//	private PasswordEncoder passwordEncoder;
 
 	@Autowired
 	private ModelMapper modelMapper;
@@ -346,7 +346,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				}
 				String fullName = studentRequestDTO.getFullName().trim().replaceAll("\\s+", " ");
 				Role role = iRoleRepository.findById(STUDENT_ROLE).orElseThrow(() -> new ResourceNotFoundException());
-				Account account = new Account(username, passwordEncoder.encode(DEFAULT_PASSWORD), fullName, role,
+				Account account = new Account(username, DEFAULT_PASSWORD, fullName, role,
 						ACTIVE_STATUS);
 				iAccountRepository.save(account);
 

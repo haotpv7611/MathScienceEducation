@@ -20,7 +20,7 @@ public interface IAccountService {
 
 	String resetPassword(long studentId);
 
-	String login(AccountRequestDTO accountRequestDTO);
+	String login(String username, String password);
 
 	Object getUserCredential(String token);
 }
