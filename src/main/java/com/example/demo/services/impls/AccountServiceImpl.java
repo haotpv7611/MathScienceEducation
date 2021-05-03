@@ -63,13 +63,11 @@ public class AccountServiceImpl implements IAccountService {
 
 		String jwt = "";
 		try {
-
 			Authentication authentication = authenticationManager
 					.authenticate(new UsernamePasswordAuthenticationToken(username, password));
 			SecurityContextHolder.getContext().setAuthentication(authentication);
 
 			jwt = jwtProvider.generateJwtToken(authentication);
-
 		} catch (Exception e) {
 			logger.error("Login! " + e.getMessage());
 
