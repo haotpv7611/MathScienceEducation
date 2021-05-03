@@ -639,7 +639,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 			while (sheetIterator.hasNext()) {
 				Sheet sheet = sheetIterator.next();
 				
-				if (sheet == null) {
+				if ((sheet.getLastRowNum() == 0 && sheet.getRow(0) == null)) {
 					response.put("SHEET NULL", null);
 					
 					return response;
