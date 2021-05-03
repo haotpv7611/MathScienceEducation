@@ -91,8 +91,8 @@ public class AccountController {
 	}
 	
 	@PostMapping("/checkPassword/{accountId}")
-	public ResponseEntity<String> changeStudentPasswordByAccountId(@PathVariable long id, @RequestParam String oldPassword, @RequestParam String newPassword) {
-		String response = iAccountService.changeStudentPasswordByAccountId(id, oldPassword, newPassword);
+	public ResponseEntity<String> changeStudentPasswordByAccountId(@PathVariable long accountId, @RequestParam String oldPassword, @RequestParam String newPassword) {
+		String response = iAccountService.changeStudentPasswordByAccountId(accountId, oldPassword, newPassword);
 		if (response.contains("INVALID")) {
 
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
