@@ -46,6 +46,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.example.demo.dtos.ClassResponseDTO;
 import com.example.demo.dtos.ListIdAndStatusDTO;
@@ -142,8 +143,8 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 	@Autowired
 	private IClassService iClassService;
 
-//	@Autowired
-//	private PasswordEncoder passwordEncoder;
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 
 	@Autowired
 	private ModelMapper modelMapper;
@@ -359,7 +360,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				}
 				String fullName = studentRequestDTO.getFullName().trim().replaceAll("\\s+", " ");
 				Role role = iRoleRepository.findById(STUDENT_ROLE).orElseThrow(() -> new ResourceNotFoundException());
-				Account account = new Account(username, DEFAULT_PASSWORD, fullName, role, ACTIVE_STATUS);
+				Account account = new Account(username, passwordEncoder.encode(DEFAULT_PASSWORD), fullName, role, ACTIVE_STATUS);
 				iAccountRepository.save(account);
 
 				String DoB = studentRequestDTO.getDoB();
@@ -677,10 +678,10 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				response.put("OK", null);
 //				workbook.close();
 			}
-			String fileName = file.getOriginalFilename();
-			FileOutputStream fileOut = new FileOutputStream("E:\\" + "Error-" + fileName);
-			workbook.write(fileOut);
-			fileOut.close();
+//			String fileName = file.getOriginalFilename();
+//			FileOutputStream fileOut = new FileOutputStream("E:\\" + "Error-" + fileName);
+//			workbook.write(fileOut);
+//			fileOut.close();
 
 		} catch (Exception e) {
 			logger.error(
@@ -1060,10 +1061,10 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				response.put("IMPORT SUCCESS", null);
 //				workbook.close();
 			}
-			String fileName = file.getOriginalFilename();
-			FileOutputStream fileOut = new FileOutputStream("E:\\" + "Not existed StudentId-" + fileName);
-			workbook.write(fileOut);
-			fileOut.close();
+//			String fileName = file.getOriginalFilename();
+//			FileOutputStream fileOut = new FileOutputStream("E:\\" + "Not existed StudentId-" + fileName);
+//			workbook.write(fileOut);
+//			fileOut.close();
 		} catch (
 
 		Exception e) {
@@ -1162,14 +1163,14 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 
 								Cell passwordValueCell = createOneNormalCell(workbook, sheet.getRow(i + 7), 4,
 										CellType.STRING, HorizontalAlignment.CENTER);
-								passwordValueCell.setCellValue(studentProfileList.get(i).getAccount().getPassword());
+								passwordValueCell.setCellValue(DEFAULT_PASSWORD);
 							}
 						}
 						response.put("EXPORT SUCCESS!", workbook);
-						FileOutputStream fileOut = new FileOutputStream(
-								"E:\\" + schoolName + "-" + gradeName + "-Student Account.xlsx");
-						workbook.write(fileOut);
-						fileOut.close();
+//						FileOutputStream fileOut = new FileOutputStream(
+//								"E:\\" + schoolName + "-" + gradeName + "-Student Account.xlsx");
+//						workbook.write(fileOut);
+//						fileOut.close();
 					}
 				} else {
 					response.put("EXPORT FAIL", null);
@@ -1486,10 +1487,10 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				}
 				response.put("EXPORT SUCCESS", workbook);
 
-				FileOutputStream fileOut = new FileOutputStream(
-						"E:\\" + schoolName + "-" + gradeName + "-ScoreExport.xlsx");
-				workbook.write(fileOut);
-				fileOut.close();
+//				FileOutputStream fileOut = new FileOutputStream(
+//						"E:\\" + schoolName + "-" + gradeName + "-ScoreExport.xlsx");
+//				workbook.write(fileOut);
+//				fileOut.close();
 			}
 		} catch (Exception e) {
 			logger.error("Export score with schoolId = " + schoolId + " and gradeId " + gradeId + " subjectId = "
@@ -1762,10 +1763,10 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				}
 
 				response.put("GRADUATE SUCCESS", workbook);
-				FileOutputStream fileOut = new FileOutputStream(
-						"E:\\" + schoolName + "-" + gradeName + "-FinalScoreExport.xlsx");
-				workbook.write(fileOut);
-				fileOut.close();
+//				FileOutputStream fileOut = new FileOutputStream(
+//						"E:\\" + schoolName + "-" + gradeName + "-FinalScoreExport.xlsx");
+//				workbook.write(fileOut);
+//				fileOut.close();
 			}
 		} catch (Exception e) {
 			logger.error("Export final score with schoolId = " + schoolId + " and gradeId" + gradeId + "! "

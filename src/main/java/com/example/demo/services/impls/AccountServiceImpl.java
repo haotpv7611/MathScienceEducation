@@ -233,14 +233,15 @@ public class AccountServiceImpl implements IAccountService {
 
 			return "CHANGE FAIL";
 		}
-		
+
 		return "CHANGE SUCCESS";
 	}
-	
+
 	@Override
 	public String changeStudentPasswordByAccountId(long accountId, String oldPassword, String newPassword) {
 		try {
-			Account account = iAccountRepository.findByIdAndPasswordAndStatus(accountId, oldPassword, ACTIVE_STATUS);
+			Account account = iAccountRepository.findByIdAndPasswordAndStatus(accountId,
+					passwordEncoder.encode(oldPassword), ACTIVE_STATUS);
 			if (account == null) {
 
 				return "INVALID";
@@ -249,8 +250,7 @@ public class AccountServiceImpl implements IAccountService {
 
 				return "INVALID";
 			}
-			
-			
+
 			account.setPassword(passwordEncoder.encode(newPassword));
 			iAccountRepository.save(account);
 
@@ -259,7 +259,7 @@ public class AccountServiceImpl implements IAccountService {
 
 			return "CHANGE FAIL";
 		}
-		
+
 		return "CHANGE SUCCESS";
 	}
 
