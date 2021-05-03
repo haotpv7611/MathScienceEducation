@@ -19,6 +19,12 @@ public interface IAccountService {
 	String changeStatusAccount(ListIdAndStatusDTO listIdAndStatusDTO);
 
 	String resetPassword(long studentId);
+	
+	String checkContact(String username, String contact);
+	
+	String changeStudentPasswordByUsername(String username, String password);
+	
+	String changeStudentPasswordByAccountId(long accountId, String oldPassword, String newPassword);
 
 	String login(String username, String password);
 

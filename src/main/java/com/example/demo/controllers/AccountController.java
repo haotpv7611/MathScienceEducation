@@ -59,6 +59,51 @@ public class AccountController {
 
 		return ResponseEntity.ok(response);
 	}
+	
+	@PostMapping("/checkContact")
+	public ResponseEntity<String> checkContact(@RequestParam String username,@RequestParam String contact) {
+		String response = iAccountService.checkContact(username, contact);
+		if (response.contains("INVALID")) {
+
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+		}
+		if (response.contains("FAIL")) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+
+		return ResponseEntity.ok(response);
+	}
+	
+	@PostMapping("/checkPassword/username")
+	public ResponseEntity<String> changeStudentPasswordByUsername(@RequestParam String username,@RequestParam String newPassword) {
+		String response = iAccountService.changeStudentPasswordByUsername(username, newPassword);
+		if (response.contains("INVALID")) {
+
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+		}
+		if (response.contains("FAIL")) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+
+		return ResponseEntity.ok(response);
+	}
+	
+	@PostMapping("/checkPassword/{accountId}")
+	public ResponseEntity<String> changeStudentPasswordByAccountId(@PathVariable long id, @RequestParam String oldPassword, @RequestParam String newPassword) {
+		String response = iAccountService.changeStudentPasswordByAccountId(id, oldPassword, newPassword);
+		if (response.contains("INVALID")) {
+
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+		}
+		if (response.contains("FAIL")) {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+
+		return ResponseEntity.ok(response);
+	}
 
 	@GetMapping("/account/{id}")
 	public ResponseEntity<Object> findAccountById(@PathVariable long id) {

@@ -6,6 +6,7 @@ public class AccountResponseDTO {
 	private String password;
 	private String role;
 	private String fullName;
+	private String status;
 
 	/**
 	 * @return the id
@@ -75,6 +76,20 @@ public class AccountResponseDTO {
 	 */
 	public void setFullName(String fullName) {
 		this.fullName = fullName;
+	}
+
+	/**
+	 * @return the status
+	 */
+	public String getStatus() {
+		return status;
+	}
+
+	/**
+	 * @param status the status to set
+	 */
+	public void setStatus(String status) {
+		this.status = status;
 	}
 
 }

@@ -88,7 +88,7 @@ public class AccountServiceImpl implements IAccountService {
 				throw new ResourceNotFoundException();
 			}
 			accountResponseDTO = modelMapper.map(account, AccountResponseDTO.class);
-//			accountResponseDTO.setPassword(bCryptPasswordEncoder.);
+			accountResponseDTO.setPassword(null);
 			accountResponseDTO.setRole(account.getRole().getDescription());
 
 		} catch (Exception e) {
@@ -113,6 +113,7 @@ public class AccountServiceImpl implements IAccountService {
 				for (Account account : accountList) {
 					AccountResponseDTO accountResponseDTO = modelMapper.map(account, AccountResponseDTO.class);
 					accountResponseDTO.setRole(account.getRole().getDescription());
+					accountResponseDTO.setPassword(null);
 					accountResponseDTOList.add(accountResponseDTO);
 				}
 			}
@@ -182,6 +183,84 @@ public class AccountServiceImpl implements IAccountService {
 		}
 
 		return "CREATE SUCCESS!";
+	}
+
+	@Override
+	public String checkContact(String username, String contact) {
+		try {
+			Account account = iAccountRepository.findByUsernameAndStatus(username, ACTIVE_STATUS);
+			if (account == null) {
+
+				return "INVALID";
+			}
+			if (!account.getRole().getDescription().equals("student")) {
+
+				return "INVALID";
+			}
+
+			StudentProfile studentProfile = account.getStudentProfile();
+			if (!studentProfile.getContact().equals(contact)) {
+
+				return "INVALID";
+			}
+
+		} catch (Exception e) {
+			logger.error("Check contact username =  " + username + " and contact = " + contact + "! " + e.getMessage());
+
+			return "CHANGE FAIL";
+		}
+
+		return "EXISTED";
+	}
+
+	@Override
+	public String changeStudentPasswordByUsername(String username, String newPassword) {
+		try {
+			Account account = iAccountRepository.findByUsernameAndStatus(username, ACTIVE_STATUS);
+			if (account == null) {
+
+				return "INVALID";
+			}
+			if (!account.getRole().getDescription().equals("student")) {
+
+				return "INVALID";
+			}
+			account.setPassword(passwordEncoder.encode(newPassword));
+			iAccountRepository.save(account);
+
+		} catch (Exception e) {
+			logger.error("Change password username =  " + username + "! " + e.getMessage());
+
+			return "CHANGE FAIL";
+		}
+		
+		return "CHANGE SUCCESS";
+	}
+	
+	@Override
+	public String changeStudentPasswordByAccountId(long accountId, String oldPassword, String newPassword) {
+		try {
+			Account account = iAccountRepository.findByIdAndPasswordAndStatus(accountId, oldPassword, ACTIVE_STATUS);
+			if (account == null) {
+
+				return "INVALID";
+			}
+			if (!account.getRole().getDescription().equals("student")) {
+
+				return "INVALID";
+			}
+			
+			
+			account.setPassword(passwordEncoder.encode(newPassword));
+			iAccountRepository.save(account);
+
+		} catch (Exception e) {
+			logger.error("Change password accountId =  " + accountId + "! " + e.getMessage());
+
+			return "CHANGE FAIL";
+		}
+		
+		return "CHANGE SUCCESS";
 	}
 
 	@Override

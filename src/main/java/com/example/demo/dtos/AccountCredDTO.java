@@ -2,6 +2,7 @@ package com.example.demo.dtos;
 
 public class AccountCredDTO {
 	private long accountId;
+	private String fullName;
 	private int gradeId;
 	private String description;
 
@@ -17,6 +18,20 @@ public class AccountCredDTO {
 	 */
 	public void setAccountId(long accountId) {
 		this.accountId = accountId;
+	}
+
+	/**
+	 * @return the fullName
+	 */
+	public String getFullName() {
+		return fullName;
+	}
+
+	/**
+	 * @param fullName the fullName to set
+	 */
+	public void setFullName(String fullName) {
+		this.fullName = fullName;
 	}
 
 	/**

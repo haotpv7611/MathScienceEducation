@@ -33,7 +33,7 @@ import com.example.demo.dtos.StudentResponseDTO;
 import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.services.IStudentProfileService;
 
-@CrossOrigin(exposedHeaders = {"Content-Disposition", "Content-Length"}, maxAge = 3600)
+@CrossOrigin(exposedHeaders = { "Content-Disposition", "Content-Length" }, maxAge = 3600)
 @RestController
 public class StudentProfileController {
 	@Autowired
@@ -274,25 +274,16 @@ public class StudentProfileController {
 
 	@PostMapping("/student/import")
 	// @PreAuthorize("hasRole('admin')")
-//	@Timed
-//	@Transactional(timeout = 1800)
 	public void importStudent(HttpServletResponse httpServletResponse, @RequestParam MultipartFile file,
 			@RequestParam long schoolId, @RequestParam int gradeId) throws IOException {
 		Map<String, Workbook> response = iStudentProfileService.importStudent(file, schoolId, gradeId);
 		System.out.println("map size" + response.size());
 		for (Entry<String, Workbook> entry : response.entrySet()) {
-//			if (entry.getKey().contains("FAIL")) {
-//
-//				
-//			} else 
 			if (entry.getKey().contains("NOT FOUND")) {
-
 				httpServletResponse.setStatus(HttpServletResponse.SC_NOT_FOUND);
 			} else if (entry.getKey().contains("SUCCESS")) {
-
 				httpServletResponse.setStatus(HttpServletResponse.SC_CREATED);
 			} else if (entry.getKey().contains("EXISTED")) {
-
 				httpServletResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 			} else if (entry.getKey().contains("ERROR")) {
 				httpServletResponse.setContentType("application/octet-stream");
