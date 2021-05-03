@@ -59,9 +59,9 @@ public class AccountController {
 
 		return ResponseEntity.ok(response);
 	}
-	
+
 	@PostMapping("/checkContact")
-	public ResponseEntity<String> checkContact(@RequestParam String username,@RequestParam String contact) {
+	public ResponseEntity<String> checkContact(@RequestParam String username, @RequestParam String contact) {
 		String response = iAccountService.checkContact(username, contact);
 		if (response.contains("INVALID")) {
 
@@ -74,9 +74,10 @@ public class AccountController {
 
 		return ResponseEntity.ok(response);
 	}
-	
+
 	@PostMapping("/checkPassword/username")
-	public ResponseEntity<String> changeStudentPasswordByUsername(@RequestParam String username,@RequestParam String newPassword) {
+	public ResponseEntity<String> changeStudentPasswordByUsername(@RequestParam String username,
+			@RequestParam String newPassword) {
 		String response = iAccountService.changeStudentPasswordByUsername(username, newPassword);
 		if (response.contains("INVALID")) {
 
@@ -89,9 +90,11 @@ public class AccountController {
 
 		return ResponseEntity.ok(response);
 	}
-	
+
 	@PostMapping("/checkPassword/{accountId}")
-	public ResponseEntity<String> changeStudentPasswordByAccountId(@PathVariable long accountId, @RequestParam String oldPassword, @RequestParam String newPassword) {
+	public ResponseEntity<String> changeStudentPasswordByAccountId(@PathVariable long accountId,
+			@RequestParam String oldPassword, @RequestParam String newPassword) {
+
 		String response = iAccountService.changeStudentPasswordByAccountId(accountId, oldPassword, newPassword);
 		if (response.contains("INVALID")) {
 
@@ -176,6 +179,10 @@ public class AccountController {
 		if (response.contains("FAIL")) {
 
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+		if (response.contains("CANNOT")) {
+
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 		}
 
 		return ResponseEntity.ok(response);

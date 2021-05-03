@@ -241,12 +241,17 @@ public class AccountServiceImpl implements IAccountService {
 	@Override
 	public String changeStudentPasswordByAccountId(long accountId, String oldPassword, String newPassword) {
 		try {
-			Account account = iAccountRepository.findByIdAndPasswordAndStatus(accountId,
-					passwordEncoder.encode(oldPassword), ACTIVE_STATUS);
+			Account account = iAccountRepository.findByIdAndStatus(accountId, ACTIVE_STATUS);
 			if (account == null) {
 
 				return "INVALID";
 			}
+
+			if (!passwordEncoder.matches(oldPassword, account.getPassword())) {
+
+				return "INVALID";
+			}
+
 			if (!account.getRole().getDescription().equals("student")) {
 
 				return "INVALID";
