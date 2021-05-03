@@ -96,8 +96,9 @@ public class SchoolGradeServiceImpl implements ISchoolGradeService {
 			if (!schoolGradeList.isEmpty()) {
 				for (SchoolGrade schoolGrade : schoolGradeList) {
 					Grade grade = schoolGrade.getGrade();
-					GradeResponseDTO gradeDTO = modelMapper.map(grade, GradeResponseDTO.class);
-					gradeDTOList.add(gradeDTO);
+					GradeResponseDTO gradeResponseDTO = modelMapper.map(grade, GradeResponseDTO.class);
+					gradeResponseDTO.setStatus(schoolGrade.getStatus());
+					gradeDTOList.add(gradeResponseDTO);
 				}
 				// sort by gradeName
 				Collections.sort(gradeDTOList);

@@ -3,6 +3,7 @@ package com.example.demo.dtos;
 public class GradeResponseDTO implements Comparable<GradeResponseDTO> {
 	private int id;
 	private int gradeName;
+	private String status;
 
 	public int getId() {
 		return id;
@@ -34,6 +35,20 @@ public class GradeResponseDTO implements Comparable<GradeResponseDTO> {
 			return 1;
 		else
 			return -1;
+	}
+
+	/**
+	 * @return the status
+	 */
+	public String getStatus() {
+		return status;
+	}
+
+	/**
+	 * @param status the status to set
+	 */
+	public void setStatus(String status) {
+		this.status = status;
 	}
 
 }
