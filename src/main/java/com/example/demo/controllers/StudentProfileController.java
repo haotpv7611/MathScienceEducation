@@ -257,10 +257,14 @@ public class StudentProfileController {
 			} else if (entry.getKey().contains("OK")) {
 
 				httpServletResponse.setStatus(HttpServletResponse.SC_OK);
-			} else if (entry.getKey().contains("EXCEED") || entry.getKey().contains("NULL")) {
+			} else if ( entry.getKey().contains("NULL")) {
 
 				httpServletResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-			} else {
+			}else if (entry.getKey().contains("EXCEED")) {
+
+				httpServletResponse.setStatus(HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE);
+			}
+			else {
 				httpServletResponse.setContentType("application/octet-stream");
 				String headerKey = "Content-Disposition";
 				String headerValue = "attachment; filename="
