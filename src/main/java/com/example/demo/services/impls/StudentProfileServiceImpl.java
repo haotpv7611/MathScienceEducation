@@ -635,6 +635,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 			Workbook workbook = new XSSFWorkbook(file.getInputStream());
 			Iterator<Sheet> sheetIterator = workbook.sheetIterator();
 			List<Cell> cellList = new ArrayList<>();
+			long totalError = 0;
 			while (sheetIterator.hasNext()) {
 				Sheet sheet = sheetIterator.next();
 				int countStudentImport = countStudentImport(sheet);
@@ -655,7 +656,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 
 				cellList = validateSheetData(sheet, schoolName, schoolCode, gradeName);
 				if (!cellList.isEmpty()) {
-
+					totalError += cellList.size();
 					CellStyle cellStyle = formatErrorCell(workbook);
 					for (Cell cell : cellList) {
 						cell.setCellStyle(cellStyle);
@@ -672,7 +673,7 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 				}
 			}
 
-			if (!cellList.isEmpty()) {
+			if (totalError > 0) {
 				response.put("ERROR", workbook);
 			} else {
 				response.put("OK", null);
@@ -732,7 +733,6 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 			throws ParseException {
 		List<Cell> cellList = new ArrayList<>();
 		try {
-
 			Iterator<Row> rowIterator = sheet.rowIterator();
 			while (rowIterator.hasNext()) {
 				Row row = rowIterator.next();
@@ -952,8 +952,8 @@ public class StudentProfileServiceImpl implements IStudentProfileService {
 			SchoolGrade schoolGrade = iSchoolGradeRepository.findByGradeIdAndSchoolIdAndStatusNot(gradeId, schoolId,
 					DELETE_STATUS);
 			Workbook workbook = new XSSFWorkbook(file.getInputStream());
-			Iterator<Sheet> sheetIterator = workbook.sheetIterator();
 			List<Cell> cellList = new ArrayList<>();
+			Iterator<Sheet> sheetIterator = workbook.sheetIterator();			
 			// create class by each sheetName
 			while (sheetIterator.hasNext()) {
 				Sheet sheet = sheetIterator.next();
